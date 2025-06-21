@@ -77,10 +77,8 @@ class TPVModule(BaseModule):
         
         # Header profesional
         self.create_header(layout)
-        
-        # Dashboard de métricas (refactorizado)
+          # Dashboard de métricas (refactorizado)
         self.dashboard = TPVDashboard(self.tpv_service)
-        layout.addWidget(self.dashboard)
         layout.addWidget(self.dashboard)
         
         # Línea separadora
@@ -209,12 +207,10 @@ class TPVModule(BaseModule):
             QTabBar::tab:hover:!selected {
                 background-color: #1976d2;
                 color: white;
-            }
-        """)
+            }        """)
         
         # Pestaña de mesas (refactorizada)
         self.create_mesas_tab_refactored()
-        
         # Pestañas de desarrollo (mantenemos las existentes)
         self.create_venta_rapida_tab()
         self.create_reportes_tab()
@@ -222,29 +218,26 @@ class TPVModule(BaseModule):
         layout.addWidget(self.tab_widget, 1)
         
     def create_mesas_tab_refactored(self):
-        """Crea la pestaña de mesas usando componentes refactorizados"""
+        """Crea la pestaña de mesas con layout contextualizado y grid principal"""
         mesas_widget = QWidget()
         layout = QVBoxLayout(mesas_widget)
-        layout.setContentsMargins(24, 24, 24, 24)
-        layout.setSpacing(20)
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(12)
         
-        # Panel de filtros (refactorizado)
-        self.filters_panel = FiltersPanel()
-        self.filters_panel.filters_changed.connect(self._on_filters_changed)
-        layout.addWidget(self.filters_panel)
-        
-        # Panel de estadísticas (refactorizado)
-        self.statistics_panel = StatisticsPanel(self.tpv_service)
-        layout.addWidget(self.statistics_panel)
-          # Área de mesas (refactorizada)
+        # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
         self.mesas_area = MesasArea()
+        
         # Conectar señales
         self.mesas_area.mesa_clicked.connect(self._on_mesa_clicked)
         self.mesas_area.nueva_mesa_requested.connect(self.nueva_mesa)
+        
+        # El área de mesas ocupa todo el espacio disponible
         layout.addWidget(self.mesas_area, 1)
         
+        # Ya no necesitamos el FiltersPanel separado - ahora está integrado en MesasArea
+        
         self.tab_widget.addTab(mesas_widget, "🍽️ Gestión de Mesas")
-    
+        
     def create_venta_rapida_tab(self):
         """Crea la pestaña de venta rápida"""
         venta_widget = QWidget()
@@ -388,18 +381,14 @@ class TPVModule(BaseModule):
             if hasattr(self, 'dashboard'):
                 self.dashboard.update_metrics()
             
-            # Actualizar panel de estadísticas
-            if hasattr(self, 'statistics_panel'):
-                self.statistics_panel.refresh_statistics()
+            # Actualizar área de mesas con los datos actuales
+            if hasattr(self, 'mesas_area'):                self.mesas_area.set_mesas(self.mesas)
             
-            # Actualizar área de mesas
-            if hasattr(self, 'mesas_area'):
-                self.mesas_area.refresh_mesas()
+            # Las estadísticas compactas se actualizan automáticamente en MesasArea
                 
         except Exception as e:
             logger.error(f"Error refrescando componentes: {e}")
-    
-    # ======= MÉTODOS SIMPLIFICADOS (DELEGADOS AL CONTROLADOR) =======
+      # ======= MÉTODOS SIMPLIFICADOS (DELEGADOS AL CONTROLADOR) =======
     
     def nueva_mesa(self):
         """Crea una nueva mesa usando el controlador"""
@@ -419,7 +408,13 @@ class TPVModule(BaseModule):
             
             if self.tpv_service:
                 self.productos = self.tpv_service.get_productos()
+                logger.info("Datos del TPV cargados correctamente")                # Cargar datos iniciales en MesasArea si ya está inicializada
+                if hasattr(self, 'mesas_area') and self.mesas:
+                    self.mesas_area.set_mesas(self.mesas)
+                
+                # Las estadísticas compactas se actualizan automáticamente en MesasArea
                 logger.info("Datos del TPV cargados correctamente")
+                    
             else:
                 logger.warning("No hay servicio TPV disponible")
         except Exception as e:
@@ -437,7 +432,120 @@ class TPVModule(BaseModule):
     def cerrar_caja(self):
         """TODO: Implementar cierre de caja"""
         QMessageBox.information(self, "Cerrar Caja", "Funcionalidad en desarrollo")
+    
+    def update_compact_stats(self):
+        """Actualiza las estadísticas compactas basadas en datos reales"""
+        try:
+            if not hasattr(self, 'mesas_area') or not self.mesas_area:
+                return
+                
+            # Obtener datos reales de las mesas
+            total_mesas = len(self.mesas)
+            mesas_libres = len([m for m in self.mesas if m.estado == "libre"])
+            mesas_ocupadas = len([m for m in self.mesas if m.estado == "ocupada"])
+            mesas_reservadas = len([m for m in self.mesas if m.estado == "reservada"])
+            
+            # Obtener zonas únicas
+            zonas_activas = len(set(m.zona for m in self.mesas)) if self.mesas else 0
+              # Actualizar las estadísticas
+            stats_config = [
+                ("📍", "Zonas Activas", str(zonas_activas)),
+                ("🍽️", "Mesas Totales", str(total_mesas)), 
+                ("🟢", "Disponibles", str(mesas_libres)),
+                ("🔴", "Ocupadas", str(mesas_ocupadas))
+            ]
+            
+            # TODO: Implementar actualización dinámica de estadísticas cuando sea necesario
+                                
+        except Exception as e:
+            logger.error(f"Error actualizando estadísticas compactas: {e}")
 
+    def calculate_real_stats(self) -> dict:
+        """Calcula estadísticas reales basadas en los datos actuales de mesas"""
+        try:
+            if not self.mesas:
+                return {
+                    "zonas_activas": "0",
+                    "mesas_totales": "0", 
+                    "disponibles": "0",
+                    "ocupadas": "0"
+                }
+            
+            # Calcular estadísticas reales
+            zonas_unicas = set(mesa.zona for mesa in self.mesas)
+            mesas_totales = len(self.mesas)
+            disponibles = len([m for m in self.mesas if m.estado == "libre"])
+            ocupadas = len([m for m in self.mesas if m.estado == "ocupada"])
+            
+            return {
+                "zonas_activas": str(len(zonas_unicas)),
+                "mesas_totales": str(mesas_totales),
+                "disponibles": str(disponibles), 
+                "ocupadas": str(ocupadas)
+            }
+            
+        except Exception as e:
+            logger.error(f"Error calculando estadísticas: {e}")
+            return {
+                "zonas_activas": "0",
+                "mesas_totales": "0",                "disponibles": "0",
+                "ocupadas": "0"
+            }
+    
+    def create_compact_stat(self, icon: str, label: str, value: str) -> QWidget:
+        """Crea una estadística compacta mejorada y más visible"""
+        from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtGui import QFont
+        
+        # Frame principal con estilos más sólidos
+        stat_widget = QFrame()
+        stat_widget.setFrameStyle(QFrame.Shape.StyledPanel)
+        stat_widget.setLineWidth(1)
+        
+        # Layout vertical con más espaciado
+        layout = QVBoxLayout(stat_widget)
+        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(4)
+        
+        # Etiqueta superior (título)
+        label_widget = QLabel(f"{icon} {label}")
+        label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Font para el título
+        title_font = QFont()
+        title_font.setPointSize(9)
+        title_font.setBold(False)
+        label_widget.setFont(title_font)
+        label_widget.setStyleSheet("color: #64748b; margin: 0px; padding: 0px;")
+        layout.addWidget(label_widget)
+        
+        # Valor inferior (destacado)
+        value_widget = QLabel(value)
+        value_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)        # Font para el valor
+        value_font = QFont()
+        value_font.setPointSize(18)  # Aumentar tamaño de fuente
+        value_font.setBold(True)
+        value_widget.setFont(value_font)
+        value_widget.setStyleSheet("color: #1f2937; margin: 0px; padding: 0px; background-color: transparent;")  # Color más oscuro
+        layout.addWidget(value_widget)
+        
+        # Estilo del frame contenedor con más contraste
+        stat_widget.setStyleSheet("""
+            QFrame {
+                background-color: #ffffff;
+                border: 2px solid #cbd5e1;
+                border-radius: 8px;
+                margin: 2px;
+            }
+            QFrame:hover {
+                border-color: #2563eb;
+            }
+        """)
+        
+        # Tamaño fijo más grande para mejor visibilidad
+        stat_widget.setFixedSize(130, 70)
+        
+        return stat_widget
 
 if __name__ == "__main__":
     import sys

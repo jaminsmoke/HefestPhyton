@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 
 from services.tpv_service import TPVService
+from utils.qt_css_compat import convert_to_qt_compatible_css
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +37,7 @@ class TPVDashboard(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(16)
-        
-        # Métricas dinámicas del día
+          # Métricas dinámicas del día
         metrics_config = [
             ("mesas_activas", "🍽️", "Mesas Ocupadas", "0/0", "#2196f3"),
             ("ventas_dia", "💰", "Ventas Hoy", "€0.00", "#4caf50"), 
@@ -53,58 +53,62 @@ class TPVDashboard(QWidget):
         layout.addStretch()
         
     def create_metric_card(self, key: str, icon: str, title: str, value: str, color: str) -> QWidget:
-        """Crea una tarjeta de métrica mejorada"""
+        """Crea una tarjeta de métrica simple y compatible con PyQt6"""
         card = QFrame()
-        card.setFrameStyle(QFrame.Shape.Box)
+        card.setFrameShape(QFrame.Shape.StyledPanel)
+        card.setLineWidth(2)
+        
+        # Estilo muy simple para máxima compatibilidad
         card.setStyleSheet(f"""
             QFrame {{
                 background-color: white;
                 border: 2px solid {color};
-                border-radius: 12px;
-                padding: 12px;
-                margin: 2px;
-            }}
-            QFrame:hover {{
-                background-color: #f8f9fa;
-                border-width: 3px;
-            }}
-            QLabel {{
-                border: none;
-                background-color: transparent;
+                border-radius: 8px;
             }}
         """)
         card.setFixedSize(160, 100)
         
         layout = QVBoxLayout(card)
-        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setContentsMargins(8, 6, 8, 6)
         layout.setSpacing(4)
         
-        # Header con icono y título
-        header_layout = QHBoxLayout()
+        # Header - en una sola línea para simplicidad
+        header_widget = QWidget()
+        header_layout = QHBoxLayout(header_widget)
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        header_layout.setSpacing(4)
         
+        # Icono - sin CSS complejo
         icon_label = QLabel(icon)
-        icon_label.setStyleSheet(f"font-size: 20px; color: {color};")
+        icon_label.setStyleSheet(f"font-size: 16px; color: {color};")
         header_layout.addWidget(icon_label)
         
+        # Título - sin CSS complejo
         title_label = QLabel(title)
-        title_label.setStyleSheet(f"font-size: 11px; font-weight: bold; color: {color};")
-        title_label.setWordWrap(True)
+        title_label.setStyleSheet(f"font-size: 9px; font-weight: bold; color: {color};")
         header_layout.addWidget(title_label)
         header_layout.addStretch()
         
-        layout.addLayout(header_layout)
+        layout.addWidget(header_widget)
         
-        # Valor principal
+        # Espaciador
+        layout.addStretch()
+        
+        # Valor principal - configuración simple
         value_label = QLabel(value)
         value_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Configurar fuente de forma programática (más confiable que CSS)
         font = QFont()
-        font.setPointSize(16)
+        font.setPointSize(14)
         font.setBold(True)
         value_label.setFont(font)
         value_label.setStyleSheet(f"color: {color};")
-        layout.addWidget(value_label)
         
-        # Guardar referencia al label del valor para actualizaciones
+        layout.addWidget(value_label)
+        layout.addStretch()
+        
+        # Guardar referencia para actualizaciones
         setattr(card, 'value_label', value_label)
         setattr(card, 'metric_key', key)
         
@@ -112,36 +116,64 @@ class TPVDashboard(QWidget):
         
     def update_metrics(self):
         """Actualiza las métricas en tiempo real con datos del servicio"""
-        if not self.tpv_service:
-            logger.debug("No hay servicio TPV disponible para actualizar métricas")
-            return
-            
         try:
-            # Obtener datos actuales
-            mesas = self.tpv_service.get_mesas()
-            comandas_activas = self.tpv_service.get_comandas_activas()
+            # Valores por defecto (estado inicial/sin datos)
+            mesas_ocupadas = 0
+            total_mesas = 0
+            total_comandas = 0
+            ventas_dia = 0.0
+            tiempo_promedio = "0min"
             
-            # Calcular métricas
-            mesas_ocupadas = len([m for m in mesas if m.estado == "ocupada"])
-            total_mesas = len(mesas)
-            total_comandas = len(comandas_activas)
+            # Si hay servicio TPV, obtener datos reales
+            if self.tpv_service:
+                try:
+                    # Obtener datos actuales
+                    mesas = self.tpv_service.get_mesas()
+                    comandas_activas = self.tpv_service.get_comandas_activas()
+                    
+                    # Calcular métricas de mesas
+                    if mesas:
+                        mesas_ocupadas = len([m for m in mesas if m.estado == "ocupada"])
+                        total_mesas = len(mesas)
+                    
+                    # Calcular comandas activas
+                    if comandas_activas:
+                        total_comandas = len(comandas_activas)
+                        
+                        # Calcular ventas del día con manejo de errores
+                        for comanda in comandas_activas:
+                            try:
+                                # Usar la propiedad total de la comanda
+                                comanda_total = comanda.total if hasattr(comanda, 'total') else 0.0
+                                ventas_dia += comanda_total if comanda_total else 0.0
+                            except (AttributeError, TypeError) as e:
+                                logger.warning(f"Error calculando total de comanda {comanda.id}: {e}")
+                                continue
+                        
+                        # Calcular tiempo promedio (placeholder - sería más complejo en implementación real)
+                        tiempo_promedio = "12min" if total_comandas > 0 else "0min"
+                        
+                except Exception as e:
+                    logger.warning(f"Error obteniendo datos del servicio TPV: {e}")
+                    # Mantener valores por defecto
+            else:
+                logger.debug("No hay servicio TPV disponible - mostrando valores por defecto")
             
-            # Calcular ventas del día (suma de totales de comandas)
-            ventas_dia = sum(comanda.total for comanda in comandas_activas)
-            
-            # Calcular tiempo promedio (placeholder - sería más complejo en implementación real)
-            tiempo_promedio = "12min" if comandas_activas else "0min"
-            
-            # Actualizar tarjetas
+            # Actualizar tarjetas con datos calculados (reales o por defecto)
             self.update_metric_card("mesas_activas", f"{mesas_ocupadas}/{total_mesas}")
             self.update_metric_card("ventas_dia", f"€{ventas_dia:.2f}")
             self.update_metric_card("comandas_activas", str(total_comandas))
             self.update_metric_card("tiempo_promedio", tiempo_promedio)
             
-            logger.debug("Métricas del dashboard TPV actualizadas")
+            logger.debug(f"Métricas TPV actualizadas: Mesas={mesas_ocupadas}/{total_mesas}, Ventas=€{ventas_dia:.2f}, Comandas={total_comandas}")
             
         except Exception as e:
             logger.error(f"Error actualizando métricas del dashboard: {e}")
+            # Mostrar valores por defecto en caso de error crítico
+            self.update_metric_card("mesas_activas", "0/0")
+            self.update_metric_card("ventas_dia", "€0.00")
+            self.update_metric_card("comandas_activas", "0")
+            self.update_metric_card("tiempo_promedio", "0min")
             
     def update_metric_card(self, metric_key: str, new_value: str):
         """Actualiza el valor de una tarjeta específica"""

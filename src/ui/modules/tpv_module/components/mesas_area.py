@@ -54,16 +54,21 @@ class MesasArea(QFrame):
         
         # Separador
         self.create_separator(container_layout)
-        
-        # Área de scroll para las mesas
+          # Área de scroll para las mesas
         self.create_scroll_area(container_layout)
     
     def create_header(self, layout: QVBoxLayout):
-        """Crea el header del área de mesas"""
+        """Crea el header del área de mesas con filtros integrados"""
         header_layout = QHBoxLayout()
+        header_layout.setSpacing(16)
+        
+        # Título principal
+        title_section = QHBoxLayout()
+        title_section.setSpacing(8)
         
         title_icon = QLabel("🍽️")
         title_icon.setStyleSheet("font-size: 20px;")
+        title_section.addWidget(title_icon)
         
         title_label = QLabel("Distribución de Mesas")
         title_label.setStyleSheet("""
@@ -71,21 +76,26 @@ class MesasArea(QFrame):
                 font-size: 18px;
                 font-weight: bold;
                 color: #2c3e50;
-                margin-left: 8px;
             }
         """)
+        title_section.addWidget(title_label)
         
-        header_layout.addWidget(title_icon)
-        header_layout.addWidget(title_label)
-        header_layout.addStretch()
+        header_layout.addLayout(title_section)
+        header_layout.addStretch()        
+        # Filtros integrados compactos
+        self.create_integrated_filters(header_layout)
+        
+        # Estadísticas compactas integradas
+        self.create_compact_stats(header_layout)
         
         # Información de estado
-        self.status_info = QLabel("Haga clic en una mesa para gestionar")
+        self.status_info = QLabel("Listo para gestionar mesas")
         self.status_info.setStyleSheet("""
             QLabel {
-                font-size: 12px;
+                font-size: 11px;
                 color: #7f8c8d;
                 font-style: italic;
+                margin-left: 16px;
             }
         """)
         header_layout.addWidget(self.status_info)
@@ -143,10 +153,291 @@ class MesasArea(QFrame):
         scroll_area.setWidget(mesas_container)
         layout.addWidget(scroll_area, 1)
     
+    def create_integrated_filters(self, layout: QHBoxLayout):
+        """Crea filtros integrados compactos en el header"""
+        from PyQt6.QtWidgets import QComboBox, QLineEdit, QPushButton
+        
+        # Barra de búsqueda compacta
+        self.search_input = QLineEdit()
+        self.search_input.setPlaceholderText("🔍 Buscar mesa...")
+        self.search_input.setFixedWidth(150)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                padding: 6px 10px;
+                font-size: 12px;
+                background-color: white;
+            }
+            QLineEdit:focus {
+                border-color: #2196f3;
+                outline: none;
+            }
+        """)
+        self.search_input.textChanged.connect(self.apply_search)
+        layout.addWidget(self.search_input)
+        
+        # Filtro de zona compacto
+        self.zone_combo = QComboBox()
+        self.zone_combo.addItems(["Todas", "Terraza", "Interior", "Privada", "Barra"])
+        self.zone_combo.setFixedWidth(100)
+        self.zone_combo.setStyleSheet("""
+            QComboBox {
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                padding: 6px 8px;
+                font-size: 12px;
+                background-color: white;
+            }
+            QComboBox:focus {
+                border-color: #2196f3;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 4px solid #666;
+                margin-right: 8px;
+            }
+        """)
+        self.zone_combo.currentTextChanged.connect(self._on_zone_changed)
+        layout.addWidget(self.zone_combo)
+        
+        # Filtro de estado compacto
+        self.status_combo = QComboBox()
+        self.status_combo.addItems(["Todos", "Libre", "Ocupada", "Reservada"])
+        self.status_combo.setFixedWidth(90)
+        self.status_combo.setStyleSheet("""
+            QComboBox {
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                padding: 6px 8px;
+                font-size: 12px;
+                background-color: white;
+            }
+            QComboBox:focus {
+                border-color: #2196f3;
+            }
+            QComboBox::drop-down {
+                border: none;
+                width: 20px;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 4px solid #666;
+                margin-right: 8px;
+            }
+        """)
+        self.status_combo.currentTextChanged.connect(self._on_status_changed)
+        layout.addWidget(self.status_combo)
+        
+        # Separador visual
+        separator = QLabel("|")
+        separator.setStyleSheet("color: #d1d5db; font-size: 14px; margin: 0px 8px;")
+        layout.addWidget(separator)
+        
+        # Botón Nueva Mesa integrado
+        nueva_mesa_btn = QPushButton("➕ Nueva Mesa")
+        nueva_mesa_btn.setFixedWidth(120)
+        nueva_mesa_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+            QPushButton:pressed {
+                background-color: #1e7e34;
+            }
+        """)
+        nueva_mesa_btn.clicked.connect(self._on_nueva_mesa_clicked)
+        layout.addWidget(nueva_mesa_btn)
+        
+        # Botón de actualizar compacto
+        refresh_btn = QPushButton("🔄")
+        refresh_btn.setFixedSize(32, 32)
+        refresh_btn.setStyleSheet("""
+            QPushButton {
+                border: 1px solid #d1d5db;
+                border-radius: 6px;
+                background-color: white;
+                font-size: 14px;
+            }
+            QPushButton:hover {
+                background-color: #f3f4f6;
+                border-color: #9ca3af;
+            }
+            QPushButton:pressed {
+                background-color: #e5e7eb;
+            }
+        """)
+        refresh_btn.clicked.connect(self.refresh_mesas)
+        refresh_btn.setToolTip("Actualizar vista de mesas")
+        layout.addWidget(refresh_btn)
+    
+    def create_compact_stats(self, layout: QHBoxLayout):
+        """Crea las estadísticas compactas integradas en el header"""
+        from PyQt6.QtGui import QFont
+        
+        # Separador visual antes de las estadísticas
+        separator = QLabel("|")
+        separator.setStyleSheet("color: #d1d5db; font-size: 14px; margin: 0px 8px;")
+        layout.addWidget(separator)
+        
+        # Estadísticas compactas
+        stats_config = [
+            ("📍", "Zonas", "0", "#10b981"),
+            ("🍽️", "Total", "0", "#2563eb"), 
+            ("🟢", "Libres", "0", "#059669"),
+            ("🔴", "Ocupadas", "0", "#dc2626")
+        ]
+        
+        # Almacenar referencias para actualización
+        self.stats_widgets = []
+        
+        for icon, label, value, color in stats_config:
+            stat_widget = self.create_compact_stat_widget(icon, label, value, color)
+            self.stats_widgets.append({
+                'widget': stat_widget,
+                'type': label.lower(),
+                'icon': icon,
+                'label': label
+            })
+            layout.addWidget(stat_widget)
+    
+    def create_compact_stat_widget(self, icon: str, label: str, value: str, color: str) -> QWidget:
+        """Crea un widget de estadística compacta para el header"""
+        from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtGui import QFont
+        
+        # Frame principal
+        stat_widget = QFrame()
+        stat_widget.setFrameStyle(QFrame.Shape.StyledPanel)
+        stat_widget.setLineWidth(1)
+        
+        # Layout vertical
+        layout = QVBoxLayout(stat_widget)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setSpacing(2)
+        
+        # Etiqueta superior (título)
+        label_widget = QLabel(f"{icon} {label}")
+        label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title_font = QFont()
+        title_font.setPointSize(8)
+        title_font.setBold(False)
+        label_widget.setFont(title_font)
+        label_widget.setStyleSheet("color: #64748b; margin: 0px; padding: 0px;")
+        layout.addWidget(label_widget)
+        
+        # Valor inferior (destacado)
+        value_widget = QLabel(value)
+        value_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        value_font = QFont()
+        value_font.setPointSize(14)
+        value_font.setBold(True)
+        value_widget.setFont(value_font)
+        value_widget.setStyleSheet(f"color: {color}; margin: 0px; padding: 0px;")
+        layout.addWidget(value_widget)
+        
+        # Estilo del frame contenedor
+        stat_widget.setStyleSheet(f"""
+            QFrame {{
+                background-color: white;
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                margin: 0px 2px;
+            }}
+            QFrame:hover {{
+                border-color: {color};
+            }}
+        """)
+        
+        # Tamaño compacto para el header
+        stat_widget.setFixedSize(65, 40)
+        
+        return stat_widget
+    
+    def update_compact_stats(self, zonas: int, total: int, libres: int, ocupadas: int):
+        """Actualiza las estadísticas compactas"""
+        if not hasattr(self, 'stats_widgets'):
+            return
+            
+        values = {
+            'zonas': str(zonas),
+            'total': str(total),
+            'libres': str(libres),
+            'ocupadas': str(ocupadas)
+        }
+        
+        for stat_info in self.stats_widgets:
+            widget = stat_info['widget']
+            stat_type = stat_info['type']
+            
+            if stat_type in values:
+                new_value = values[stat_type]
+                # Actualizar el valor en el widget
+                layout = widget.layout()
+                if layout and layout.count() >= 2:
+                    item = layout.itemAt(1)  # El segundo item es el valor
+                    if item:
+                        value_label = item.widget()
+                        if isinstance(value_label, QLabel):
+                            value_label.setText(new_value)
+                            value_label.update()
+                  # Forzar actualización del widget
+                widget.update()
+                widget.repaint()
+    
+    def update_stats_from_mesas(self):
+        """Calcula y actualiza las estadísticas basándose en las mesas actuales"""
+        if not self.mesas:
+            # Si no hay mesas, mostrar valores en 0
+            self.update_compact_stats(0, 0, 0, 0)
+            return
+        
+        # Calcular estadísticas reales
+        zonas_unicas = set(mesa.zona for mesa in self.mesas)
+        zonas_activas = len(zonas_unicas)
+        total_mesas = len(self.mesas)
+        ocupadas = len([mesa for mesa in self.mesas if mesa.estado == 'ocupada'])
+        libres = total_mesas - ocupadas
+        
+        # Actualizar estadísticas compactas
+        self.update_compact_stats(zonas_activas, total_mesas, libres, ocupadas)
+        
+        # También actualizar la información de estado
+        self.status_info.setText(f"Mostrando {len(self.filtered_mesas)} de {total_mesas} mesas")
+
+    def _on_zone_changed(self, zone: str):
+        """Maneja el cambio de filtro de zona"""
+        self.current_zone_filter = zone
+        self.apply_filters()
+
+    def _on_status_changed(self, status: str):
+        """Maneja el cambio de filtro de estado"""
+        self.current_status_filter = status
+        self.apply_filters()
+
     def set_mesas(self, mesas: List[Mesa]):
         """Establece la lista de mesas"""
         self.mesas = mesas
         self.apply_filters()
+        # Actualizar estadísticas compactas después de establecer las mesas
+        self.update_stats_from_mesas()
     
     def apply_filters(self, filters: Optional[dict] = None):
         """Aplica filtros específicos o usa los actuales"""
@@ -178,9 +469,11 @@ class MesasArea(QFrame):
                         m for m in self.filtered_mesas 
                         if m.estado == estado_filtro
                     ]
-            
-            # Actualizar vista
+              # Actualizar vista
             QTimer.singleShot(50, self.populate_grid)
+            
+            # Actualizar estadísticas después de aplicar filtros
+            self.update_stats_from_mesas()
             
         except Exception as e:
             logger.error(f"Error aplicando filtros: {e}")
@@ -420,3 +713,7 @@ class MesasArea(QFrame):
         
         # Reaplicar filtros si es necesario
         self.apply_filters()
+    
+    def _on_nueva_mesa_clicked(self):
+        """Maneja el click del botón Nueva Mesa integrado"""
+        self.nueva_mesa_requested.emit()
