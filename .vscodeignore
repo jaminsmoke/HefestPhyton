@@ -1,0 +1,64 @@
+# VS Code - Ignorar para mejor rendimiento
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Entornos virtuales (muy importante)
+.venv/
+venv/
+ENV/
+env/
+
+# Logs que cambian constantemente
+logs/
+*.log
+
+# Backups y archivos temporales
+version-backups/
+*.tmp
+*.temp
+*.backup
+*~
+
+# Base de datos (cambia frecuentemente)
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache de herramientas
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Node modules si los hay
+node_modules/
+
+# IDE específico
+.idea/
+.vscode/settings.json
+*.sublime-*

@@ -1,0 +1,33 @@
+{
+    "app": {
+        "name": "Hefest",
+        "version": "0.0.12",
+        "environment": "development"
+    },
+    "database": {
+        "path": "data/hefest.db",
+        "backup_enabled": true,
+        "backup_interval": 3600
+    },
+    "logging": {
+        "level": "INFO",
+        "file": "logs/hefest.log",
+        "max_file_size": "10MB",
+        "backup_count": 5,
+        "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    },
+    "ui": {
+        "theme": "modern",
+        "font_family": "Segoe UI",
+        "font_size": 10,
+        "window_state": "maximized"
+    },
+    "security": {
+        "session_timeout": 1800,
+        "audit_enabled": true,
+        "password_policy": {
+            "min_length": 6,
+            "require_numbers": true
+        }
+    }
+}

@@ -1,0 +1,86 @@
+# MANIFEST.in - Archivos adicionales para el paquete HEFEST
+# Este archivo especifica qué archivos incluir en la distribución del paquete
+
+# Documentación principal
+include README.md
+include LICENSE
+include CHANGELOG.md
+include pyproject.toml
+include requirements.txt
+
+# Documentación técnica
+recursive-include docs *.md
+recursive-include docs *.txt
+recursive-include docs *.rst
+
+# Assets y recursos
+recursive-include assets *
+recursive-include assets/icons *.ico *.png *.jpg *.gif *.svg
+recursive-include assets/images *.png *.jpg *.gif *.svg
+recursive-include assets/fonts *.ttf *.otf *.woff *.woff2
+recursive-include assets/styles *.css *.qss
+
+# Configuración
+recursive-include config *.json *.yaml *.yml *.ini *.cfg
+
+# Base de datos y datos
+include data/*.sql
+include data/*.db
+include data/__init__.py
+include data/init_db.py
+
+# Scripts y herramientas
+recursive-include scripts *.py *.ps1 *.sh *.bat *.md
+
+# Archivos de código fuente
+recursive-include src *.py
+recursive-include src *.ui
+recursive-include src *.qrc
+recursive-include src *.json
+
+# Tests (opcional en distribución)
+recursive-include tests *.py
+
+# Logs (estructura, no contenido)
+include logs/.gitkeep
+include logs/archive/.gitkeep
+include logs/debug/.gitkeep
+include logs/errors/.gitkeep
+
+# Configuración de desarrollo
+include .gitignore
+include .editorconfig
+
+# Archivos de build
+include setup.py
+include setup.cfg
+
+# Excluir archivos no necesarios
+global-exclude __pycache__
+global-exclude *.py[co]
+global-exclude .DS_Store
+global-exclude Thumbs.db
+global-exclude .git*
+global-exclude .pytest_cache
+global-exclude .mypy_cache
+global-exclude *.egg-info
+global-exclude build
+global-exclude dist
+global-exclude .venv
+global-exclude .env
+global-exclude node_modules
+
+# Excluir logs reales
+exclude logs/*.log
+exclude logs/**/*.log
+
+# Excluir archivos temporales
+global-exclude *.tmp
+global-exclude *.temp
+global-exclude *~
+global-exclude *.swp
+global-exclude *.swo
+
+# Excluir backups
+exclude backups/**/*
+exclude ../Hefest_Backups/**/*

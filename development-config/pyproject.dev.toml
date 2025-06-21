@@ -1,0 +1,32 @@
+# Development Configuration for Hefest
+# Este archivo contiene configuración específica para desarrollo
+
+[build-system]
+# Versiones específicas para desarrollo
+requires = [
+    "setuptools>=70.0",
+    "wheel>=0.40.0",
+    "build>=0.10.0"
+]
+
+[tool.setuptools.dynamic]
+# Para development builds con versión dinámica
+version = {attr = "src.__version__"}
+
+[tool.dev]
+# Configuración personalizada para desarrollo
+auto-reload = true
+debug = true
+log-level = "DEBUG"
+
+[tool.dev.database]
+# Base de datos de desarrollo
+path = "data/hefest_dev.db"
+auto-migrate = true
+seed-data = true
+
+[tool.dev.ui]
+# Configuración UI para desarrollo  
+hot-reload = true
+debug-mode = true
+show-fps = false

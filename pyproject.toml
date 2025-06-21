@@ -1,0 +1,136 @@
+[build-system]
+requires = ["setuptools>=70.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hefest"
+version = "0.0.11"
+description = "Sistema Integral de Hostelería y Hospedería - Gestión moderna para restaurantes y hoteles"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Hefest Development Team", email = "dev@hefest.com"}
+]
+keywords = ["hosteleria", "restaurant", "hotel", "tpv", "pos", "management", "pyqt6", "hospitality"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Topic :: Office/Business :: Financial :: Point-Of-Sale",
+    "Environment :: X11 Applications :: Qt",
+    "Natural Language :: Spanish",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "PyQt6>=6.5.0",
+    "numpy>=1.24.0",
+    "pyqtgraph>=0.13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-qt>=4.0.0", 
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "isort>=5.12.0",
+]
+build = [
+    "PyInstaller>=5.10.0",
+    "cx_Freeze>=6.14.0",
+    "auto-py-to-exe>=2.30.0",
+]
+all = ["hefest[dev,build]"]
+
+[project.urls]
+Homepage = "https://github.com/hefest-dev/hefest"
+Repository = "https://github.com/hefest-dev/hefest.git"
+"Bug Tracker" = "https://github.com/hefest-dev/hefest/issues"
+Changelog = "https://github.com/hefest-dev/hefest/blob/main/CHANGELOG.md"
+
+[project.scripts]
+hefest = "src.main:main"
+
+[project.gui-scripts]
+hefest-gui = "src.main:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "data*", "config*"]
+exclude = ["tests*", "docs*", "scripts*", "logs*", "backups*", "assets*"]
+
+[tool.setuptools.package-data]
+"*" = [
+    "*.json", "*.sql", "*.md", "*.txt", "*.png", "*.jpg", "*.ico", 
+    "*.css", "*.qss", "*.ui", "*.db"
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  __pycache__
+| \.git
+| \.venv
+| build
+| dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src", "data", "config"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --tb=short"
+testpaths = ["tests"]
+pythonpath = [".", "src"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "ui: marks tests as UI tests requiring display",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "tests/*",
+    "scripts/*", 
+    "docs/*"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+exclude = ["tests/", "scripts/", "build/"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [".git", "__pycache__", "build", "dist", ".venv"]

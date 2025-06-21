@@ -1,0 +1,145 @@
+# === HEFEST - Sistema de Hostelería ===
+
+# ===== ARCHIVOS DE SISTEMA WINDOWS =====
+# Excluir archivos y carpetas del sistema Windows
+ntuser.dat*
+NTUSER.DAT*
+*.TM.blf
+*.TMContainer*
+*.regtrans-ms
+desktop.ini
+Thumbs.db
+ehthumbs.db
+
+# ===== CARPETAS PERSONALES DEL USUARIO =====
+# Excluir carpetas del perfil de usuario Windows
+../../../.aws/
+../../../.codegpt/
+../../../.continue/
+../../../.cursor/
+../../../.dbus-keyrings/
+../../../.devdock/
+../../../.expo/
+../../../.gitconfig
+../../../.lesshst
+../../../.local/
+../../../.node_repl_history
+../../../.ocopilot/
+../../../.ollama/
+../../../.python_history
+../../../.sixth_vsc/
+../../../.sonarlint/
+../../../.thumbnails/
+../../../.vscode/
+../../../AMDRM_Install.log
+../../../AppData/
+../../../Contacts/
+../../../Desktop/
+../../../Downloads/
+../../../Favorites/
+../../../IARebuilder_Unity/
+../../../Links/
+../../../Muse Hub/
+../../../Music/
+../../../OneDrive/
+../../../Pictures/
+../../../Saved Games/
+../../../Searches/
+../../../Tracing/
+../../../Videos/
+../../../Zomboid/
+
+# ===== CARPETAS DE PROYECTOS HERMANOS =====
+# Excluir otros proyectos en la misma carpeta Documents
+../../Assets 3d/
+../../Audacity/
+../../Canciones/
+../../Megascans Library/
+../../Mine Unreal/
+../../My Games/
+../../PassMark/
+../../Proyectos Hostinger Horizons/
+../../Proyectos VsCode Compilaciones/
+../../Replikant/
+../../Servidor de minecraft (ArcLigth)/
+../../Unreal Projects/
+../../mio/
+../AyuntamientoProyecto/
+../Empregest0.0.1/
+../Hefest_Backups/
+../KidsAPP(ModularEdition)/
+../PaginaAyuntamientoTalarrubias/
+../PaginaAyuntamientoTalarrubias0.0.1Boceto.rar
+
+# ===== CARPETAS DE CONFIGURACIÓN SISTEMA =====
+Configuración local/
+Cookies/
+Datos de programa/
+Documents/Mi música/
+Documents/Mis imágenes/
+Documents/Mis vídeos/
+Entorno de red/
+Impresoras/
+Menú Inicio/
+Mis documentos/
+Plantillas/
+Reciente/
+SendTo/
+
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== ENTORNOS VIRTUALES =====
+.venv/
+venv/
+ENV/
+env/
+
+# ===== LOGS Y TEMPORALES =====
+logs/
+*.log
+*.tmp
+temp/
+tmp/
+debug_output.txt
+
+# ===== BASE DE DATOS =====
+# Mantener estructura, no datos específicos
+# data/hefest.db  # Comentado para desarrollo
+
+# ===== CONFIGURACIÓN PERSONAL =====
+.env.local
+.env.development
+config/local.json
+
+# ===== IDE =====
+.vscode/
+.idea/
+
+# ===== ARCHIVOS DE PRUEBA TEMPORALES =====
+test_*.py
+check_*.py
+verificacion_*.py
+
+# ===== BACKUPS =====
+../Hefest_Backups/
+version-backups/temp/

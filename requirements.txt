@@ -1,0 +1,23 @@
+# Requisitos para el proyecto Hefest
+# Ejecutar: pip install -r requirements.txt
+
+# Interfaz gráfica
+PyQt6>=6.5.0
+PyQt6-Charts>=6.5.0
+
+# Base de datos
+# SQLite viene incorporado con Python
+
+# Procesamiento de datos y análisis (v0.0.12)
+numpy>=1.24.0
+pandas>=2.1.0
+matplotlib>=3.8.0        # Nuevas dependencias para análisis
+seaborn>=0.13.0          # Gráficos estadísticos elegantes
+plotly>=5.17.0           # Gráficos interactivos (opcional)
+
+# Manejo de imágenes
+Pillow>=10.0.0
+
+# Herramientas de desarrollo
+pytest>=7.3.1
+pytest-qt>=4.2.0

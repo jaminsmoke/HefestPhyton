@@ -1,0 +1,126 @@
+# Docker Compose para Hefest
+# Configuración para desarrollo y producción
+
+version: '3.8'
+
+services:
+  hefest-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hefest-app
+    restart: unless-stopped
+    environment:
+      - HEFEST_ENV=production
+      - PYTHONPATH=/app/src
+      - QT_QPA_PLATFORM=offscreen
+    volumes:
+      - hefest_data:/app/data
+      - hefest_logs:/app/logs
+      - hefest_config:/app/config
+    ports:
+      - "8080:8080"
+    networks:
+      - hefest-network
+    depends_on:
+      - hefest-db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import src.main; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  hefest-db:
+    image: postgres:15-alpine
+    container_name: hefest-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hefest
+      POSTGRES_USER: hefest_user
+      POSTGRES_PASSWORD: hefest_secure_password
+    volumes:
+      - hefest_postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - hefest-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hefest_user -d hefest"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  hefest-redis:
+    image: redis:7-alpine
+    container_name: hefest-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass hefest_redis_password
+    volumes:
+      - hefest_redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - hefest-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  hefest-nginx:
+    image: nginx:1.25-alpine
+    container_name: hefest-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/ssl:/etc/nginx/ssl:ro
+      - hefest_static:/var/www/static:ro
+    networks:
+      - hefest-network
+    depends_on:
+      - hefest-app
+
+  hefest-monitoring:
+    image: prom/prometheus:latest
+    container_name: hefest-monitoring
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - hefest_prometheus_data:/prometheus
+    networks:
+      - hefest-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+networks:
+  hefest-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  hefest_data:
+    driver: local
+  hefest_logs:
+    driver: local
+  hefest_config:
+    driver: local
+  hefest_postgres_data:
+    driver: local
+  hefest_redis_data:
+    driver: local
+  hefest_static:
+    driver: local
+  hefest_prometheus_data:
+    driver: local
