@@ -1,96 +1,14 @@
 # === HEFEST - Sistema de Hostelería ===
-
-# ===== ARCHIVOS DE SISTEMA WINDOWS =====
-# Excluir archivos y carpetas del sistema Windows
-ntuser.dat*
-NTUSER.DAT*
-*.TM.blf
-*.TMContainer*
-*.regtrans-ms
-desktop.ini
-Thumbs.db
-ehthumbs.db
-
-# ===== CARPETAS PERSONALES DEL USUARIO =====
-# Excluir carpetas del perfil de usuario Windows
-../../../.aws/
-../../../.codegpt/
-../../../.continue/
-../../../.cursor/
-../../../.dbus-keyrings/
-../../../.devdock/
-../../../.expo/
-../../../.gitconfig
-../../../.lesshst
-../../../.local/
-../../../.node_repl_history
-../../../.ocopilot/
-../../../.ollama/
-../../../.python_history
-../../../.sixth_vsc/
-../../../.sonarlint/
-../../../.thumbnails/
-../../../.vscode/
-../../../AMDRM_Install.log
-../../../AppData/
-../../../Contacts/
-../../../Desktop/
-../../../Downloads/
-../../../Favorites/
-../../../IARebuilder_Unity/
-../../../Links/
-../../../Muse Hub/
-../../../Music/
-../../../OneDrive/
-../../../Pictures/
-../../../Saved Games/
-../../../Searches/
-../../../Tracing/
-../../../Videos/
-../../../Zomboid/
-
-# ===== CARPETAS DE PROYECTOS HERMANOS =====
-# Excluir otros proyectos en la misma carpeta Documents
-../../Assets 3d/
-../../Audacity/
-../../Canciones/
-../../Megascans Library/
-../../Mine Unreal/
-../../My Games/
-../../PassMark/
-../../Proyectos Hostinger Horizons/
-../../Proyectos VsCode Compilaciones/
-../../Replikant/
-../../Servidor de minecraft (ArcLigth)/
-../../Unreal Projects/
-../../mio/
-../AyuntamientoProyecto/
-../Empregest0.0.1/
-../Hefest_Backups/
-../KidsAPP(ModularEdition)/
-../PaginaAyuntamientoTalarrubias/
-../PaginaAyuntamientoTalarrubias0.0.1Boceto.rar
-
-# ===== CARPETAS DE CONFIGURACIÓN SISTEMA =====
-Configuración local/
-Cookies/
-Datos de programa/
-Documents/Mi música/
-Documents/Mis imágenes/
-Documents/Mis vídeos/
-Entorno de red/
-Impresoras/
-Menú Inicio/
-Mis documentos/
-Plantillas/
-Reciente/
-SendTo/
+# .gitignore optimizado para eliminar notificaciones Source Control
 
 # ===== PYTHON =====
+# Archivos de bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+# Distribución / empaquetado
 .Python
 build/
 develop-eggs/
@@ -107,39 +25,97 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # ===== ENTORNOS VIRTUALES =====
+# Todos los posibles nombres de entornos virtuales
 .venv/
 venv/
 ENV/
 env/
+.env/
+virtualenv/
+.virtualenv/
 
-# ===== LOGS Y TEMPORALES =====
+# ===== LOGS Y ARCHIVOS TEMPORALES =====
+# Logs del sistema y aplicación
 logs/
 *.log
-*.tmp
-temp/
-tmp/
+*.log.*
 debug_output.txt
 
+# Archivos temporales
+*.tmp
+*.temp
+temp/
+tmp/
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== IDE Y EDITORES =====
+# VS Code
+.vscode/
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Otros IDEs
+.idea/
+*.swp
+*.swo
+*~
+
 # ===== BASE DE DATOS =====
-# Mantener estructura, no datos específicos
+# Bases de datos locales (mantener solo estructura)
+*.db-journal
+*.db-wal
+*.db-shm
 # data/hefest.db  # Comentado para desarrollo
 
 # ===== CONFIGURACIÓN PERSONAL =====
+# Variables de entorno
+.env
 .env.local
 .env.development
+.env.production
 config/local.json
+config/personal.json
 
-# ===== IDE =====
-.vscode/
-.idea/
-
-# ===== ARCHIVOS DE PRUEBA TEMPORALES =====
+# ===== ARCHIVOS DE PRUEBA Y TEMPORALES =====
+# Scripts de prueba temporales
 test_*.py
 check_*.py
 verificacion_*.py
+demo_*.py
+*_test.py
+*_demo.py
+*_temp.py
 
-# ===== BACKUPS =====
-../Hefest_Backups/
+# ===== BACKUPS Y VERSIONES =====
+# Backups automáticos
+*.bak
+*.backup
+*.old
+*_backup.*
 version-backups/temp/
+../Hefest_Backups/
+
+# ===== ARCHIVOS DE SISTEMA WINDOWS =====
+ntuser.dat*
+NTUSER.DAT*
+*.TM.blf
+*.TMContainer*
+*.regtrans-ms
+ehthumbs.db
+
+# ===== COMPILACIÓN Y BUILD =====
+# Archivos de compilación
+*.exe
+*.msi
+*.deb
+*.rpm
+build-output/
+release/
