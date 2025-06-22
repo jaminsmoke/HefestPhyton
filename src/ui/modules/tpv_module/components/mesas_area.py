@@ -51,16 +51,30 @@ class MesasArea(QFrame):
         
         # Header del área de mesas
         self.create_header(container_layout)
-        
-        # Separador
+          # Separador
         self.create_separator(container_layout)
-          # Área de scroll para las mesas
+        
+        # Área de scroll para las mesas
         self.create_scroll_area(container_layout)
-    
+        
     def create_header(self, layout: QVBoxLayout):
         """Crea el header del área de mesas con filtros integrados"""
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(16)
+        # Container principal del header con estilo profesional
+        header_container = QFrame()
+        header_container.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffffff, stop:1 #f8fafc);
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 4px;
+                margin-bottom: 8px;
+            }
+        """)
+        
+        header_layout = QHBoxLayout(header_container)
+        header_layout.setContentsMargins(16, 12, 16, 12)
+        header_layout.setSpacing(20)
         
         # Título principal
         title_section = QHBoxLayout()
@@ -70,18 +84,20 @@ class MesasArea(QFrame):
         title_icon.setStyleSheet("font-size: 20px;")
         title_section.addWidget(title_icon)
         
-        title_label = QLabel("Distribución de Mesas")
+        title_label = QLabel("Gestión de Mesas")
         title_label.setStyleSheet("""
             QLabel {
-                font-size: 18px;
+                font-size: 20px;
                 font-weight: bold;
-                color: #2c3e50;
+                color: #1e293b;
+                font-family: 'Segoe UI', Arial, sans-serif;
             }
         """)
         title_section.addWidget(title_label)
         
         header_layout.addLayout(title_section)
-        header_layout.addStretch()        
+        header_layout.addStretch()
+        
         # Filtros integrados compactos
         self.create_integrated_filters(header_layout)
         
@@ -100,7 +116,7 @@ class MesasArea(QFrame):
         """)
         header_layout.addWidget(self.status_info)
         
-        layout.addLayout(header_layout)
+        layout.addWidget(header_container)
     
     def create_separator(self, layout: QVBoxLayout):
         """Crea un separador horizontal"""
