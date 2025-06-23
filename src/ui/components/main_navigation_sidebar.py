@@ -169,36 +169,9 @@ class ModernSidebar(QFrame):
             logger.debug("Módulos disponibles según permisos:")
             logger.debug("Iniciando evaluación de módulos para la barra lateral...")
             for module_id, icon, title, description, required_role in modules:
-                logger.warning(
-                    f"SIDEBAR DIAGNÓSTICO: Evaluando módulo: {module_id} - Requiere rol: {required_role.value}"
-                )
-
-                # Diagnóstico adicional para dashboard
-                if module_id == "dashboard":
-                    current_session = self.auth_service.current_session
-                    logger.warning(
-                        f"  SIDEBAR-DASHBOARD Usuario actual: {current_user.name if current_user else 'None'}"
-                    )
-                    logger.warning(
-                        f"  SIDEBAR-DASHBOARD Rol usuario: {current_user.role.value if current_user else 'None'}"
-                    )
-                    logger.warning(
-                        f"  SIDEBAR-DASHBOARD Autenticado: {self.auth_service.is_authenticated}"
-                    )
-                    logger.warning(
-                        f"  SIDEBAR-DASHBOARD Sesión actual: {current_session}"
-                    )
-                    logger.warning(
-                        f"  SIDEBAR-DASHBOARD User ID en sesión: {current_session.user_id if current_session else 'None'}"
-                    )
-
                 has_permission = self.auth_service.has_permission(required_role)
-                logger.warning(
-                    f"  SIDEBAR RESULTADO: {module_id} - Tiene permiso: {has_permission}"
-                )
-
+                
                 if has_permission:
-                    logger.warning(f"Acceso permitido al módulo: {module_id}")
                     btn = self.create_nav_button(module_id, icon, title, description)
                     nav_layout.addWidget(btn)
                     self.nav_buttons[module_id] = btn

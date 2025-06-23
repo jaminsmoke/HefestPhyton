@@ -63,10 +63,9 @@ class TPVModule(BaseModule):
     def _init_controllers(self):
         """Inicializa los controladores"""
         self.mesa_controller = MesaController(self.tpv_service)
-        
-        # Conectar señales del controlador
+          # Conectar señales del controlador
         self.mesa_controller.mesa_created.connect(self._on_mesa_created)
-        self.mesa_controller.mesa_updated.connect(self._on_mesa_updated)  
+        self.mesa_controller.mesa_updated.connect(self._on_mesa_updated)
         self.mesa_controller.mesa_deleted.connect(self._on_mesa_deleted)
         self.mesa_controller.mesas_updated.connect(self._on_mesas_updated)
         self.mesa_controller.error_occurred.connect(self._on_controller_error)
@@ -75,9 +74,7 @@ class TPVModule(BaseModule):
         """Configura la interfaz principal refactorizada"""
         layout = self.main_layout
         
-        # Header profesional
-        self.create_header(layout)
-          # Dashboard de métricas (refactorizado)
+        # Dashboard de métricas (refactorizado)
         self.dashboard = TPVDashboard(self.tpv_service)
         layout.addWidget(self.dashboard)
         
@@ -89,98 +86,9 @@ class TPVModule(BaseModule):
         layout.addWidget(separator)
         
         # Área principal con pestañas refactorizada
-        self.create_main_tabs(layout)
-        
+        self.create_main_tabs(layout)        
         # Barra de estado
         self.create_status_bar(layout)
-        
-    def create_header(self, layout: QVBoxLayout):
-        """Crea el header principal con gradiente azul"""
-        header_frame = QFrame()
-        header_frame.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #2196f3, stop:1 #1976d2);
-                border: none;
-            }
-        """)
-        header_frame.setFixedHeight(80)
-        
-        header_layout = QHBoxLayout(header_frame)
-        header_layout.setContentsMargins(24, 16, 24, 16)
-        
-        # Título principal
-        title_label = QLabel("🍽️ Terminal Punto de Venta")
-        title_font = QFont()
-        title_font.setPointSize(18)
-        title_font.setBold(True)
-        title_label.setFont(title_font)
-        title_label.setStyleSheet("color: white;")
-        header_layout.addWidget(title_label)
-        
-        header_layout.addStretch()
-        
-        # Barra de búsqueda
-        self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Buscar mesa, producto, comanda...")
-        self.search_input.setFixedWidth(280)
-        self.search_input.setFixedHeight(34)
-        self.search_input.setStyleSheet("""
-            QLineEdit {
-                background-color: rgba(255, 255, 255, 0.15);
-                border: 2px solid rgba(255, 255, 255, 0.3);
-                border-radius: 17px;
-                padding: 6px 14px;
-                color: white;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                background-color: white;
-                color: #333;
-                border-color: rgba(255, 255, 255, 0.8);
-            }
-            QLineEdit::placeholder {
-                color: rgba(255, 255, 255, 0.7);
-            }
-        """)
-        self.search_input.textChanged.connect(self.on_search_changed)
-        header_layout.addWidget(self.search_input)
-        
-        # Botones de acción rápida
-        actions_layout = QHBoxLayout()
-        actions_layout.setSpacing(8)
-        
-        quick_actions = [
-            ("🆕 Nueva Mesa", self.nueva_mesa),
-            ("⚡ Venta Rápida", self.venta_rapida),
-            ("💰 Cerrar Caja", self.cerrar_caja)
-        ]
-        
-        for text, callback in quick_actions:
-            btn = QPushButton(text)
-            btn.setFixedHeight(34)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: rgba(255, 255, 255, 0.2);
-                    border: 2px solid rgba(255, 255, 255, 0.3);
-                    border-radius: 17px;
-                    color: white;
-                    font-weight: bold;
-                    padding: 6px 14px;
-                }
-                QPushButton:hover {
-                    background-color: rgba(255, 255, 255, 0.3);
-                    border-color: rgba(255, 255, 255, 0.6);
-                }
-                QPushButton:pressed {
-                    background-color: rgba(255, 255, 255, 0.1);
-                }
-            """)
-            btn.clicked.connect(callback)
-            actions_layout.addWidget(btn)
-        
-        header_layout.addLayout(actions_layout)
-        layout.addWidget(header_frame)
     
     def create_main_tabs(self, layout: QVBoxLayout):
         """Crea las pestañas principales usando componentes refactorizados"""
@@ -225,11 +133,11 @@ class TPVModule(BaseModule):
         layout.setSpacing(12)
         
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
-        self.mesas_area = MesasArea()
-        
-        # Conectar señales
+        self.mesas_area = MesasArea()        # Conectar señales
         self.mesas_area.mesa_clicked.connect(self._on_mesa_clicked)
         self.mesas_area.nueva_mesa_requested.connect(self.nueva_mesa)
+        self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)
+        self.mesas_area.eliminar_mesa_requested.connect(self.eliminar_mesa)
         
         # El área de mesas ocupa todo el espacio disponible
         layout.addWidget(self.mesas_area, 1)
@@ -386,19 +294,39 @@ class TPVModule(BaseModule):
             
             # Las estadísticas compactas se actualizan automáticamente en MesasArea
                 
-        except Exception as e:
-            logger.error(f"Error refrescando componentes: {e}")
-      # ======= MÉTODOS SIMPLIFICADOS (DELEGADOS AL CONTROLADOR) =======
+        except Exception as e:            logger.error(f"Error refrescando componentes: {e}")
+    
+    # ======= MÉTODOS SIMPLIFICADOS (DELEGADOS AL CONTROLADOR) =======
     
     def nueva_mesa(self):
         """Crea una nueva mesa usando el controlador"""
         try:
-            # Por ahora, valores por defecto - en el futuro se abriría un diálogo
-            numero = len(self.mesas) + 1
-            self.mesa_controller.crear_mesa(numero, 4, "Principal")
+            # Usar nomenclatura automática contextualizada
+            self.mesa_controller.crear_mesa(4, "Principal")
         except Exception as e:
             logger.error(f"Error creando nueva mesa: {e}")
             QMessageBox.critical(self, "Error", f"Error al crear mesa: {str(e)}")
+    
+    def nueva_mesa_con_zona(self, capacidad: int, zona: str):
+        """Crea una nueva mesa con parámetros específicos usando el controlador"""
+        try:
+            self.mesa_controller.crear_mesa(capacidad, zona)
+            logger.info(f"Mesa creada en zona '{zona}' con capacidad {capacidad}")
+        except Exception as e:
+            logger.error(f"Error creando nueva mesa con zona: {e}")
+            QMessageBox.critical(self, "Error", f"Error al crear mesa: {str(e)}")
+    
+    def eliminar_mesa(self, mesa_id: int):
+        """Elimina una mesa usando el controlador"""
+        try:
+            if self.mesa_controller.eliminar_mesa(mesa_id):
+                logger.info(f"Mesa {mesa_id} eliminada correctamente")
+                QMessageBox.information(self, "Éxito", "Mesa eliminada correctamente")
+            else:
+                QMessageBox.warning(self, "Error", "No se pudo eliminar la mesa")
+        except Exception as e:
+            logger.error(f"Error eliminando mesa: {e}")
+            QMessageBox.critical(self, "Error", f"Error al eliminar mesa: {str(e)}")
     
     def load_data(self):
         """Carga los datos iniciales usando el controlador"""
@@ -418,12 +346,12 @@ class TPVModule(BaseModule):
             else:
                 logger.warning("No hay servicio TPV disponible")
         except Exception as e:
-            logger.error(f"Error cargando datos del TPV: {e}")
-    
-    def on_search_changed(self, text):
-        """Maneja cambios en el campo de búsqueda"""
-        if hasattr(self, 'mesas_area'):
-            self.mesas_area.apply_search(text)
+            logger.error(f"Error cargando datos del TPV: {e}")    
+    # MÉTODO ELIMINADO: on_search_changed - La búsqueda ahora se maneja en el header ultra-premium
+    # def on_search_changed(self, text):
+    #     """Maneja cambios en el campo de búsqueda"""
+    #     if hasattr(self, 'mesas_area'):
+    #         self.mesas_area.apply_search(text)
     
     def venta_rapida(self):
         """TODO: Implementar venta rápida"""

@@ -52,9 +52,7 @@ logger = logging.getLogger(__name__)
 
 
 class UltraModernAdminDashboard(UltraModernBaseWidget):
-    """Dashboard administrativo ultra-moderno V3"""
-
-    # Señales para comunicación con la ventana principal
+    """Dashboard administrativo ultra-moderno V3"""    # Señales para comunicación con la ventana principal
     metric_selected = pyqtSignal(str, dict)  # título, datos
     action_requested = pyqtSignal(str)  # acción
 
@@ -62,29 +60,11 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         super().__init__(parent)
         self.theme = UltraModernTheme()
 
-        # DIAGNÓSTICO: Verificar que llega al constructor
-        logger.warning("🔍 DIAGNÓSTICO DASHBOARD: Iniciando constructor del dashboard")
-        logger.warning(
-            f"🔍 DIAGNÓSTICO DASHBOARD: auth_service recibido: {auth_service}"
-        )
-        logger.warning(f"🔍 DIAGNÓSTICO DASHBOARD: db_manager recibido: {db_manager}")
-
         # Servicios compatibles con la aplicación principal
         self.auth_service = auth_service
         self.db_manager = db_manager
 
-        # DIAGNÓSTICO: Verificar usuario actual si hay auth_service
-        if self.auth_service:
-            current_user = self.auth_service.current_user
-            is_authenticated = self.auth_service.is_authenticated
-            logger.warning(
-                f"🔍 DIAGNÓSTICO DASHBOARD: Usuario actual: {current_user.name if current_user else 'None'}"
-            )
-            logger.warning(f"🔍 DIAGNÓSTICO DASHBOARD: Autenticado: {is_authenticated}")
-        else:
-            logger.warning(
-                "🔍 DIAGNÓSTICO DASHBOARD: No se recibió auth_service"
-            )  # DataManager centralizado para obtener SOLO datos reales
+        # DataManager centralizado para obtener SOLO datos reales
         self.data_manager = RealDataManager(db_manager)
 
         # Manager de lógica administrativa para métricas con objetivos y tendencias reales
@@ -92,15 +72,10 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
         self.metric_cards = []  # Lista de tarjetas de métricas
 
-        logger.warning("🔍 DIAGNÓSTICO DASHBOARD: Llamando a setup_admin_dashboard")
         self.setup_admin_dashboard()
-        logger.warning("🔍 DIAGNÓSTICO DASHBOARD: Llamando a setup_admin_features")
         self.setup_admin_features()
-        logger.warning(
-            "🔍 DIAGNÓSTICO DASHBOARD: Llamando a setup_centralized_data_refresh"
-        )
         self.setup_centralized_data_refresh()
-        logger.warning("🔍 DIAGNÓSTICO DASHBOARD: Dashboard inicializado completamente")
+        
         logger.info(
             "Dashboard Admin V3 Ultra-Moderno inicializado con DataManager centralizado"
         )
@@ -1336,13 +1311,11 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
             # Detener el RealDataManager
             if self.data_manager:
                 self.data_manager.stop_monitoring()
-                logger.debug("RealDataManager detenido")
-
-            # Limpiar lista de tarjetas
+                logger.debug("RealDataManager detenido")            # Limpiar lista de tarjetas
             self.metric_cards.clear()
 
             logger.info("✅ Limpieza del dashboard completada")
-
+            
         except Exception as e:
             logger.warning(f"Error durante limpieza del dashboard: {e}")
 
@@ -1355,9 +1328,6 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
     def create_executive_kpi_card(self, kpi_data):
         """Crear tarjeta KPI ejecutiva usando UltraModernMetricCard con datos administrativos reales"""
-        # DEBUG: Verificar datos recibidos
-        logger.info(f"🔍 DEBUG KPI: Creando tarjeta con datos: {kpi_data}")
-
         # Crear la tarjeta con todos los datos administrativos reales
         card = UltraModernMetricCard(
             title=kpi_data.get("title", "Métrica"),
@@ -1415,14 +1385,9 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
             UltraModernMetricCard:hover {{
                 border-color: {style["border"]};
                 background: white;
-            }}
-            UltraModernMetricCard QLabel {{
+            }}            UltraModernMetricCard QLabel {{
                 background: transparent;
             }}        """
-        )
-        # DEBUG: Verificar que la card se crea correctamente
-        logger.info(
-            f"🔍 DEBUG KPI: UltraModernMetricCard creada exitosamente para: {kpi_data.get('title')}"
         )
 
         return card

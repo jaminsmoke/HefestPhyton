@@ -151,21 +151,16 @@ class TPVDashboard(QWidget):
                                 continue
                         
                         # Calcular tiempo promedio (placeholder - sería más complejo en implementación real)
-                        tiempo_promedio = "12min" if total_comandas > 0 else "0min"
-                        
+                        tiempo_promedio = "12min" if total_comandas > 0 else "0min"                        
                 except Exception as e:
                     logger.warning(f"Error obteniendo datos del servicio TPV: {e}")
                     # Mantener valores por defecto
-            else:
-                logger.debug("No hay servicio TPV disponible - mostrando valores por defecto")
             
             # Actualizar tarjetas con datos calculados (reales o por defecto)
             self.update_metric_card("mesas_activas", f"{mesas_ocupadas}/{total_mesas}")
             self.update_metric_card("ventas_dia", f"€{ventas_dia:.2f}")
             self.update_metric_card("comandas_activas", str(total_comandas))
             self.update_metric_card("tiempo_promedio", tiempo_promedio)
-            
-            logger.debug(f"Métricas TPV actualizadas: Mesas={mesas_ocupadas}/{total_mesas}, Ventas=€{ventas_dia:.2f}, Comandas={total_comandas}")
             
         except Exception as e:
             logger.error(f"Error actualizando métricas del dashboard: {e}")

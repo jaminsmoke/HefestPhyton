@@ -776,9 +776,7 @@ class ProductDialog(QDialog):
                 elif margen < 30:
                     color = "#f59e0b"  # Amarillo
                 else:
-                    color = "#10b981"  # Verde
-
-                self.margen_label.setStyleSheet(f"color: {color}; font-weight: bold;")
+                    color = "#10b981"  # Verde                self.margen_label.setStyleSheet(f"color: {color}; font-weight: bold;")
             else:
                 self.margen_label.setText("0.00%")
                 self.margen_label.setStyleSheet("color: #6b7280;")
@@ -790,41 +788,35 @@ class ProductDialog(QDialog):
         """Manejar cambio en checkbox de producto perecedero"""
         is_perecedero = state == Qt.CheckState.Checked.value
         self.caducidad_input.setEnabled(is_perecedero)
-
-        if not is_perecedero:            # Si no es perecedero, poner fecha muy lejana
+        
+        if not is_perecedero:
+            # Si no es perecedero, poner fecha muy lejana
             self.caducidad_input.setDate(QDate.currentDate().addYears(10))
 
     def validate_form(self):
         """Validar formulario en tiempo real"""
-        print("🔧 DEBUG: validate_form() llamado")
         is_valid = True
         errors = []
 
         # Validar nombre
         nombre = self.nombre_input.text().strip()
-        print(f"🔧 DEBUG: Nombre = '{nombre}'")
         if not nombre:
             errors.append("El nombre es obligatorio")
             is_valid = False
-            print("❌ DEBUG: Nombre está vacío")
 
         # Validar categoría
         categoria = self.categoria_combo.currentText().strip()
-        print(f"🔧 DEBUG: Categoría = '{categoria}'")
         if not categoria:
             errors.append("La categoría es obligatoria")
             is_valid = False
-            print("❌ DEBUG: Categoría está vacía")
 
         # Validar precio
         precio = self.precio_input.value()
-        print(f"🔧 DEBUG: Precio = {precio}")
         if precio <= 0:
             errors.append("El precio debe ser mayor a 0")
             is_valid = False
-            print("❌ DEBUG: Precio es 0 o negativo")
 
-        print(f"🔧 DEBUG: is_valid = {is_valid}, errors = {errors}")        # Actualizar UI
+        # Actualizar UI
         self.accept_btn.setEnabled(is_valid)
 
         if errors:
@@ -834,7 +826,6 @@ class ProductDialog(QDialog):
             self.validation_label.setText("✅ Formulario válido")
             self.validation_label.setStyleSheet("color: #10b981; font-size: 12px;")
 
-        print(f"🔧 DEBUG: validate_form() retornando: {is_valid}")
         return is_valid
 
     def get_product_data(self) -> Dict[str, Any]:

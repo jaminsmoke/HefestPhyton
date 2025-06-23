@@ -835,12 +835,6 @@ class SupplierDialog(QDialog):
             direccion = self.address_input.toPlainText().strip()
             categoria = self.category_combo.currentText().strip() or "General"
             
-            # Debug: Mostrar valores antes de enviar
-            logger.info(f"DEBUG: Guardando proveedor con categoría: '{categoria}'")
-            logger.info(f"DEBUG: Items en combo: {[self.category_combo.itemText(i) for i in range(self.category_combo.count())]}")
-            logger.info(f"DEBUG: Índice seleccionado: {self.category_combo.currentIndex()}")
-            logger.info(f"DEBUG: Texto actual: '{self.category_combo.currentText()}'")
-
             if self.is_edit_mode and self.proveedor:
                 # Actualizar proveedor existente
                 success = self.inventario_service.actualizar_proveedor(

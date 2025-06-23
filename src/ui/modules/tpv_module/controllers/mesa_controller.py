@@ -50,20 +50,15 @@ class MesaController(QObject):
             logger.error(error_msg)
             self.error_occurred.emit(error_msg)
     
-    def crear_mesa(self, numero: int, capacidad: int, zona: str) -> bool:
-        """Crea una nueva mesa"""
+    def crear_mesa(self, capacidad: int, zona: str) -> bool:
+        """Crea una nueva mesa con numeración automática contextualizada por zona"""
         try:
             if not self.tpv_service:
                 self.error_occurred.emit("No hay servicio TPV disponible")
                 return False
             
-            # Validar que no exista una mesa con el mismo número
-            if any(mesa.numero == numero for mesa in self.mesas):
-                self.error_occurred.emit(f"Ya existe una mesa con el número {numero}")
-                return False
-              # Crear mesa
+            # Crear mesa con numeración automática
             nueva_mesa = self.tpv_service.crear_mesa(
-                numero=numero,
                 capacidad=capacidad,
                 zona=zona
             )
@@ -73,7 +68,7 @@ class MesaController(QObject):
                 self.mesa_created.emit(nueva_mesa)
                 self.mesas_updated.emit(self.mesas)
                 
-                logger.info(f"Mesa {numero} creada correctamente")
+                logger.info(f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}")
                 return True
             else:
                 self.error_occurred.emit("Error creando la mesa")
@@ -124,7 +119,6 @@ class MesaController(QObject):
             logger.error(error_msg)
             self.error_occurred.emit(error_msg)
             return False
-    
     def eliminar_mesa(self, mesa_id: int) -> bool:
         """Elimina una mesa"""
         try:
@@ -148,14 +142,19 @@ class MesaController(QObject):
                 self.error_occurred.emit("No se puede eliminar una mesa ocupada")
                 return False
             
-            # Por ahora, eliminamos solo localmente
-            self.mesas = [mesa for mesa in self.mesas if mesa.id != mesa_id]
-            
-            self.mesa_deleted.emit(mesa_id)
-            self.mesas_updated.emit(self.mesas)
-            
-            logger.info(f"Mesa {mesa_actual.numero} eliminada correctamente")
-            return True
+            # Eliminar usando el servicio TPV (incluye base de datos)
+            if self.tpv_service.eliminar_mesa(mesa_id):
+                # Actualizar cache local
+                self.mesas = [mesa for mesa in self.mesas if mesa.id != mesa_id]
+                
+                self.mesa_deleted.emit(mesa_id)
+                self.mesas_updated.emit(self.mesas)
+                
+                logger.info(f"Mesa {mesa_actual.numero} eliminada correctamente")
+                return True
+            else:
+                self.error_occurred.emit("Error eliminando mesa del sistema")
+                return False
                 
         except Exception as e:
             error_msg = f"Error eliminando mesa: {e}"

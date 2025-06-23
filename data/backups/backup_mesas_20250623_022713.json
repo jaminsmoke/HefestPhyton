@@ -1,0 +1,97 @@
+{
+  "fecha_respaldo": "2025-06-23T02:27:13.397294",
+  "total_mesas": 13,
+  "mesas": [
+    {
+      "id": 2,
+      "numero": "M02",
+      "zona": "Comedor",
+      "capacidad": 2,
+      "estado": "libre"
+    },
+    {
+      "id": 3,
+      "numero": "M03",
+      "zona": "Comedor",
+      "capacidad": 6,
+      "estado": "libre"
+    },
+    {
+      "id": 4,
+      "numero": "M04",
+      "zona": "Terraza",
+      "capacidad": 4,
+      "estado": "libre"
+    },
+    {
+      "id": 5,
+      "numero": "M05",
+      "zona": "Terraza",
+      "capacidad": 8,
+      "estado": "libre"
+    },
+    {
+      "id": 6,
+      "numero": "B01",
+      "zona": "Barra",
+      "capacidad": 2,
+      "estado": "libre"
+    },
+    {
+      "id": 7,
+      "numero": "B02",
+      "zona": "Barra",
+      "capacidad": 2,
+      "estado": "libre"
+    },
+    {
+      "id": 8,
+      "numero": "P01",
+      "zona": "Privado",
+      "capacidad": 10,
+      "estado": "libre"
+    },
+    {
+      "id": 9,
+      "numero": "T01",
+      "zona": "Terraza",
+      "capacidad": 4,
+      "estado": "libre"
+    },
+    {
+      "id": 10,
+      "numero": "T02",
+      "zona": "Terraza",
+      "capacidad": 2,
+      "estado": "libre"
+    },
+    {
+      "id": 11,
+      "numero": "I01",
+      "zona": "Interior",
+      "capacidad": 6,
+      "estado": "libre"
+    },
+    {
+      "id": 12,
+      "numero": "V01",
+      "zona": "VIP",
+      "capacidad": 8,
+      "estado": "libre"
+    },
+    {
+      "id": 13,
+      "numero": "I02",
+      "zona": "Interior",
+      "capacidad": 4,
+      "estado": "libre"
+    },
+    {
+      "id": 14,
+      "numero": "B03",
+      "zona": "Barra",
+      "capacidad": 2,
+      "estado": "libre"
+    }
+  ]
+}

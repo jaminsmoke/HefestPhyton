@@ -291,8 +291,7 @@ class FiltersPanel(QFrame):
             }
             QPushButton:hover {
                 background-color: #138496;
-            }
-        """)
+            }        """)
         refresh_btn.clicked.connect(self.refresh_requested.emit)
         layout.addWidget(refresh_btn)
     
@@ -305,7 +304,6 @@ class FiltersPanel(QFrame):
             
             self.selected_zone = zone
             self.zone_changed.emit(zone)
-            logger.debug(f"Zona seleccionada: {zone}")
             
             # Emitir señal consolidada de filtros
             self._emit_filters_changed()
@@ -322,7 +320,6 @@ class FiltersPanel(QFrame):
             
             self.selected_status = status
             self.status_changed.emit(status)
-            logger.debug(f"Estado seleccionado: {status}")
             
             # Emitir señal consolidada de filtros
             self._emit_filters_changed()
@@ -339,9 +336,7 @@ class FiltersPanel(QFrame):
             self.grid_view_btn.setChecked(mode == "grid")
             self.list_view_btn.setChecked(mode == "list")
             
-            self.view_changed.emit(mode)
-            logger.debug(f"Modo de vista: {mode}")
-            
+            self.view_changed.emit(mode)            
         except Exception as e:
             logger.error(f"Error cambiando vista: {e}")
     
@@ -349,7 +344,6 @@ class FiltersPanel(QFrame):
         """Emite la señal consolidada con todos los filtros"""
         filters = self.get_current_filters()
         self.filters_changed.emit(filters)
-        logger.debug(f"Filtros cambiados: {filters}")
 
     def get_current_filters(self) -> dict:
         """Obtiene los filtros actuales"""

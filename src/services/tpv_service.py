@@ -670,14 +670,137 @@ class TPVService(BaseService):
             if m.id == mesa_id:
                 m.estado = "libre"
                 break
-
+                
         if mesa_id in self._comandas_cache:
             del self._comandas_cache[mesa_id]
-
+            
         return True
+    
+    def generar_siguiente_numero_mesa(self, zona: str) -> str:
+        """
+        Genera el siguiente número de mesa contextualizado por zona.
+        
+        Args:
+            zona: Zona donde se creará la mesa (ej: "Terraza", "Interior", "VIP", "Principal")
+            
+        Returns:
+            str: Siguiente número disponible para la zona (ej: "T05", "I03", "V02", "P12")
+        """
+        try:
+            # Obtener todas las mesas de la zona específica
+            mesas_zona = [mesa for mesa in self._mesas_cache if mesa.zona == zona]
+            
+            # Si no hay mesas en la zona, empezar con 01
+            if not mesas_zona:
+                zona_inicial = zona[0].upper() if zona else "P"
+                return f"{zona_inicial}01"
+            
+            # Extraer números existentes de la zona
+            numeros_existentes = []
+            zona_inicial = zona[0].upper() if zona else "P"
+            
+            for mesa in mesas_zona:
+                # Intentar extraer el número del identificador de la mesa
+                numero_str = mesa.numero
+                
+                # Si el número ya tiene el formato de zona (T01, I05, etc.)
+                if len(numero_str) >= 2 and numero_str[0].upper() == zona_inicial:
+                    try:
+                        numero = int(numero_str[1:])
+                        numeros_existentes.append(numero)
+                    except ValueError:
+                        # Si no se puede convertir, usar el número tal como está
+                        try:
+                            numero = int(numero_str)
+                            numeros_existentes.append(numero)
+                        except ValueError:
+                            continue
+                else:
+                    # Si es un número simple, usarlo directamente
+                    try:
+                        numero = int(numero_str)
+                        numeros_existentes.append(numero)
+                    except ValueError:
+                        continue
+            
+            # Encontrar el siguiente número disponible
+            siguiente_numero = 1
+            if numeros_existentes:
+                siguiente_numero = max(numeros_existentes) + 1
+            
+            # Formatear con ceros a la izquierda
+            return f"{zona_inicial}{siguiente_numero:02d}"
+            
+        except Exception as e:
+            logger.error(f"Error generando siguiente número de mesa para zona {zona}: {e}")
+            # Fallback: usar zona inicial + 01
+            zona_inicial = zona[0].upper() if zona else "P"
+            return f"{zona_inicial}01"
+    
+    def crear_mesa(self, capacidad: int, zona: str = "Principal") -> Optional[Mesa]:
+        """
+        Crea una nueva mesa con numeración automática contextualizada por zona.
+        
+        Args:
+            capacidad: Número de personas que puede acomodar la mesa
+            zona: Zona donde se ubicará la mesa
+            
+        Returns:
+            Mesa: Nueva mesa creada o None si hay error
+        """
+        try:
+            if not self.db_manager:
+                logger.warning("No hay conexión a base de datos para crear mesa")
+                return None
+            
+            # Generar automáticamente el siguiente número para la zona
+            numero_mesa = self.generar_siguiente_numero_mesa(zona)
+            
+            # Verificar que no existe una mesa con ese número (por seguridad)
+            for mesa_existente in self._mesas_cache:
+                if mesa_existente.numero == numero_mesa:
+                    logger.warning(f"Ya existe una mesa con el número {numero_mesa}")
+                    # Intentar con el siguiente número
+                    zona_inicial = zona[0].upper() if zona else "P"
+                    siguiente = int(numero_mesa[1:]) + 1
+                    numero_mesa = f"{zona_inicial}{siguiente:02d}"
+            
+            # Crear nueva mesa en la base de datos
+            mesa_id = self.db_manager.execute("""
+                INSERT INTO mesas (numero, zona, estado, capacidad)
+                VALUES (?, ?, ?, ?)
+            """, (numero_mesa, zona, "libre", capacidad))
+            
+            # Crear objeto Mesa y agregarlo al cache
+            nueva_mesa = Mesa(
+                id=mesa_id,
+                numero=numero_mesa,
+                zona=zona,
+                estado="libre",
+                capacidad=capacidad
+            )
+            
+            self._mesas_cache.append(nueva_mesa)
+            logger.info(f"Mesa {numero_mesa} creada correctamente en zona {zona} con ID {mesa_id}")
+            
+            return nueva_mesa
+            
+        except Exception as e:
+            logger.error(f"Error creando mesa: {e}")
+            return None
 
-    def crear_mesa(self, numero: int, capacidad: int, zona: str = "Principal") -> Optional[Mesa]:
-        """Crea una nueva mesa"""
+    def crear_mesa_con_numero(self, numero: int, capacidad: int, zona: str = "Principal") -> Optional[Mesa]:
+        """
+        Método de compatibilidad para crear mesa con número específico.
+        
+        Args:
+            numero: Número específico para la mesa
+            capacidad: Número de personas que puede acomodar la mesa
+            zona: Zona donde se ubicará la mesa
+            
+        Returns:
+            Mesa: Nueva mesa creada o None si hay error
+        """
         try:
             if not self.db_manager:
                 logger.warning("No hay conexión a base de datos para crear mesa")
@@ -690,14 +813,10 @@ class TPVService(BaseService):
                     return None
             
             # Crear nueva mesa en la base de datos
-            cursor = self.db_manager.get_cursor()
-            cursor.execute("""
+            mesa_id = self.db_manager.execute("""
                 INSERT INTO mesas (numero, zona, estado, capacidad)
                 VALUES (?, ?, ?, ?)
             """, (str(numero), zona, "libre", capacidad))
-            
-            mesa_id = cursor.lastrowid
-            self.db_manager.commit()
             
             # Crear objeto Mesa y agregarlo al cache
             nueva_mesa = Mesa(
@@ -715,6 +834,40 @@ class TPVService(BaseService):
             
         except Exception as e:
             logger.error(f"Error creando mesa: {e}")
-            if self.db_manager:
-                self.db_manager.rollback()
             return None
+
+    def eliminar_mesa(self, mesa_id: int) -> bool:
+        """Elimina una mesa de la base de datos"""
+        try:
+            if not self.db_manager:
+                logger.warning("No hay conexión a base de datos para eliminar mesa")
+                return False
+            
+            # Verificar que la mesa existe
+            mesa_existente = None
+            for mesa in self._mesas_cache:
+                if mesa.id == mesa_id:
+                    mesa_existente = mesa
+                    break
+            
+            if not mesa_existente:
+                logger.warning(f"No se encontró la mesa con ID {mesa_id}")
+                return False
+            
+            # Verificar que la mesa no esté ocupada
+            if mesa_existente.estado == "ocupada":
+                logger.warning(f"No se puede eliminar la mesa {mesa_existente.numero} porque está ocupada")
+                return False
+            
+            # Eliminar de la base de datos
+            self.db_manager.execute("DELETE FROM mesas WHERE id = ?", (mesa_id,))
+            
+            # Eliminar del cache
+            self._mesas_cache = [mesa for mesa in self._mesas_cache if mesa.id != mesa_id]
+            
+            logger.info(f"Mesa {mesa_existente.numero} eliminada correctamente de la base de datos")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error eliminando mesa: {e}")
+            return False

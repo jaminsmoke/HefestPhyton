@@ -56,23 +56,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1000, 600)
 
         # Usar el servicio de autenticación pasado o crear uno nuevo
-        # DIAGNÓSTICO: Verificar el auth_service recibido
-        logger.warning(f"🔍 MAIN WINDOW: auth_service recibido: {auth_service}")
-        logger.warning(f"🔍 MAIN WINDOW: auth_service es None: {auth_service is None}")
-
         self.auth_service = auth_service if auth_service else AuthService()
-
-        # DIAGNÓSTICO: Verificar el auth_service final
-        logger.warning(f"🔍 MAIN WINDOW: auth_service final: {self.auth_service}")
-        logger.warning(f"🔍 MAIN WINDOW: Es nueva instancia: {auth_service is None}")
-
-        if self.auth_service:
-            current_user = self.auth_service.current_user
-            is_authenticated = self.auth_service.is_authenticated
-            logger.warning(
-                f"🔍 MAIN WINDOW: Usuario actual: {current_user.name if current_user else 'None'}"
-            )
-            logger.warning(f"🔍 MAIN WINDOW: Autenticado: {is_authenticated}")
 
         # Inicializar el gestor de base de datos
         self.db_manager = DatabaseManager()
@@ -118,36 +102,12 @@ class MainWindow(QMainWindow):
             return False
 
         required_role = self.module_permissions[module_id]
+        
         current_user = self.auth_service.current_user
         is_authenticated = self.auth_service.is_authenticated
         current_session = self.auth_service.current_session
 
-        logger.warning(f"DIAGNÓSTICO: Verificando permisos para módulo: {module_id}")
-        logger.warning(f"  Rol requerido: {required_role.value}")
-        logger.warning(
-            f"  Usuario actual: {current_user.name if current_user else 'None'}"
-        )
-        logger.warning(
-            f"  Rol usuario: {current_user.role.value if current_user else 'None'}"
-        )
-        logger.warning(f"  Autenticado: {is_authenticated}")
-        logger.warning(f"  Sesión actual: {current_session}")
-        logger.warning(
-            f"  User ID en sesión: {current_session.user_id if current_session else 'None'}"
-        )
-
         has_permission = self.auth_service.has_permission(required_role)
-        logger.warning(f"  Tiene permiso: {has_permission}")
-
-        # Diagnóstico adicional para el dashboard
-        if module_id == "dashboard":
-            logger.warning(f"  DIAGNÓSTICO DASHBOARD:")
-            logger.warning(
-                f"    - Verificando has_role_permission directamente: {self.auth_service.has_role_permission(required_role)}"
-            )
-            if current_user:
-                logger.warning(f"    - Rol del usuario: {current_user.role}")
-                logger.warning(f"    - Tipo de rol: {type(current_user.role)}")
 
         return has_permission
 
@@ -291,31 +251,24 @@ class MainWindow(QMainWindow):
 
     def show_module(self, module_id):
         """Muestra el módulo especificado si el usuario tiene permisos"""
-        logger.warning(f"🎯 SHOW_MODULE: Intentando mostrar módulo: {module_id}")
-        logger.warning(
-            f"🎯 SHOW_MODULE: Usuario actual: {self.auth_service.current_user.name if self.auth_service.current_user else 'None'}"
-        )
-        logger.warning(
-            f"🎯 SHOW_MODULE: Autenticado: {self.auth_service.is_authenticated}"
-        )
-
         if not self.check_module_permission(module_id):
             logger.warning(f"🚨 SHOW_MODULE: Acceso denegado al módulo {module_id}")
             denied_widget = self.create_permission_denied_widget(module_id)
             self.module_layout.addWidget(denied_widget)
             return
 
-        if module_id in self.module_widgets:
-            widget = self.module_widgets[module_id]
+        if module_id in self.module_widgets:            widget = self.module_widgets[module_id]
         else:
             widget = self.create_module_widget(module_id)
-            self.module_widgets[module_id] = widget  # Limpiar el contenedor de módulos
+            self.module_widgets[module_id] = widget
+        
+        # Limpiar el contenedor de módulos
         for i in reversed(range(self.module_layout.count())):
             item = self.module_layout.itemAt(i)
             old_widget = item.widget() if item else None
             if old_widget:
                 old_widget.setParent(None)
-
+        
         self.module_layout.addWidget(widget)
         self.current_module = module_id
         self.module_changed.emit(module_id)
@@ -323,34 +276,16 @@ class MainWindow(QMainWindow):
     def create_module_widget(self, module_id):
         """Crea un widget para el módulo especificado"""
         try:
-            logger.warning(
-                f"🔧 CREATE_MODULE_WIDGET: Creando widget para módulo: {module_id}"
-            )
             module_class = self.get_module_class(module_id)
-            logger.warning(f"🔧 CREATE_MODULE_WIDGET: Clase encontrada: {module_class}")
 
-            if (
-                module_class
-            ):  # Pasar auth_service y db_manager específicamente al dashboard
+            if module_class:
+                # Pasar auth_service y db_manager específicamente al dashboard
                 if module_id == "dashboard":
-                    logger.warning(
-                        f"🔧 CREATE_MODULE_WIDGET: Creando dashboard con auth_service: {self.auth_service}"
-                    )
-                    logger.warning(
-                        f"🔧 CREATE_MODULE_WIDGET: Creando dashboard con db_manager: {self.db_manager}"
-                    )
-
                     widget = module_class(
                         auth_service=self.auth_service, db_manager=self.db_manager
                     )
-                    logger.warning(
-                        f"🔧 CREATE_MODULE_WIDGET: Dashboard creado exitosamente: {widget}"
-                    )
                     return widget
                 else:
-                    logger.warning(
-                        f"🔧 CREATE_MODULE_WIDGET: Creando módulo estándar: {module_id}"
-                    )
                     return module_class()
             else:
                 logger.error(f"Clase del módulo {module_id} no encontrada.")
