@@ -101,6 +101,34 @@ La versión v0.0.13 se centrará en:
 - **Performance**: Base optimizada para nueva funcionalidad
 
 ---
+
+## 🖥️ Cambios UI/TPV v0.0.13 (25-27/06/2025)
+
+- Refactor visual completo de la sección de filtros y control en la gestión de mesas.
+- Gradientes, bordes premium, fondos suaves y efectos de sombra en controles de filtro (búsqueda, zona, estado, acciones, refrescar).
+- Compactación y alineación avanzada de los elementos para una experiencia visual moderna y profesional.
+- Eliminación de estilos planos y básicos, priorizando jerarquía visual y sensación de UI avanzada.
+- Persistencia total de alias (nombre temporal) y capacidad temporal en la UI de mesas del TPV.
+- Alias y capacidad temporal se mantienen tras refrescar, filtrar o actualizar la lista de mesas, y solo se restauran a valores originales al liberar la mesa o por acción manual.
+- Botón contextual elegante (↩️) en cada mesa para restaurar valores originales (alias/capacidad), visible solo si hay cambios temporales.
+- Limpieza de propiedades CSS no soportadas (`box-shadow`, `transition`) en todos los módulos afectados para eliminar advertencias de Qt.
+- Refactor y eliminación de prints/logs innecesarios en módulos de UI y lógica.
+- Código preparado para futuras mejoras de experiencia y robustez.
+
+**Rutas afectadas:**
+- `src/ui/modules/tpv_module/components/mesas_area.py`
+- `src/ui/modules/tpv_module/widgets/mesa_widget_simple.py`
+- `src/ui/modules/tpv_module/components/mesa_widget.py`
+- `src/ui/modules/inventario_module/widgets/inventory_summary.py`
+- `src/utils/qt_css_compat.py`
+- `src/utils/modern_styles.py`
+- `src/utils/administrative_logic_manager.py`
+- `src/utils/real_data_manager.py`
+
+**Estado:** Cambios aplicados, validados y documentados. Listo para siguientes mejoras.
+
+---
+
 **Fecha**: 20/06/2025  
 **Responsable**: Hefest Development Team  
 **Estado**: 🚀 TRANSICIÓN COMPLETADA - DESARROLLO TPV INICIADO
