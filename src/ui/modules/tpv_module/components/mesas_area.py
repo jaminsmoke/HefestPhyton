@@ -300,8 +300,8 @@ class MesasArea(QFrame):
     def update_stats_from_mesas(self):
         """Calcula y actualiza las estadísticas basándose en las mesas actuales"""
         if not self.mesas:
-            # Si no hay mesas, mostrar valores en 0
-            self.update_compact_stats(0, 0, 0, 0)
+            # Actualizar estadísticas ultra-premium con valores en 0
+            self.update_ultra_premium_stats()
             return
 
         # Calcular estadísticas reales
@@ -311,11 +311,12 @@ class MesasArea(QFrame):
         ocupadas = len([mesa for mesa in self.mesas if mesa.estado == 'ocupada'])
         libres = total_mesas - ocupadas
 
-        # Actualizar estadísticas compactas
-        self.update_compact_stats(zonas_activas, total_mesas, libres, ocupadas)
+        # Actualizar estadísticas ultra-premium (NO las compactas que causan el problema)
+        self.update_ultra_premium_stats()
 
         # También actualizar la información de estado
-        self.status_info.setText(f"Mostrando {len(self.filtered_mesas)} de {total_mesas} mesas")
+        if hasattr(self, 'status_info'):
+            self.status_info.setText(f"Mostrando {len(self.filtered_mesas)} de {total_mesas} mesas")
 
     def _on_zone_changed(self, zone: str):
         """Maneja el cambio de filtro de zona"""
@@ -807,11 +808,11 @@ class MesasArea(QFrame):
         stats_grid = QHBoxLayout()
         stats_grid.setSpacing(8)
 
-        # Crear widgets de estadísticas encapsulados
-        mesas_ocupadas = self.create_encapsulated_stat("🪑", "0/8", "#3b82f6")
-        venta_hoy = self.create_encapsulated_stat("💰", "€0.00", "#10b981")
-        comandas_activas = self.create_encapsulated_stat("⏰", "0", "#f59e0b")
-        tiempo_prom = self.create_encapsulated_stat("⏱️", "0min", "#8b5cf6")
+        # Crear widgets de estadísticas encapsulados (ahora con label contextualizado)
+        mesas_ocupadas = self.create_encapsulated_stat("🪑", "Ocupadas", "0/8", "#3b82f6")
+        venta_hoy = self.create_encapsulated_stat("💰", "Ventas Hoy", "€0.00", "#10b981")
+        comandas_activas = self.create_encapsulated_stat("⏰", "Comandas Activas", "0", "#f59e0b")
+        tiempo_prom = self.create_encapsulated_stat("⏱️", "Tiempo Prom.", "0min", "#8b5cf6")
 
         stats_grid.addWidget(mesas_ocupadas)
         stats_grid.addWidget(venta_hoy)
@@ -822,8 +823,8 @@ class MesasArea(QFrame):
 
         return stats_container
 
-    def create_encapsulated_stat(self, icon: str, value: str, color: str):
-        """Crea un widget de estadística individual encapsulado"""
+    def create_encapsulated_stat(self, icon: str, label: str, value: str, color: str):
+        """Crea un widget de estadística individual encapsulado con label central y icono bien ajustado"""
         stat_widget = QFrame()
         stat_widget.setStyleSheet(f"""
             QFrame {{
@@ -844,12 +845,20 @@ class MesasArea(QFrame):
         layout.setContentsMargins(4, 4, 4, 4)
         layout.setSpacing(2)
 
-        # Icono
+        # Icono (ajustado)
         icon_label = QLabel(icon)
-        icon_label.setStyleSheet("font-size: 14px;")
+        icon_label.setStyleSheet("font-size: 18px; padding-top: 2px; padding-bottom: 2px;")
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_label.setMinimumHeight(26)
         layout.addWidget(icon_label)
-          # Valor
+
+        # Label central (nombre contextual de la métrica)
+        label_widget = QLabel(label)
+        label_widget.setStyleSheet("font-size: 11px; color: #64748b; font-weight: 600;")
+        label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(label_widget)
+
+        # Valor
         value_label = QLabel(value)
         value_label.setStyleSheet(f"""
             QLabel {{
@@ -1323,20 +1332,35 @@ class MesasArea(QFrame):
             }}
         """)
         layout = QVBoxLayout(stat_widget)
-        layout.setContentsMargins(8, 8, 8, 8)
-        layout.setSpacing(4)
+        layout.setContentsMargins(6, 10, 6, 8)
+        layout.setSpacing(2)
+        
+        # Icono con contenedor fijo para evitar recortes
+        icon_container = QFrame()
+        icon_container.setFixedHeight(36)
+        icon_container.setStyleSheet("background: transparent; border: none;")
+        icon_layout = QVBoxLayout(icon_container)
+        icon_layout.setContentsMargins(0, 0, 0, 0)
+        icon_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
         icon_label = QLabel(icon)
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_label.setStyleSheet(f"font-size: 32px; color: {color};")
-        layout.addWidget(icon_label)
+        icon_label.setStyleSheet(f"font-size: 28px; color: {color}; line-height: 1.0;")
+        icon_layout.addWidget(icon_label)
+        layout.addWidget(icon_container)
+        
+        # Label contextualizado
         label_widget = QLabel(label)
         label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label_widget.setStyleSheet("font-size: 12px; color: #6b7280;")
+        label_widget.setStyleSheet("font-size: 11px; color: #6b7280; font-weight: 600; margin: 2px 0;")
         layout.addWidget(label_widget)
-        value_widget = QLabel(value)
+        
+        # Valor
+        value_widget = QLabel(str(value))
         value_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        value_widget.setStyleSheet(f"font-size: 22px; font-weight: bold; color: {color};")
+        value_widget.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {color}; margin-top: 2px;")
         layout.addWidget(value_widget)
+        
         return stat_widget
 
     def create_status_section_ultra_premium(self) -> QFrame:
@@ -1409,26 +1433,19 @@ class MesasArea(QFrame):
             logger.error(f"Error actualizando estadísticas ultra-premium: {e}")
 
     def _update_stat_widget(self, widget, new_value: str):
-        """🔧 Actualiza el valor de un widget de estadística específico"""
+        """🔧 Actualiza SOLO el valor (tercer QLabel) de un widget de estadística ultra-premium, sin tocar el label contextualizado"""
         try:
             if not widget or not hasattr(widget, 'layout') or not widget.layout():
                 return
-
             layout = widget.layout()
-
-            # Buscar el label del valor (generalmente el último widget)
-            for i in range(layout.count()):
-                item = layout.itemAt(i)
-                if item and item.widget():
-                    child_widget = item.widget()
-                    if isinstance(child_widget, QLabel):
-                        # Si es el label del valor (tiene texto numérico o con símbolos)
-                        current_text = child_widget.text()
-                        if any(c.isdigit() or c in ['€', '/', 'min'] for c in current_text):
-                            child_widget.setText(new_value)
-                            child_widget.update()
-                            return
-
+            
+            # Buscar específicamente el QLabel del valor (índice 2)
+            if layout.count() >= 3:
+                value_item = layout.itemAt(2)  # Tercer elemento = valor
+                if value_item and value_item.widget() and isinstance(value_item.widget(), QLabel):
+                    value_label = value_item.widget()
+                    value_label.setText(str(new_value))
+                    value_label.update()
         except Exception as e:
             logger.error(f"Error actualizando widget de estadística: {e}")
 

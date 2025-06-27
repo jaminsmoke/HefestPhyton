@@ -27,7 +27,7 @@ class Role(Enum):
     """Roles de usuario en el sistema"""
 
     EMPLOYEE = "employee"
-    MANAGER = "manager" 
+    MANAGER = "manager"
     ADMIN = "admin"
 
 
@@ -68,7 +68,7 @@ class User:
 @dataclass
 class Producto:
     """Modelo de producto del inventario"""
-    
+
     id: Optional[int]
     nombre: str
     categoria: str
@@ -80,16 +80,37 @@ class Producto:
     fecha_ultima_entrada: Optional[datetime] = None
 
     def necesita_reposicion(self) -> bool:
-        """Indica si el producto necesita reposición"""
+        """
+        Indica si el producto necesita reposición.
+
+        Returns
+        -------
+        bool
+            True si el stock actual es menor o igual al stock mínimo, False en caso contrario.
+        """
         return self.stock_actual <= self.stock_minimo
 
     def is_stock_low(self) -> bool:
-        """Alias para necesita_reposicion para compatibilidad con tests"""
+        """
+        Alias para necesita_reposicion para compatibilidad con tests.
+
+        Returns
+        -------
+        bool
+            True si el producto necesita reposición, False en caso contrario.
+        """
         return self.necesita_reposicion()
 
     @property
     def valor_total(self) -> float:
-        """Valor total del stock (precio * cantidad)"""
+        """
+        Valor total del stock (precio * cantidad).
+
+        Returns
+        -------
+        float
+            Valor total del stock disponible para este producto.
+        """
         return self.precio * self.stock_actual
 
     def __str__(self):
@@ -107,7 +128,7 @@ class EstadoMesa(Enum):
 @dataclass
 class Mesa:
     """Modelo de mesa del TPV"""
-    
+
     id: Optional[int]
     numero: int
     capacidad: int
@@ -144,7 +165,7 @@ class EstadoReserva(Enum):
 @dataclass
 class Reserva:
     """Modelo de reserva de hospedería"""
-    
+
     id: Optional[int]
     mesa_id: Optional[int] = None  # Para compatibilidad con tests de TPV
     cliente_nombre: str = ""
