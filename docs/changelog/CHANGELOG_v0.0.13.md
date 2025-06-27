@@ -127,6 +127,19 @@ La versión v0.0.13 se centrará en:
 
 **Estado:** Cambios aplicados, validados y documentados. Listo para siguientes mejoras.
 
+## 🟢 Mejora barra de búsqueda en grid de mesas (27/06/2025)
+
+- Ahora la barra de búsqueda en la sección "Filtros y Control" filtra en tiempo real el grid de mesas: solo se muestran las mesas que coinciden con el texto introducido (por número, zona o alias).
+- Si no hay coincidencias, el grid queda vacío (no se muestra ninguna mesa).
+- Si la barra está vacía, se muestran todas las mesas.
+- Se corrigió la conexión de la señal `textChanged` para activar el filtrado en tiempo real.
+- Validado que no se afecta ninguna otra lógica ni diseño del header ni de otras secciones.
+
+**Ruta afectada:**
+- `src/ui/modules/tpv_module/components/mesas_area.py`
+
+**Estado:** Mejoras aplicadas y validadas visualmente en entorno de desarrollo.
+
 ---
 
 **Fecha**: 20/06/2025  

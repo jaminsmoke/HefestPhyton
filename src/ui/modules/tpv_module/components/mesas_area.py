@@ -373,7 +373,6 @@ class MesasArea(QFrame):
 
     def update_filtered_mesas(self):
         """Actualiza la lista filtered_mesas según los filtros activos (zona, estado, búsqueda)."""
-        # Si no hay mesas, dejar la lista vacía
         if not self.mesas:
             self.filtered_mesas = []
             return
@@ -387,7 +386,7 @@ class MesasArea(QFrame):
             mesas_estado = [m for m in mesas_zona if m.estado.lower() == self.current_status_filter.lower()]
         else:
             mesas_estado = mesas_zona
-        # Filtro de búsqueda
+        # Filtro de búsqueda estricto
         search = self.search_input.text().strip().lower() if hasattr(self, 'search_input') else ""
         if search:
             self.filtered_mesas = [m for m in mesas_estado if search in str(m.numero).lower() or search in (m.zona or '').lower() or search in (m.alias or '').lower()]
@@ -1077,6 +1076,7 @@ class MesasArea(QFrame):
                 background: #f8fafc;
             }
         """)
+        self.search_input.textChanged.connect(self._on_search_changed)
         search_layout.addWidget(self.search_input)
         controls_layout.addWidget(search_container)
 
@@ -1360,7 +1360,7 @@ class MesasArea(QFrame):
         layout.addStretch(1)
         return section
 
-    # ==================== MÉTODOS DE APOYO ULTRA-PREMIUM ====================
+    # ==================== MÉTODOS DE APOYO ULTRA-PREMIO ====================
 
     def update_ultra_premium_stats(self):
         """🔄 Actualiza todas las estadísticas ultra-premium"""
@@ -1598,5 +1598,10 @@ class MesasArea(QFrame):
         for w in self.mesa_widgets:
             if w.mesa.id == mesa_id:
                 w.update_mesa(m)
+        self.update_filtered_mesas()
+        self.populate_grid()
+
+    def _on_search_changed(self, text):
+        """Filtra las mesas en tiempo real según el texto de búsqueda"""
         self.update_filtered_mesas()
         self.populate_grid()
