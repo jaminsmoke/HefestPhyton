@@ -187,32 +187,32 @@ class RealDataManager(QObject):
             # Mapeo de métricas a consultas históricas con lógica económica-administrativa
             historical_queries = {
                 "ventas_diarias": """
-                    SELECT COALESCE(SUM(total), 0) 
-                    FROM comandas 
+                    SELECT COALESCE(SUM(total), 0)
+                    FROM comandas
                     WHERE DATE(fecha_hora) = DATE('now', '-1 day')
                 """,
                 "comandas_activas": """
-                    SELECT COUNT(*) 
-                    FROM comandas 
+                    SELECT COUNT(*)
+                    FROM comandas
                     WHERE estado IN ('pendiente', 'en_preparacion')
-                    AND datetime(fecha_hora) BETWEEN datetime('now', '-25 hours') 
+                    AND datetime(fecha_hora) BETWEEN datetime('now', '-25 hours')
                                                  AND datetime('now', '-23 hours')
                 """,
                 "ticket_promedio": """
-                    SELECT COALESCE(AVG(total), 0) 
-                    FROM comandas 
+                    SELECT COALESCE(AVG(total), 0)
+                    FROM comandas
                     WHERE DATE(fecha_hora) = DATE('now', '-1 day') AND total > 0
                 """,
                 "reservas_futuras": """
-                    SELECT COUNT(*) 
-                    FROM reservas 
-                    WHERE estado='confirmada' 
+                    SELECT COUNT(*)
+                    FROM reservas
+                    WHERE estado='confirmada'
                     AND DATE(fecha_entrada) >= DATE('now', '-1 day')
                     AND created_at <= datetime('now', '-1 day')
                 """,
                 "ocupacion_mesas": """
                     SELECT COALESCE(
-                        (CAST((SELECT COUNT(*) FROM mesas WHERE estado='ocupada') AS FLOAT) / 
+                        (CAST((SELECT COUNT(*) FROM mesas WHERE estado='ocupada') AS FLOAT) /
                          NULLIF((SELECT COUNT(*) FROM mesas), 0)) * 100, 0
                     )
                 """,
@@ -226,19 +226,19 @@ class RealDataManager(QObject):
                     SELECT COUNT(*) FROM productos WHERE stock > 0
                 """,
                 "satisfaccion_cliente": """
-                    SELECT COALESCE(AVG(CAST(valoracion AS FLOAT)), 0) 
-                    FROM comandas 
-                    WHERE valoracion IS NOT NULL 
+                    SELECT COALESCE(AVG(CAST(valoracion AS FLOAT)), 0)
+                    FROM comandas
+                    WHERE valoracion IS NOT NULL
                     AND DATE(fecha_hora) = DATE('now', '-1 day')
                 """,
                 "tiempo_servicio": """
                     SELECT COALESCE(AVG(
-                        CASE 
+                        CASE
                             WHEN tiempo_servicio IS NOT NULL THEN tiempo_servicio
                             ELSE (strftime('%s', fecha_completado) - strftime('%s', fecha_hora)) / 60
                         END
                     ), 0)
-                    FROM comandas 
+                    FROM comandas
                     WHERE estado = 'completada'
                     AND DATE(fecha_hora) = DATE('now', '-1 day')
                 """,
@@ -252,14 +252,14 @@ class RealDataManager(QObject):
                     SELECT COALESCE(
                         (CAST(SUM(stock) AS FLOAT) / NULLIF(SUM(stock_minimo), 0)) * 100, 0
                     )
-                    FROM productos 
+                    FROM productos
                     WHERE categoria = 'Bebidas' OR nombre LIKE '%bebida%' OR nombre LIKE '%refresco%'
                 """,
                 "margen_bruto": """
                     SELECT COALESCE(
                         ((SUM(total) - SUM(costo_ingredientes)) / NULLIF(SUM(total), 0)) * 100, 0
                     )
-                    FROM comandas 
+                    FROM comandas
                     WHERE DATE(fecha_hora) = DATE('now', '-1 day') AND total > 0
                 """,
             }
@@ -356,7 +356,7 @@ class RealDataManager(QObject):
             # TIEMPO SERVICIO
             service_time = self._safe_query(
                 """SELECT COALESCE(AVG(
-                    CASE 
+                    CASE
                         WHEN tiempo_servicio IS NOT NULL THEN tiempo_servicio
                         ELSE (strftime('%s', fecha_completado) - strftime('%s', fecha_hora)) / 60
                     END
@@ -402,7 +402,7 @@ class RealDataManager(QObject):
                 if any(v > 0 for k, v in metrics.items() if not k.startswith("_"))
                 else "📋 CONFIGURACIÓN INICIAL"
             )
-            logger.info(f"Estado del establecimiento: {config_status}")
+            # logger.info(f"Estado del establecimiento: {config_status}")
 
             return metrics
 

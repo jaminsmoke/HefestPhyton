@@ -254,7 +254,13 @@ class TPVModule(BaseModule):
         try:
             logger.info(f"Lista de mesas actualizada: {len(mesas)} mesas")
             self.mesas = mesas
-            self._refresh_all_components()
+            if hasattr(self, 'mesas_area'):
+                self.mesas_area.set_mesas(
+                    self.mesas,
+                    datos_temporales=getattr(self.mesas_area, '_datos_temporales', None)
+                )
+            else:
+                self._refresh_all_components()
         except Exception as e:
             logger.error(f"Error procesando actualización de mesas: {e}")
     
@@ -268,7 +274,7 @@ class TPVModule(BaseModule):
         try:
             logger.info(f"Filtros cambiados: {filters}")
             if hasattr(self, 'mesas_area'):
-                self.mesas_area.apply_filters(filters)
+                self.mesas_area.populate_grid()
         except Exception as e:
             logger.error(f"Error aplicando filtros: {e}")
     

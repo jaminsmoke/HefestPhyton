@@ -15,41 +15,41 @@ logger = logging.getLogger(__name__)
 
 class MesaWidget(QPushButton):
     """Widget personalizado para mostrar el estado de una mesa"""
-    
+
     mesa_clicked = pyqtSignal(Mesa)
     mesa_status_changed = pyqtSignal(Mesa, str)  # mesa, nuevo_estado
-    
+
     def __init__(self, mesa: Mesa, parent=None):
         super().__init__(parent)
         self.mesa = mesa
         self._is_animating = False
         self.setup_ui()
         self.update_appearance()
-        
+
         # Conectar señal de clic
         self.clicked.connect(self._on_clicked)
-    
+
     def setup_ui(self):
         """Configura la interfaz del widget de mesa"""
         self.setMinimumSize(120, 100)
         self.setMaximumSize(140, 120)
-        
+
         # Configurar fuente
         font = QFont()
         font.setPointSize(10)
         font.setBold(True)
         self.setFont(font)
-        
+
         # Texto del botón
         self.update_text()
-        
+
         # Propiedades para animaciones
         self.setProperty("mesa_id", self.mesa.id)
-        
+
     def update_text(self):
         """Actualiza el texto mostrado en el widget"""
         text = f"Mesa {self.mesa.numero}\n{self.mesa.zona}"
-        
+
         # Añadir información adicional según el estado
         if self.mesa.estado == "ocupada":
             # Aquí podríamos mostrar tiempo de ocupación
@@ -60,9 +60,9 @@ class MesaWidget(QPushButton):
             text += "\n🧽 Limpieza"
         else:
             text += "\n✅ Libre"
-            
+
         self.setText(text)
-    
+
     def update_appearance(self):
         """Actualiza la apariencia visual según el estado de la mesa"""
         if self.mesa.estado == "libre":
@@ -75,7 +75,7 @@ class MesaWidget(QPushButton):
             self._set_style_limpieza()
         else:
             self._set_style_default()
-    
+
     def _set_style_libre(self):
         """Estilo para mesa libre"""
         self.setStyleSheet("""
@@ -96,7 +96,7 @@ class MesaWidget(QPushButton):
                 background-color: #2F855A;
             }
         """)
-    
+
     def _set_style_ocupada(self):
         """Estilo para mesa ocupada"""
         self.setStyleSheet("""
@@ -117,7 +117,7 @@ class MesaWidget(QPushButton):
                 background-color: #C53030;
             }
         """)
-    
+
     def _set_style_reservada(self):
         """Estilo para mesa reservada"""
         self.setStyleSheet("""
@@ -138,7 +138,7 @@ class MesaWidget(QPushButton):
                 background-color: #C05621;
             }
         """)
-    
+
     def _set_style_limpieza(self):
         """Estilo para mesa en limpieza"""
         self.setStyleSheet("""
@@ -159,7 +159,7 @@ class MesaWidget(QPushButton):
                 background-color: #6B46C1;
             }
         """)
-    
+
     def _set_style_default(self):
         """Estilo por defecto"""
         self.setStyleSheet("""
@@ -180,36 +180,36 @@ class MesaWidget(QPushButton):
                 background-color: #4A5568;
             }
         """)
-    
+
     def update_mesa(self, nueva_mesa: Mesa):
         """Actualiza los datos de la mesa y refresca la UI"""
         old_estado = self.mesa.estado
         self.mesa = nueva_mesa
-        
+
         # Actualizar texto y apariencia
         self.update_text()
         self.update_appearance()
-        
+
         # Emitir señal si cambió el estado
         if old_estado != nueva_mesa.estado:
             self.mesa_status_changed.emit(nueva_mesa, nueva_mesa.estado)
             self._animate_state_change()
-    
+
     def _animate_state_change(self):
         """Anima el cambio de estado de la mesa"""
         if self._is_animating:
             return
-            
+
         self._is_animating = True
-        
+
         # Animación de pulso
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(200)
         self.animation.setEasingCurve(QEasingCurve.Type.OutBounce)
-        
+
         # Obtener geometría actual
         current_geo = self.geometry()
-        
+
         # Crear geometría expandida
         expanded_geo = QRect(
             current_geo.x() - 5,
@@ -217,49 +217,48 @@ class MesaWidget(QPushButton):
             current_geo.width() + 10,
             current_geo.height() + 10
         )
-        
+
         # Configurar animación
         self.animation.setStartValue(current_geo)
         self.animation.setKeyValueAt(0.5, expanded_geo)
         self.animation.setEndValue(current_geo)
-        
+
         # Conectar fin de animación
         self.animation.finished.connect(self._on_animation_finished)
-        
+
         # Iniciar animación
         self.animation.start()
-    
+
     def _on_animation_finished(self):
         """Se ejecuta cuando termina la animación"""
         self._is_animating = False
         if hasattr(self, 'animation'):
             self.animation.deleteLater()
-    
+
     def _on_clicked(self):
         """Maneja el clic en la mesa"""
         if not self._is_animating:
             self.mesa_clicked.emit(self.mesa)
-    
+
     def set_highlight(self, highlight: bool):
         """Resalta o desresalta la mesa"""
         if highlight:
             self.setStyleSheet(self.styleSheet() + """
                 QPushButton {
                     border: 3px solid #3182CE;
-                    box-shadow: 0 0 10px rgba(49, 130, 206, 0.5);
                 }
             """)
         else:
             self.update_appearance()
-    
+
     def is_available(self) -> bool:
         """Retorna True si la mesa está disponible para ser ocupada"""
         return self.mesa.estado in ["libre"]
-    
+
     def is_busy(self) -> bool:
         """Retorna True si la mesa está ocupada o reservada"""
         return self.mesa.estado in ["ocupada", "reservada"]
-    
+
     def get_mesa_info(self) -> dict:
         """Retorna información completa de la mesa"""
         return {

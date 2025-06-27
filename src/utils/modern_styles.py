@@ -49,7 +49,7 @@ class ModernStyles:
             background-color: {cls.COLORS['background']};
             color: {cls.COLORS['text_primary']};
         }}
-        
+
         QMainWindow::separator {{
             background-color: {cls.COLORS['border']};
             width: 1px;
@@ -73,16 +73,16 @@ class ModernStyles:
             font-weight: 600;
             min-width: 120px;
         }}
-        
+
         QPushButton[class="primary"]:hover {{
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 {cls.COLORS['primary_hover']}, stop:1 {cls.COLORS['primary_pressed']});
         }}
-        
+
         QPushButton[class="primary"]:pressed {{
             background: {cls.COLORS['primary_pressed']};
         }}
-        
+
         /* Botón secundario */
         QPushButton[class="secondary"] {{
             background-color: {cls.COLORS['surface']};
@@ -94,16 +94,16 @@ class ModernStyles:
             font-weight: 500;
             min-width: 120px;
         }}
-        
+
         QPushButton[class="secondary"]:hover {{
             background-color: {cls.COLORS['surface_hover']};
             border-color: {cls.COLORS['secondary']};
         }}
-        
+
         QPushButton[class="secondary"]:pressed {{
             background-color: {cls.COLORS['background_alt']};
         }}
-        
+
         /* Botón outline */
         QPushButton[class="outline"] {{
             background-color: transparent;
@@ -115,17 +115,17 @@ class ModernStyles:
             font-weight: 600;
             min-width: 120px;
         }}
-        
+
         QPushButton[class="outline"]:hover {{
             background-color: {cls.COLORS['primary']};
             color: white;
         }}
-        
+
         QPushButton[class="outline"]:pressed {{
             background-color: {cls.COLORS['primary_pressed']};
             border-color: {cls.COLORS['primary_pressed']};
         }}
-        
+
         /* Botones de sidebar */
         QPushButton[class="sidebar"] {{
             background-color: transparent;
@@ -138,12 +138,12 @@ class ModernStyles:
             text-align: left;
             min-height: 44px;
         }}
-        
+
         QPushButton[class="sidebar"]:hover {{
             background-color: {cls.COLORS['surface_hover']};
             color: {cls.COLORS['text_primary']};
         }}
-        
+
         QPushButton[class="sidebar"]:checked {{
             background-color: {cls.COLORS['primary']};
             color: white;
@@ -162,17 +162,17 @@ class ModernStyles:
             font-size: 14px;
             color: {cls.COLORS['text_primary']};
         }}
-        
+
         QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {{
             border-color: {cls.COLORS['border_focus']};
             outline: none;
         }}
-        
+
         QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled {{
             background-color: {cls.COLORS['background_alt']};
             color: {cls.COLORS['text_muted']};
         }}
-        
+
         QComboBox {{
             background-color: {cls.COLORS['surface']};
             border: 1px solid {cls.COLORS['border']};
@@ -182,20 +182,20 @@ class ModernStyles:
             color: {cls.COLORS['text_primary']};
             min-height: 20px;
         }}
-        
+
         QComboBox:focus {{
             border-color: {cls.COLORS['border_focus']};
         }}
-        
+
         QComboBox::drop-down {{
             border: none;
             width: 20px;
         }}
-        
+
         QComboBox::down-arrow {{
             image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iNiIgdmlld0JveD0iMCAwIDEwIDYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNSA1TDkgMSIgc3Ryb2tlPSIjNkI3MjgwIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=);
         }}
-        
+
         QSpinBox, QDoubleSpinBox {{
             background-color: {cls.COLORS['surface']};
             border: 1px solid {cls.COLORS['border']};
@@ -204,7 +204,7 @@ class ModernStyles:
             font-size: 14px;
             color: {cls.COLORS['text_primary']};
         }}
-        
+
         QSpinBox:focus, QDoubleSpinBox:focus {{
             border-color: {cls.COLORS['border_focus']};
         }}
@@ -224,17 +224,17 @@ class ModernStyles:
             selection-color: {cls.COLORS['text_primary']};
             font-size: 14px;
         }}
-        
+
         QTableWidget::item {{
             padding: 12px 16px;
             border-bottom: 1px solid {cls.COLORS['border']};
         }}
-        
+
         QTableWidget::item:selected {{
             background-color: rgba(59, 130, 246, 0.1);
             color: {cls.COLORS['text_primary']};
         }}
-        
+
         QHeaderView::section {{
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 {cls.COLORS['surface_variant']}, stop:1 {cls.COLORS['background_alt']});
@@ -245,7 +245,7 @@ class ModernStyles:
             font-weight: 600;
             font-size: 13px;
         }}
-        
+
         QHeaderView::section:hover {{
             background-color: {cls.COLORS['surface_hover']};
         }}
@@ -261,7 +261,7 @@ class ModernStyles:
             background-color: {cls.COLORS['surface']};
             top: -1px;
         }}
-        
+
         QTabBar::tab {{
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 {cls.COLORS['surface_variant']}, stop:1 {cls.COLORS['background_alt']});
@@ -276,7 +276,7 @@ class ModernStyles:
             font-weight: 500;
             min-width: 80px;
         }}
-        
+
         QTabBar::tab:selected {{
             background: {cls.COLORS['surface']};
             color: {cls.COLORS['text_primary']};
@@ -284,7 +284,7 @@ class ModernStyles:
             border-bottom: 2px solid {cls.COLORS['primary']};
             font-weight: 600;
         }}
-        
+
         QTabBar::tab:hover:!selected {{
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 {cls.COLORS['surface_hover']}, stop:1 {cls.COLORS['surface_variant']});
@@ -301,21 +301,21 @@ class ModernStyles:
                 stop:0 {cls.COLORS['surface']}, stop:1 {cls.COLORS['surface_variant']});
             border-right: 1px solid {cls.COLORS['border']};
         }}
-        
+
         QFrame[class="sidebar-header"] {{
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 {cls.COLORS['surface']}, stop:1 {cls.COLORS['surface_variant']});
             border: none;
             border-bottom: 1px solid {cls.COLORS['border']};
         }}
-        
+
         QLabel[class="sidebar-title"] {{
             color: {cls.COLORS['text_primary']};
             font-size: 20px;
             font-weight: bold;
             letter-spacing: 1px;
         }}
-        
+
         QLabel[class="sidebar-subtitle"] {{
             color: {cls.COLORS['text_secondary']};
             font-size: 11px;
@@ -335,12 +335,12 @@ class ModernStyles:
             border-radius: 12px;
             padding: 20px;
         }}
-        
+
         QFrame[class="card"]:hover {{
             border-color: {cls.COLORS['primary']};
             background-color: {cls.COLORS['surface_hover']};
         }}
-        
+
         QFrame[class="glass-card"] {{
             background-color: rgba(255, 255, 255, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -361,7 +361,7 @@ class ModernStyles:
             font-size: 12px;
             padding: 5px;
         }}
-        
+
         QStatusBar::item {{
             border: none;
         }}
@@ -377,40 +377,40 @@ class ModernStyles:
             border-radius: 6px;
             margin: 0;
         }}
-        
+
         QScrollBar::handle:vertical {{
             background: {cls.COLORS['text_muted']};
             border-radius: 6px;
             min-height: 20px;
             margin: 2px;
         }}
-        
+
         QScrollBar::handle:vertical:hover {{
             background: {cls.COLORS['text_secondary']};
         }}
-        
+
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
             height: 0px;
         }}
-        
+
         QScrollBar:horizontal {{
             background: {cls.COLORS['background_alt']};
             height: 12px;
             border-radius: 6px;
             margin: 0;
         }}
-        
+
         QScrollBar::handle:horizontal {{
             background: {cls.COLORS['text_muted']};
             border-radius: 6px;
             min-width: 20px;
             margin: 2px;
         }}
-        
+
         QScrollBar::handle:horizontal:hover {{
             background: {cls.COLORS['text_secondary']};
         }}
-        
+
         QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {{
             width: 0px;
         }}
@@ -425,7 +425,7 @@ class ModernStyles:
             border: 1px solid {cls.COLORS['border']};
             border-radius: 12px;
         }}
-        
+
         QDialog[class="glass"] {{
             background-color: rgba(255, 255, 255, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -457,31 +457,25 @@ class AnimatedStyles:
 
     @classmethod
     def get_hover_transition_style(cls):
-        """CSS para transiciones hover (requiere soporte CSS)"""
+        """CSS para transiciones hover (NO SOPORTADO en PyQt6, solo referencia)"""
         return """
-        /* Nota: PyQt6 no soporta transiciones CSS nativas */
-        /* Estas definiciones son para referencia y documentación */
-        
-        .hover-transition {
+        /* PyQt6 NO soporta transition ni box-shadow. Estas líneas son solo referencia. */
+        /* .hover-transition {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
+        } */
         .scale-on-hover:hover {
-            transform: scale(1.02);
+            /* transform: scale(1.02); */
         }
-        
         .lift-on-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            /* transform: translateY(-2px); */
+            /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); */
         }
-        
-        .fade-transition {
+        /* .fade-transition {
             transition: opacity 0.3s ease;
-        }
-        
-        .slide-transition {
+        } */
+        /* .slide-transition {
             transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
+        } */
         """
 
 
@@ -541,23 +535,23 @@ class ThemeManager:
                 background: {theme['bg']};
                 color: {theme['text']};
             }}
-            
+
             QLabel {{
                 background: transparent;
                 color: {theme['text']};
             }}
-            
+
             ModernCard {{
                 background: {theme['card']};
                 border: 1px solid {theme['border']};
                 border-radius: 8px;
             }}
-            
+
             ModernCard:hover {{
                 background: {theme['hover']};
                 border-color: {theme['primary']};
             }}
-            
+
             QPushButton.action-button {{
                 background: {theme['primary']};
                 color: white;
@@ -566,13 +560,13 @@ class ThemeManager:
                 padding: 8px 16px;
                 font-weight: bold;
             }}
-            
+
             QPushButton.action-button:hover {{
                 background: {theme['hover']};
                 color: {theme['primary']};
                 border: 1px solid {theme['primary']};
             }}
-            
+
             QPushButton.secondary-button {{
                 background: transparent;
                 color: {theme['primary']};
@@ -581,18 +575,18 @@ class ThemeManager:
                 padding: 8px 12px;
                 font-weight: bold;
             }}
-            
+
             QPushButton.secondary-button:hover {{
                 background: {theme['hover']};
                 border-color: {theme['primary']};
             }}
-            
+
             QTabWidget::pane {{
                 border: 1px solid {theme['border']};
                 border-radius: 8px;
                 background: {theme['card']};
             }}
-            
+
             QTabBar::tab {{
                 padding: 8px 16px;
                 margin-right: 4px;
@@ -603,18 +597,18 @@ class ThemeManager:
                 background: {theme['bg']};
                 color: {theme['text_secondary']};
             }}
-            
+
             QTabBar::tab:selected {{
                 background: {theme['card']};
                 color: {theme['text']};
                 border-bottom-color: {theme['card']};
             }}
-            
+
             QScrollArea {{
                 border: none;
                 background: transparent;
             }}
-            
+
             QScrollArea > QWidget > QWidget {{
                 background: transparent;
             }}

@@ -26,11 +26,11 @@ def convert_to_qt_compatible_css(css_code):
         return ""
     # Crear un diccionario de reemplazos
     replacements = {
-        # Transiciones
+        # Transiciones (NO SOPORTADO en Qt)
         r"transition:\s*([^;]+);": "",
         r"transition-[^:]+:[^;]+;": "",
-        # Sombras - convertir a bordes visibles
-        r"box-shadow:\s*([^;]+);": "border: 1px solid rgba(200,200,200,0.5);",
+        # Sombras (NO SOPORTADO en Qt, se reemplaza por borde sutil)
+        r"box-shadow:\s*([^;]+);": "border: 1px solid rgba(200,200,200,0.15);",
         # Filtros
         r"filter:\s*drop-shadow\([^)]+\);": "",
         r"filter:\s*([^;]+);": "",

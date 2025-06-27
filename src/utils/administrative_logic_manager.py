@@ -176,7 +176,7 @@ class AdministrativeLogicManager:
                 elif priority == "medium":
                     alert_summary["medium_count"] += 1
 
-            logger.info(f"✅ Generadas {len(alerts)} alertas administrativas reales")
+            # logger.info(f"✅ Generadas {len(alerts)} alertas administrativas reales")
 
         except Exception as e:
             logger.error(f"Error generando alertas administrativas: {e}")
@@ -207,7 +207,7 @@ class AdministrativeLogicManager:
             stock_bajo = self.db_manager.query(
                 """
                 SELECT nombre, stock, categoria
-                FROM productos 
+                FROM productos
                 WHERE stock > 0 AND stock <= 5
                 ORDER BY stock ASC
             """
@@ -217,7 +217,7 @@ class AdministrativeLogicManager:
             stock_agotado = self.db_manager.query(
                 """
                 SELECT nombre, categoria
-                FROM productos 
+                FROM productos
                 WHERE stock = 0
             """
             )
@@ -277,7 +277,7 @@ class AdministrativeLogicManager:
             ventas_hoy = self.db_manager.query(
                 """
                 SELECT SUM(total) as total_ventas, COUNT(*) as num_comandas
-                FROM comandas 
+                FROM comandas
                 WHERE DATE(fecha_hora) = ?
                 AND estado = 'completada'
             """,
@@ -360,7 +360,7 @@ class AdministrativeLogicManager:
             mesas_ocupadas = self.db_manager.query(
                 """
                 SELECT COUNT(*) as ocupadas
-                FROM mesas 
+                FROM mesas
                 WHERE estado = 'ocupada'
             """
             )
@@ -428,7 +428,7 @@ class AdministrativeLogicManager:
             clientes_hoy = self.db_manager.query(
                 """
                 SELECT COUNT(DISTINCT mesa_id) as clientes_unicos
-                FROM comandas 
+                FROM comandas
                 WHERE DATE(fecha_hora) = ?
             """,
                 (today,),
@@ -568,7 +568,7 @@ class AdministrativeLogicManager:
             today = datetime.now().strftime("%Y-%m-%d")
             query = """
                 SELECT COALESCE(SUM(total), 0) as ventas_total, COUNT(*) as num_comandas
-                FROM comandas 
+                FROM comandas
                 WHERE DATE(fecha_hora) = ? AND estado IN ('completada', 'pagada')
             """
             result = self.db_manager.query(query, (today,))
@@ -620,7 +620,7 @@ class AdministrativeLogicManager:
             # Contar clientes únicos con reservas activas (las comandas no tienen cliente_id directo)
             query_reservas = """
                 SELECT COUNT(DISTINCT cliente_id) as clientes_reservas
-                FROM reservas 
+                FROM reservas
                 WHERE estado = 'activa' AND DATE(fecha_entrada) <= ? AND DATE(fecha_salida) >= ?
             """
 
@@ -678,10 +678,10 @@ class AdministrativeLogicManager:
         try:
             # Productos con stock <= 5 (considerado crítico)
             query = """
-                SELECT COUNT(*) as stock_critico, 
+                SELECT COUNT(*) as stock_critico,
                        COUNT(CASE WHEN stock = 0 THEN 1 END) as sin_stock,
                        COUNT(*) as total_productos
-                FROM productos 
+                FROM productos
                 WHERE stock <= 5            """
 
             result = self.db_manager.query(query)
@@ -729,7 +729,7 @@ class AdministrativeLogicManager:
 
             # Calcular eficiencia basada en comandas completadas vs iniciadas
             query = """
-                SELECT 
+                SELECT
                     COUNT(*) as total_comandas,
                     COUNT(CASE WHEN estado = 'completada' THEN 1 END) as completadas,
                     COUNT(CASE WHEN estado = 'cancelada' THEN 1 END) as canceladas
