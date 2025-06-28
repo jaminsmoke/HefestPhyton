@@ -2,7 +2,7 @@
 Widget MesaWidget - Versión compacta y profesional con nombre editable
 Diseño ultra-compacto con máxima legibilidad y organización profesional
 NUEVA FEATURE: Nombre editable con doble-click (ID fijo)
-Versión: v0.0.13
+Versión: v0.0.13 - FIXED RESPONSIVE ALIAS
 """
 
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit
@@ -40,30 +40,28 @@ class MesaWidget(QFrame):
 
     def setup_ui(self):
         """Configura la interfaz ultra-compacta ajustada al contenido"""
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 6, 8, 6)  # Márgenes mínimos
-        layout.setSpacing(2)  # Espaciado muy reducido
-
-        # --- ALIAS DE MESA + BOTÓN DE EDICIÓN ---
-        from PyQt6.QtWidgets import QHBoxLayout, QPushButton
+        from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
         from PyQt6.QtGui import QIcon
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(8, 6, 8, 6)
+        layout.setSpacing(2)
+
+        # --- ALIAS DE MESA + BOTONES ---
         alias_layout = QHBoxLayout()
         alias_layout.setContentsMargins(0, 0, 0, 0)
         alias_layout.setSpacing(4)
         self.alias_label = QLabel(self.mesa.nombre_display)
-        alias_layout.addWidget(self.alias_label, 1)
+        self.alias_label.setWordWrap(True)
+        self.alias_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        alias_layout.addWidget(self.alias_label, 10)  # Prioridad máxima
         self.edit_btn = QPushButton()
         self.edit_btn.setFixedSize(22, 22)
         self.edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.edit_btn.setToolTip("Editar alias de mesa")
-        # Icono de lápiz unicode o usa un icono si tienes recursos
         self.edit_btn.setText("✏️")
         self.edit_btn.setStyleSheet("border: none; background: transparent; font-size: 14px;")
         self.edit_btn.clicked.connect(self._start_edit_mode)
         alias_layout.addWidget(self.edit_btn, 0)
-
-        # Botón contextual de restaurar (solo si hay cambios temporales)
-        from PyQt6.QtWidgets import QSizePolicy
         self.restore_btn = QPushButton()
         self.restore_btn.setFixedSize(22, 22)
         self.restore_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -252,32 +250,53 @@ class MesaWidget(QFrame):
         self._ajustar_fuente_nombre()
 
     def _ajustar_fuente_nombre(self):
-        """Ajusta el tamaño de fuente del nombre para que quepa en el espacio disponible, con elipsis si es necesario"""
+        """Responsividad: una sola línea, elipsis si no cabe, tooltip si hay elipsis. Ajuste fino con reducción de 16px a la derecha."""
         label = self.alias_label
-        text = label.text()
-        if not text:
-            return
-        # Usar el ancho real del label (menos el botón)
-        label_width = label.width() or (self.width() - 50)
-        max_width = max(label_width, 60)  # Nunca menos de 60px
-        min_font = 7
-        max_font = 22
-        font = QFont("Segoe UI", max_font, QFont.Weight.Bold)
-        label.setFont(font)
-        metrics = label.fontMetrics()
-        while metrics.horizontalAdvance(text) > max_width and font.pointSize() > min_font:
-            font.setPointSize(font.pointSize() - 1)
+        alias = self.mesa.alias if self.mesa.alias else self.mesa.nombre_display
+
+        # Ajuste fino: reducción de 20px para el margen derecho
+        label_width = label.width()
+        REDUCCION_DERECHA = 20  # px, margen de seguridad para botones y padding visual
+        if label_width <= 1:
+            parent_width = self.width()
+            btns_width = 0
+            if hasattr(self, 'edit_btn') and self.edit_btn.isVisible():
+                btns_width += self.edit_btn.width() + 6
+            if hasattr(self, 'restore_btn') and self.restore_btn.isVisible():
+                btns_width += self.restore_btn.width() + 6
+            label_width = max(parent_width - btns_width - 24, 80)
+        available_width = max(label_width - REDUCCION_DERECHA, 40)
+
+        # Buscar el tamaño de fuente óptimo para una sola línea
+        min_font_size = 8
+        max_font_size = 22
+        optimal_size = min_font_size
+        for font_size in range(max_font_size, min_font_size - 1, -1):
+            font = QFont("Segoe UI", font_size, QFont.Weight.Bold)
             label.setFont(font)
             metrics = label.fontMetrics()
-        # Si aún no cabe, poner elipsis
-        if metrics.horizontalAdvance(text) > max_width:
-            elided = metrics.elidedText(text, Qt.TextElideMode.ElideRight, max_width)
-            label.setText(elided)
+            if metrics.horizontalAdvance(alias) <= available_width:
+                optimal_size = font_size
+                break
+
+        # Aplicar fuente óptima y texto
+        font = QFont("Segoe UI", optimal_size, QFont.Weight.Bold)
+        label.setFont(font)
+        metrics = label.fontMetrics()
+        elided = metrics.elidedText(alias, Qt.TextElideMode.ElideRight, available_width)
+        label.setText(elided)
+        label.setWordWrap(False)
+        # Tooltip solo si hay elipsis
+        if elided != alias:
+            label.setToolTip(alias)
         else:
-            label.setText(text)
-        # Si está en modo edición, también ajustar el QLineEdit
+            label.setToolTip("")
+        label.updateGeometry()
+        label.repaint()
         if self.editing_mode and self.alias_line_edit:
             self.alias_line_edit.setFont(font)
+        self.updateGeometry()
+        self.repaint()
 
     def _tiene_datos_temporales(self):
         """Devuelve True si hay alias o capacidad temporal activa"""
@@ -287,7 +306,6 @@ class MesaWidget(QFrame):
         """Actualiza los datos de la mesa"""
         self.mesa = mesa
         self.alias_label.setText(mesa.nombre_display)
-        self._ajustar_fuente_nombre()
         self.capacidad_label.setText(f"👥 {mesa.personas_display} personas")
         self.estado_label.setText(self.get_estado_texto())
         zona_texto = mesa.zona if hasattr(mesa, 'zona') and mesa.zona else "Principal"
@@ -295,16 +313,19 @@ class MesaWidget(QFrame):
         self.zona_label.setText(f"🏢 {zona_texto} • {identificador}")
         self.restore_btn.setVisible(self._tiene_datos_temporales())
         self.apply_styles()
+        self._ajustar_fuente_nombre()
 
     def _emitir_restaurar(self):
         """Emite una señal para restaurar la mesa a su estado original"""
         self.restaurar_original.emit(self.mesa.id)
+        self._ajustar_fuente_nombre()
 
     def _handle_single_click(self):
         """Maneja el click simple después de verificar que no hay doble click"""
         if self.pending_click:
             self.pending_click = False
             self.mesa_clicked.emit(self.mesa)
+            self._ajustar_fuente_nombre()
 
     def _start_edit_mode(self):
         """Inicia el modo de edición del alias de la mesa"""
@@ -346,7 +367,15 @@ class MesaWidget(QFrame):
         self.alias_line_edit.deleteLater()
         self.alias_line_edit = None
         self.editing_mode = False
-        self._ajustar_fuente_nombre()
+        # Mostrar el botón de restaurar antes de ajustar fuente
+        self.restore_btn.setVisible(self._tiene_datos_temporales())
+        self.alias_label.updateGeometry()
+        self.alias_label.repaint()
+        self.updateGeometry()
+        self.repaint()
+        # Esperar a que el layout se actualice y luego ajustar fuente
+        from PyQt6.QtCore import QTimer
+        QTimer.singleShot(0, self._ajustar_fuente_nombre)
 
     def mousePressEvent(self, event):
         """Maneja click simple con delay para distinguir de doble click"""
@@ -494,8 +523,17 @@ class MesaWidget(QFrame):
                 self.personas_changed.emit(self.mesa, nuevo_valor)
                 self.capacidad_label.setText(f"👥 {nuevo_valor} personas")
             self._feedback_visual_label(self.capacidad_label)
+            # Al finalizar edición de personas, ajustar nombre
+            self._ajustar_fuente_nombre()
 
     def _feedback_visual_label(self, label):
+        """
+        Provides a simple visual feedback animation by making the given label briefly fade out and back in.
+        This creates a blinking effect to draw the user's attention to the label.
+
+        Args:
+            label (QWidget): The label widget to animate.
+        """
         """Animación simple de parpadeo para feedback visual"""
         from PyQt6.QtCore import QPropertyAnimation
         anim = QPropertyAnimation(label, b"windowOpacity")
