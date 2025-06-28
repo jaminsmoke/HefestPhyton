@@ -88,11 +88,10 @@ class UserDialog(QDialog):
         if self.user:
             self.name_edit.setText(self.user.name)
 
-            # Buscar el índice del rol
-            for i, role in enumerate(Role):
-                if role == self.user.role:
-                    self.role_combo.setCurrentIndex(i)
-                    break
+            # Seleccionar el rol por valor (más robusto)
+            idx = self.role_combo.findText(self.user.role.value)
+            if idx != -1:
+                self.role_combo.setCurrentIndex(idx)
 
             self.pin_edit.setText(self.user.pin)
             self.email_edit.setText(self.user.email or "")

@@ -1,89 +1,59 @@
-# 🧪 Scripts de Testing - Sistema Hefest
+# 🧪 testing - Scripts de Testing Manual
 
-Scripts especializados para testing manual, validación de componentes y verificación de integridad del sistema Hefest.
+Breve descripción del propósito de la carpeta y su rol en la estructura del proyecto.
 
 ---
 
 ## 📋 Índice de Contenidos
 
-| Sección | Líneas | Descripción |
-|---------|--------|-------------|
-| [🔧 Scripts Disponibles](#-scripts-disponibles) | 18-35 | Scripts de testing implementados |
-| [🚀 Uso y Ejecución](#-uso-y-ejecución) | 37-55 | Comandos y procedimientos |
-| [📁 Políticas de Organización](#-políticas-de-organización) | 57-fin | Estándares para scripts de testing |
+| Sección                                             | Descripción                              |
+| --------------------------------------------------- | ---------------------------------------- |
+| [🗂️ Estructura](#estructura)                         | Organización interna y tipos de archivos |
+| [📁 Políticas y Estándares](#políticas-y-estándares) | Qué se permite y qué no                  |
+| [🚀 Uso e Integración](#uso-e-integración)           | Cómo se usa la carpeta (opcional)        |
+| [📖 Información relevante](#información-relevante)   | Enlaces y notas (opcional)               |
 
 ---
 
-## 🔧 Scripts Disponibles
+## 🗂️ Estructura
 
-### 📊 Scripts de Testing
-
-| Script | Estado |
-|--------|--------|
-| *En desarrollo* | ⏳ Pendiente |
-
-*Esta carpeta está preparada para recibir scripts de testing manual y validación de componentes.*
-
-### 🎯 Tipos de Testing Esperados
-
-- **Testing manual** de componentes UI
-- **Validación de integridad** de servicios
-- **Scripts de verificación** de configuración
-- **Testing de integración** manual
-
----
-
-## 🚀 Uso y Ejecución
-
-### 📝 Comandos Básicos
-
-```bash
-# Ejecutar desde raíz del proyecto
-python scripts/testing/[SCRIPT_NAME].py
+```
+scripts/testing/
+├── test_[COMPONENTE]_[TIPO].py   # Scripts de testing manual
+└── ...
 ```
 
-### 🔧 Configuración
-
-- **Directorio de trabajo**: Ejecutar desde raíz del proyecto
-- **Dependencias**: Según cada script específico
-- **Entorno**: Testing/desarrollo
+- Explica brevemente la función de los principales archivos y subcarpetas.
 
 ---
 
-## 📁 Políticas de Organización
+## 📁 Políticas y Estándares
 
-### 📝 Nomenclatura de Scripts de Testing
-
-**Formato**: `test_[COMPONENTE]_[TIPO].py`
-
-**Ejemplos**:
-```
-test_dashboard_manual.py          # Testing manual de dashboard
-test_components_validation.py     # Validación de componentes
-test_services_integration.py      # Testing de integración de servicios
-test_ui_visual_verification.py    # Verificación visual de UI
-```
-
-### 🎯 Criterios de Creación
-
-#### ✅ Cuándo Crear un Script de Testing
-- **Testing manual** que requiere intervención humana
-- **Validación visual** de componentes UI
-- **Verificación de integración** entre módulos
-- **Testing de configuración** específica
-
-#### ❌ Lo que NO va aquí
-- **Tests unitarios automáticos** → `tests/unit/`
-- **Tests de integración automáticos** → `tests/integration/`
-- **Tests de UI automáticos** → `tests/ui/`
-
-### 🔄 Flujo de Trabajo
-
-1. **Identificar necesidad** de testing manual
-2. **Crear script** siguiendo nomenclatura
-3. **Documentar procedimiento** en docstring
-4. **Actualizar este README** con el nuevo script
+- Solo se permiten scripts de testing manual y validación de componentes.
+- Nomenclatura esperada: `test_[COMPONENTE]_[TIPO].py`.
+- Prohibido incluir código fuente principal, documentación de progreso o detalles de implementación.
+- Referencia a la política general en el README raíz.
 
 ---
 
-**📖 Documentación relacionada**: [`scripts/README.md`](../README.md) • [`tests/README.md`](../../tests/README.md)
+## 🚀 Uso e Integración (opcional)
+
+- Ejecuta los scripts desde la raíz del proyecto según las instrucciones de cada archivo.
+- Consulta los README de cada subcarpeta para detalles y comandos específicos.
+
+---
+
+## 📖 Información relevante (opcional)
+
+- Para plantillas y políticas, consulta el README raíz del proyecto.
+- Notas y advertencias visuales pueden incluirse aquí si es necesario.
+
+---
+
+> **Nota:** No incluir aquí detalles de progreso, migraciones, ni implementaciones específicas. Toda esa información debe estar en los documentos internos de `docs/`.
+
+---
+
+**Cumple con la política de estandarización y organización definida en el README raíz.**
+
+---

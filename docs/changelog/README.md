@@ -242,3 +242,45 @@ analysis/ → development/ → implementación → changelog/ → release → ar
 ---
 
 **📖 Para crear un nuevo changelog**: Sigue el [template estándar](#-estructura-de-changelog-requerida) y las [políticas de contenido](#-políticas-de-contenido) para documentar tu release.
+
+---
+
+# Changelog de versiones
+
+Esta carpeta contiene el historial de cambios del proyecto **Hefest**. Todos los archivos siguen la nomenclatura y estructura definida en las políticas de documentación del proyecto.
+
+## Archivos de changelog presentes
+
+- `[v0.0.10]_CHANGELOG.md` *(antes: v0.0.10.md)*
+- `[v0.0.11]_CHANGELOG.md` *(antes: v0.0.11.md)*
+- `[v0.0.12]_CHANGELOG.md` *(antes: v0.0.12.md)*
+- `[v0.0.12]_CHANGELOG_TESTS_MIGRACION_COMPLETADA.md`
+- `[v0.0.13]_CHANGELOG.md` *(antes: CHANGELOG_v0.0.13.md)*
+
+> **Nota:** Los archivos antiguos han sido renombrados para cumplir la nomenclatura estándar. Si encuentras archivos con nombres fuera de la política, repórtalo y solicita su corrección.
+
+## Estructura recomendada para cada changelog
+
+- **Encabezado con versión y fecha**
+- **Resumen visual de cambios** (bullets, tablas, diagramas si aplica)
+- **Secciones claras**: mejoras, correcciones, refactorizaciones, documentación, otros
+- **Referencias cruzadas** a issues, planes o progresos relevantes
+
+---
+
+### Ejemplo de nomenclatura válida
+
+```
+[v0.0.13]_CHANGELOG.md
+[v0.0.12]_CHANGELOG_TESTS_MIGRACION_COMPLETADA.md
+```
+
+---
+
+### Archivos NO permitidos en esta carpeta
+- Resúmenes, temporales, logs, archivos de progreso o planificación
+- Documentos que no sean changelogs oficiales
+
+---
+
+**Última actualización:** v0.0.13

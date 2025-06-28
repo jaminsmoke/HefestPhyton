@@ -1,37 +1,53 @@
-# Archivo de Utilidades Archivadas
+# 🗄️ archive - Utilidades Archivadas
 
-Este directorio contiene archivos de utilidades que han sido archivados por diversos motivos.
+Breve descripción del propósito de la carpeta y su rol en la estructura del proyecto.
 
-## Archivos Archivados
+---
 
-### advanced_config.py (múltiples versiones)
-- **Fecha de archivo**: 2025-06-14
-- **Razón**: Problemas graves de indentación y duplicidad funcional
-- **Alternativa actual**: `application_config_manager.py`
-- **Estado**: No funcional - errores de sintaxis
-- **Descripción**: Intento de implementar configuración avanzada con encriptación y validación de esquemas
+## 📋 Índice de Contenidos
 
-#### Versiones archivadas:
-- `advanced_config.py` - Versión más reciente con errores de indentación
-- `advanced_config.py.backup` - Backup creado durante refactorización  
-- `advanced_config.py.problematic` - Versión marcada como problemática
+| Sección                                             | Descripción                              |
+| --------------------------------------------------- | ---------------------------------------- |
+| [🗂️ Estructura](#estructura)                         | Organización interna y tipos de archivos |
+| [📁 Políticas y Estándares](#políticas-y-estándares) | Qué se permite y qué no                  |
+| [📖 Información relevante](#información-relevante)   | Enlaces y notas (opcional)               |
 
-#### Funcionalidad reemplazada por:
-- **Configuración básica**: `application_config_manager.py`
-- **Configuración avanzada**: Por implementar en futuras versiones
+---
 
-## Notas para Desarrolladores
+## 🗂️ Estructura
 
-Si necesitas características avanzadas de configuración (encriptación, validación de esquemas, hot-reload), considera:
+```
+archive/
+├── advanced_config.py           # Configuración avanzada (archivado)
+├── advanced_config.py.backup    # Backup
+├── advanced_config.py.problematic # Versión problemática
+└── ...
+```
 
-1. **Refactorizar** `advanced_config.py` desde cero con indentación correcta
-2. **Integrar** las características avanzadas en `application_config_manager.py`
-3. **Crear** un nuevo módulo de configuración avanzada
+- Explica brevemente la función de los principales archivos archivados.
 
-## Uso Actual del Sistema
+---
 
-El sistema utiliza actualmente:
-- `application_config_manager.py` - Configuración principal
-- `ConfigManager` - Clase de configuración estándar
+## 📁 Políticas y Estándares
 
-No hay referencias activas a `advanced_config.py` en el código base.
+- Solo se permiten utilidades y archivos obsoletos o archivados.
+- No almacenar aquí código activo ni documentación de progreso.
+- Nomenclatura clara y descriptiva.
+- Referencia a la política general en el README raíz.
+
+---
+
+## 📖 Información relevante (opcional)
+
+- Para plantillas y políticas, consulta el README raíz del proyecto.
+- Notas y advertencias visuales pueden incluirse aquí si es necesario.
+
+---
+
+> **Nota:** No incluir aquí detalles de progreso, migraciones, ni implementaciones específicas. Toda esa información debe estar en los documentos internos de `docs/`.
+
+---
+
+**Cumple con la política de estandarización y organización definida en el README raíz.**
+
+---

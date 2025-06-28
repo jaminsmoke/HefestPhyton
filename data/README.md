@@ -1,6 +1,6 @@
-# 🔨 build-tools/ - Herramientas de build y automatización
+# 📦 data/ - Base de datos y backups
 
-Herramientas de construcción, testing multi-entorno y automatización de build para el proyecto Hefest.
+Esta carpeta almacena la base de datos principal, backups y scripts de inicialización de datos para el sistema Hefest.
 
 ---
 
@@ -17,28 +17,32 @@ Herramientas de construcción, testing multi-entorno y automatización de build 
 ## 🗂️ Estructura
 
 ```
-build-tools/
-├── tox.ini      # Configuración de testing multi-entorno
-├── README.md    # Este archivo
+data/
+├── hefest.db         # Base de datos principal
+├── backups/          # Backups
+├── init_db.py        # Script de inicialización
+└── README.md         # Este archivo
 ```
 
-- `tox.ini`: Configuración para testing y automatización
+- Base de datos principal (`hefest.db`)
+- Backups de la base de datos (`backups/`)
+- Scripts de inicialización y migración (`init_db.py`, etc)
 
 ---
 
 ## 📁 Políticas y Estándares
 
-- Solo se permiten archivos de configuración y automatización de build/testing.
+- Solo se permiten archivos de datos, backups y scripts de inicialización.
+- No almacenar aquí código fuente de lógica de negocio ni documentación de progreso.
 - Nomenclatura clara y descriptiva.
-- No almacenar aquí código fuente, datos ni documentación de progreso.
 - Cumple la política general del proyecto (ver README raíz).
 
 ---
 
 ## 📖 Información relevante
 
-- Para detalles de uso de herramientas de build, ver la documentación técnica en `docs/`.
-- Si se agregan nuevas herramientas, actualizar este README y la estructura.
+- Los scripts aquí permiten inicializar o migrar la base de datos.
+- Para detalles de uso y estructura, ver la documentación técnica en `docs/`.
 
 ---
 
