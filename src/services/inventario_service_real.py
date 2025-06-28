@@ -184,7 +184,7 @@ class InventarioService(BaseService):
                 INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo)
                 VALUES (?, ?, ?, ?, ?)
             """
-            
+
             result = self.db_manager.execute(query, (
                 nombre.strip(),
                 categoria.strip(),
@@ -224,16 +224,16 @@ class InventarioService(BaseService):
             campos_validos = {}
             if 'nombre' in campos and campos['nombre'] and campos['nombre'].strip():
                 campos_validos['nombre'] = campos['nombre'].strip()
-            
+
             if 'categoria' in campos and campos['categoria'] and campos['categoria'].strip():
                 campos_validos['categoria'] = campos['categoria'].strip()
-            
+
             if 'precio' in campos and campos['precio'] is not None and campos['precio'] >= 0:
                 campos_validos['precio'] = float(campos['precio'])
-            
+
             if 'stock' in campos and campos['stock'] is not None and campos['stock'] >= 0:
                 campos_validos['stock'] = int(campos['stock'])
-            
+
             if 'stock_minimo' in campos and campos['stock_minimo'] is not None and campos['stock_minimo'] >= 0:
                 campos_validos['stock_minimo'] = int(campos['stock_minimo'])
 
@@ -347,7 +347,7 @@ class InventarioService(BaseService):
                     nombre = row['nombre']
                 else:
                     nombre = row[0]
-                
+
                 if nombre and nombre.strip():
                     categorias.append(nombre.strip())
 
@@ -378,7 +378,7 @@ class InventarioService(BaseService):
         try:
             # Obtener todos los productos
             productos = self.get_productos()
-            
+
             if not productos:
                 return {
                     'total_productos': 0,
@@ -396,10 +396,10 @@ class InventarioService(BaseService):
             productos_sin_stock = len([p for p in productos if p.stock_actual == 0])
             valor_total = sum(p.valor_total for p in productos)
             categorias_activas = len(set(p.categoria for p in productos))
-            
+
             producto_mas_caro = max(productos, key=lambda p: p.precio, default=None)
             producto_mas_caro_nombre = producto_mas_caro.nombre if producto_mas_caro else ''
-            
+
             valor_promedio = valor_total / total_productos if total_productos > 0 else 0.0
 
             return {
@@ -437,8 +437,8 @@ class InventarioService(BaseService):
         try:
             # Obtener proveedores de la tabla proveedores real
             query = """
-                SELECT 
-                    id, 
+                SELECT
+                    id,
                     nombre,
                     contacto,
                     telefono,
@@ -448,7 +448,7 @@ class InventarioService(BaseService):
                     fecha_registro,
                     activo,
                     notas
-                FROM proveedores 
+                FROM proveedores
                 WHERE activo = 1
                 ORDER BY categoria, nombre
             """
@@ -482,7 +482,7 @@ class InventarioService(BaseService):
                     proveedor_id = proveedor_dict.get('id')
                     nombre = proveedor_dict.get('nombre', '')
                     nombre = nombre.strip() if nombre else ''
-                    
+
                     if proveedor_id and nombre:
                         contacto = proveedor_dict.get('contacto', '') or ''
                         telefono = proveedor_dict.get('telefono', '') or ''
@@ -490,7 +490,7 @@ class InventarioService(BaseService):
                         direccion = proveedor_dict.get('direccion', '') or ''
                         categoria = proveedor_dict.get('categoria', 'General') or 'General'
                         notas = proveedor_dict.get('notas', '') or ''
-                        
+
                         proveedores.append({
                             'id': proveedor_id,
                             'nombre': nombre,
@@ -503,7 +503,7 @@ class InventarioService(BaseService):
                             'activo': bool(proveedor_dict.get('activo', True)),
                             'notas': notas.strip() if notas else ''
                         })
-                
+
                 except Exception as e:
                     logger.error(f"Error procesando proveedor: {e}")
                     continue
@@ -520,99 +520,151 @@ class InventarioService(BaseService):
                 {"id": 3, "nombre": "Suministros Locales", "contacto": "pedidos@suministros.com", "telefono": "555-123-456", "categoria": "Comida"}
             ]
 
-    def crear_proveedor(self, nombre: str, contacto: str = "", telefono: str = "", 
-                       email: str = "", direccion: str = "", categoria: str = "General") -> bool:
-        """Crear un nuevo proveedor en la tabla proveedores con soporte de categoría"""
+    def crear_categoria(self, nombre: str, descripcion: str = "") -> bool:
+        """
+        Crear una nueva categoría en la tabla categorias. Si existe una inactiva, la reactiva.
+        """
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos")
             return False
-            
+
+        if not nombre or not nombre.strip():
+            logger.error("El nombre de la categoría no puede estar vacío")
+            return False
+
+        nombre = nombre.strip()
+        descripcion = descripcion.strip() if descripcion else ""
+
+        try:
+            # Buscar si existe una categoría con ese nombre
+            check_query = "SELECT id, activa FROM categorias WHERE LOWER(nombre) = LOWER(?)"
+            existing = self.db_manager.query(check_query, (nombre,))
+
+            if existing:
+                cat_id, activa = existing[0][0], existing[0][1]
+                if activa:
+                    logger.warning(f"La categoría '{nombre}' ya existe y está activa")
+                    return False
+                else:
+                    # Reactivar la categoría inactiva
+                    update_query = "UPDATE categorias SET activa = 1, descripcion = ? WHERE id = ?"
+                    self.db_manager.execute(update_query, (descripcion, cat_id))
+                    logger.info(f"Categoría '{nombre}' reactivada exitosamente")
+                    return True
+
+            # Insertar nueva categoría
+            from datetime import datetime
+            fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            insert_query = """
+                INSERT INTO categorias (nombre, descripcion, fecha_creacion, activa)
+                VALUES (?, ?, ?, ?)
+            """
+            result = self.db_manager.execute(insert_query, (nombre, descripcion, fecha_creacion, True))
+            if result:
+                logger.info(f"Categoría '{nombre}' creada exitosamente")
+                return True
+            else:
+                logger.error(f"Error creando categoría '{nombre}'")
+                return False
+        except Exception as e:
+            logger.error(f"Error creando categoría: {e}")
+            return False
+
+    def crear_proveedor(self, nombre: str, contacto: str = "", telefono: str = "",
+                       email: str = "", direccion: str = "", categoria: str = "General") -> bool:
+        """Crear un nuevo proveedor en la tabla proveedores. Si existe uno inactivo, lo reactiva."""
+        if not self.db_manager:
+            logger.warning("Sin conexión a base de datos")
+            return False
+
         if not nombre or not nombre.strip():
             logger.error("El nombre del proveedor no puede estar vacío")
             return False
-            
+
         try:
             from datetime import datetime
-            
-            # Verificar si el proveedor ya existe
-            existing_query = "SELECT COUNT(*) FROM proveedores WHERE LOWER(nombre) = LOWER(?)"
-            existing_count = self.db_manager.query(existing_query, (nombre.strip(),))
-            
-            if existing_count and existing_count[0][0] > 0:
-                logger.warning(f"El proveedor '{nombre}' ya existe")
-                return False
-            
+            nombre_clean = nombre.strip()
+            # Buscar si existe un proveedor con ese nombre
+            existing_query = "SELECT id, activo FROM proveedores WHERE LOWER(nombre) = LOWER(?)"
+            existing = self.db_manager.query(existing_query, (nombre_clean,))
+            if existing:
+                prov_id, activo = existing[0][0], existing[0][1]
+                if activo:
+                    logger.warning(f"El proveedor '{nombre}' ya existe y está activo")
+                    return False
+                else:
+                    # Reactivar proveedor inactivo
+                    update_query = "UPDATE proveedores SET activo = 1, contacto = ?, telefono = ?, email = ?, direccion = ?, categoria = ? WHERE id = ?"
+                    self.db_manager.execute(update_query, (contacto.strip(), telefono.strip(), email.strip(), direccion.strip(), categoria.strip(), prov_id))
+                    logger.info(f"Proveedor '{nombre}' reactivado exitosamente")
+                    return True
             # Validar y limpiar categoría
             if not categoria or not categoria.strip():
                 categoria = "General"
-            
-            # Insertar nuevo proveedor en la tabla proveedores
+            # Insertar nuevo proveedor
             insert_query = """
                 INSERT INTO proveedores (nombre, contacto, telefono, email, direccion, categoria, fecha_registro, activo)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """
             fecha_registro = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
             success = self.db_manager.execute(
-                insert_query, 
-                (nombre.strip(), contacto.strip(), telefono.strip(), 
-                 email.strip(), direccion.strip(), categoria.strip(), 
+                insert_query,
+                (nombre_clean, contacto.strip(), telefono.strip(),
+                 email.strip(), direccion.strip(), categoria.strip(),
                  fecha_registro, True)
             )
-            
             if success:
                 logger.info(f"Proveedor '{nombre}' creado exitosamente con categoría '{categoria}'")
                 return True
             else:
                 logger.error(f"Error al insertar proveedor '{nombre}' en la base de datos")
                 return False
-            
         except Exception as e:
             logger.error(f"Error creando proveedor: {e}")
             return False
 
-    def actualizar_proveedor(self, proveedor_id: int, nombre: str, contacto: str = "", 
-                           telefono: str = "", email: str = "", direccion: str = "", 
+    def actualizar_proveedor(self, proveedor_id: int, nombre: str, contacto: str = "",
+                           telefono: str = "", email: str = "", direccion: str = "",
                            categoria: str = "General") -> bool:
         """Actualizar un proveedor existente en la tabla proveedores con soporte de categoría"""
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos")
             return False
-            
+
         if not nombre or not nombre.strip():
             logger.error("El nombre del proveedor no puede estar vacío")
             return False
-            
+
         try:
             # Validar y limpiar categoría
             if not categoria or not categoria.strip():
                 categoria = "General"
-            
+
             # Actualizar proveedor en la tabla proveedores
             update_query = """
-                UPDATE proveedores 
+                UPDATE proveedores
                 SET nombre = ?, contacto = ?, telefono = ?, email = ?, direccion = ?, categoria = ?
                 WHERE id = ?
             """
-            
+
             # Usar conexión directa para verificar rowcount
             with self.db_manager._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(update_query, (
-                    nombre.strip(), contacto.strip(), telefono.strip(), 
-                    email.strip(), direccion.strip(), categoria.strip(), 
+                    nombre.strip(), contacto.strip(), telefono.strip(),
+                    email.strip(), direccion.strip(), categoria.strip(),
                     proveedor_id
                 ))
                 rows_affected = cursor.rowcount
                 conn.commit()
-            
+
             if rows_affected > 0:
                 logger.info(f"Proveedor ID {proveedor_id} actualizado exitosamente con categoría '{categoria}' ({rows_affected} filas afectadas)")
                 return True
             else:
                 logger.warning(f"No se encontró proveedor con ID {proveedor_id}")
                 return False
-            
+
         except Exception as e:
             logger.error(f"Error actualizando proveedor: {e}")
             return False
@@ -622,24 +674,24 @@ class InventarioService(BaseService):
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos")
             return False
-            
+
         try:
             # Marcar como inactivo en lugar de eliminar físicamente
             update_query = "UPDATE proveedores SET activo = 0 WHERE id = ?"
-            
+
             with self.db_manager._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(update_query, (proveedor_id,))
                 rows_affected = cursor.rowcount
                 conn.commit()
-            
+
             if rows_affected > 0:
                 logger.info(f"Proveedor ID {proveedor_id} marcado como inactivo exitosamente")
                 return True
             else:
                 logger.warning(f"No se encontró proveedor con ID {proveedor_id}")
                 return False
-            
+
         except Exception as e:
             logger.error(f"Error eliminando proveedor: {e}")
             return False
@@ -664,7 +716,7 @@ class InventarioService(BaseService):
                     categoria = row['categoria']
                 else:
                     categoria = row[0]
-                
+
                 if categoria and categoria.strip():
                     categorias.append(categoria.strip())
 
@@ -691,8 +743,8 @@ class InventarioService(BaseService):
         try:            # Obtener categorías activas de la tabla categorias con todos los campos
             query = """
                 SELECT id, nombre, descripcion, fecha_creacion, activa
-                FROM categorias 
-                WHERE activa = 1 
+                FROM categorias
+                WHERE activa = 1
                 ORDER BY nombre
             """
             rows = self.db_manager.query(query)
@@ -724,12 +776,12 @@ class InventarioService(BaseService):
                             'fecha_modificacion': None,  # No existe esta columna
                             'activa': bool(row[4])
                         }
-                    
+
                     # Solo agregar si tiene nombre válido
                     if categoria['nombre'] and categoria['nombre'].strip():
                         categoria['nombre'] = categoria['nombre'].strip()
                         categorias.append(categoria)
-                        
+
                 except Exception as e:
                     logger.error(f"Error procesando fila de categoría: {e}")
                     continue
@@ -782,83 +834,38 @@ class InventarioService(BaseService):
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos")
             return False
-            
+
         if not categoria_nombre or not categoria_nombre.strip():
             logger.error("El nombre de la categoría no puede estar vacío")
             return False
-            
+
         categoria_nombre = categoria_nombre.strip()
-        
+
         # Verificar que no sea una categoría por defecto que no se puede eliminar
         categorias_protegidas = ['General', 'Bebidas', 'Comida', 'Limpieza', 'Papelería']
         if categoria_nombre in categorias_protegidas:
             logger.warning(f"No se puede eliminar la categoría protegida: {categoria_nombre}")
             return False
-            
+
         try:
             # Verificar si hay productos reales usando esta categoría
             check_query = "SELECT COUNT(*) FROM productos WHERE categoria = ? AND nombre NOT LIKE '_TEMP_CATEGORY_PRODUCT_%'"
             count_result = self.db_manager.query(check_query, (categoria_nombre,))
-            
+
             if count_result and count_result[0][0] > 0:
                 productos_count = count_result[0][0]
                 logger.warning(f"No se puede eliminar la categoría '{categoria_nombre}': {productos_count} productos reales la están usando")
                 return False
-            
+
             # Eliminar productos temporales de esta categoría
             delete_temp_query = "DELETE FROM productos WHERE categoria = ? AND nombre LIKE '_TEMP_CATEGORY_PRODUCT_%'"
             self.db_manager.execute(delete_temp_query, (categoria_nombre,))
-            
+
             logger.info(f"Categoría '{categoria_nombre}' eliminada exitosamente")
             return True
-            
+
         except Exception as e:
             logger.error(f"Error eliminando categoría: {e}")
-            return False
-
-    def crear_categoria(self, nombre: str, descripcion: str = "") -> bool:
-        """
-        Crear una nueva categoría en la tabla categorias
-        """
-        if not self.db_manager:
-            logger.warning("Sin conexión a base de datos")
-            return False
-            
-        if not nombre or not nombre.strip():
-            logger.error("El nombre de la categoría no puede estar vacío")
-            return False
-            
-        nombre = nombre.strip()
-        descripcion = descripcion.strip() if descripcion else ""
-        
-        try:
-            # Verificar si ya existe la categoría
-            check_query = "SELECT COUNT(*) FROM categorias WHERE LOWER(nombre) = LOWER(?)"
-            existing_count = self.db_manager.query(check_query, (nombre,))
-            
-            if existing_count and existing_count[0][0] > 0:
-                logger.warning(f"La categoría '{nombre}' ya existe")
-                return False
-            
-            # Insertar nueva categoría en la tabla categorias
-            from datetime import datetime
-            fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
-            insert_query = """
-                INSERT INTO categorias (nombre, descripcion, fecha_creacion, activa)
-                VALUES (?, ?, ?, ?)            """
-            
-            result = self.db_manager.execute(insert_query, (nombre, descripcion, fecha_creacion, True))
-            
-            if result:
-                logger.info(f"Categoría '{nombre}' creada exitosamente")
-                return True
-            else:
-                logger.error(f"Error creando categoría '{nombre}'")
-                return False
-                
-        except Exception as e:
-            logger.error(f"Error creando categoría: {e}")
             return False
 
     def actualizar_categoria(self, categoria_id: int, nuevo_nombre: str, descripcion: str = "") -> bool:
@@ -868,61 +875,61 @@ class InventarioService(BaseService):
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos")
             return False
-            
+
         if not nuevo_nombre or not nuevo_nombre.strip():
             logger.error("El nuevo nombre de la categoría no puede estar vacío")
             return False
-            
+
         nuevo_nombre = nuevo_nombre.strip()
         descripcion = descripcion.strip() if descripcion else ""
-        
+
         try:
             # Verificar que la categoría existe
             check_query = "SELECT nombre FROM categorias WHERE id = ?"
             existing_categoria = self.db_manager.query(check_query, (categoria_id,))
-            
+
             if not existing_categoria:
                 logger.error(f"No se encontró categoría con ID: {categoria_id}")
                 return False
-                
+
             nombre_anterior = existing_categoria[0][0]
-            
+
             # Verificar que el nuevo nombre no existe ya (excepto si es el mismo)
             if nuevo_nombre.lower() != nombre_anterior.lower():
                 check_duplicate_query = "SELECT COUNT(*) FROM categorias WHERE LOWER(nombre) = LOWER(?) AND id != ?"
                 duplicate_count = self.db_manager.query(check_duplicate_query, (nuevo_nombre, categoria_id))
-                
+
                 if duplicate_count and duplicate_count[0][0] > 0:
                     logger.warning(f"Ya existe una categoría con el nombre '{nuevo_nombre}'")
                     return False
-            
+
             # Actualizar categoría en la tabla categorias
             update_query = """
-                UPDATE categorias 
+                UPDATE categorias
                 SET nombre = ?, descripcion = ?
                 WHERE id = ?
             """
-            
+
             with self.db_manager._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(update_query, (nuevo_nombre, descripcion, categoria_id))
                 rows_affected = cursor.rowcount
                 conn.commit()
-            
+
             if rows_affected > 0:
                 logger.info(f"Categoría actualizada de '{nombre_anterior}' a '{nuevo_nombre}' (ID: {categoria_id})")
-                
+
                 # Si se cambió el nombre, actualizar productos que usen esta categoría
                 if nuevo_nombre.lower() != nombre_anterior.lower():
                     update_products_query = "UPDATE productos SET categoria = ? WHERE categoria = ?"
                     self.db_manager.execute(update_products_query, (nuevo_nombre, nombre_anterior))
                     logger.info(f"Productos actualizados para usar la nueva categoría '{nuevo_nombre}'")
-                
+
                 return True
             else:
                 logger.error(f"No se pudo actualizar la categoría con ID: {categoria_id}")
                 return False
-                
+
         except Exception as e:
             logger.error(f"Error actualizando categoría: {e}")
             return False
@@ -934,38 +941,38 @@ class InventarioService(BaseService):
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos")
             return False
-            
+
         if not categoria_id:
             logger.error("ID de categoría no válido")
             return False
-        
+
         try:
             # Verificar que la categoría existe y obtener su nombre
             check_query = "SELECT nombre FROM categorias WHERE id = ?"
             existing_categoria = self.db_manager.query(check_query, (categoria_id,))
-            
+
             if not existing_categoria:
                 logger.error(f"No se encontró categoría con ID: {categoria_id}")
                 return False
-                
+
             categoria_nombre = existing_categoria[0][0] if hasattr(existing_categoria[0], '__getitem__') else existing_categoria[0]['nombre']
-            
+
             # Verificar si hay productos asociados
             productos_query = "SELECT COUNT(*) FROM productos WHERE categoria = ?"
             productos_count = self.db_manager.query(productos_query, (categoria_nombre,))
-            
+
             if productos_count and productos_count[0][0] > 0:
                 logger.warning(f"No se puede eliminar la categoría '{categoria_nombre}' porque tiene productos asociados")
                 return False
               # Eliminar la categoría (o marcarla como inactiva)
             delete_query = "UPDATE categorias SET activa = 0 WHERE id = ?"
             result = self.db_manager.execute(delete_query, (categoria_id,))
-            
+
             # Para UPDATE, el resultado no importa, verificamos si realmente se actualizó
             # Verificar que la categoría ahora está inactiva
             verify_query = "SELECT activa FROM categorias WHERE id = ?"
             verify_result = self.db_manager.query(verify_query, (categoria_id,))
-            
+
             if verify_result and len(verify_result) > 0:
                 activa = verify_result[0][0] if hasattr(verify_result[0], '__getitem__') else verify_result[0]['activa']
                 if not activa:  # Si activa es False (0), la eliminación fue exitosa
@@ -977,7 +984,7 @@ class InventarioService(BaseService):
             else:
                 logger.error(f"Error verificando eliminación de categoría con ID {categoria_id}")
                 return False
-                
+
         except Exception as e:
             logger.error(f"Error eliminando categoría por ID: {e}")
             return False
@@ -985,7 +992,7 @@ class InventarioService(BaseService):
     # ========================================
     # MÉTODOS ALIAS PARA COMPATIBILIDAD
     # ========================================
-    
+
     def get_products(self, *args, **kwargs):
         """Alias para get_productos"""
         return self.get_productos(*args, **kwargs)
