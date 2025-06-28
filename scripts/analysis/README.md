@@ -21,10 +21,13 @@ Breve descripción del propósito de la carpeta y su rol en la estructura del pr
 scripts/analysis/
 ├── root_cleanup_analysis.py   # Análisis de archivos en raíz
 ├── utils_cleanup_analysis.py  # Análisis de utilidades
+├── debug_creacion_tarjetas.py # Debug de creación de tarjetas (migrado desde raíz)
+├── debug_profundo_tarjetas.py # Diagnóstico profundo de tarjetas (migrado desde raíz)
 └── ...
 ```
 
 - Explica brevemente la función de los principales archivos y subcarpetas.
+- Los scripts `debug_creacion_tarjetas.py` y `debug_profundo_tarjetas.py` fueron movidos desde la raíz en la limpieza v0.0.13 para cumplir la política de organización.
 
 ---
 

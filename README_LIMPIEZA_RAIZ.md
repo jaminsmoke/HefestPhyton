@@ -4,6 +4,7 @@
 
 Se ha realizado una limpieza de archivos sueltos en la raíz del proyecto, moviendo logs y scripts experimentales a carpetas especializadas bajo las políticas de estandarización.
 
+- Se movieron los scripts `debug_creacion_tarjetas.py` y `debug_profundo_tarjetas.py` desde la raíz a `scripts/analysis/` (cumpliendo política de organización, v0.0.13).
 - Ver detalles y justificación en `docs/logs/[v0.0.13]_REGISTRO_LIMPIEZA_ARCHIVOS_RAIZ.md`.
 - Para cualquier excepción funcional, consultar el plan en `docs/development/planning/[v0.0.13]_PLAN_LIMPIEZA_ORGANIZACION_PROYECTO.md`.
 
