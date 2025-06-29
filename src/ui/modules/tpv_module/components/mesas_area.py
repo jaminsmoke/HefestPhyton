@@ -60,7 +60,7 @@ class MesasArea(QFrame):
         # Header del área de mesas
         self.create_header(container_layout)
           # Separador
-        self.create_separator(container_layout)
+        # Eliminado: No añadir separadores visuales antiguos
           # Área de scroll para las mesas
         self.create_scroll_area(container_layout)
 
@@ -131,13 +131,6 @@ class MesasArea(QFrame):
         header_layout.addWidget(stats_section)
 
         layout.addWidget(header_container)
-
-    def create_separator(self, layout: QVBoxLayout):
-        """Crea un separador horizontal"""
-        separator = QFrame()
-        separator.setFrameShape(QFrame.Shape.HLine)
-        separator.setStyleSheet("color: #e0e6ed; margin: 4px 0px;")
-        layout.addWidget(separator)
 
     def create_scroll_area(self, layout: QVBoxLayout):
         """Crea el área de scroll para las mesas"""
@@ -993,22 +986,12 @@ class MesasArea(QFrame):
         return section
 
     def create_ultra_premium_separator(self) -> QFrame:
-        """🔹 Separador vertical ultra-premium con gradiente y efectos"""
-        separator = QFrame()
-        separator.setFixedWidth(3)
-        separator.setMinimumHeight(60)
-        separator.setStyleSheet("""
-            QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 rgba(203, 213, 225, 0.3),
-                    stop:0.2 rgba(148, 163, 184, 0.8),
-                    stop:0.5 rgba(100, 116, 139, 1.0),
-                    stop:0.8 rgba(148, 163, 184, 0.8),                    stop:1 rgba(203, 213, 225, 0.3));
-                border-radius: 2px;
-                margin: 8px 16px;
-            }
-        """)
-        return separator
+        """🔹 Separador vertical ultra-premium con gradiente y efectos (OBSOLETO, no usar)"""
+        # Devuelve un QFrame invisible para mantener compatibilidad de tipo
+        sep = QFrame()
+        sep.setFixedWidth(0)
+        sep.setStyleSheet("background: transparent; border: none;")
+        return sep
 
     def create_filters_section_ultra_premium(self) -> QFrame:
         section = QFrame()
@@ -1276,9 +1259,9 @@ class MesasArea(QFrame):
                     stop:0 #fef7ff, stop:0.5 #fdf4ff, stop:1 #fef7ff);
                 border: 1.5px solid #d946ef;
                 border-radius: 14px;
-                padding: 2px 8px 8px 8px;
+                padding: 2px 8px 18px 8px; /* padding-bottom aumentado para igualar altura visual */
                 margin: 2px 0 8px 0;
-                min-height: 70px;
+                min-height: 120px; /* igualar altura mínima al contenedor de filtros */
                 /* box-shadow: 0 2px 8px rgba(217,70,239,0.07); */
             }
         """)
@@ -1307,10 +1290,6 @@ class MesasArea(QFrame):
         grid.addWidget(self.mesas_ocupadas_widget, 0, 3)
         grid.addWidget(self.mesas_reservadas_widget, 0, 4)
         layout.addLayout(grid)
-        sep = QFrame()
-        sep.setFixedHeight(2)
-        sep.setStyleSheet("background: #f3e8ff; border-radius: 1px; margin-top: 2px;")
-        layout.addWidget(sep)
         self.stats_widgets = [
             {'widget': self.zonas_widget, 'type': 'zonas', 'icon': "📍", 'label': "Zonas"},
             {'widget': self.mesas_total_widget, 'type': 'total', 'icon': "🍽️", 'label': "Total"},
@@ -1334,7 +1313,7 @@ class MesasArea(QFrame):
         layout = QVBoxLayout(stat_widget)
         layout.setContentsMargins(6, 10, 6, 8)
         layout.setSpacing(2)
-        
+
         # Icono con contenedor fijo para evitar recortes
         icon_container = QFrame()
         icon_container.setFixedHeight(36)
@@ -1342,25 +1321,25 @@ class MesasArea(QFrame):
         icon_layout = QVBoxLayout(icon_container)
         icon_layout.setContentsMargins(0, 0, 0, 0)
         icon_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        
+
         icon_label = QLabel(icon)
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon_label.setStyleSheet(f"font-size: 28px; color: {color}; line-height: 1.0;")
         icon_layout.addWidget(icon_label)
         layout.addWidget(icon_container)
-        
+
         # Label contextualizado
         label_widget = QLabel(label)
         label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label_widget.setStyleSheet("font-size: 11px; color: #6b7280; font-weight: 600; margin: 2px 0;")
         layout.addWidget(label_widget)
-        
+
         # Valor
         value_widget = QLabel(str(value))
         value_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         value_widget.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {color}; margin-top: 2px;")
         layout.addWidget(value_widget)
-        
+
         return stat_widget
 
     def create_status_section_ultra_premium(self) -> QFrame:
@@ -1438,7 +1417,7 @@ class MesasArea(QFrame):
             if not widget or not hasattr(widget, 'layout') or not widget.layout():
                 return
             layout = widget.layout()
-            
+
             # Buscar específicamente el QLabel del valor (índice 2)
             if layout.count() >= 3:
                 value_item = layout.itemAt(2)  # Tercer elemento = valor

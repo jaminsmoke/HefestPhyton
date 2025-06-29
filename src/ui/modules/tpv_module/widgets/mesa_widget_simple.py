@@ -59,7 +59,23 @@ class MesaWidget(QFrame):
         self.edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.edit_btn.setToolTip("Editar alias de mesa")
         self.edit_btn.setText("✏️")
-        self.edit_btn.setStyleSheet("border: none; background: transparent; font-size: 14px;")
+        self.edit_btn.setStyleSheet("""
+            QPushButton {
+                border: none;
+                background: transparent;
+                font-size: 14px;
+            }
+            QToolTip {
+                color: #fff;
+                background-color: #222;
+                border: 1px solid #444;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 13px;
+                min-width: 0px;
+                min-height: 0px;
+            }
+        """)
         self.edit_btn.clicked.connect(self._start_edit_mode)
         alias_layout.addWidget(self.edit_btn, 0)
         self.restore_btn = QPushButton()
