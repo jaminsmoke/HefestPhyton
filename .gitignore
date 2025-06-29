@@ -119,3 +119,6 @@ ehthumbs.db
 *.rpm
 build-output/
 release/
+
+# ===== CONFIGURACIÓN AMAZON Q =====
+.amazonq/

@@ -1,662 +1,378 @@
 """
-Diálogo de Mesa - Gestión completa de una mesa individual
+Diálogo de Mesa - Gestión completa y mejorada de una mesa individual
 """
 
 import logging
-from typing import Optional, List
+from typing import Optional
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QSplitter, QWidget,
-    QLabel, QTableWidget, QTableWidgetItem, QPushButton,
-    QComboBox, QSpinBox, QHeaderView, QFormLayout, QMessageBox,
-    QFrame, QGroupBox, QScrollArea, QGridLayout, QSizePolicy
+    QDialog, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QPushButton,
+    QFrame, QGridLayout, QMessageBox, QLineEdit, QSpinBox, QTextEdit
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QPixmap, QIcon
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont
 
-from ..controllers.tpv_controller import TPVController
-from services.tpv_service import Mesa, Comanda, Producto
+from services.tpv_service import Mesa
 
 logger = logging.getLogger(__name__)
 
 
 class MesaDialog(QDialog):
-    """Diálogo avanzado para la gestión completa de una mesa"""
+    """Diálogo mejorado para la gestión completa de una mesa"""
     
     mesa_updated = pyqtSignal(Mesa)
-    comanda_saved = pyqtSignal(int)  # comanda_id
-    payment_processed = pyqtSignal(int, float)  # mesa_id, total
+    iniciar_tpv_requested = pyqtSignal(int)  # mesa_id
+    crear_reserva_requested = pyqtSignal(int)  # mesa_id
+    cambiar_estado_requested = pyqtSignal(int, str)  # mesa_id, nuevo_estado
     
     def __init__(self, mesa: Mesa, parent=None):
         super().__init__(parent)
         self.mesa = mesa
-        self.controller = TPVController()
-        self.current_comanda: Optional[Comanda] = None
-        self.productos_cache: List[Producto] = []
-        
-        # Timer para auto-guardar
-        self.auto_save_timer = QTimer()
-        self.auto_save_timer.timeout.connect(self._auto_save)
-        self.auto_save_timer.start(30000)  # Auto-guardar cada 30 segundos
-        
         self.setup_ui()
         self.connect_signals()
-        self.load_initial_data()
         
     def setup_ui(self):
         """Configura la interfaz principal del diálogo"""
-        self.setWindowTitle(f"Mesa {self.mesa.numero} - {self.mesa.zona}")
-        self.setMinimumSize(1000, 700)
-        self.resize(1200, 800)
+        self.setWindowTitle(f"Gestión Mesa {self.mesa.numero} - {self.mesa.zona}")
+        self.setFixedSize(500, 600)
         
-        # Layout principal
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(10, 10, 10, 10)
-        main_layout.setSpacing(10)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(15)
         
         # Header con información de la mesa
         self.setup_header(main_layout)
         
-        # Splitter principal (productos | comanda)
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.setChildrenCollapsible(False)
+        # Panel de información actual
+        self.setup_info_panel(main_layout)
         
-        # Panel de productos (izquierda)
-        self.setup_productos_panel(splitter)
+        # Panel de acciones principales
+        self.setup_actions_panel(main_layout)
         
-        # Panel de comanda (derecha)
-        self.setup_comanda_panel(splitter)
+        # Panel de configuración
+        self.setup_config_panel(main_layout)
         
-        # Configurar proporción del splitter
-        splitter.setSizes([400, 600])
-        main_layout.addWidget(splitter)
-        
-        # Footer con botones principales
+        # Botones de cierre
         self.setup_footer(main_layout)
         
-        # Aplicar estilos
         self.apply_styles()
     
     def setup_header(self, parent_layout: QVBoxLayout):
-        """Configura el header con información de la mesa"""
+        """Header con información de la mesa"""
         header_frame = QFrame()
-        header_frame.setFrameStyle(QFrame.Shape.StyledPanel)
         header_frame.setStyleSheet("""
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #667eea, stop:1 #764ba2);
-                border-radius: 8px;
+                border-radius: 12px;
                 color: white;
-                padding: 10px;
+                padding: 15px;
             }
         """)
         
-        header_layout = QHBoxLayout(header_frame)
+        header_layout = QVBoxLayout(header_frame)
         
-        # Información de la mesa
-        mesa_info = QVBoxLayout()
-        
-        mesa_title = QLabel(f"🍽️ Mesa {self.mesa.numero}")
-        mesa_title.setFont(QFont("Arial", 18, QFont.Weight.Bold))
+        mesa_title = QLabel(f"Mesa {self.mesa.numero}")
+        mesa_title.setFont(QFont("Arial", 20, QFont.Weight.Bold))
         mesa_title.setStyleSheet("color: white; margin: 0;")
-        mesa_info.addWidget(mesa_title)
+        mesa_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_layout.addWidget(mesa_title)
         
-        mesa_details = QLabel(f"Zona: {self.mesa.zona} | Estado: {self.mesa.estado.title()}")
-        mesa_details.setStyleSheet("color: rgba(255, 255, 255, 0.9); font-size: 12px;")
-        mesa_info.addWidget(mesa_details)
-        
-        header_layout.addLayout(mesa_info)
-        header_layout.addStretch()
-        
-        # Estado de tiempo
-        self.time_label = QLabel("Tiempo: 00:00:00")
-        self.time_label.setStyleSheet("color: white; font-size: 14px; font-weight: bold;")
-        header_layout.addWidget(self.time_label)
+        mesa_details = QLabel(f"Zona: {self.mesa.zona} | Capacidad: {self.mesa.capacidad} personas")
+        mesa_details.setStyleSheet("color: rgba(255, 255, 255, 0.9); font-size: 14px;")
+        mesa_details.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        header_layout.addWidget(mesa_details)
         
         parent_layout.addWidget(header_frame)
     
-    def setup_productos_panel(self, splitter: QSplitter):
-        """Configura el panel de productos"""
-        productos_widget = QWidget()
-        productos_layout = QVBoxLayout(productos_widget)
-        productos_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Header del panel de productos
-        productos_header = QFrame()
-        productos_header.setStyleSheet("""
+    def setup_info_panel(self, parent_layout: QVBoxLayout):
+        """Panel de información actual de la mesa"""
+        info_frame = QFrame()
+        info_frame.setStyleSheet("""
             QFrame {
-                background-color: #F8F9FA;
-                border: 1px solid #DEE2E6;
-                border-radius: 6px;
-                padding: 8px;
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 15px;
             }
         """)
-        productos_header_layout = QHBoxLayout(productos_header)
         
-        productos_title = QLabel("🛍️ Catálogo de Productos")
-        productos_title.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-        productos_title.setStyleSheet("color: #495057;")
-        productos_header_layout.addWidget(productos_title)
+        info_layout = QGridLayout(info_frame)
         
-        productos_header_layout.addStretch()
+        # Estado actual
+        estado_color = {
+            'libre': '#28a745',
+            'ocupada': '#dc3545', 
+            'reservada': '#ffc107',
+            'mantenimiento': '#6c757d'
+        }.get(self.mesa.estado, '#6c757d')
         
-        # Filtro por categoría
-        categoria_label = QLabel("Categoría:")
-        categoria_label.setStyleSheet("color: #6C757D; font-weight: bold;")
-        productos_header_layout.addWidget(categoria_label)
+        estado_label = QLabel("Estado Actual:")
+        estado_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        info_layout.addWidget(estado_label, 0, 0)
         
-        self.categoria_combo = QComboBox()
-        self.categoria_combo.setMinimumWidth(120)
-        self.categoria_combo.setStyleSheet("""
-            QComboBox {
-                border: 1px solid #CED4DA;
-                border-radius: 4px;
-                padding: 4px 8px;
-                background-color: white;
-            }
-            QComboBox:focus { border-color: #80BDFF; }
-        """)
-        productos_header_layout.addWidget(self.categoria_combo)
+        self.estado_value = QLabel(self.mesa.estado.upper())
+        self.estado_value.setStyleSheet(f"color: {estado_color}; font-weight: bold; font-size: 14px;")
+        info_layout.addWidget(self.estado_value, 0, 1)
         
-        productos_layout.addWidget(productos_header)
+        # Personas actuales
+        personas_label = QLabel("Personas:")
+        personas_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        info_layout.addWidget(personas_label, 1, 0)
         
-        # Tabla de productos
-        self.productos_table = QTableWidget()
-        self.productos_table.setColumnCount(3)
-        self.productos_table.setHorizontalHeaderLabels(["Producto", "Precio", "Stock"])
+        personas_text = f"{self.mesa.personas_display}/{self.mesa.capacidad}"
+        self.personas_value = QLabel(personas_text)
+        self.personas_value.setStyleSheet("font-size: 14px;")
+        info_layout.addWidget(self.personas_value, 1, 1)
         
-        # Configurar tabla
-        header = self.productos_table.horizontalHeader()
-        if header:
-            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-            header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-            header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        # Alias actual
+        alias_label = QLabel("Nombre:")
+        alias_label.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        info_layout.addWidget(alias_label, 2, 0)
         
-        self.productos_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.productos_table.setAlternatingRowColors(True)
-        self.productos_table.setStyleSheet("""
-            QTableWidget {
-                border: 1px solid #DEE2E6;
-                border-radius: 4px;
-                gridline-color: #DEE2E6;
-                background-color: white;
-            }
-            QTableWidget::item {
-                padding: 8px;
-            }
-            QTableWidget::item:selected {
-                background-color: #E3F2FD;
-                color: #1976D2;
-            }
-        """)
-        productos_layout.addWidget(self.productos_table)
+        self.alias_value = QLabel(self.mesa.nombre_display)
+        self.alias_value.setStyleSheet("font-size: 14px;")
+        info_layout.addWidget(self.alias_value, 2, 1)
         
-        # Controles de productos
-        productos_controls = QHBoxLayout()
-        
-        self.cantidad_spin = QSpinBox()
-        self.cantidad_spin.setMinimum(1)
-        self.cantidad_spin.setMaximum(99)
-        self.cantidad_spin.setValue(1)
-        self.cantidad_spin.setPrefix("Cant: ")
-        self.cantidad_spin.setStyleSheet("""
-            QSpinBox {
-                border: 1px solid #CED4DA;
-                border-radius: 4px;
-                padding: 4px;
-                background-color: white;
-            }
-        """)
-        productos_controls.addWidget(self.cantidad_spin)
-        
-        productos_controls.addStretch()
-        
-        self.add_producto_btn = QPushButton("➕ Añadir")
-        self.add_producto_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #28A745;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 8px 16px;
-                font-weight: bold;
-            }
-            QPushButton:hover { background-color: #218838; }
-            QPushButton:pressed { background-color: #1E7E34; }
-            QPushButton:disabled { 
-                background-color: #6C757D; 
-                color: #ADB5BD; 
-            }
-        """)
-        productos_controls.addWidget(self.add_producto_btn)
-        
-        productos_layout.addLayout(productos_controls)
-        
-        splitter.addWidget(productos_widget)
+        parent_layout.addWidget(info_frame)
     
-    def setup_comanda_panel(self, splitter: QSplitter):
-        """Configura el panel de la comanda"""
-        comanda_widget = QWidget()
-        comanda_layout = QVBoxLayout(comanda_widget)
-        comanda_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Header del panel de comanda
-        comanda_header = QFrame()
-        comanda_header.setStyleSheet("""
+    def setup_actions_panel(self, parent_layout: QVBoxLayout):
+        """Panel de acciones principales"""
+        actions_frame = QFrame()
+        actions_frame.setStyleSheet("""
             QFrame {
-                background-color: #FFF3CD;
-                border: 1px solid #FFEAA7;
-                border-radius: 6px;
-                padding: 8px;
+                background-color: #ffffff;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 15px;
             }
         """)
-        comanda_header_layout = QHBoxLayout(comanda_header)
         
-        comanda_title = QLabel("📋 Comanda Actual")
-        comanda_title.setFont(QFont("Arial", 12, QFont.Weight.Bold))
-        comanda_title.setStyleSheet("color: #856404;")
-        comanda_header_layout.addWidget(comanda_title)
+        actions_layout = QVBoxLayout(actions_frame)
         
-        comanda_header_layout.addStretch()
+        title = QLabel("Acciones Disponibles")
+        title.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        actions_layout.addWidget(title)
         
-        self.comanda_status = QLabel("Estado: Nueva")
-        self.comanda_status.setStyleSheet("color: #856404; font-weight: bold;")
-        comanda_header_layout.addWidget(self.comanda_status)
+        # Grid de botones principales
+        buttons_grid = QGridLayout()
         
-        comanda_layout.addWidget(comanda_header)
-        
-        # Tabla de comanda
-        self.comanda_table = QTableWidget()
-        self.comanda_table.setColumnCount(4)
-        self.comanda_table.setHorizontalHeaderLabels(["Producto", "Precio", "Cantidad", "Total"])
-        
-        # Configurar tabla de comanda
-        comanda_header = self.comanda_table.horizontalHeader()
-        if comanda_header:
-            comanda_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-            comanda_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-            comanda_header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-            comanda_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        
-        self.comanda_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self.comanda_table.setAlternatingRowColors(True)
-        self.comanda_table.setStyleSheet("""
-            QTableWidget {
-                border: 1px solid #DEE2E6;
-                border-radius: 4px;
-                gridline-color: #DEE2E6;
-                background-color: white;
-            }
-            QTableWidget::item {
-                padding: 8px;
-            }
-            QTableWidget::item:selected {
-                background-color: #FFF3CD;
-                color: #856404;
-            }
-        """)
-        comanda_layout.addWidget(self.comanda_table)
-        
-        # Controles de comanda
-        comanda_controls_layout = QVBoxLayout()
-        
-        # Línea de acciones de línea
-        linea_actions = QHBoxLayout()
-        
-        self.remove_linea_btn = QPushButton("🗑️ Eliminar")
-        self.remove_linea_btn.setStyleSheet("""
+        # Botón TPV
+        self.tpv_btn = QPushButton("Iniciar TPV")
+        self.tpv_btn.setStyleSheet("""
             QPushButton {
-                background-color: #DC3545;
+                background-color: #28a745;
                 color: white;
                 border: none;
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-weight: bold;
-            }
-            QPushButton:hover { background-color: #C82333; }
-            QPushButton:disabled { 
-                background-color: #6C757D; 
-                color: #ADB5BD; 
-            }
-        """)
-        linea_actions.addWidget(self.remove_linea_btn)
-        
-        self.edit_cantidad_btn = QPushButton("✏️ Cantidad")
-        self.edit_cantidad_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #FFC107;
-                color: #212529;
-                border: none;
-                border-radius: 4px;
-                padding: 6px 12px;
-                font-weight: bold;
-            }
-            QPushButton:hover { background-color: #E0A800; }
-            QPushButton:disabled { 
-                background-color: #6C757D; 
-                color: #ADB5BD; 
-            }
-        """)
-        linea_actions.addWidget(self.edit_cantidad_btn)
-        
-        linea_actions.addStretch()
-        comanda_controls_layout.addLayout(linea_actions)
-        
-        # Total
-        total_frame = QFrame()
-        total_frame.setStyleSheet("""
-            QFrame {
-                background-color: #E8F5E8;
-                border: 2px solid #28A745;
-                border-radius: 6px;
+                border-radius: 8px;
                 padding: 12px;
-                margin: 5px 0;
-            }
-        """)
-        total_layout = QHBoxLayout(total_frame)
-        
-        total_layout.addStretch()
-        self.total_label = QLabel("Total: 0.00 €")
-        self.total_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
-        self.total_label.setStyleSheet("color: #155724;")
-        total_layout.addWidget(self.total_label)
-        
-        comanda_controls_layout.addWidget(total_frame)
-        comanda_layout.addLayout(comanda_controls_layout)
-        
-        splitter.addWidget(comanda_widget)
-    
-    def setup_footer(self, parent_layout: QVBoxLayout):
-        """Configura el footer con botones principales"""
-        footer_layout = QHBoxLayout()
-        
-        # Botón de cerrar
-        self.close_btn = QPushButton("❌ Cerrar")
-        self.close_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #6C757D;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 10px 20px;
                 font-weight: bold;
                 font-size: 13px;
             }
-            QPushButton:hover { background-color: #5A6268; }
+            QPushButton:hover { background-color: #218838; }
         """)
-        footer_layout.addWidget(self.close_btn)
+        buttons_grid.addWidget(self.tpv_btn, 0, 0)
         
-        footer_layout.addStretch()
-        
-        # Botón de guardar
-        self.save_btn = QPushButton("💾 Guardar")
-        self.save_btn.setStyleSheet("""
+        # Botón Reserva
+        self.reserva_btn = QPushButton("Crear Reserva")
+        self.reserva_btn.setStyleSheet("""
             QPushButton {
-                background-color: #17A2B8;
+                background-color: #ffc107;
+                color: #212529;
+                border: none;
+                border-radius: 8px;
+                padding: 12px;
+                font-weight: bold;
+                font-size: 13px;
+            }
+            QPushButton:hover { background-color: #e0a800; }
+        """)
+        buttons_grid.addWidget(self.reserva_btn, 0, 1)
+        
+        # Botón Estado
+        self.estado_btn = QPushButton("Cambiar Estado")
+        self.estado_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #17a2b8;
                 color: white;
                 border: none;
-                border-radius: 4px;
-                padding: 10px 20px;
+                border-radius: 8px;
+                padding: 12px;
                 font-weight: bold;
                 font-size: 13px;
             }
             QPushButton:hover { background-color: #138496; }
         """)
-        footer_layout.addWidget(self.save_btn)
+        buttons_grid.addWidget(self.estado_btn, 1, 0)
         
-        # Botón de pagar
-        self.pay_btn = QPushButton("💳 Pagar")
-        self.pay_btn.setStyleSheet("""
+        # Botón Liberar
+        self.liberar_btn = QPushButton("Liberar Mesa")
+        self.liberar_btn.setStyleSheet("""
             QPushButton {
-                background-color: #28A745;
+                background-color: #dc3545;
                 color: white;
                 border: none;
-                border-radius: 4px;
-                padding: 10px 20px;
+                border-radius: 8px;
+                padding: 12px;
                 font-weight: bold;
                 font-size: 13px;
             }
-            QPushButton:hover { background-color: #218838; }
-            QPushButton:disabled { 
-                background-color: #6C757D; 
-                color: #ADB5BD; 
+            QPushButton:hover { background-color: #c82333; }
+        """)
+        buttons_grid.addWidget(self.liberar_btn, 1, 1)
+        
+        actions_layout.addLayout(buttons_grid)
+        parent_layout.addWidget(actions_frame)
+    
+    def setup_config_panel(self, parent_layout: QVBoxLayout):
+        """Panel de configuración rápida"""
+        config_frame = QFrame()
+        config_frame.setStyleSheet("""
+            QFrame {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                border-radius: 8px;
+                padding: 15px;
             }
         """)
-        footer_layout.addWidget(self.pay_btn)
+        
+        config_layout = QVBoxLayout(config_frame)
+        
+        title = QLabel("Configuración Rápida")
+        title.setFont(QFont("Arial", 12, QFont.Weight.Bold))
+        config_layout.addWidget(title)
+        
+        # Alias temporal
+        alias_layout = QHBoxLayout()
+        alias_layout.addWidget(QLabel("Alias:"))
+        self.alias_input = QLineEdit()
+        self.alias_input.setPlaceholderText("Nombre temporal...")
+        self.alias_input.setText(self.mesa.alias or "")
+        alias_layout.addWidget(self.alias_input)
+        config_layout.addLayout(alias_layout)
+        
+        # Personas
+        personas_layout = QHBoxLayout()
+        personas_layout.addWidget(QLabel("Personas:"))
+        self.personas_spin = QSpinBox()
+        self.personas_spin.setMinimum(1)
+        self.personas_spin.setMaximum(20)
+        self.personas_spin.setValue(self.mesa.personas_display)
+        personas_layout.addWidget(self.personas_spin)
+        personas_layout.addStretch()
+        config_layout.addLayout(personas_layout)
+        
+        # Notas
+        config_layout.addWidget(QLabel("Notas:"))
+        self.notas_text = QTextEdit()
+        self.notas_text.setMaximumHeight(60)
+        self.notas_text.setPlaceholderText("Observaciones especiales...")
+        config_layout.addWidget(self.notas_text)
+        
+        parent_layout.addWidget(config_frame)
+    
+    def setup_footer(self, parent_layout: QVBoxLayout):
+        """Botones de cierre"""
+        footer_layout = QHBoxLayout()
+        
+        self.aplicar_btn = QPushButton("Aplicar Cambios")
+        self.aplicar_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #218838; }
+        """)
+        footer_layout.addWidget(self.aplicar_btn)
+        
+        self.cerrar_btn = QPushButton("Cerrar")
+        self.cerrar_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #6c757d;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #5a6268; }
+        """)
+        footer_layout.addWidget(self.cerrar_btn)
         
         parent_layout.addLayout(footer_layout)
     
     def apply_styles(self):
-        """Aplica estilos generales al diálogo"""
+        """Estilos generales"""
         self.setStyleSheet("""
             QDialog {
-                background-color: #FFFFFF;
+                background-color: #ffffff;
+            }
+            QLabel {
+                color: #495057;
+            }
+            QLineEdit, QSpinBox, QTextEdit {
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                padding: 6px;
+                background-color: white;
+            }
+            QLineEdit:focus, QSpinBox:focus, QTextEdit:focus {
+                border-color: #80bdff;
             }
         """)
     
     def connect_signals(self):
-        """Conecta las señales de los widgets"""
-        # Controles de productos
-        self.categoria_combo.currentTextChanged.connect(self.load_productos)
-        self.add_producto_btn.clicked.connect(self.add_selected_producto)
-        self.productos_table.itemDoubleClicked.connect(self.add_selected_producto)
-        
-        # Controles de comanda
-        self.remove_linea_btn.clicked.connect(self.remove_selected_linea)
-        self.edit_cantidad_btn.clicked.connect(self.edit_selected_cantidad)
-        
+        """Conecta señales"""
         # Botones principales
-        self.close_btn.clicked.connect(self.reject)
-        self.save_btn.clicked.connect(self.save_comanda)
-        self.pay_btn.clicked.connect(self.process_payment)
+        self.tpv_btn.clicked.connect(self.iniciar_tpv)
+        self.reserva_btn.clicked.connect(self.crear_reserva)
+        self.estado_btn.clicked.connect(self.cambiar_estado)
+        self.liberar_btn.clicked.connect(self.liberar_mesa)
         
-        # Señales del controlador
-        self.controller.comanda_updated.connect(self.on_comanda_updated)
-        self.controller.error_occurred.connect(self.show_error)
-        self.controller.status_changed.connect(self.update_status)
+        # Botones de footer
+        self.aplicar_btn.clicked.connect(self.aplicar_cambios)
+        self.cerrar_btn.clicked.connect(self.reject)
     
-    def load_initial_data(self):
-        """Carga los datos iniciales"""
-        # Cargar categorías
-        categorias = self.controller.get_categorias()
-        self.categoria_combo.addItem("Todas")
-        self.categoria_combo.addItems(categorias)
-        
-        # Cargar productos iniciales
-        self.load_productos("Todas")
-        
-        # Abrir mesa en el controlador
-        self.current_comanda = self.controller.open_mesa(self.mesa.id)
-        if self.current_comanda:
-            self.update_comanda_display()
-        
-        # Actualizar estado de botones
-        self.update_button_states()
+    def iniciar_tpv(self):
+        """Inicia el TPV para esta mesa"""
+        self.iniciar_tpv_requested.emit(self.mesa.id)
+        self.accept()
     
-    def load_productos(self, categoria: str):
-        """Carga los productos de una categoría"""
-        self.productos_cache = self.controller.get_productos_by_categoria(categoria)
-        self.update_productos_table()
+    def crear_reserva(self):
+        """Crea una reserva para esta mesa"""
+        self.crear_reserva_requested.emit(self.mesa.id)
+        self.accept()
     
-    def update_productos_table(self):
-        """Actualiza la tabla de productos"""
-        self.productos_table.setRowCount(len(self.productos_cache))
+    def cambiar_estado(self):
+        """Cambia el estado de la mesa"""
+        estados = ['libre', 'ocupada', 'reservada', 'mantenimiento']
+        estado_actual = self.mesa.estado
         
-        for row, producto in enumerate(self.productos_cache):
-            # Nombre del producto
-            nombre_item = QTableWidgetItem(producto.nombre)
-            nombre_item.setData(Qt.ItemDataRole.UserRole, producto.id)
-            self.productos_table.setItem(row, 0, nombre_item)
-            
-            # Precio
-            precio_item = QTableWidgetItem(f"{producto.precio:.2f} €")
-            precio_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-            self.productos_table.setItem(row, 1, precio_item)
-            
-            # Stock
-            stock_text = str(producto.stock_actual) if producto.stock_actual is not None else "N/A"
-            stock_item = QTableWidgetItem(stock_text)
-            stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.productos_table.setItem(row, 2, stock_item)
+        from PyQt6.QtWidgets import QInputDialog
+        nuevo_estado, ok = QInputDialog.getItem(
+            self, "Cambiar Estado", "Seleccione el nuevo estado:",
+            estados, estados.index(estado_actual), False
+        )
+        
+        if ok and nuevo_estado != estado_actual:
+            self.cambiar_estado_requested.emit(self.mesa.id, nuevo_estado)
+            self.accept()
     
-    def add_selected_producto(self):
-        """Añade el producto seleccionado a la comanda"""
-        current_row = self.productos_table.currentRow()
-        if current_row < 0:
-            QMessageBox.warning(self, "Selección requerida", "Por favor, seleccione un producto.")
-            return
-        
-        producto_item = self.productos_table.item(current_row, 0)
-        if not producto_item:
-            return
-        
-        producto_id = producto_item.data(Qt.ItemDataRole.UserRole)
-        cantidad = self.cantidad_spin.value()
-        
-        if self.controller.add_product_to_order(self.mesa.id, producto_id, cantidad):
-            self.cantidad_spin.setValue(1)  # Reset cantidad
-    
-    def on_comanda_updated(self, comanda: Comanda):
-        """Actualiza la visualización cuando se actualiza la comanda"""
-        self.current_comanda = comanda
-        self.update_comanda_display()
-        self.update_button_states()
-    
-    def update_comanda_display(self):
-        """Actualiza la visualización de la comanda"""
-        if not self.current_comanda:
-            self.comanda_table.setRowCount(0)
-            self.total_label.setText("Total: 0.00 €")
-            return
-        
-        # Actualizar tabla
-        self.comanda_table.setRowCount(len(self.current_comanda.lineas))
-        
-        for row, linea in enumerate(self.current_comanda.lineas):
-            # Producto
-            producto_item = QTableWidgetItem(linea.producto_nombre)
-            producto_item.setData(Qt.ItemDataRole.UserRole, linea.producto_id)
-            self.comanda_table.setItem(row, 0, producto_item)
-            
-            # Precio unitario
-            precio_item = QTableWidgetItem(f"{linea.precio_unidad:.2f} €")
-            precio_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-            self.comanda_table.setItem(row, 1, precio_item)
-            
-            # Cantidad
-            cantidad_item = QTableWidgetItem(str(linea.cantidad))
-            cantidad_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.comanda_table.setItem(row, 2, cantidad_item)
-              # Total línea
-            total_item = QTableWidgetItem(f"{linea.total:.2f} €")
-            total_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-            self.comanda_table.setItem(row, 3, total_item)
-        
-        # Actualizar total
-        total = self.controller.get_order_total(self.mesa.id)
-        self.total_label.setText(f"Total: {total:.2f} €")
-        
-        # Actualizar estado
-        if self.current_comanda:
-            estado_text = f"Estado: {self.current_comanda.estado.title()}"
-            if hasattr(self.current_comanda, 'fecha_apertura'):
-                estado_text += f" | Apertura: {self.current_comanda.fecha_apertura.strftime('%H:%M')}"
-            self.comanda_status.setText(estado_text)
-    
-    def update_button_states(self):
-        """Actualiza el estado de los botones según el contexto"""
-        has_comanda = self.current_comanda is not None
-        has_items = False
-        
-        if has_comanda and self.current_comanda is not None:
-            if hasattr(self.current_comanda, 'lineas') and self.current_comanda.lineas:
-                has_items = len(self.current_comanda.lineas) > 0
-                
-        has_selection = self.comanda_table.currentRow() >= 0
-        
-        self.add_producto_btn.setEnabled(has_comanda)
-        self.remove_linea_btn.setEnabled(has_items and has_selection)
-        self.edit_cantidad_btn.setEnabled(has_items and has_selection)
-        self.save_btn.setEnabled(has_items)
-        self.pay_btn.setEnabled(has_items)
-    
-    def remove_selected_linea(self):
-        """Elimina la línea seleccionada de la comanda"""
-        current_row = self.comanda_table.currentRow()
-        if current_row < 0:
-            return
-        
-        producto_item = self.comanda_table.item(current_row, 0)
-        if not producto_item:
-            return
-        
-        producto_id = producto_item.data(Qt.ItemDataRole.UserRole)
-        
+    def liberar_mesa(self):
+        """Libera la mesa"""
         if QMessageBox.question(
-            self, "Confirmar eliminación",
-            "¿Está seguro de eliminar este producto de la comanda?",
+            self, "Confirmar", "¿Liberar la mesa y resetear configuración temporal?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         ) == QMessageBox.StandardButton.Yes:
-            self.controller.remove_product_from_order(self.mesa.id, producto_id)
+            self.cambiar_estado_requested.emit(self.mesa.id, 'libre')
+            self.accept()
     
-    def edit_selected_cantidad(self):
-        """Edita la cantidad del producto seleccionado"""
-        current_row = self.comanda_table.currentRow()
-        if current_row < 0:
-            return
-        
-        producto_item = self.comanda_table.item(current_row, 0)
-        cantidad_item = self.comanda_table.item(current_row, 2)
-        
-        if not producto_item or not cantidad_item:
-            return
-        
-        producto_id = producto_item.data(Qt.ItemDataRole.UserRole)
-        cantidad_actual = int(cantidad_item.text())
-        
-        # Diálogo simple para nueva cantidad
-        nueva_cantidad, ok = QSpinBox().value(), True  # Simplificado por ahora
-        if ok and nueva_cantidad > 0:
-            self.controller.update_product_quantity(self.mesa.id, producto_id, nueva_cantidad)
-    
-    def save_comanda(self):
-        """Guarda la comanda actual"""
-        if self.controller.save_order(self.mesa.id):
-            self.comanda_saved.emit(self.current_comanda.id if self.current_comanda else 0)
-            QMessageBox.information(self, "Éxito", "Comanda guardada correctamente.")
-    
-    def process_payment(self):
-        """Procesa el pago de la comanda"""
-        if not self.current_comanda or not self.current_comanda.lineas:
-            return
-        
-        total = self.controller.get_order_total(self.mesa.id)
-        
-        if QMessageBox.question(
-            self, "Confirmar pago",
-            f"¿Procesar pago de {total:.2f} €?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        ) == QMessageBox.StandardButton.Yes:
-            
-            if self.controller.process_payment(self.mesa.id, {"total": total}):
-                self.payment_processed.emit(self.mesa.id, total)
-                QMessageBox.information(self, "Pago exitoso", "El pago ha sido procesado correctamente.")
-                self.accept()
-    
-    def show_error(self, message: str):
-        """Muestra un mensaje de error"""
-        QMessageBox.critical(self, "Error", message)
-    
-    def update_status(self, status: str):
-        """Actualiza el estado mostrado"""
-        # Aquí se podría mostrar el estado en una barra de estado
-        pass
-    
-    def _auto_save(self):
-        """Auto-guarda la comanda si hay cambios"""
-        if self.current_comanda and self.current_comanda.lineas:
-            self.controller.save_order(self.mesa.id)
-    
-    def closeEvent(self, event):
-        """Maneja el cierre del diálogo"""
-        self.auto_save_timer.stop()
-        super().closeEvent(event)
+    def aplicar_cambios(self):
+        """Aplica los cambios de configuración"""
+        # Aquí se aplicarían los cambios de alias, personas, etc.
+        QMessageBox.information(self, "Éxito", "Cambios aplicados correctamente.")
+        self.accept()

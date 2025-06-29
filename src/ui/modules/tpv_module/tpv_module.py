@@ -282,11 +282,21 @@ class TPVModule(BaseModule):
         """Callback cuando se hace clic en una mesa"""
         try:
             logger.info(f"Mesa {mesa.numero} seleccionada")
-            # TODO: Abrir diálogo de gestión de mesa o menú contextual
-            QMessageBox.information(self, "Mesa Seleccionada", 
-                                  f"Mesa {mesa.numero} - Estado: {mesa.estado}")
+            # Abrir el nuevo diálogo de gestión de mesa
+            from .dialogs.mesa_dialog import MesaDialog
+            
+            dialog = MesaDialog(mesa, self)
+            
+            # Conectar señales del diálogo
+            dialog.iniciar_tpv_requested.connect(self._on_iniciar_tpv)
+            dialog.crear_reserva_requested.connect(self._on_crear_reserva)
+            dialog.cambiar_estado_requested.connect(self._on_cambiar_estado_mesa)
+            
+            dialog.exec()
+            
         except Exception as e:
             logger.error(f"Error procesando clic en mesa: {e}")
+            QMessageBox.critical(self, "Error", f"Error al abrir diálogo de mesa: {str(e)}")
     
     def _refresh_all_components(self):
         """Refresca todos los componentes después de cambios en los datos"""
@@ -352,7 +362,46 @@ class TPVModule(BaseModule):
             else:
                 logger.warning("No hay servicio TPV disponible")
         except Exception as e:
-            logger.error(f"Error cargando datos del TPV: {e}")    
+            logger.error(f"Error cargando datos del TPV: {e}")
+    
+    def _on_iniciar_tpv(self, mesa_id: int):
+        """Inicia el TPV para una mesa específica"""
+        try:
+            mesa = next((m for m in self.mesas if m.id == mesa_id), None)
+            if mesa:
+                logger.info(f"Iniciando TPV para mesa {mesa.numero}")
+                QMessageBox.information(self, "TPV", f"Iniciando TPV para Mesa {mesa.numero}")
+                # TODO: Implementar apertura del TPV completo
+            else:
+                QMessageBox.warning(self, "Error", "Mesa no encontrada")
+        except Exception as e:
+            logger.error(f"Error iniciando TPV: {e}")
+    
+    def _on_crear_reserva(self, mesa_id: int):
+        """Crea una reserva para una mesa específica"""
+        try:
+            mesa = next((m for m in self.mesas if m.id == mesa_id), None)
+            if mesa:
+                logger.info(f"Creando reserva para mesa {mesa.numero}")
+                QMessageBox.information(self, "Reserva", f"Creando reserva para Mesa {mesa.numero}")
+                # TODO: Implementar sistema de reservas
+            else:
+                QMessageBox.warning(self, "Error", "Mesa no encontrada")
+        except Exception as e:
+            logger.error(f"Error creando reserva: {e}")
+    
+    def _on_cambiar_estado_mesa(self, mesa_id: int, nuevo_estado: str):
+        """Cambia el estado de una mesa"""
+        try:
+            if self.mesa_controller.cambiar_estado_mesa(mesa_id, nuevo_estado):
+                logger.info(f"Estado de mesa {mesa_id} cambiado a {nuevo_estado}")
+                # Recargar mesas para reflejar el cambio
+                self.mesa_controller.cargar_mesas()
+            else:
+                QMessageBox.warning(self, "Error", "No se pudo cambiar el estado de la mesa")
+        except Exception as e:
+            logger.error(f"Error cambiando estado de mesa: {e}")
+            QMessageBox.critical(self, "Error", f"Error al cambiar estado: {str(e)}")    
     # MÉTODO ELIMINADO: on_search_changed - La búsqueda ahora se maneja en el header ultra-premium
     # def on_search_changed(self, text):
     #     """Maneja cambios en el campo de búsqueda"""

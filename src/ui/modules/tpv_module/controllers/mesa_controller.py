@@ -170,7 +170,7 @@ class MesaController(QObject):
                 return False
             
             # Validar estado
-            estados_validos = ["libre", "ocupada", "reservada", "fuera_servicio"]
+            estados_validos = ["libre", "ocupada", "reservada", "mantenimiento"]
             if nuevo_estado not in estados_validos:
                 self.error_occurred.emit(f"Estado inválido: {nuevo_estado}")
                 return False
@@ -213,9 +213,9 @@ class MesaController(QObject):
         """Reserva una mesa (cambia estado a reservada)"""
         return self.cambiar_estado_mesa(mesa_id, "reservada")
     
-    def poner_fuera_servicio(self, mesa_id: int) -> bool:
-        """Pone una mesa fuera de servicio"""
-        return self.cambiar_estado_mesa(mesa_id, "fuera_servicio")
+    def poner_en_mantenimiento(self, mesa_id: int) -> bool:
+        """Pone una mesa en mantenimiento"""
+        return self.cambiar_estado_mesa(mesa_id, "mantenimiento")
     
     def get_mesa_by_id(self, mesa_id: int) -> Optional[Mesa]:
         """Obtiene una mesa por su ID"""
