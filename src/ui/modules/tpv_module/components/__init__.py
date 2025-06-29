@@ -10,6 +10,6 @@ Componentes principales para la funcionalidad del TPV:
 - TPV avanzado con funcionalidades extendidas
 """
 
-from .advanced_tpv_component import AdvancedTPVModule
+from .tpv_avanzado import TPVAvanzado
 
-__all__ = ['AdvancedTPVModule']
+__all__ = ['TPVAvanzado']

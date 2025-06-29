@@ -370,12 +370,52 @@ class TPVModule(BaseModule):
             mesa = next((m for m in self.mesas if m.id == mesa_id), None)
             if mesa:
                 logger.info(f"Iniciando TPV para mesa {mesa.numero}")
-                QMessageBox.information(self, "TPV", f"Iniciando TPV para Mesa {mesa.numero}")
-                # TODO: Implementar apertura del TPV completo
+                
+                # Importar y crear el TPV avanzado
+                from .components.tpv_avanzado import TPVAvanzado
+                from PyQt6.QtWidgets import QDialog, QVBoxLayout
+                
+                # Crear diálogo para el TPV
+                dialog = QDialog(self)
+                dialog.setWindowTitle(f"TPV - Mesa {mesa.numero}")
+                dialog.setModal(True)
+                dialog.resize(900, 700)
+                
+                layout = QVBoxLayout(dialog)
+                layout.setContentsMargins(0, 0, 0, 0)
+                
+                # Crear el componente TPV avanzado
+                tpv_widget = TPVAvanzado(mesa, self.tpv_service, dialog)
+                
+                # Conectar señales
+                tpv_widget.pedido_completado.connect(
+                    lambda mesa_id, total: self._on_pedido_completado(mesa_id, total, dialog)
+                )
+                
+                layout.addWidget(tpv_widget)
+                dialog.exec()
+                
             else:
                 QMessageBox.warning(self, "Error", "Mesa no encontrada")
         except Exception as e:
             logger.error(f"Error iniciando TPV: {e}")
+            QMessageBox.critical(self, "Error", f"Error al abrir TPV: {str(e)}")
+    
+    def _on_pedido_completado(self, mesa_id: int, total: float, dialog):
+        """Maneja la finalización de un pedido"""
+        try:
+            mesa = next((m for m in self.mesas if m.id == mesa_id), None)
+            if mesa:
+                QMessageBox.information(
+                    self, "Pedido Completado", 
+                    f"Pedido de Mesa {mesa.numero} completado\nTotal: €{total:.2f}"
+                )
+                # Cerrar el diálogo del TPV
+                dialog.accept()
+                # Recargar mesas para actualizar estado
+                self.mesa_controller.cargar_mesas()
+        except Exception as e:
+            logger.error(f"Error procesando pedido completado: {e}")
     
     def _on_crear_reserva(self, mesa_id: int):
         """Crea una reserva para una mesa específica"""

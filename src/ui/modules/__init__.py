@@ -5,7 +5,7 @@ from .module_base_interface import BaseModule
 # from .hospederia_module import HospederiaTab  # Comentado temporalmente
 from .tpv_module.tpv_module import TPVModule
 
-# from .tpv_module.components.advanced_tpv_component import AdvancedTPVModule  # Comentado temporalmente
+
 from .inventario_module import (
     InventarioModulePro as InventarioTab,
 )  # Usar versión profesional

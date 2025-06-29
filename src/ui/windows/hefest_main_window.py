@@ -301,7 +301,7 @@ class MainWindow(QMainWindow):
             "dashboard": UltraModernAdminDashboard,  # NUEVO: Dashboard V3 Ultra-Moderno
             # Otros módulos (usar sistema antiguo temporalmente)
             "tpv": "ui.modules.tpv_module.tpv_module.TPVModule",
-            "advanced_tpv": "ui.modules.tpv_module.components.advanced_tpv_component.AdvancedTPVModule",
+            "advanced_tpv": "ui.modules.tpv_module.components.tpv_avanzado.TPVAvanzado",
             "hospederia": "ui.modules.hospederia_module.HospederiaModule",
             "inventario": "ui.modules.inventario_module.InventarioModulePro",
             "audit": "ui.modules.audit_module.AuditModule",

@@ -157,11 +157,13 @@ class MesaDialog(QDialog):
         actions_frame.setMinimumHeight(150)  # Más alto
         actions_frame.setStyleSheet("""
             QFrame {
-                background-color: #fff;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffffff, stop:1 #f8f9fa);
                 border: 1px solid #dee2e6;
                 border-radius: 12px;
-                padding: 0px 0px 10px 0px; /* menos padding inferior */
+                padding: 0px 0px 10px 0px;
                 margin: 8px 0 8px 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             }
         """)
         actions_layout = QVBoxLayout(actions_frame)
@@ -182,33 +184,81 @@ class MesaDialog(QDialog):
         buttons_row.setSpacing(14)
         buttons_row.setContentsMargins(0, 0, 0, 0)
 
-        # Botones principales, más compactos
-        self.tpv_btn = QPushButton("Iniciar TPV")
-        self.tpv_btn.setMinimumHeight(32)
+        # Botones principales con efectos modernos
+        self.tpv_btn = QPushButton("🍽️ Iniciar TPV")
+        self.tpv_btn.setMinimumHeight(36)
         self.tpv_btn.setMaximumWidth(120)
-        self.tpv_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
-        self.tpv_btn.setStyleSheet("background-color: #28a745; color: white; border-radius: 8px;")
+        self.tpv_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.tpv_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #34ce57, stop:1 #28a745);
+                color: white; border: none; border-radius: 10px;
+                box-shadow: 0 3px 6px rgba(40,167,69,0.3);
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #28a745, stop:1 #1e7e34);
+                transform: translateY(-1px);
+            }
+        """)
         buttons_row.addWidget(self.tpv_btn)
 
-        self.reserva_btn = QPushButton("Crear Reserva")
-        self.reserva_btn.setMinimumHeight(32)
+        self.reserva_btn = QPushButton("📅 Reserva")
+        self.reserva_btn.setMinimumHeight(36)
         self.reserva_btn.setMaximumWidth(120)
-        self.reserva_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
-        self.reserva_btn.setStyleSheet("background-color: #ffc107; color: #212529; border-radius: 8px;")
+        self.reserva_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.reserva_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffd93d, stop:1 #ffc107);
+                color: #212529; border: none; border-radius: 10px;
+                box-shadow: 0 3px 6px rgba(255,193,7,0.3);
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffc107, stop:1 #e0a800);
+                transform: translateY(-1px);
+            }
+        """)
         buttons_row.addWidget(self.reserva_btn)
 
-        self.estado_btn = QPushButton("Cambiar Estado")
-        self.estado_btn.setMinimumHeight(32)
+        self.estado_btn = QPushButton("🔄 Estado")
+        self.estado_btn.setMinimumHeight(36)
         self.estado_btn.setMaximumWidth(120)
-        self.estado_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
-        self.estado_btn.setStyleSheet("background-color: #17a2b8; color: white; border-radius: 8px;")
+        self.estado_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.estado_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #20c997, stop:1 #17a2b8);
+                color: white; border: none; border-radius: 10px;
+                box-shadow: 0 3px 6px rgba(23,162,184,0.3);
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #17a2b8, stop:1 #138496);
+                transform: translateY(-1px);
+            }
+        """)
         buttons_row.addWidget(self.estado_btn)
 
-        self.liberar_btn = QPushButton("Liberar Mesa")
-        self.liberar_btn.setMinimumHeight(32)
+        self.liberar_btn = QPushButton("🔓 Liberar")
+        self.liberar_btn.setMinimumHeight(36)
         self.liberar_btn.setMaximumWidth(120)
-        self.liberar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
-        self.liberar_btn.setStyleSheet("background-color: #dc3545; color: white; border-radius: 8px;")
+        self.liberar_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.liberar_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #e74c3c, stop:1 #dc3545);
+                color: white; border: none; border-radius: 10px;
+                box-shadow: 0 3px 6px rgba(220,53,69,0.3);
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #dc3545, stop:1 #c82333);
+                transform: translateY(-1px);
+            }
+        """)
         buttons_row.addWidget(self.liberar_btn)
 
         actions_layout.addLayout(buttons_row)
@@ -222,11 +272,13 @@ class MesaDialog(QDialog):
         bordered_frame = QFrame()
         bordered_frame.setStyleSheet("""
             QFrame {
-                background-color: #f8f9fa;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #f8f9fa, stop:1 #e9ecef);
                 border: 1px solid #dee2e6;
-                border-radius: 8px;
+                border-radius: 12px;
                 padding: 0px;
                 margin: 8px 0 8px 0;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.08);
             }
         """)
         bordered_layout = QVBoxLayout(bordered_frame)
@@ -235,8 +287,8 @@ class MesaDialog(QDialog):
 
         # Título fuera del scroll
         title = QLabel("Configuración Rápida")
-        title.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        title.setStyleSheet("color: #22223b; background: transparent; padding-top: 10px; padding-bottom: 8px; letter-spacing: 0.5px;")
+        title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+        title.setStyleSheet("color: #22223b; background: transparent; padding-top: 5px; padding-bottom: 8px; letter-spacing: 0.5px;")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setMinimumHeight(56)
         title.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
@@ -274,7 +326,7 @@ class MesaDialog(QDialog):
         self.alias_input.setPlaceholderText("Nombre temporal...")
         self.alias_input.setText(self.mesa.alias or "")
         self.alias_input.setFont(QFont("Segoe UI", 10))
-        self.alias_input.setMinimumHeight(28)
+        self.alias_input.setMinimumHeight(40)  # Ajustado a 40px
         config_layout.addWidget(self.alias_input)
 
         # Personas
@@ -288,7 +340,7 @@ class MesaDialog(QDialog):
         self.personas_spin.setMaximum(20)
         self.personas_spin.setValue(self.mesa.personas_display)
         self.personas_spin.setFont(QFont("Segoe UI", 10))
-        self.personas_spin.setMinimumHeight(28)
+        self.personas_spin.setMinimumHeight(40)  # Ajustado a 40px
         config_layout.addWidget(self.personas_spin)
 
         # Notas
@@ -298,8 +350,8 @@ class MesaDialog(QDialog):
         config_layout.addWidget(notas_label)
 
         self.notas_text = QTextEdit()
-        self.notas_text.setMinimumHeight(48)
-        self.notas_text.setMaximumHeight(80)
+        self.notas_text.setMinimumHeight(56)  # Ligeramente mayor para compensar
+        self.notas_text.setMaximumHeight(90)
         self.notas_text.setPlaceholderText("Observaciones especiales...")
         self.notas_text.setFont(QFont("Segoe UI", 9))
         config_layout.addWidget(self.notas_text)
@@ -315,57 +367,70 @@ class MesaDialog(QDialog):
         """Botones de cierre"""
         footer_layout = QHBoxLayout()
 
-        self.aplicar_btn = QPushButton("Aplicar Cambios")
+        self.aplicar_btn = QPushButton("✅ Aplicar Cambios")
         self.aplicar_btn.setStyleSheet("""
             QPushButton {
-                background-color: #28a745;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 10px 20px;
-                font-weight: bold;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #34ce57, stop:1 #28a745);
+                color: white; border: none; border-radius: 8px;
+                padding: 12px 24px; font-weight: bold;
+                box-shadow: 0 3px 8px rgba(40,167,69,0.3);
             }
-            QPushButton:hover { background-color: #218838; }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #28a745, stop:1 #1e7e34);
+                transform: translateY(-1px);
+            }
         """)
         footer_layout.addWidget(self.aplicar_btn)
 
-        self.cerrar_btn = QPushButton("Cerrar")
+        self.cerrar_btn = QPushButton("❌ Cerrar")
         self.cerrar_btn.setStyleSheet("""
             QPushButton {
-                background-color: #6c757d;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 10px 20px;
-                font-weight: bold;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #8e9aaf, stop:1 #6c757d);
+                color: white; border: none; border-radius: 8px;
+                padding: 12px 24px; font-weight: bold;
+                box-shadow: 0 3px 8px rgba(108,117,125,0.3);
             }
-            QPushButton:hover { background-color: #5a6268; }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #6c757d, stop:1 #5a6268);
+                transform: translateY(-1px);
+            }
         """)
         footer_layout.addWidget(self.cerrar_btn)
 
         parent_layout.addLayout(footer_layout)
 
     def apply_styles(self):
-        """Estilos generales"""
+        """Estilos generales con efectos modernos"""
         self.setStyleSheet("""
             QDialog {
-                background-color: #ffffff;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffffff, stop:1 #f8f9fa);
                 font-family: 'Segoe UI', Arial, sans-serif;
+                border: 2px solid #e9ecef;
+                border-radius: 16px;
             }
             QLabel {
                 color: #495057;
                 font-family: 'Segoe UI', Arial, sans-serif;
             }
             QLineEdit, QSpinBox, QTextEdit {
-                border: 1px solid #ced4da;
-                border-radius: 4px;
-                padding: 8px;
-                background-color: white;
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+                padding: 10px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ffffff, stop:1 #f8f9fa);
                 font-family: 'Segoe UI', Arial, sans-serif;
                 font-size: 11px;
+                box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
             }
             QLineEdit:focus, QSpinBox:focus, QTextEdit:focus {
-                border-color: #80bdff;
+                border-color: #667eea;
+                background: white;
+                box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
                 outline: none;
             }
             QPushButton {
