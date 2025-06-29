@@ -1,0 +1,33 @@
+﻿# ...existing code...
+
+def update_ultra_premium_stats(instance):
+    """Calcula y actualiza las métricas premium llamando al método de UI del header"""
+    if not hasattr(instance, 'mesas') or not instance.mesas:
+        update_compact_stats(instance, 0, 0, 0, 0)
+        # También actualizar los widgets premium a cero
+        for attr in ["zonas_widget", "mesas_total_widget", "mesas_libres_widget", "mesas_ocupadas_widget", "mesas_reservadas_widget"]:
+            widget = getattr(instance, attr, None)
+            if widget and hasattr(widget, 'value_label'):
+                widget.value_label.setText("0")
+        return
+    total_mesas = len(instance.mesas)
+    mesas_ocupadas = len([m for m in instance.mesas if hasattr(m, 'estado') and m.estado == 'ocupada'])
+    mesas_libres = len([m for m in instance.mesas if hasattr(m, 'estado') and m.estado == 'libre'])
+    mesas_reservadas = len([m for m in instance.mesas if hasattr(m, 'estado') and m.estado == 'reservada'])
+    zonas_unicas = len(set(getattr(m, 'zona', 'Sin zona') for m in instance.mesas))
+    # Usar value_label.setText para actualizar los valores
+    if hasattr(instance, 'mesas_ocupadas_widget') and hasattr(instance.mesas_ocupadas_widget, 'value_label'):
+        instance.mesas_ocupadas_widget.value_label.setText(f"{mesas_ocupadas}")
+    if hasattr(instance, 'mesas_total_widget') and hasattr(instance.mesas_total_widget, 'value_label'):
+        instance.mesas_total_widget.value_label.setText(f"{total_mesas}")
+    if hasattr(instance, 'mesas_libres_widget') and hasattr(instance.mesas_libres_widget, 'value_label'):
+        instance.mesas_libres_widget.value_label.setText(f"{mesas_libres}")
+    if hasattr(instance, 'mesas_reservadas_widget') and hasattr(instance.mesas_reservadas_widget, 'value_label'):
+        instance.mesas_reservadas_widget.value_label.setText(f"{mesas_reservadas}")
+    if hasattr(instance, 'zonas_widget') and hasattr(instance.zonas_widget, 'value_label'):
+        instance.zonas_widget.value_label.setText(f"{zonas_unicas}")
+    update_compact_stats(instance, zonas_unicas, total_mesas, mesas_libres, mesas_ocupadas)
+    if hasattr(instance, 'status_info'):
+        status_text = f"Mostrando {len(instance.filtered_mesas)} de {total_mesas} mesas"
+        instance.status_info.setText(status_text)
+# ...existing code...

@@ -48,6 +48,7 @@ backups/
 | Fecha      | Archivo original      | Backup generado                       | Motivo/resguardo breve                      |
 | ---------- | --------------------- | ------------------------------------- | ------------------------------------------- |
 | 2025-06-28 | mesa_widget_simple.py | 20250628_mesa_widget_simple_Backup.py | Refactorización y cumplimiento de políticas |
+| 2025-06-29 | mesas_area.py         | 20250629_mesas_area_Backup.py         | Refactorización modular y resguardo previo a migración |
 
 3. Eliminar el backup cuando ya no sea necesario o migrarlo a `docs/` si requiere trazabilidad histórica.
 
