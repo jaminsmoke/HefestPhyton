@@ -87,8 +87,6 @@ class TPVModule(BaseModule):
         
         # Área principal con pestañas refactorizada
         self.create_main_tabs(layout)        
-        # Barra de estado
-        self.create_status_bar(layout)
     
     def create_main_tabs(self, layout: QVBoxLayout):
         """Crea las pestañas principales usando componentes refactorizados"""
@@ -186,35 +184,6 @@ class TPVModule(BaseModule):
         
         self.tab_widget.addTab(reportes_widget, "📈 Reportes")
     
-    def create_status_bar(self, layout: QVBoxLayout):
-        """Crea la barra de estado"""
-        status_frame = QFrame()
-        status_frame.setFixedHeight(30)
-        status_frame.setStyleSheet("""
-            QFrame {
-                background-color: #f8f9fa;
-                border-top: 1px solid #dee2e6;
-                padding: 4px 16px;
-            }
-        """)
-        
-        status_layout = QHBoxLayout(status_frame)
-        status_layout.setContentsMargins(8, 4, 8, 4)
-        
-        # Estado de conexión
-        self.status_label = QLabel("✅ Conectado")
-        self.status_label.setStyleSheet("color: #28a745; font-size: 12px;")
-        status_layout.addWidget(self.status_label)
-        
-        status_layout.addStretch()
-        
-        # Información del usuario
-        user_label = QLabel("👤 Usuario: Admin")
-        user_label.setStyleSheet("color: #6c757d; font-size: 12px;")
-        status_layout.addWidget(user_label)
-        
-        layout.addWidget(status_frame)
-
     # ======= CALLBACKS DEL CONTROLADOR =======
     
     def _on_mesa_created(self, mesa: Mesa):

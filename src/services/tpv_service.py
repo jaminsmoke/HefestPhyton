@@ -5,7 +5,7 @@ Servicio de gestión del Terminal Punto de Venta (TPV).
 import logging
 from typing import List, Dict, Optional
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, date, time
 
 from .base_service import BaseService
 
@@ -23,6 +23,7 @@ class Mesa:
     capacidad: int
     alias: Optional[str] = None  # Alias temporal de la mesa (no persistente)
     personas_temporal: Optional[int] = None  # Número de personas temporal (no persistente)
+    notas: Optional[str] = None  # Notas temporales de la mesa (no persistente)
 
     @property
     def nombre_display(self) -> str:
@@ -129,6 +130,19 @@ class Factura:
     @property
     def cambio(self) -> float:
         return max(0, self.total_pagado - self.total)
+
+
+@dataclass
+class Reserva:
+    """Modelo de datos para una reserva de mesa"""
+    id: int
+    mesa_id: int
+    cliente: str
+    fecha: date
+    hora: time
+    personas: int
+    notas: str = ""
+    estado: str = "activa"  # activa, cancelada, finalizada
 
 
 class TPVService(BaseService):
@@ -936,4 +950,91 @@ class TPVService(BaseService):
             return False
         except Exception as e:
             self.logger.error(f"Error reseteando alias de mesa {mesa_id}: {e}")
+            return False
+
+    def crear_reserva(self, mesa_id: int, cliente: str, fecha: date, hora: time, personas: int, notas: str = "") -> Optional[Reserva]:
+        """Crea una reserva persistente para una mesa"""
+        if not self.db_manager:
+            self.logger.warning("No hay conexión a base de datos para crear reserva")
+            return None
+        # Validar solapamiento
+        if self.reserva_solapada(mesa_id, fecha, hora):
+            self.logger.warning("Ya existe una reserva para esa mesa, fecha y hora")
+            return None
+        try:
+            reserva_id = self.db_manager.execute(
+                """
+                INSERT INTO reservas (mesa_id, cliente, fecha, hora, personas, notas, estado)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (mesa_id, cliente, fecha.isoformat(), hora.strftime("%H:%M:%S"), personas, notas, "activa")
+            )
+            return Reserva(
+                id=reserva_id,
+                mesa_id=mesa_id,
+                cliente=cliente,
+                fecha=fecha,
+                hora=hora,
+                personas=personas,
+                notas=notas,
+                estado="activa"
+            )
+        except Exception as e:
+            self.logger.error(f"Error creando reserva: {e}")
+            return None
+
+    def get_reservas_mesa(self, mesa_id: int, fecha: Optional[date] = None) -> list:
+        """Obtiene reservas activas de una mesa, opcionalmente filtradas por fecha"""
+        if not self.db_manager:
+            return []
+        try:
+            query = "SELECT id, mesa_id, cliente, fecha, hora, personas, notas, estado FROM reservas WHERE mesa_id = ? AND estado = 'activa'"
+            params = [mesa_id]
+            if fecha:
+                query += " AND fecha = ?"
+                params.append(fecha.isoformat())
+            rows = self.db_manager.query(query, tuple(params))
+            reservas = [
+                Reserva(
+                    id=row[0],
+                    mesa_id=row[1],
+                    cliente=row[2],
+                    fecha=datetime.strptime(row[3], "%Y-%m-%d").date(),
+                    hora=datetime.strptime(row[4], "%H:%M:%S").time(),
+                    personas=row[5],
+                    notas=row[6] or "",
+                    estado=row[7]
+                ) for row in rows
+            ]
+            return reservas
+        except Exception as e:
+            self.logger.error(f"Error obteniendo reservas: {e}")
+            return []
+
+    def cancelar_reserva(self, reserva_id: int) -> bool:
+        """Cancela una reserva por su ID"""
+        if not self.db_manager:
+            return False
+        try:
+            self.db_manager.execute(
+                "UPDATE reservas SET estado = 'cancelada' WHERE id = ?",
+                (reserva_id,)
+            )
+            return True
+        except Exception as e:
+            self.logger.error(f"Error cancelando reserva: {e}")
+            return False
+
+    def reserva_solapada(self, mesa_id: int, fecha: date, hora: time) -> bool:
+        """Comprueba si existe una reserva activa para la mesa en la fecha y hora dadas"""
+        if not self.db_manager:
+            return False
+        try:
+            rows = self.db_manager.query(
+                "SELECT COUNT(*) FROM reservas WHERE mesa_id = ? AND fecha = ? AND hora = ? AND estado = 'activa'",
+                (mesa_id, fecha.isoformat(), hora.strftime("%H:%M:%S"))
+            )
+            return rows[0][0] > 0
+        except Exception as e:
+            self.logger.error(f"Error comprobando solapamiento de reserva: {e}")
             return False

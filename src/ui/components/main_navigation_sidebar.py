@@ -48,15 +48,14 @@ class ModernSidebar(QFrame):
         self.setFixedWidth(300)
         self.setFrameStyle(QFrame.Shape.NoFrame)
 
-        # Estilo básico del sidebar
+        # Estilo básico del sidebar (fondo más oscuro y borde más marcado)
         self.setStyleSheet(
             """
             ModernSidebar {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #f8fafc, stop:1 #f1f5f9);
-                border-right: 1px solid #e2e8f0;
+                background: #e5e7eb;
+                border-right: 2px solid #cbd5e1;
             }
-        """
+            """
         )
 
         layout = QVBoxLayout(self)
@@ -80,11 +79,10 @@ class ModernSidebar(QFrame):
         header.setStyleSheet(
             """
             QFrame {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #ffffff, stop:1 #f8fafc);
-                border-bottom: 1px solid #e5e7eb;
+                background: #d1d5db;
+                border-bottom: 1.5px solid #cbd5e1;
             }
-        """
+            """
         )
 
         header_layout = QVBoxLayout(header)
@@ -99,10 +97,10 @@ class ModernSidebar(QFrame):
             QLabel {
                 font-size: 20px;
                 font-weight: bold;
-                color: #1f2937;
+                color: #111827;
                 letter-spacing: 1px;
             }
-        """
+            """
         )
 
         subtitle_label = QLabel("Sistema Integral")
@@ -111,27 +109,26 @@ class ModernSidebar(QFrame):
             """
             QLabel {
                 font-size: 11px;
-                color: #6b7280;                font-weight: 500;
+                color: #374151;
+                font-weight: 500;
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
-        """
+            """
         )
-        
         header_layout.addWidget(title_label)
         header_layout.addWidget(subtitle_label)
-
         layout.addWidget(header)
 
     def create_navigation(self, layout):
         """Crea los botones de navegación según los permisos del usuario"""
         logger.debug("Método create_navigation llamado correctamente.")
-        
+
         nav_container = QWidget()
         nav_layout = QVBoxLayout(nav_container)
         nav_layout.setContentsMargins(10, 20, 10, 10)
         nav_layout.setSpacing(8)
-        
+
         # Módulos disponibles y sus permisos requeridos
         modules = [
             (
@@ -170,7 +167,7 @@ class ModernSidebar(QFrame):
             logger.debug("Iniciando evaluación de módulos para la barra lateral...")
             for module_id, icon, title, description, required_role in modules:
                 has_permission = self.auth_service.has_permission(required_role)
-                
+
                 if has_permission:
                     btn = self.create_nav_button(module_id, icon, title, description)
                     nav_layout.addWidget(btn)
@@ -274,10 +271,10 @@ class ModernSidebar(QFrame):
         footer.setStyleSheet(
             """
             QFrame {
-                background: #f8fafc;
-                border-top: 1px solid #e5e7eb;
+                background: #d1d5db;
+                border-top: 1.5px solid #cbd5e1;
             }
-        """
+            """
         )
 
         footer_layout = QVBoxLayout(footer)
@@ -413,5 +410,3 @@ class ModernSidebar(QFrame):
                                 "color: #e5e7eb", "color: #6b7280"
                             )
                         )
-
-        self.current_active = module_id

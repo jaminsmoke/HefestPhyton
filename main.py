@@ -6,10 +6,28 @@ Punto de entrada principal de la aplicación (Launcher)
 
 Este archivo sirve como launcher y delega la ejecución al módulo principal en src/
 Optimizado para funcionar correctamente con VS Code debugging.
+
+---
+Filtro de avisos Qt:
+Se instala un filtro de mensajes de Qt para ignorar avisos de estilos CSS no soportados (como 'box-shadow' y 'transform')
+que aparecen en la consola pero no afectan la funcionalidad ni la experiencia de usuario.
+Esto mantiene el log de ejecución más limpio y enfocado en errores relevantes.
 """
 
 import sys
 import os
+
+# === FILTRO DE AVISOS QT (IGNORAR box-shadow/transform) ===
+try:
+    from PyQt6.QtCore import qInstallMessageHandler
+    def qt_message_handler(mode, context, message):
+        if "box-shadow" in message or "transform" in message:
+            return  # Ignora estos avisos de estilos
+        print(message)
+    qInstallMessageHandler(qt_message_handler)
+except ImportError:
+    pass  # Si no está PyQt6, no se instala el filtro
+
 
 def setup_environment():
     """Configura el entorno de Python para la aplicación"""

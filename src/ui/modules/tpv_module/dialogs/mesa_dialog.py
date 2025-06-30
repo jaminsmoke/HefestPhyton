@@ -13,6 +13,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
 from services.tpv_service import Mesa
+from .reserva_dialog import ReservaDialog
 
 logger = logging.getLogger(__name__)
 
@@ -295,198 +296,173 @@ class MesaDialog(QDialog):
         bordered_layout.addWidget(title)
         bordered_layout.addSpacing(6)
 
-        # Contenedor para el scroll
-        scroll_container = QWidget()
-        scroll_container_layout = QVBoxLayout(scroll_container)
-        scroll_container_layout.setContentsMargins(0, 0, 0, 0)
-        scroll_container_layout.setSpacing(0)
-
-        # Scroll solo para los campos, limitado
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
-        scroll_area.setFrameShape(QFrame.Shape.NoFrame)
-        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        scroll_area.setMinimumHeight(120)
-        scroll_area.setMaximumHeight(150)
-        scroll_area.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        scroll_area.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background: transparent;
+            }
+        """)
+        scroll_content = QWidget()
+        scroll_content.setStyleSheet("background: transparent;")
+        scroll_content.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_layout.setSpacing(8)
 
-        config_widget = QWidget()
-        config_layout = QVBoxLayout(config_widget)
-        config_layout.setSpacing(12)
-        config_layout.setContentsMargins(16, 4, 16, 12)
+        # Configuración rápida
+        self.alias_input = QLineEdit(self.mesa.nombre_display)
+        self.alias_input.setPlaceholderText("Alias de la mesa")
+        self.alias_input.setFont(QFont("Segoe UI", 12))
+        self.alias_input.setStyleSheet("""
+            QLineEdit {
+                border: 1px solid #ced4da;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            QLineEdit:focus {
+                border-color: #80bdff;
+                outline: none;
+            }
+        """)
+        scroll_layout.addWidget(self.alias_input)
 
-        # Alias
-        alias_label = QLabel("Alias:")
-        alias_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        alias_label.setStyleSheet("color: #495057;")
-        config_layout.addWidget(alias_label)
+        self.capacidad_input = QSpinBox()
+        self.capacidad_input.setValue(self.mesa.capacidad)
+        self.capacidad_input.setRange(1, 100)
+        self.capacidad_input.setFont(QFont("Segoe UI", 12))
+        self.capacidad_input.setStyleSheet("""
+            QSpinBox {
+                border: 1px solid #ced4da;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            QSpinBox:focus {
+                border-color: #80bdff;
+                outline: none;
+            }
+        """)
+        scroll_layout.addWidget(self.capacidad_input)
 
-        self.alias_input = QLineEdit()
-        self.alias_input.setPlaceholderText("Nombre temporal...")
-        self.alias_input.setText(self.mesa.alias or "")
-        self.alias_input.setFont(QFont("Segoe UI", 10))
-        self.alias_input.setMinimumHeight(40)  # Ajustado a 40px
-        config_layout.addWidget(self.alias_input)
+        self.notas_input = QTextEdit(self.mesa.notas)
+        self.notas_input.setPlaceholderText("Notas adicionales")
+        self.notas_input.setFont(QFont("Segoe UI", 12))
+        self.notas_input.setStyleSheet("""
+            QTextEdit {
+                border: 1px solid #ced4da;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-size: 14px;
+            }
+            QTextEdit:focus {
+                border-color: #80bdff;
+                outline: none;
+            }
+        """)
+        scroll_layout.addWidget(self.notas_input)
 
-        # Personas
-        personas_label = QLabel("Personas:")
-        personas_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        personas_label.setStyleSheet("color: #495057;")
-        config_layout.addWidget(personas_label)
-
-        self.personas_spin = QSpinBox()
-        self.personas_spin.setMinimum(1)
-        self.personas_spin.setMaximum(20)
-        self.personas_spin.setValue(self.mesa.personas_display)
-        self.personas_spin.setFont(QFont("Segoe UI", 10))
-        self.personas_spin.setMinimumHeight(40)  # Ajustado a 40px
-        config_layout.addWidget(self.personas_spin)
-
-        # Notas
-        notas_label = QLabel("Notas:")
-        notas_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
-        notas_label.setStyleSheet("color: #495057;")
-        config_layout.addWidget(notas_label)
-
-        self.notas_text = QTextEdit()
-        self.notas_text.setMinimumHeight(56)  # Ligeramente mayor para compensar
-        self.notas_text.setMaximumHeight(90)
-        self.notas_text.setPlaceholderText("Observaciones especiales...")
-        self.notas_text.setFont(QFont("Segoe UI", 9))
-        config_layout.addWidget(self.notas_text)
-
-        config_widget.setLayout(config_layout)
-        scroll_area.setWidget(config_widget)
-        scroll_container_layout.addWidget(scroll_area)
-        bordered_layout.addWidget(scroll_container)
-
+        scroll_area.setWidget(scroll_content)
+        bordered_layout.addWidget(scroll_area)
         parent_layout.addWidget(bordered_frame)
 
     def setup_footer(self, parent_layout: QVBoxLayout):
         """Botones de cierre"""
         footer_layout = QHBoxLayout()
+        footer_layout.setContentsMargins(0, 0, 0, 0)
+        footer_layout.setSpacing(10)
 
-        self.aplicar_btn = QPushButton("✅ Aplicar Cambios")
-        self.aplicar_btn.setStyleSheet("""
+        self.cancel_btn = QPushButton("Cancelar")
+        self.cancel_btn.setMinimumHeight(36)
+        self.cancel_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.cancel_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #34ce57, stop:1 #28a745);
-                color: white; border: none; border-radius: 8px;
-                padding: 12px 24px; font-weight: bold;
-                box-shadow: 0 3px 8px rgba(40,167,69,0.3);
+                background: #f8f9fa;
+                color: #212529;
+                border: 1px solid #ced4da;
+                border-radius: 8px;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #28a745, stop:1 #1e7e34);
-                transform: translateY(-1px);
+                background: #e9ecef;
             }
         """)
-        footer_layout.addWidget(self.aplicar_btn)
+        footer_layout.addWidget(self.cancel_btn)
 
-        self.cerrar_btn = QPushButton("❌ Cerrar")
-        self.cerrar_btn.setStyleSheet("""
+        self.save_btn = QPushButton("Guardar")
+        self.save_btn.setMinimumHeight(36)
+        self.save_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.save_btn.setStyleSheet("""
             QPushButton {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #8e9aaf, stop:1 #6c757d);
-                color: white; border: none; border-radius: 8px;
-                padding: 12px 24px; font-weight: bold;
-                box-shadow: 0 3px 8px rgba(108,117,125,0.3);
+                background: #007bff;
+                color: white;
+                border: none;
+                border-radius: 8px;
             }
             QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #6c757d, stop:1 #5a6268);
-                transform: translateY(-1px);
+                background: #0056b3;
             }
         """)
-        footer_layout.addWidget(self.cerrar_btn)
+        footer_layout.addWidget(self.save_btn)
 
         parent_layout.addLayout(footer_layout)
 
+    def connect_signals(self):
+        """Conecta las señales de los botones a sus respectivos slots"""
+        self.tpv_btn.clicked.connect(self.on_tpv_btn_clicked)
+        self.reserva_btn.clicked.connect(self.on_reserva_btn_clicked)
+        self.estado_btn.clicked.connect(self.on_estado_btn_clicked)
+        self.liberar_btn.clicked.connect(self.on_liberar_btn_clicked)
+        self.cancel_btn.clicked.connect(self.reject)
+        self.save_btn.clicked.connect(self.on_save_btn_clicked)
+
+    def on_tpv_btn_clicked(self):
+        """Inicia el TPV para la mesa actual"""
+        self.iniciar_tpv_requested.emit(self.mesa.id)
+
+    def on_reserva_btn_clicked(self):
+        """Abre el diálogo de reserva para la mesa actual"""
+        reserva_dialog = ReservaDialog(self.mesa.id, self)
+        reserva_dialog.exec()
+
+    def on_estado_btn_clicked(self):
+        """Cambia el estado de la mesa"""
+        nuevo_estado = self.estado_value.text().lower()
+        self.cambiar_estado_requested.emit(self.mesa.id, nuevo_estado)
+
+    def on_liberar_btn_clicked(self):
+        """Libera la mesa actual"""
+        self.mesa.estado = 'libre'
+        self.mesa.personas_display = 0
+        self.mesa.nombre_display = ''
+        self.mesa_updated.emit(self.mesa)
+        self.update_ui()
+
+    def on_save_btn_clicked(self):
+        """Guarda los cambios realizados en la configuración rápida"""
+        self.mesa.alias = self.alias_input.text()
+        nueva_capacidad = self.capacidad_input.value()
+        self.mesa.notas = self.notas_input.toPlainText()
+        # Si el número de personas es distinto de la capacidad, es temporal
+        if self.mesa.capacidad != nueva_capacidad:
+            self.mesa.personas_temporal = nueva_capacidad
+        else:
+            self.mesa.personas_temporal = None
+        self.mesa.capacidad = nueva_capacidad
+        self.mesa_updated.emit(self.mesa)
+        self.accept()
+
+    def update_ui(self):
+        """Actualiza la interfaz con los datos actuales de la mesa"""
+        self.estado_value.setText(self.mesa.estado.title())
+        self.personas_value.setText(f"{self.mesa.personas_display}/{self.mesa.capacidad}")
+        self.alias_value.setText(self.mesa.nombre_display)
+
     def apply_styles(self):
-        """Estilos generales con efectos modernos"""
+        """Aplica estilos generales al diálogo"""
         self.setStyleSheet("""
             QDialog {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #ffffff, stop:1 #f8f9fa);
-                font-family: 'Segoe UI', Arial, sans-serif;
-                border: 2px solid #e9ecef;
-                border-radius: 16px;
-            }
-            QLabel {
-                color: #495057;
-                font-family: 'Segoe UI', Arial, sans-serif;
-            }
-            QLineEdit, QSpinBox, QTextEdit {
-                border: 2px solid #e9ecef;
-                border-radius: 8px;
-                padding: 10px;
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #ffffff, stop:1 #f8f9fa);
-                font-family: 'Segoe UI', Arial, sans-serif;
-                font-size: 11px;
-                box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-            }
-            QLineEdit:focus, QSpinBox:focus, QTextEdit:focus {
-                border-color: #667eea;
-                background: white;
-                box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
-                outline: none;
-            }
-            QPushButton {
-                font-family: 'Segoe UI', Arial, sans-serif;
-                font-size: 12px;
+                background-color: #f8f9fa;
             }
         """)
-
-    def connect_signals(self):
-        """Conecta señales"""
-        # Botones principales
-        self.tpv_btn.clicked.connect(self.iniciar_tpv)
-        self.reserva_btn.clicked.connect(self.crear_reserva)
-        self.estado_btn.clicked.connect(self.cambiar_estado)
-        self.liberar_btn.clicked.connect(self.liberar_mesa)
-
-        # Botones de footer
-        self.aplicar_btn.clicked.connect(self.aplicar_cambios)
-        self.cerrar_btn.clicked.connect(self.reject)
-
-    def iniciar_tpv(self):
-        """Inicia el TPV para esta mesa"""
-        self.iniciar_tpv_requested.emit(self.mesa.id)
-        self.accept()
-
-    def crear_reserva(self):
-        """Crea una reserva para esta mesa"""
-        self.crear_reserva_requested.emit(self.mesa.id)
-        self.accept()
-
-    def cambiar_estado(self):
-        """Cambia el estado de la mesa"""
-        estados = ['libre', 'ocupada', 'reservada', 'mantenimiento']
-        estado_actual = self.mesa.estado
-
-        from PyQt6.QtWidgets import QInputDialog
-        nuevo_estado, ok = QInputDialog.getItem(
-            self, "Cambiar Estado", "Seleccione el nuevo estado:",
-            estados, estados.index(estado_actual), False
-        )
-
-        if ok and nuevo_estado != estado_actual:
-            self.cambiar_estado_requested.emit(self.mesa.id, nuevo_estado)
-            self.accept()
-
-    def liberar_mesa(self):
-        """Libera la mesa"""
-        if QMessageBox.question(
-            self, "Confirmar", "¿Liberar la mesa y resetear configuración temporal?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        ) == QMessageBox.StandardButton.Yes:
-            self.cambiar_estado_requested.emit(self.mesa.id, 'libre')
-            self.accept()
-
-    def aplicar_cambios(self):
-        """Aplica los cambios de configuración"""
-        # Aquí se aplicarían los cambios de alias, personas, etc.
-        QMessageBox.information(self, "Éxito", "Cambios aplicados correctamente.")
-        self.accept()

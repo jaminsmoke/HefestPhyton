@@ -122,3 +122,6 @@ release/
 
 # ===== CONFIGURACIÓN AMAZON Q =====
 .amazonq/
+
+# ===== VISUAL STUDIO Y COPILOT CHAT =====
+.vs/
