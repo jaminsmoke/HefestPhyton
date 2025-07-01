@@ -21,7 +21,7 @@ class ReservaDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("🍽️ Editar Reserva" if modo_edicion else "🍽️ Crear Reserva")
         self.setModal(True)
-        self.setFixedSize(480, 620)
+        self.setFixedSize(520, 620)  # Aumenta el ancho para textos completos
         self.mesa = mesa
         self.reserva_service = reserva_service
         self.reserva = reserva
@@ -39,9 +39,9 @@ class ReservaDialog(QDialog):
 
         self.setup_header(main_layout)
 
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setStyleSheet("QScrollArea { border: none; background: transparent; }")
 
         scroll_widget = QWidget()
         scroll_layout = QVBoxLayout(scroll_widget)
@@ -52,8 +52,8 @@ class ReservaDialog(QDialog):
         self.setup_reserva_section(scroll_layout)
         self.setup_detalles_section(scroll_layout)
 
-        scroll_area.setWidget(scroll_widget)
-        main_layout.addWidget(scroll_area)
+        self.scroll_area.setWidget(scroll_widget)
+        main_layout.addWidget(self.scroll_area)
 
         self.setup_footer(main_layout)
 
@@ -176,10 +176,12 @@ class ReservaDialog(QDialog):
         self.hora_feedback_label = QLabel("")
         self.hora_feedback_label.setFont(QFont("Segoe UI", 9))
         self.hora_feedback_label.setStyleSheet("color: #d32f2f;")
+        self.hora_feedback_label.setWordWrap(True)
+        self.hora_feedback_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         hora_container.addWidget(self.hora_feedback_label)
 
         self.sugerir_hora_btn = QPushButton("💡 Sugerir otra hora")
-        self.sugerir_hora_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.sugerir_hora_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
         self.sugerir_hora_btn.setStyleSheet("""
             QPushButton {
                 background: #e9ecef;
@@ -212,25 +214,33 @@ class ReservaDialog(QDialog):
     def setup_footer(self, layout):
         footer_layout = QHBoxLayout()
         footer_layout.setContentsMargins(0, 16, 0, 0)
-        footer_layout.setSpacing(12)
+        footer_layout.setSpacing(24)  # Más separación visual entre botones
 
-        self.cancelar_btn = QPushButton("❌ Cancelar")
+        self.cancelar_btn = QPushButton("❌\nCancelar")
         self.cancelar_btn.setMinimumHeight(44)
-        self.cancelar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        self.cancelar_btn.setMinimumWidth(120)
+        self.cancelar_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+        self.cancelar_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         if self.modo_edicion:
-            self.guardar_btn = QPushButton("💾 Guardar Cambios")
+            self.guardar_btn = QPushButton("✔️\nGuardar Cambios")
             self.guardar_btn.setMinimumHeight(44)
-            self.guardar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
-            self.eliminar_btn = QPushButton("🗑️ Cancelar Reserva")
+            self.guardar_btn.setMinimumWidth(120)
+            self.guardar_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            self.guardar_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            self.eliminar_btn = QPushButton("🗑️\nCancelar Reserva")
             self.eliminar_btn.setMinimumHeight(44)
-            self.eliminar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+            self.eliminar_btn.setMinimumWidth(120)
+            self.eliminar_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            self.eliminar_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             footer_layout.addWidget(self.eliminar_btn)
             footer_layout.addWidget(self.guardar_btn)
         else:
-            self.aceptar_btn = QPushButton("✅ Crear Reserva")
+            self.aceptar_btn = QPushButton("✅\nCrear Reserva")
             self.aceptar_btn.setMinimumHeight(44)
-            self.aceptar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+            self.aceptar_btn.setMinimumWidth(120)
+            self.aceptar_btn.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
+            self.aceptar_btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             footer_layout.addWidget(self.aceptar_btn)
         footer_layout.addWidget(self.cancelar_btn)
         layout.addLayout(footer_layout)
@@ -298,8 +308,41 @@ class ReservaDialog(QDialog):
             QPushButton {
                 border: none;
                 border-radius: 8px;
-                padding: 12px 24px;
+                padding: 8px 12px;
                 font-weight: bold;
+                min-width: 100px;
+                max-width: 100%;
+                white-space: normal;
+                text-align: center;
+                word-break: break-word;
+                font-size: 11px;
+            }
+            QPushButton, QPushButton * {
+                font-family: 'Segoe UI', 'Arial', sans-serif;
+            }
+            QPushButton b {
+                font-size: 11px;
+            }
+            QPushButton span {
+                font-size: 11px;
+            }
+            QPushButton#guardar_btn {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #28a745, stop:1 #20c997);
+                color: white;
+            }
+            QPushButton#guardar_btn:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #20c997, stop:1 #17a2b8);
+            }
+            QPushButton#eliminar_btn {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ff9800, stop:1 #ff7043);
+                color: white;
+            }
+            QPushButton#eliminar_btn:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #ff7043, stop:1 #ff9800);
             }
             QPushButton#aceptar_btn {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -312,15 +355,14 @@ class ReservaDialog(QDialog):
             }
             QPushButton#cancelar_btn {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #6c757d, stop:1 #495057);
+                    stop:0 #e53935, stop:1 #b71c1c);
                 color: white;
             }
             QPushButton#cancelar_btn:hover {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #5a6268, stop:1 #343a40);
+                    stop:0 #b71c1c, stop:1 #e53935);
             }
         """)
-
         # Solo asignar objectName si existen los botones
         if hasattr(self, "aceptar_btn"):
             self.aceptar_btn.setObjectName("aceptar_btn")
@@ -357,6 +399,7 @@ class ReservaDialog(QDialog):
                 self.personas_input.setStyleSheet("")
 
     def validar_hora_reserva(self):
+        self._proxima_hora_libre = None  # Inicializar siempre para evitar AttributeError
         if not self.mesa:
             self.hora_feedback_label.setText("")
             self.sugerir_hora_btn.setVisible(False)
@@ -378,6 +421,64 @@ class ReservaDialog(QDialog):
         duracion_min = int(duracion_horas * 60)
         nueva_inicio = datetime.combine(fecha, hora)
         nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
+        # --- Nueva lógica: siempre sugerir próxima hora libre ---
+        # Construir lista de (inicio, fin) ordenada y calcular self._proxima_hora_libre antes de validar si es pasado
+        reservas_activas = []
+        if self.reserva_service:
+            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+            from datetime import timedelta as td
+            fechas_a_considerar = [fecha]
+            fechas_a_considerar.append(fecha + td(days=1))
+            reservas_activas = [
+                r for r in reservas_por_mesa.get(mesa_id, [])
+                if getattr(r, 'fecha_reserva', None) in fechas_a_considerar or
+                   (getattr(r, 'fecha_reserva', None) == fecha - td(days=1) and self._reserva_cruza_medianoche(r))
+            ]
+        reservas_intervalos = []
+        for r in reservas_activas:
+            try:
+                hora_str = getattr(r, 'hora_reserva', None)
+                if hora_str and isinstance(hora_str, str):
+                    h, m = map(int, hora_str.split(":"))
+                    existente_inicio = datetime.combine(r.fecha_reserva, datetime.min.time()).replace(hour=h, minute=m)
+                else:
+                    continue
+                if hasattr(r, 'duracion_min') and r.duracion_min:
+                    duracion_existente = r.duracion_min
+                else:
+                    duracion_existente = duracion_min
+                existente_fin = existente_inicio + timedelta(minutes=duracion_existente)
+                reservas_intervalos.append((existente_inicio, existente_fin))
+            except Exception:
+                continue
+        reservas_intervalos.sort()
+        # Buscar hueco entre reservas
+        proxima_libre = nueva_inicio
+        for inicio, fin in reservas_intervalos:
+            if proxima_libre + timedelta(minutes=duracion_min) <= inicio:
+                break
+            elif proxima_libre >= inicio and proxima_libre < fin:
+                proxima_libre = fin
+        self._proxima_hora_libre = proxima_libre.time()
+
+        # Validar si la hora es pasada
+        if nueva_inicio < datetime.now():
+            self.hora_feedback_label.setText("⚠️ La fecha y hora seleccionadas ya han pasado. Elige una hora futura o pulsa 'Sugerir otra hora'.")
+            self.hora_feedback_label.setStyleSheet("color: #b71c1c; font-size: 13px; font-weight: bold;")
+            # Si hay una sugerencia futura posible, mostrar el botón
+            if self._proxima_hora_libre is not None:
+                proxima = datetime.combine(fecha, self._proxima_hora_libre)
+                if proxima > datetime.now():
+                    self.sugerir_hora_btn.setVisible(True)
+                    self.sugerir_hora_btn.setEnabled(True)
+                else:
+                    self.sugerir_hora_btn.setVisible(False)
+                    self.sugerir_hora_btn.setEnabled(False)
+            else:
+                self.sugerir_hora_btn.setVisible(False)
+                self.sugerir_hora_btn.setEnabled(False)
+            return
+        # ...continúa la lógica original después de este bloque...
 
         # Obtener reservas activas de la mesa para ese día
         reservas_activas = []
@@ -394,12 +495,12 @@ class ReservaDialog(QDialog):
                    (getattr(r, 'fecha_reserva', None) == fecha - td(days=1) and
                     self._reserva_cruza_medianoche(r))
             ]
+        # --- Nueva lógica: siempre sugerir próxima hora libre ---
         solapada = False
         self._proxima_hora_libre = None
+        # Construir lista de (inicio, fin) ordenada
+        reservas_intervalos = []
         for r in reservas_activas:
-            # Reconstruir datetime de inicio y fin de la reserva existente
-            existente_inicio = None
-            existente_fin = None
             try:
                 hora_str = getattr(r, 'hora_reserva', None)
                 if hora_str and isinstance(hora_str, str):
@@ -407,54 +508,103 @@ class ReservaDialog(QDialog):
                     existente_inicio = datetime.combine(r.fecha_reserva, datetime.min.time()).replace(hour=h, minute=m)
                 else:
                     continue
-                # Usar la misma duración que la reserva actual si existe, si no, usar la duración seleccionada
                 if hasattr(r, 'duracion_min') and r.duracion_min:
                     duracion_existente = r.duracion_min
                 else:
                     duracion_existente = duracion_min
                 existente_fin = existente_inicio + timedelta(minutes=duracion_existente)
+                reservas_intervalos.append((existente_inicio, existente_fin))
             except Exception:
                 continue
-            if (nueva_inicio < existente_fin) and (nueva_fin > existente_inicio):
-                solapada = True
-                if nueva_inicio < existente_fin:
-                    self._proxima_hora_libre = existente_fin.time()
+        reservas_intervalos.sort()
+        # Buscar hueco entre reservas
+        proxima_libre = nueva_inicio
+        for inicio, fin in reservas_intervalos:
+            if proxima_libre + timedelta(minutes=duracion_min) <= inicio:
+                # Hay hueco antes de esta reserva
                 break
-        if solapada:
-            texto = f"Hora no disponible. Próxima hora libre: {self._proxima_hora_libre.strftime('%H:%M') if self._proxima_hora_libre else '-'}"
+            elif proxima_libre >= inicio and proxima_libre < fin:
+                # Está dentro de una reserva, saltar al final
+                proxima_libre = fin
+        self._proxima_hora_libre = proxima_libre.time()
+        # Comprobar si la hora solicitada está disponible
+        disponible = True
+        for inicio, fin in reservas_intervalos:
+            if (nueva_inicio < fin) and (nueva_fin > inicio):
+                disponible = False
+                break
+        if not disponible:
+            texto = f"Hora no disponible. Próxima hora libre: {self._proxima_hora_libre.strftime('%H:%M')}"
+            self.sugerir_hora_btn.setVisible(True)
+            self.sugerir_hora_btn.setEnabled(True)
             self.hora_feedback_label.setText(texto)
             self.hora_feedback_label.setStyleSheet("color: #d32f2f;")
-            self.sugerir_hora_btn.setVisible(self._proxima_hora_libre is not None)
         else:
             self.hora_feedback_label.setText("Hora disponible")
             self.hora_feedback_label.setStyleSheet("color: #388e3c;")
             self.sugerir_hora_btn.setVisible(False)
+            self.sugerir_hora_btn.setEnabled(False)
 
     def sugerir_proxima_hora_libre(self):
-        """Ajusta la hora de la reserva a la próxima hora libre sugerida y muestra feedback llamativo."""
-        if self._proxima_hora_libre:
-            self.hora_input.setTime(QTime(self._proxima_hora_libre.hour, self._proxima_hora_libre.minute))
-            self.validar_hora_reserva()
-            # Mensaje con icono llamativo
-            icono = "⏰"
-            texto = f"{icono} Hora ajustada automáticamente a la próxima hora libre: <b>{self._proxima_hora_libre.strftime('%H:%M')}</b>"
+        """Ajusta la hora de la reserva a la próxima hora libre sugerida y muestra feedback llamativo, sin mover el scroll ni expandir el contenido. Si la sugerencia es en el pasado, muestra advertencia y no ajusta la hora."""
+        from datetime import datetime, date
+        # Guardar posición actual del scroll vertical
+        scroll_bar = getattr(self, "scroll_area", None)
+        if scroll_bar is not None:
+            scroll_bar = scroll_bar.verticalScrollBar()
+        if scroll_bar is not None:
+            scroll_pos = scroll_bar.value()
+        else:
+            scroll_pos = None
+        if self._proxima_hora_libre is not None:
+            # Validar que la sugerencia no sea en el pasado
+            fecha = self.fecha_input.date().toPyDate()
+            sugerida = datetime.combine(fecha, self._proxima_hora_libre)
+            if sugerida < datetime.now():
+                icono = "⚠️"
+                texto = f"{icono} No hay una próxima hora libre válida en el futuro para esta mesa."
+                self.hora_feedback_label.setText(texto)
+                self.hora_feedback_label.setStyleSheet("color: #b71c1c; font-size: 13px; font-weight: bold;")
+                # No ajustar la hora ni mostrar éxito
+            else:
+                try:
+                    self.hora_input.setTime(QTime(self._proxima_hora_libre.hour, self._proxima_hora_libre.minute))
+                    self.validar_hora_reserva()
+                    # Mensaje con icono llamativo
+                    icono = "⏰"
+                    texto = f"{icono} Hora ajustada automáticamente a la próxima hora libre: <b>{self._proxima_hora_libre.strftime('%H:%M')}</b>"
+                    self.hora_feedback_label.setText(texto)
+                    # Efecto visual llamativo: fondo animado y borde
+                    self.hora_feedback_label.setStyleSheet("""
+                        color: #1976d2;
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e3f2fd, stop:1 #bbdefb);
+                        border: 2px solid #1976d2;
+                        border-radius: 8px;
+                        padding: 6px 12px;
+                        font-weight: bold;
+                        font-size: 15px;
+                        transition: background 0.5s, border 0.5s;
+                    """)
+                    # Parpadeo temporal
+                    from PyQt6.QtCore import QTimer
+                    def reset_feedback_style():
+                        self.hora_feedback_label.setStyleSheet("color: #1976d2; font-size: 15px; font-weight: bold;")
+                    QTimer.singleShot(1200, reset_feedback_style)
+                except Exception as e:
+                    print(f"[ReservaDialog] Error al sugerir próxima hora libre: {e}")
+                    icono = "⚠️"
+                    texto = f"{icono} Error al ajustar la próxima hora libre."
+                    self.hora_feedback_label.setText(texto)
+                    self.hora_feedback_label.setStyleSheet("color: #b71c1c; font-size: 13px; font-weight: bold;")
+        else:
+            print("[ReservaDialog] self._proxima_hora_libre es None al sugerir hora.")
+            icono = "⚠️"
+            texto = f"{icono} No se encontró una próxima hora libre para esta mesa."
             self.hora_feedback_label.setText(texto)
-            # Efecto visual llamativo: fondo animado y borde
-            self.hora_feedback_label.setStyleSheet("""
-                color: #1976d2;
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e3f2fd, stop:1 #bbdefb);
-                border: 2px solid #1976d2;
-                border-radius: 8px;
-                padding: 6px 12px;
-                font-weight: bold;
-                font-size: 15px;
-                transition: background 0.5s, border 0.5s;
-            """)
-            # Parpadeo temporal
-            from PyQt6.QtCore import QTimer
-            def reset_feedback_style():
-                self.hora_feedback_label.setStyleSheet("color: #1976d2; font-size: 15px; font-weight: bold;")
-            QTimer.singleShot(1200, reset_feedback_style)
+            self.hora_feedback_label.setStyleSheet("color: #b71c1c; font-size: 13px; font-weight: bold;")
+        # Restaurar posición del scroll vertical
+        if scroll_bar is not None and scroll_pos is not None:
+            scroll_bar.setValue(scroll_pos)
 
     def validar_y_aceptar(self):
         if not self.cliente_input.text().strip():
