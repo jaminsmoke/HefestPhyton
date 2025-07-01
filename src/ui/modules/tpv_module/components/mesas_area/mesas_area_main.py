@@ -10,6 +10,7 @@ from PyQt6.QtCore import pyqtSignal
 
 from ...widgets.mesa_widget_simple import MesaWidget
 from services.tpv_service import Mesa, TPVService
+from ...mesa_event_bus import mesa_event_bus
 
 # Importar subcomponentes
 from .mesas_area_header import create_header
@@ -21,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 class MesasArea(QFrame):
     """Área de visualización y gestión de mesas (modularizado)"""
-    mesa_clicked = pyqtSignal(Mesa)
     nueva_mesa_requested = pyqtSignal()
     nueva_mesa_con_zona_requested = pyqtSignal(int, int, str)
     eliminar_mesa_requested = pyqtSignal(int)
@@ -37,6 +37,10 @@ class MesasArea(QFrame):
         self.current_status_filter = "Todos"
         self.view_mode = "grid"
         self.setup_ui()
+        mesa_event_bus.mesas_actualizadas.connect(self._on_mesas_actualizadas)
+
+    def _on_mesas_actualizadas(self, mesas):
+        self.set_mesas(mesas)
 
     def setup_ui(self):
         self.setStyleSheet("""
@@ -59,7 +63,6 @@ class MesasArea(QFrame):
         self.tpv_service = tpv_service
 
     def set_mesas(self, mesas: List[Mesa], datos_temporales: Optional[Dict] = None):
-        print("[MesasArea] set_mesas llamado")
         guardar_dato_temporal(self, None)  # Guarda temporales actuales
         if datos_temporales is not None:
             restaurar_datos_temporales(self, mesas)
@@ -75,7 +78,6 @@ class MesasArea(QFrame):
         self.reserva_service = reserva_service
 
     def refresh_mesas(self):
-        print("[MesasArea] refresh_mesas llamado")
         if self.tpv_service:
             nuevas_mesas = self.tpv_service.get_mesas()
             guardar_dato_temporal(self, None)
@@ -248,7 +250,6 @@ class MesasArea(QFrame):
                     m.alias = nuevo_alias if nuevo_alias else None
             for w in self.mesa_widgets:
                 if w.mesa.id == mesa.id:
-                    print(f"[MesasArea] update_mesa llamado para mesa.id={m.id} estado={m.estado} proxima_reserva={getattr(m, 'proxima_reserva', None)}")
                     w.update_mesa(m)
         self.update_filtered_mesas()
         from .mesas_area_grid import populate_grid

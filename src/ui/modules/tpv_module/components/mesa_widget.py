@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QRect
 from PyQt6.QtGui import QFont, QPalette, QColor
 from services.tpv_service import Mesa
+from ..mesa_event_bus import mesa_event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,6 @@ logger = logging.getLogger(__name__)
 class MesaWidget(QPushButton):
     """Widget personalizado para mostrar el estado de una mesa"""
 
-    mesa_clicked = pyqtSignal(Mesa)
     mesa_status_changed = pyqtSignal(Mesa, str)  # mesa, nuevo_estado
 
     def __init__(self, mesa: Mesa, parent=None):
@@ -25,9 +25,6 @@ class MesaWidget(QPushButton):
         self._is_animating = False
         self.setup_ui()
         self.update_appearance()
-
-        # Conectar señal de clic
-        self.clicked.connect(self._on_clicked)
 
     def setup_ui(self):
         """Configura la interfaz del widget de mesa"""
@@ -210,7 +207,7 @@ class MesaWidget(QPushButton):
         # Obtener geometría actual
         current_geo = self.geometry()
 
-        # Crear geometría expandida
+        # Crear geometría expandada
         expanded_geo = QRect(
             current_geo.x() - 5,
             current_geo.y() - 5,
@@ -238,7 +235,7 @@ class MesaWidget(QPushButton):
     def _on_clicked(self):
         """Maneja el clic en la mesa"""
         if not self._is_animating:
-            self.mesa_clicked.emit(self.mesa)
+            mesa_event_bus.mesa_clicked.emit(self.mesa)
 
     def set_highlight(self, highlight: bool):
         """Resalta o desresalta la mesa"""

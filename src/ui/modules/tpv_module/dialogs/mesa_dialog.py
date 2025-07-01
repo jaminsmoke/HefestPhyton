@@ -14,6 +14,7 @@ from PyQt6.QtGui import QFont
 
 from services.tpv_service import Mesa
 from .reserva_dialog import ReservaDialog
+from ..mesa_event_bus import mesa_event_bus
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,6 @@ logger = logging.getLogger(__name__)
 class MesaDialog(QDialog):
     """Diálogo mejorado para la gestión completa de una mesa"""
 
-    mesa_updated = pyqtSignal(Mesa)
     iniciar_tpv_requested = pyqtSignal(int)  # mesa_id
     crear_reserva_requested = pyqtSignal(int)  # mesa_id
     cambiar_estado_requested = pyqtSignal(int, str)  # mesa_id, nuevo_estado
@@ -604,7 +604,7 @@ class MesaDialog(QDialog):
         # ...actualiza estado local...
         if self.mesa:
             self.mesa.estado = 'reservada'
-            self.mesa_updated.emit(self.mesa)
+            mesa_event_bus.mesa_actualizada.emit(self.mesa)
             self.update_ui()
 
     def on_estado_btn_clicked(self):
@@ -617,7 +617,7 @@ class MesaDialog(QDialog):
         self.mesa.estado = 'libre'
         self.mesa.personas_temporal = 0  # Reinicia el número de personas temporal
         self.mesa.alias = ''  # Limpia el alias temporal
-        self.mesa_updated.emit(self.mesa)
+        mesa_event_bus.mesa_actualizada.emit(self.mesa)
         self.reserva_cancelada.emit()  # Reactividad: notificar cancelación
         self.update_ui()
 
@@ -632,7 +632,7 @@ class MesaDialog(QDialog):
         else:
             self.mesa.personas_temporal = None
         self.mesa.capacidad = nueva_capacidad
-        self.mesa_updated.emit(self.mesa)
+        mesa_event_bus.mesa_actualizada.emit(self.mesa)
         self.accept()
 
     def update_ui(self):

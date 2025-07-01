@@ -17,6 +17,7 @@ from PyQt6.QtGui import QFont, QPalette, QColor
 from ui.modules.module_base_interface import BaseModule
 from services.tpv_service import TPVService, Mesa, Producto, Comanda, LineaComanda
 from .components.reservas_agenda.reserva_service import ReservaService
+from .mesa_event_bus import mesa_event_bus
 
 # Importar componentes refactorizados
 from .components.tpv_dashboard import TPVDashboard
@@ -45,6 +46,15 @@ class TPVModule(BaseModule):
         # Configurar UI y cargar datos
         self.setup_ui()
         self.load_data()
+        self._connect_event_bus()
+
+    def _connect_event_bus(self):
+        mesa_event_bus.mesa_actualizada.connect(self._on_mesa_updated)
+        mesa_event_bus.mesas_actualizadas.connect(self._on_mesas_updated)
+        mesa_event_bus.mesa_clicked.connect(self._on_mesa_clicked)
+        mesa_event_bus.mesa_creada.connect(self._on_mesa_creada)
+        mesa_event_bus.mesa_eliminada.connect(self._on_mesa_eliminada)
+        mesa_event_bus.alias_cambiado.connect(self._on_alias_cambiado)
 
     def _init_services(self):
         """Inicializa los servicios necesarios"""
@@ -66,11 +76,7 @@ class TPVModule(BaseModule):
         """Inicializa los controladores"""
         self.mesa_controller = MesaController(self.tpv_service)
           # Conectar señales del controlador
-        self.mesa_controller.mesa_created.connect(self._on_mesa_created)
-        self.mesa_controller.mesa_updated.connect(self._on_mesa_updated)
-        self.mesa_controller.mesa_deleted.connect(self._on_mesa_deleted)
-        self.mesa_controller.mesas_updated.connect(self._on_mesas_updated)
-        self.mesa_controller.error_occurred.connect(self._on_controller_error)
+        # Eliminar las líneas de conexión directa a self.mesa_controller.mesa_updated.connect, self.mesa_controller.mesas_updated.connect, self.mesas_area.mesa_clicked.connect, etc.
 
     def setup_ui(self):
         layout = self.main_layout
@@ -141,10 +147,7 @@ class TPVModule(BaseModule):
 
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
         self.mesas_area = MesasArea()        # Conectar señales
-        self.mesas_area.mesa_clicked.connect(self._on_mesa_clicked)
-        self.mesas_area.nueva_mesa_requested.connect(self.nueva_mesa)
-        self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)
-        self.mesas_area.eliminar_mesa_requested.connect(self.eliminar_mesa)
+        # Eliminar conexión directa a self.mesas_area.mesa_clicked.connect, self.mesas_area.nueva_mesa_requested.connect, self.mesas_area.nueva_mesa_con_zona_requested.connect, self.mesas_area.eliminar_mesa.connect
 
         # El área de mesas ocupa todo el espacio disponible
         layout.addWidget(self.mesas_area, 1)
@@ -282,7 +285,8 @@ class TPVModule(BaseModule):
             dialog.iniciar_tpv_requested.connect(self._on_iniciar_tpv)
             dialog.crear_reserva_requested.connect(self._on_crear_reserva)
             dialog.cambiar_estado_requested.connect(self._on_cambiar_estado_mesa)
-            dialog.mesa_updated.connect(self._on_mesa_updated)
+            # Eliminar cualquier línea como:
+            # dialog.mesa_updated.connect(self._on_mesa_updated)
             dialog.reserva_cancelada.connect(lambda: self.mesas_area.sync_reservas(reserva_service))
             # Conexión directa a la agenda usando isinstance
             reservas_agenda_tab = None
@@ -569,6 +573,13 @@ class TPVModule(BaseModule):
         stat_widget.setFixedSize(130, 70)
 
         return stat_widget
+
+    def _on_mesa_creada(self, mesa):
+        pass
+    def _on_mesa_eliminada(self, mesa_id):
+        pass
+    def _on_alias_cambiado(self, mesa, nuevo_alias):
+        pass
 
 if __name__ == "__main__":
     import sys

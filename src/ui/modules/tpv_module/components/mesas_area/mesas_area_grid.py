@@ -82,10 +82,7 @@ def populate_grid(instance):
                 if idx >= len(instance.filtered_mesas):
                     break
                 mesa = instance.filtered_mesas[idx]
-                print(f"[DEBUG populate_grid] mesa.id={getattr(mesa, 'id', None)} proxima_reserva={getattr(mesa, 'proxima_reserva', None)} personas_display={getattr(mesa, 'personas_display', None)}")
                 mesa_widget = MesaWidget(mesa, proxima_reserva=getattr(mesa, 'proxima_reserva', None))
-                mesa_widget.mesa_clicked.connect(instance.mesa_clicked.emit)
-                mesa_widget.alias_changed.connect(instance._on_alias_mesa_changed)
                 mesa_widget.personas_changed.connect(instance._on_personas_mesa_changed)
                 mesa_widget.restaurar_original.connect(instance.restaurar_estado_original_mesa)
                 instance.mesa_widgets.append(mesa_widget)

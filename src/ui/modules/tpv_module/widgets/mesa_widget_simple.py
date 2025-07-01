@@ -12,6 +12,7 @@ import sys
 from PyQt6.QtCore import qInstallMessageHandler
 
 from services.tpv_service import Mesa
+from ..mesa_event_bus import mesa_event_bus
 
 
 def qt_message_handler(mode, context, message):
@@ -36,8 +37,6 @@ class MesaWidget(QFrame):
     según el estado de la mesa (por ejemplo: tiempo de mantenimiento, alertas, notas, etc.).
     """
     # Señales
-    mesa_clicked = pyqtSignal(Mesa)
-    alias_changed = pyqtSignal(Mesa, str)  # Señal para cambio de alias
     personas_changed = pyqtSignal(Mesa, int)  # Señal para cambio de personas
     restaurar_original = pyqtSignal(int)  # Señal para restaurar valores originales
 
@@ -517,7 +516,7 @@ class MesaWidget(QFrame):
         """Maneja el click simple después de verificar que no hay doble click"""
         if self.pending_click:
             self.pending_click = False
-            self.mesa_clicked.emit(self.mesa)
+            mesa_event_bus.mesa_clicked.emit(self.mesa)
             self._ajustar_fuente_nombre()
 
     def _start_edit_mode(self):
@@ -551,7 +550,7 @@ class MesaWidget(QFrame):
         if not self.editing_mode or not self.alias_line_edit:
             return
         nuevo_alias = self.alias_line_edit.text().strip()
-        self.alias_changed.emit(self.mesa, nuevo_alias)
+        mesa_event_bus.alias_cambiado.emit(self.mesa, nuevo_alias)
         # ACTUALIZAR EL OBJETO LOCAL PARA REFLEJAR EL CAMBIO INMEDIATO
         self.mesa.alias = nuevo_alias if nuevo_alias else None
         self.alias_label.setText(self.mesa.nombre_display)
