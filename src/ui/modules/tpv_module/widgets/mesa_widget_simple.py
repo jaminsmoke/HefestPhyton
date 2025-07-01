@@ -421,11 +421,11 @@ class MesaWidget(QFrame):
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario"""
         self.mesa = mesa
         nueva_reserva = getattr(mesa, 'proxima_reserva', None)
-        print(f"[MesaWidget] update_mesa: mesa.id={getattr(mesa, 'id', None)} estado={getattr(mesa, 'estado', None)} proxima_reserva={nueva_reserva}")
+        # print(f"[MesaWidget] update_mesa: mesa.id={getattr(mesa, 'id', None)} estado={getattr(mesa, 'estado', None)} proxima_reserva={nueva_reserva}")
         if nueva_reserva:
-            print(f"[MesaWidget] proxima_reserva.numero_personas={getattr(nueva_reserva, 'numero_personas', None)} personas_display={mesa.personas_display}")
+            pass  # Aquí se pueden agregar acciones si es necesario
         else:
-            print(f"[MesaWidget] SIN proxima_reserva, personas_display={mesa.personas_display}")
+            pass  # Aquí se pueden agregar acciones si es necesario
         # Excepción funcional: Si la mesa está reservada/ocupada y no hay proxima_reserva, conservar la última reserva activa localmente
         if nueva_reserva is not None:
             self.proxima_reserva = nueva_reserva

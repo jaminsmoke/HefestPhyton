@@ -7,7 +7,7 @@ from typing import Optional
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QPushButton,
     QFrame, QGridLayout, QMessageBox, QLineEdit, QSpinBox, QTextEdit,
-    QScrollArea, QSizePolicy
+    QScrollArea, QSizePolicy, QListWidget, QListWidgetItem
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
@@ -48,6 +48,15 @@ class MesaDialog(QDialog):
         # Header con información de la mesa
         self.setup_header(main_layout)
 
+        # Añadir lista de reservas activas/futuras justo después del header
+        from PyQt6.QtWidgets import QListWidget, QListWidgetItem
+        self.reservas_list = QListWidget()
+        self.reservas_list.setMinimumHeight(80)
+        self.reservas_list.setFont(QFont("Segoe UI", 10))
+        self.reservas_list.setStyleSheet("background: #fffbe6; border-radius: 8px; margin-bottom: 8px;")
+        self.cargar_reservas_en_lista()
+        main_layout.addWidget(self.reservas_list)
+
         # Panel de información actual
         self.setup_info_panel(main_layout)
 
@@ -64,6 +73,17 @@ class MesaDialog(QDialog):
         self.setup_footer(main_layout)
 
         self.apply_styles()
+
+    def cargar_reservas_en_lista(self):
+        self.reservas_list.clear()
+        if self.reserva_service:
+            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+            reservas = reservas_por_mesa.get(self.mesa.id, [])
+            for r in reservas:
+                texto = f"{r.fecha_reserva.strftime('%d/%m/%Y')} {r.hora_reserva} - {r.cliente_nombre} ({r.numero_personas}p)"
+                item = QListWidgetItem(texto)
+                item.setData(32, r)  # Qt.UserRole = 32
+                self.reservas_list.addItem(item)
 
     def setup_header(self, parent_layout: QVBoxLayout):
         """Header con información de la mesa"""
@@ -454,6 +474,7 @@ class MesaDialog(QDialog):
         self.liberar_btn.clicked.connect(self.on_liberar_btn_clicked)
         self.cancel_btn.clicked.connect(self.reject)
         self.save_btn.clicked.connect(self.on_save_btn_clicked)
+        self.reservas_list.itemClicked.connect(self.on_reserva_seleccionada)
 
     def on_tpv_btn_clicked(self):
         """Inicia el TPV para la mesa actual"""
@@ -464,6 +485,29 @@ class MesaDialog(QDialog):
         reserva_dialog = ReservaDialog(self, self.mesa, reserva_service=self.reserva_service)
         reserva_dialog.reserva_creada.connect(self.procesar_reserva)
         reserva_dialog.exec()
+        self.cargar_reservas_en_lista()  # Refrescar lista de reservas
+
+    def on_reserva_seleccionada(self, item):
+        reserva = item.data(32)
+        dialog = ReservaDialog(self, self.mesa, reserva_service=self.reserva_service, reserva=reserva, modo_edicion=True)
+        dialog.reserva_editada.connect(self._on_reserva_editada)
+        dialog.reserva_cancelada.connect(self._on_reserva_cancelada)
+        dialog.exec()
+
+    def _on_reserva_editada(self, reserva):
+        self.cargar_reservas_en_lista()
+        self.reserva_creada.emit()  # Notifica a la agenda/widgets
+        self.update_ui()
+
+    def _on_reserva_cancelada(self, reserva):
+        self.cargar_reservas_en_lista()
+        self.reserva_cancelada.emit()  # Notifica a la agenda/widgets
+        try:
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            reserva_event_bus.reserva_cancelada.emit(reserva)
+        except ImportError:
+            pass
+        self.update_ui()
 
     def procesar_reserva(self, datos_reserva):
         """Procesa los datos de la nueva reserva y la guarda en ReservaService"""
@@ -513,20 +557,29 @@ class MesaDialog(QDialog):
                 from datetime import timedelta
                 reservas_activas = self.reserva_service.obtener_reservas_activas_por_mesa().get(mesa_id, [])
                 nueva_inicio = fecha_hora
+                if nueva_inicio is None:
+                    QMessageBox.critical(self, "Error de reserva", "Faltan datos de fecha y hora para la reserva.")
+                    return
                 nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
                 solapada = False
                 for r in reservas_activas:
                     existente_inicio = getattr(r, 'fecha_hora', None)
                     existente_fin = None
                     if hasattr(r, 'duracion_min'):
-                        existente_fin = existente_inicio + timedelta(minutes=getattr(r, 'duracion_min', 120))
+                        if existente_inicio is not None:
+                            existente_fin = existente_inicio + timedelta(minutes=getattr(r, 'duracion_min', 120))
+                        else:
+                            continue  # Saltar reservas mal formateadas
                     elif hasattr(r, 'hora_reserva') and hasattr(r, 'fecha_reserva'):
                         try:
                             hora_obj = r.hora_reserva
                             if isinstance(hora_obj, str):
                                 hora_obj = datetime.strptime(hora_obj, '%H:%M').time()
-                            existente_inicio = datetime.combine(r.fecha_reserva, hora_obj)
-                            existente_fin = existente_inicio + timedelta(minutes=120)
+                            if r.fecha_reserva and hora_obj:
+                                existente_inicio = datetime.combine(r.fecha_reserva, hora_obj)
+                                existente_fin = existente_inicio + timedelta(minutes=120)
+                            else:
+                                continue  # Saltar reservas mal formateadas
                         except Exception:
                             existente_fin = None
                     if existente_inicio and existente_fin:

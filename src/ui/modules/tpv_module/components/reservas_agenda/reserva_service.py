@@ -7,6 +7,39 @@ from typing import List, Optional
 from core.hefest_data_models import Reserva
 
 class ReservaService:
+    def editar_reserva(self, reserva_id: int, datos: dict) -> bool:
+        """Actualiza los datos de una reserva existente. Solo permite editar si la reserva está activa o futura."""
+        with sqlite3.connect(self.db_path) as conn:
+            c = conn.cursor()
+            # Solo permitir edición si la reserva está activa o confirmada
+            c.execute('SELECT estado FROM reservas WHERE id = ?', (reserva_id,))
+            row = c.fetchone()
+            if not row or row[0] not in ("activa", "confirmada"):
+                return False
+            # Actualizar campos editables
+            campos = []
+            valores = []
+            for campo, valor in [
+                ("cliente", datos.get("cliente")),
+                ("fecha_hora", datos.get("fecha_hora")),
+                ("duracion_min", datos.get("duracion_min")),
+                ("telefono", datos.get("telefono")),
+                ("personas", datos.get("personas")),
+                ("notas", datos.get("notas")),
+            ]:
+                if valor is not None:
+                    campos.append(f"{campo} = ?")
+                    if campo == "fecha_hora" and hasattr(valor, "isoformat"):
+                        valores.append(valor.isoformat())
+                    else:
+                        valores.append(valor)
+            if not campos:
+                return False
+            valores.append(reserva_id)
+            sql = f"UPDATE reservas SET {', '.join(campos)} WHERE id = ?"
+            c.execute(sql, valores)
+            conn.commit()
+        return True
     def __init__(self, db_path: str):
         self.db_path = db_path
         self._ensure_schema()
@@ -51,11 +84,13 @@ class ReservaService:
             notas=notas
         )
 
-    def cancelar_reserva(self, reserva_id: int):
+    def cancelar_reserva(self, reserva_id: int) -> bool:
+        """Cancela la reserva cambiando su estado a 'cancelada'. Devuelve True si se modificó alguna fila."""
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
             c.execute('UPDATE reservas SET estado = ? WHERE id = ?', ("cancelada", reserva_id))
             conn.commit()
+            return c.rowcount > 0
 
     def obtener_reservas_activas(self) -> List[Reserva]:
         with sqlite3.connect(self.db_path) as conn:

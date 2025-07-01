@@ -10,20 +10,27 @@ from PyQt6.QtCore import QRegularExpression
 from datetime import datetime, timedelta
 from services.tpv_service import Mesa
 from core.hefest_data_models import Reserva
+from src.ui.modules.tpv_module.event_bus import reserva_event_bus
 
 class ReservaDialog(QDialog):
+    reserva_editada = pyqtSignal(object)
+    reserva_cancelada = pyqtSignal(object)
     reserva_creada = pyqtSignal(object)
 
-    def __init__(self, parent=None, mesa: Optional[Mesa] = None, reserva_service=None):
+    def __init__(self, parent=None, mesa: Optional[Mesa] = None, reserva_service=None, reserva: Optional[Reserva] = None, modo_edicion: bool = False):
         super().__init__(parent)
-        self.setWindowTitle("🍽️ Crear Reserva")
+        self.setWindowTitle("🍽️ Editar Reserva" if modo_edicion else "🍽️ Crear Reserva")
         self.setModal(True)
         self.setFixedSize(480, 620)
         self.mesa = mesa
         self.reserva_service = reserva_service
+        self.reserva = reserva
+        self.modo_edicion = modo_edicion
         self.setup_ui()
         self.setup_styles()
         self.connect_signals()
+        if self.modo_edicion and self.reserva:
+            self.cargar_datos_reserva(self.reserva)
 
     def setup_ui(self):
         main_layout = QVBoxLayout(self)
@@ -211,12 +218,21 @@ class ReservaDialog(QDialog):
         self.cancelar_btn.setMinimumHeight(44)
         self.cancelar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
 
-        self.aceptar_btn = QPushButton("✅ Crear Reserva")
-        self.aceptar_btn.setMinimumHeight(44)
-        self.aceptar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
-
+        if self.modo_edicion:
+            self.guardar_btn = QPushButton("💾 Guardar Cambios")
+            self.guardar_btn.setMinimumHeight(44)
+            self.guardar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+            self.eliminar_btn = QPushButton("🗑️ Cancelar Reserva")
+            self.eliminar_btn.setMinimumHeight(44)
+            self.eliminar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+            footer_layout.addWidget(self.eliminar_btn)
+            footer_layout.addWidget(self.guardar_btn)
+        else:
+            self.aceptar_btn = QPushButton("✅ Crear Reserva")
+            self.aceptar_btn.setMinimumHeight(44)
+            self.aceptar_btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+            footer_layout.addWidget(self.aceptar_btn)
         footer_layout.addWidget(self.cancelar_btn)
-        footer_layout.addWidget(self.aceptar_btn)
         layout.addLayout(footer_layout)
 
     def create_section_frame(self, title):
@@ -305,11 +321,22 @@ class ReservaDialog(QDialog):
             }
         """)
 
-        self.aceptar_btn.setObjectName("aceptar_btn")
-        self.cancelar_btn.setObjectName("cancelar_btn")
+        # Solo asignar objectName si existen los botones
+        if hasattr(self, "aceptar_btn"):
+            self.aceptar_btn.setObjectName("aceptar_btn")
+        if hasattr(self, "guardar_btn"):
+            self.guardar_btn.setObjectName("guardar_btn")
+        if hasattr(self, "eliminar_btn"):
+            self.eliminar_btn.setObjectName("eliminar_btn")
+        if hasattr(self, "cancelar_btn"):
+            self.cancelar_btn.setObjectName("cancelar_btn")
 
     def connect_signals(self):
-        self.aceptar_btn.clicked.connect(self.validar_y_aceptar)
+        if self.modo_edicion:
+            self.guardar_btn.clicked.connect(self.editar_y_guardar)
+            self.eliminar_btn.clicked.connect(self.confirmar_cancelacion_reserva)
+        else:
+            self.aceptar_btn.clicked.connect(self.validar_y_aceptar)
         self.cancelar_btn.clicked.connect(self.reject)
         self.personas_input.valueChanged.connect(self.verificar_capacidad)
         self.sugerir_hora_btn.clicked.connect(self.sugerir_proxima_hora_libre)
@@ -356,7 +383,17 @@ class ReservaDialog(QDialog):
         reservas_activas = []
         if self.reserva_service:
             reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-            reservas_activas = [r for r in reservas_por_mesa.get(mesa_id, []) if getattr(r, 'fecha_reserva', None) == fecha]
+            # Buscar reservas activas de la mesa para el día actual y el siguiente (para detectar cruces de medianoche)
+            fechas_a_considerar = [fecha]
+            from datetime import timedelta as td
+            fechas_a_considerar.append(fecha + td(days=1))
+            reservas_activas = [
+                r for r in reservas_por_mesa.get(mesa_id, [])
+                if getattr(r, 'fecha_reserva', None) in fechas_a_considerar or
+                   # También incluir reservas que empiezan el día anterior y terminan después de medianoche
+                   (getattr(r, 'fecha_reserva', None) == fecha - td(days=1) and
+                    self._reserva_cruza_medianoche(r))
+            ]
         solapada = False
         self._proxima_hora_libre = None
         for r in reservas_activas:
@@ -394,12 +431,30 @@ class ReservaDialog(QDialog):
             self.sugerir_hora_btn.setVisible(False)
 
     def sugerir_proxima_hora_libre(self):
-        """Ajusta la hora de la reserva a la próxima hora libre sugerida."""
+        """Ajusta la hora de la reserva a la próxima hora libre sugerida y muestra feedback llamativo."""
         if self._proxima_hora_libre:
             self.hora_input.setTime(QTime(self._proxima_hora_libre.hour, self._proxima_hora_libre.minute))
             self.validar_hora_reserva()
-            self.hora_feedback_label.setText(f"Hora ajustada automáticamente a la próxima hora libre: {self._proxima_hora_libre.strftime('%H:%M')}")
-            self.hora_feedback_label.setStyleSheet("color: #1976d2;")
+            # Mensaje con icono llamativo
+            icono = "⏰"
+            texto = f"{icono} Hora ajustada automáticamente a la próxima hora libre: <b>{self._proxima_hora_libre.strftime('%H:%M')}</b>"
+            self.hora_feedback_label.setText(texto)
+            # Efecto visual llamativo: fondo animado y borde
+            self.hora_feedback_label.setStyleSheet("""
+                color: #1976d2;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e3f2fd, stop:1 #bbdefb);
+                border: 2px solid #1976d2;
+                border-radius: 8px;
+                padding: 6px 12px;
+                font-weight: bold;
+                font-size: 15px;
+                transition: background 0.5s, border 0.5s;
+            """)
+            # Parpadeo temporal
+            from PyQt6.QtCore import QTimer
+            def reset_feedback_style():
+                self.hora_feedback_label.setStyleSheet("color: #1976d2; font-size: 15px; font-weight: bold;")
+            QTimer.singleShot(1200, reset_feedback_style)
 
     def validar_y_aceptar(self):
         if not self.cliente_input.text().strip():
@@ -466,3 +521,79 @@ class ReservaDialog(QDialog):
             "mesa_id": mesa_id,
             "mesa_numero": mesa_numero,
         }
+
+    def _reserva_cruza_medianoche(self, reserva):
+        """Devuelve True si la reserva termina después de medianoche (cruza de un día a otro)."""
+        try:
+            from datetime import datetime, timedelta
+            fecha = getattr(reserva, 'fecha_reserva', None)
+            hora_str = getattr(reserva, 'hora_reserva', None)
+            if not fecha or not hora_str:
+                return False
+            h, m = map(int, hora_str.split(":"))
+            inicio = datetime.combine(fecha, datetime.min.time()).replace(hour=h, minute=m)
+            # Duración: si no existe, asumir 2h
+            duracion = getattr(reserva, 'duracion_min', None)
+            if duracion is None:
+                duracion = 120
+            fin = inicio + timedelta(minutes=duracion)
+            return fin.date() > inicio.date()
+        except Exception:
+            return False
+
+    def cargar_datos_reserva(self, reserva):
+        """Carga los datos de una reserva existente en el formulario para edición."""
+        from PyQt6.QtCore import QDate, QTime
+        from datetime import datetime
+        if reserva.fecha_reserva:
+            self.fecha_input.setDate(QDate(reserva.fecha_reserva.year, reserva.fecha_reserva.month, reserva.fecha_reserva.day))
+        if reserva.hora_reserva:
+            try:
+                hora_dt = datetime.strptime(reserva.hora_reserva, '%H:%M')
+                self.hora_input.setTime(QTime(hora_dt.hour, hora_dt.minute))
+            except Exception:
+                pass
+        self.cliente_input.setText(reserva.cliente_nombre or "")
+        self.telefono_input.setText(reserva.cliente_telefono or "")
+        self.personas_input.setValue(reserva.numero_personas or 1)
+        self.notas_input.setText(reserva.notas or "")
+        # Estado si aplica
+        if hasattr(self, 'estado_combo') and reserva.estado:
+            idx = self.estado_combo.findText(reserva.estado.capitalize())
+            if idx >= 0:
+                self.estado_combo.setCurrentIndex(idx)
+
+    def editar_y_guardar(self):
+        """Valida y guarda los cambios de la reserva editada."""
+        datos = self.get_data()
+        if self.reserva_service and self.reserva:
+            exito = self.reserva_service.editar_reserva(self.reserva.id, datos)
+            if exito:
+                QMessageBox.information(self, "Reserva actualizada", "Los cambios se guardaron correctamente.")
+                self.reserva_editada.emit(self.reserva)
+                try:
+                    from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+                    reserva_event_bus.reserva_creada.emit(self.reserva)
+                except ImportError:
+                    pass
+                self.accept()
+            else:
+                QMessageBox.warning(self, "Error", "No se pudo actualizar la reserva.")
+
+    def confirmar_cancelacion_reserva(self):
+        """Muestra un diálogo de confirmación antes de cancelar la reserva."""
+        resp = QMessageBox.question(self, "Cancelar Reserva", "¿Seguro que deseas cancelar esta reserva?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if resp == QMessageBox.StandardButton.Yes:
+            self.cancelar_reserva()
+
+    def cancelar_reserva(self):
+        """Cancela la reserva editada."""
+        if self.reserva_service and self.reserva:
+            exito = self.reserva_service.cancelar_reserva(self.reserva.id)
+            if exito:
+                QMessageBox.information(self, "Reserva cancelada", "La reserva fue cancelada correctamente.")
+                self.reserva_cancelada.emit(self.reserva)
+                reserva_event_bus.reserva_cancelada.emit(self.reserva)
+                self.accept()
+            else:
+                QMessageBox.warning(self, "Error", "No se pudo cancelar la reserva.")

@@ -58,6 +58,14 @@ class ReservasAgendaView(QWidget):
         self.reserva_service = reserva_service
         self.tpv_service = tpv_service  # Para buscar alias
         self.setWindowTitle("Agenda de Reservas")
+
+        # Suscribirse a eventos globales de reservas
+        try:
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            reserva_event_bus.reserva_cancelada.connect(lambda reserva: self.load_reservas())
+            reserva_event_bus.reserva_creada.connect(lambda reserva: self.load_reservas())
+        except ImportError:
+            pass  # Si no existe el event_bus, ignorar
         layout = QVBoxLayout(self)
         self.label = QLabel("Reservas activas:")
         layout.addWidget(self.label)
@@ -148,10 +156,13 @@ class ReservasAgendaView(QWidget):
         )
         if reply == QMessageBox.StandardButton.Yes:
             try:
-                self.reserva_service.cancelar_reserva(reserva_id)
-                QMessageBox.information(self, "Reserva cancelada", "La reserva ha sido cancelada.")
-                self.load_reservas()
-                QTimer.singleShot(0, self.reserva_cancelada.emit)  # Emite la señal tras actualizar la UI
+                exito = self.reserva_service.cancelar_reserva(reserva_id)
+                if exito:
+                    QMessageBox.information(self, "Reserva cancelada", "La reserva ha sido cancelada.")
+                    self.load_reservas()
+                    QTimer.singleShot(0, self.reserva_cancelada.emit)  # Emite la señal tras actualizar la UI
+                else:
+                    QMessageBox.warning(self, "Error", "No se pudo cancelar la reserva.")
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"No se pudo cancelar la reserva: {e}")
 
