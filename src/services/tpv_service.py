@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, date, time, timedelta
 
 from .base_service import BaseService
+from core.hefest_data_models import Reserva
 
 logger = logging.getLogger(__name__)
 
@@ -158,24 +159,6 @@ class Factura:
 
 
 @dataclass
-class Reserva:
-    """Modelo de datos unificado para una reserva de mesa"""
-    id: int
-    mesa_id: int
-    cliente: str
-    fecha_hora: datetime
-    duracion_min: int
-    estado: str = "activa"  # activa, cancelada, finalizada
-    notas: str = ""
-    telefono: str = ""
-    personas: int = 1
-
-    @property
-    def fecha(self):
-        return self.fecha_hora.date()
-    @property
-    def hora(self):
-        return self.fecha_hora.time()
 
 
 class TPVService(BaseService):
@@ -1005,13 +988,13 @@ class TPVService(BaseService):
             return Reserva(
                 id=reserva_id,
                 mesa_id=mesa_id,
-                cliente=cliente,
-                fecha_hora=fecha_hora,
-                duracion_min=duracion_min,
-                estado="activa",
-                notas=notas,
-                telefono=telefono,
-                personas=personas
+                cliente_nombre=cliente,
+                cliente_telefono=telefono,
+                fecha_reserva=fecha_hora.date(),
+                hora_reserva=fecha_hora.strftime('%H:%M'),
+                numero_personas=personas,
+                estado="confirmada",
+                notas=notas
             )
         except Exception as e:
             self.logger.error(f"Error creando reserva: {e}")
@@ -1032,13 +1015,13 @@ class TPVService(BaseService):
                 Reserva(
                     id=row[0],
                     mesa_id=row[1],
-                    cliente=row[2],
-                    fecha_hora=datetime.fromisoformat(row[3]),
-                    duracion_min=row[4],
+                    cliente_nombre=row[2],
+                    cliente_telefono=row[7] or "",
+                    fecha_reserva=datetime.fromisoformat(row[3]).date(),
+                    hora_reserva=datetime.fromisoformat(row[3]).strftime('%H:%M'),
+                    numero_personas=row[8] if row[8] is not None else 1,
                     estado=row[5],
-                    notas=row[6] or "",
-                    telefono=row[7] or "",
-                    personas=row[8] if row[8] is not None else 1
+                    notas=row[6] or ""
                 ) for row in rows
             ]
             return reservas

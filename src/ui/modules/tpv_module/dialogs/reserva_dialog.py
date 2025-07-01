@@ -171,6 +171,23 @@ class ReservaDialog(QDialog):
         self.hora_feedback_label.setStyleSheet("color: #d32f2f;")
         hora_container.addWidget(self.hora_feedback_label)
 
+        self.sugerir_hora_btn = QPushButton("💡 Sugerir otra hora")
+        self.sugerir_hora_btn.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
+        self.sugerir_hora_btn.setStyleSheet("""
+            QPushButton {
+                background: #e9ecef;
+                color: #333;
+                border: 2px solid #ced4da;
+                border-radius: 8px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background: #ced4da;
+            }
+        """)
+        self.sugerir_hora_btn.setVisible(False)
+        hora_container.addWidget(self.sugerir_hora_btn)
+
         layout.addWidget(section_frame)
 
     def setup_detalles_section(self, layout):
@@ -295,6 +312,7 @@ class ReservaDialog(QDialog):
         self.aceptar_btn.clicked.connect(self.validar_y_aceptar)
         self.cancelar_btn.clicked.connect(self.reject)
         self.personas_input.valueChanged.connect(self.verificar_capacidad)
+        self.sugerir_hora_btn.clicked.connect(self.sugerir_proxima_hora_libre)
 
     def verificar_capacidad(self):
         if self.mesa:
@@ -314,41 +332,74 @@ class ReservaDialog(QDialog):
     def validar_hora_reserva(self):
         if not self.mesa:
             self.hora_feedback_label.setText("")
+            self.sugerir_hora_btn.setVisible(False)
             return
         from datetime import datetime, timedelta
         mesa_id = getattr(self.mesa, 'id', None)
         if mesa_id is None:
             self.hora_feedback_label.setText("")
+            self.sugerir_hora_btn.setVisible(False)
             return
         fecha = self.fecha_input.date().toPyDate()
         hora = self.hora_input.time().toPyTime()
         duracion_text = self.duracion_combo.currentText()
-        duracion_horas = float(duracion_text.split()[0]) if duracion_text != "Más de 3 horas" else 3.5
+        # Adaptar a los textos de duración actuales
+        if "Más de 3" in duracion_text:
+            duracion_horas = 3.5
+        else:
+            duracion_horas = float(duracion_text.split()[0].replace(",", "."))
         duracion_min = int(duracion_horas * 60)
         nueva_inicio = datetime.combine(fecha, hora)
         nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
+
         # Obtener reservas activas de la mesa para ese día
         reservas_activas = []
         if self.reserva_service:
             reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-            reservas_activas = [r for r in reservas_por_mesa.get(mesa_id, []) if r.fecha_hora.date() == fecha]
+            reservas_activas = [r for r in reservas_por_mesa.get(mesa_id, []) if getattr(r, 'fecha_reserva', None) == fecha]
         solapada = False
-        proxima_hora_libre = None
-        for r in sorted(reservas_activas, key=lambda x: x.fecha_hora):
-            existente_inicio = r.fecha_hora
-            existente_fin = existente_inicio + timedelta(minutes=r.duracion_min)
+        self._proxima_hora_libre = None
+        for r in reservas_activas:
+            # Reconstruir datetime de inicio y fin de la reserva existente
+            existente_inicio = None
+            existente_fin = None
+            try:
+                hora_str = getattr(r, 'hora_reserva', None)
+                if hora_str and isinstance(hora_str, str):
+                    h, m = map(int, hora_str.split(":"))
+                    existente_inicio = datetime.combine(r.fecha_reserva, datetime.min.time()).replace(hour=h, minute=m)
+                else:
+                    continue
+                # Usar la misma duración que la reserva actual si existe, si no, usar la duración seleccionada
+                if hasattr(r, 'duracion_min') and r.duracion_min:
+                    duracion_existente = r.duracion_min
+                else:
+                    duracion_existente = duracion_min
+                existente_fin = existente_inicio + timedelta(minutes=duracion_existente)
+            except Exception:
+                continue
             if (nueva_inicio < existente_fin) and (nueva_fin > existente_inicio):
                 solapada = True
                 if nueva_inicio < existente_fin:
-                    proxima_hora_libre = existente_fin.time()
+                    self._proxima_hora_libre = existente_fin.time()
                 break
         if solapada:
-            texto = f"Hora no disponible. Próxima hora libre: {proxima_hora_libre.strftime('%H:%M') if proxima_hora_libre else '-'}"
+            texto = f"Hora no disponible. Próxima hora libre: {self._proxima_hora_libre.strftime('%H:%M') if self._proxima_hora_libre else '-'}"
             self.hora_feedback_label.setText(texto)
             self.hora_feedback_label.setStyleSheet("color: #d32f2f;")
+            self.sugerir_hora_btn.setVisible(self._proxima_hora_libre is not None)
         else:
             self.hora_feedback_label.setText("Hora disponible")
             self.hora_feedback_label.setStyleSheet("color: #388e3c;")
+            self.sugerir_hora_btn.setVisible(False)
+
+    def sugerir_proxima_hora_libre(self):
+        """Ajusta la hora de la reserva a la próxima hora libre sugerida."""
+        if self._proxima_hora_libre:
+            self.hora_input.setTime(QTime(self._proxima_hora_libre.hour, self._proxima_hora_libre.minute))
+            self.validar_hora_reserva()
+            self.hora_feedback_label.setText(f"Hora ajustada automáticamente a la próxima hora libre: {self._proxima_hora_libre.strftime('%H:%M')}")
+            self.hora_feedback_label.setStyleSheet("color: #1976d2;")
 
     def validar_y_aceptar(self):
         if not self.cliente_input.text().strip():
@@ -362,8 +413,11 @@ class ReservaDialog(QDialog):
             return
 
         fecha_seleccionada = self.fecha_input.date().toPyDate()
-        if fecha_seleccionada < datetime.now().date():
-            QMessageBox.warning(self, "Fecha inválida", "No se pueden crear reservas en fechas pasadas.")
+        hora_seleccionada = self.hora_input.time().toPyTime()
+        from datetime import datetime
+        dt_reserva = datetime.combine(fecha_seleccionada, hora_seleccionada)
+        if dt_reserva < datetime.now():
+            QMessageBox.warning(self, "Fecha y hora inválidas", "No se pueden crear reservas en el pasado.")
             return
 
         if self.mesa:
