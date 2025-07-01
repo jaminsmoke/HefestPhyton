@@ -52,28 +52,51 @@ def create_scroll_area(instance, layout):
 def populate_grid(instance):
     from ...widgets.mesa_widget_simple import MesaWidget
     from .mesas_area_utils import restaurar_datos_temporales, calcular_columnas_optimas
+    from PyQt6.QtCore import QTimer
     restaurar_datos_temporales(instance, instance.filtered_mesas)
     clear_mesa_widgets(instance)
     if not instance.filtered_mesas:
         show_no_mesas_message(instance)
         return
     cols = calcular_columnas_optimas(instance.width(), len(instance.filtered_mesas))
-    widgets_por_id = {w.mesa.id: w for w in instance.mesa_widgets}
-    instance.mesa_widgets = []
-    for i, mesa in enumerate(instance.filtered_mesas):
-        row = i // cols
-        col = i % cols
-        if mesa.id in widgets_por_id:
-            mesa_widget = widgets_por_id[mesa.id]
-            mesa_widget.update_mesa(mesa)
-        else:
-            mesa_widget = MesaWidget(mesa)
-            mesa_widget.mesa_clicked.connect(instance.mesa_clicked.emit)
-            mesa_widget.alias_changed.connect(instance._on_alias_mesa_changed)
-            mesa_widget.personas_changed.connect(instance._on_personas_mesa_changed)
-            mesa_widget.restaurar_original.connect(instance.restaurar_estado_original_mesa)
-        instance.mesa_widgets.append(mesa_widget)
-        instance.mesas_layout.addWidget(mesa_widget, row, col)
+    instance._lazy_loaded_rows = set()
+    instance._total_rows = (len(instance.filtered_mesas) + cols - 1) // cols
+    instance._cols = cols
+    # Crear widgets solo para las filas visibles inicialmente
+    def get_visible_rows():
+        scroll = instance.scroll_area.verticalScrollBar()
+        if not scroll:
+            return set(range(min(4, instance._total_rows)))
+        viewport_height = instance.scroll_area.viewport().height()
+        row_height = 180  # Aproximado, depende del widget
+        first_row = max(0, scroll.value() // row_height - 1)
+        last_row = min(instance._total_rows, (scroll.value() + viewport_height) // row_height + 2)
+        return set(range(first_row, last_row))
+    def lazy_load_rows():
+        visible_rows = get_visible_rows()
+        for row in visible_rows:
+            if row in instance._lazy_loaded_rows:
+                continue
+            for col in range(cols):
+                idx = row * cols + col
+                if idx >= len(instance.filtered_mesas):
+                    break
+                mesa = instance.filtered_mesas[idx]
+                mesa_widget = MesaWidget(mesa)
+                mesa_widget.mesa_clicked.connect(instance.mesa_clicked.emit)
+                mesa_widget.alias_changed.connect(instance._on_alias_mesa_changed)
+                mesa_widget.personas_changed.connect(instance._on_personas_mesa_changed)
+                mesa_widget.restaurar_original.connect(instance.restaurar_estado_original_mesa)
+                instance.mesa_widgets.append(mesa_widget)
+                instance.mesas_layout.addWidget(mesa_widget, row, col)
+            instance._lazy_loaded_rows.add(row)
+    # Conectar el evento de scroll para lazy loading
+    def on_scroll():
+        QTimer.singleShot(10, lazy_load_rows)
+    scroll = instance.scroll_area.verticalScrollBar()
+    if scroll:
+        scroll.valueChanged.connect(on_scroll)
+    lazy_load_rows()
     total_filtered = len(instance.filtered_mesas)
     total_all = len(instance.mesas)
     if hasattr(instance, 'status_info'):

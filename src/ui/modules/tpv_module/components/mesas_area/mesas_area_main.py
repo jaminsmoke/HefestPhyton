@@ -264,3 +264,26 @@ class MesasArea(QFrame):
         except Exception as e:
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Error al procesar la eliminación de mesa: {str(e)}")
+
+    def sync_scroll_with(self, other_scroll_area):
+        """Sincroniza el scroll vertical de esta área con otra QScrollArea"""
+        # Buscar el atributo scroll_area en self
+        scroll_area = getattr(self, 'scroll_area', None)
+        if not scroll_area or not hasattr(other_scroll_area, 'verticalScrollBar'):
+            return
+        self._syncing_scroll = False
+        other_syncing = {'flag': False}
+        def on_scroll(value):
+            if self._syncing_scroll:
+                return
+            self._syncing_scroll = True
+            other_scroll_area.verticalScrollBar().setValue(value)
+            self._syncing_scroll = False
+        def on_other_scroll(value):
+            if other_syncing['flag']:
+                return
+            other_syncing['flag'] = True
+            scroll_area.verticalScrollBar().setValue(value)
+            other_syncing['flag'] = False
+        scroll_area.verticalScrollBar().valueChanged.connect(on_scroll)
+        other_scroll_area.verticalScrollBar().valueChanged.connect(on_other_scroll)

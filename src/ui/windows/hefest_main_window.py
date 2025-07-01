@@ -3,6 +3,7 @@ Ventana principal moderna de la aplicación Hefest.
 """
 
 import logging
+import os
 from PyQt6.QtWidgets import (
     QMainWindow,
     QStatusBar,
@@ -16,9 +17,11 @@ from PyQt6.QtWidgets import (
     QMenu,
     QMessageBox,
     QScrollArea,  # <-- Añadido
+    QFileDialog,
+    QApplication,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime
-from PyQt6.QtGui import QCloseEvent, QAction
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime, QFile, QPropertyAnimation
+from PyQt6.QtGui import QCloseEvent, QAction, QPalette, QColor, QIcon
 
 from src.__version__ import __version__
 from ..components.main_navigation_sidebar import ModernSidebar
@@ -65,6 +68,7 @@ class MainWindow(QMainWindow):
         # Variables de estado
         self.current_module = None
         self.module_widgets = {}
+        self._module_scroll_positions = {}  # Guardar posición de scroll por módulo
         # Mapping de módulos a roles requeridos
         self.module_permissions = {
             "dashboard": Role.EMPLOYEE,
@@ -78,7 +82,6 @@ class MainWindow(QMainWindow):
             "users": Role.ADMIN,
             "user_management": Role.ADMIN,
         }
-
         # Configurar la interfaz
         self.setup_ui()
         self.setup_connections()
@@ -172,10 +175,43 @@ class MainWindow(QMainWindow):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setWidget(self.module_container)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         main_layout.addWidget(self.scroll_area, stretch=1)
+        # Botón flotante 'Volver al inicio'
+        self.scroll_to_top_btn = QPushButton("↑", self)
+        self.scroll_to_top_btn.setToolTip("Volver al inicio")
+        self.scroll_to_top_btn.setFixedSize(36, 36)
+        self.scroll_to_top_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #38bdf8, stop:1 #a7f3d0);
+                color: #222;
+                border-radius: 18px;
+                border: 2px solid #38bdf8;
+                font-size: 20px;
+                font-weight: bold;
+                box-shadow: 0 2px 8px rgba(56,189,248,0.15);
+            }
+            QPushButton:hover {
+                background: #a7f3d0;
+                color: #0ea5e9;
+            }
+        """)
+        self.scroll_to_top_btn.hide()
+        self.scroll_to_top_btn.clicked.connect(self.animate_scroll_to_top)
+        vbar = self.scroll_area.verticalScrollBar()
+        if vbar is not None:
+            vbar.valueChanged.connect(self.toggle_scroll_to_top_btn)
+        self.toggle_scroll_to_top_btn()
 
         # Barra de estado moderna
         self.setup_status_bar()
+
+        # Aplicar estilo visual moderno al scroll a toda la ventana principal
+        try:
+            with open(os.path.join(os.path.dirname(__file__), "qt_scrollarea_custom.qss"), "r", encoding="utf-8") as f:
+                self.setStyleSheet(f.read())
+        except Exception as e:
+            logger.warning(f"No se pudo aplicar el estilo QSS personalizado al scroll: {e}")
 
     def setup_status_bar(self):
         """Configura la barra de estado moderna con información del usuario"""
@@ -261,13 +297,20 @@ class MainWindow(QMainWindow):
 
     def show_module(self, module_id):
         """Muestra el módulo especificado si el usuario tiene permisos"""
+        # Guardar posición de scroll del módulo actual
+        if self.current_module is not None:
+            vbar = self.scroll_area.verticalScrollBar()
+            if vbar is not None:
+                self._module_scroll_positions[self.current_module] = vbar.value()
+
         if not self.check_module_permission(module_id):
             logger.warning(f"🚨 SHOW_MODULE: Acceso denegado al módulo {module_id}")
             denied_widget = self.create_permission_denied_widget(module_id)
             self.module_layout.addWidget(denied_widget)
             return
 
-        if module_id in self.module_widgets:            widget = self.module_widgets[module_id]
+        if module_id in self.module_widgets:
+            widget = self.module_widgets[module_id]
         else:
             widget = self.create_module_widget(module_id)
             self.module_widgets[module_id] = widget
@@ -280,8 +323,22 @@ class MainWindow(QMainWindow):
                 old_widget.setParent(None)
 
         self.module_layout.addWidget(widget)
+        previous_module = self.current_module
         self.current_module = module_id
         self.module_changed.emit(module_id)
+        vbar = self.scroll_area.verticalScrollBar()
+        # Restaurar posición previa si existe y es otro módulo
+        if previous_module != module_id and module_id in self._module_scroll_positions:
+            if vbar is not None:
+                vbar.setValue(self._module_scroll_positions[module_id])
+        # Si es el mismo módulo, animar scroll al inicio
+        elif previous_module == module_id and vbar is not None:
+            anim = QPropertyAnimation(vbar, b"value", self)
+            anim.setDuration(350)
+            anim.setStartValue(vbar.value())
+            anim.setEndValue(0)
+            anim.start()
+            self._scroll_anim = anim
 
     def create_module_widget(self, module_id):
         """Crea un widget para el módulo especificado"""
@@ -379,8 +436,18 @@ class MainWindow(QMainWindow):
         msg.exec()
 
     def keyPressEvent(self, event):
-        """Maneja eventos de teclas"""
         super().keyPressEvent(event)
+        # Atajos de scroll para el área principal
+        vbar = self.scroll_area.verticalScrollBar()
+        if vbar is not None:
+            if event.key() == Qt.Key.Key_PageDown:
+                vbar.setValue(min(vbar.value() + vbar.pageStep(), vbar.maximum()))
+            elif event.key() == Qt.Key.Key_PageUp:
+                vbar.setValue(max(vbar.value() - vbar.pageStep(), 0))
+            elif event.key() == Qt.Key.Key_Home:
+                vbar.setValue(0)
+            elif event.key() == Qt.Key.Key_End:
+                vbar.setValue(vbar.maximum())
 
         # Ctrl+Q para salir
         if (
@@ -420,3 +487,50 @@ class MainWindow(QMainWindow):
             and event.modifiers() & Qt.KeyboardModifier.ShiftModifier
         ):
             self.show_module("users")
+
+    def update_scroll_overflow_indicators(self):
+        vbar = self.scroll_area.verticalScrollBar()
+        hbar = self.scroll_area.horizontalScrollBar()
+        overflow_top = vbar.value() > 0 if vbar is not None else False
+        overflow_bottom = vbar.value() < vbar.maximum() if vbar is not None else False
+        overflow_left = hbar.value() > 0 if hbar is not None else False
+        overflow_right = hbar.value() < hbar.maximum() if hbar is not None else False
+        self.scroll_area.setProperty("overflow-top", overflow_top)
+        self.scroll_area.setProperty("overflow-bottom", overflow_bottom)
+        self.scroll_area.setProperty("overflow-left", overflow_left)
+        self.scroll_area.setProperty("overflow-right", overflow_right)
+        style = self.scroll_area.style()
+        if style is not None:
+            style.unpolish(self.scroll_area)
+            style.polish(self.scroll_area)
+
+    def eventFilter(self, obj, event):
+        if obj == self.scroll_area and event.type() == event.Type.Resize:
+            self.update_scroll_overflow_indicators()
+        return super().eventFilter(obj, event)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Posicionar el botón flotante en la esquina inferior derecha de la QScrollArea
+        if hasattr(self, 'scroll_to_top_btn'):
+            area = self.scroll_area.geometry()
+            x = area.x() + area.width() - self.scroll_to_top_btn.width() - 18
+            y = area.y() + area.height() - self.scroll_to_top_btn.height() - 18
+            self.scroll_to_top_btn.move(x, y)
+
+    def toggle_scroll_to_top_btn(self):
+        vbar = self.scroll_area.verticalScrollBar()
+        if vbar is not None and vbar.maximum() > 0 and vbar.value() > 0:
+            self.scroll_to_top_btn.show()
+        else:
+            self.scroll_to_top_btn.hide()
+
+    def animate_scroll_to_top(self):
+        vbar = self.scroll_area.verticalScrollBar()
+        if vbar is not None:
+            anim = QPropertyAnimation(vbar, b"value", self)
+            anim.setDuration(350)
+            anim.setStartValue(vbar.value())
+            anim.setEndValue(0)
+            anim.start()
+            self._scroll_anim = anim  # Guardar referencia para evitar GC
