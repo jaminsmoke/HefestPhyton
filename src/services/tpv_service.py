@@ -25,6 +25,7 @@ class Mesa:
     personas_temporal: Optional[int] = None  # Número de personas temporal (no persistente)
     notas: Optional[str] = None  # Notas temporales de la mesa (no persistente)
     reservada: bool = False  # Indica si la mesa está reservada actualmente
+    proxima_reserva: Optional[object] = None  # Reserva futura más próxima (no persistente)
 
     @property
     def nombre_display(self) -> str:

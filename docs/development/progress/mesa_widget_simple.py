@@ -45,7 +45,6 @@ class MesaWidget(QFrame):
         super().__init__(parent)
         self.mesa = mesa
         self.proxima_reserva = proxima_reserva
-        self._ultima_reserva_activa = proxima_reserva  # Guarda la última reserva activa
         self.setFixedSize(220, 160)  # Tamaño más compacto ajustado al contenido
         self.setObjectName("mesa_widget")
 
@@ -326,19 +325,14 @@ class MesaWidget(QFrame):
             }}
         """)
 
-        # Contador de próxima reserva - Estilo compacto y mejor integrado
+        # Contador de próxima reserva - Estilo destacado
         self.contador_label.setStyleSheet("""
             QLabel#contador_label {
-                color: #b26a00;
-                background: #fff3cd;
-                border-radius: 5px;
-                padding: 2px 10px;
-                font-weight: 600;
-                font-size: 13px;
-                min-width: 48px;
-                min-height: 20px;
-                border: 1px solid #ffe082;
-                margin-top: 2px;
+                color: #333;
+                background: #ffe0b2;
+                border-radius: 6px;
+                padding: 2px 8px;
+                font-weight: bold;
             }
         """)
 
@@ -415,20 +409,9 @@ class MesaWidget(QFrame):
         return bool(self.mesa.alias) or (self.mesa.personas_temporal is not None)
 
     def update_mesa(self, mesa: Mesa):
-        """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario"""
+        """Actualiza los datos de la mesa"""
         self.mesa = mesa
-        nueva_reserva = getattr(mesa, 'proxima_reserva', None)
-        # Excepción funcional: Si la mesa está reservada/ocupada y no hay proxima_reserva, conservar la última reserva activa localmente
-        if nueva_reserva is not None:
-            self.proxima_reserva = nueva_reserva
-            self._ultima_reserva_activa = nueva_reserva
-        elif self.mesa.estado in ("reservada", "ocupada") and self._ultima_reserva_activa is not None:
-            # TODO: Refactorizar cuando el backend permita enviar la reserva activa aunque esté en curso
-            # Excepción documentada: ver README y política de cumplimiento
-            self.proxima_reserva = self._ultima_reserva_activa
-        else:
-            self.proxima_reserva = None
-            self._ultima_reserva_activa = None
+        self.proxima_reserva = getattr(mesa, 'proxima_reserva', None)
         self.alias_label.setText(mesa.nombre_display)
         self.capacidad_label.setText(f"👥 {mesa.personas_display} personas")
         self.estado_label.setText(self.get_estado_texto())
@@ -457,21 +440,13 @@ class MesaWidget(QFrame):
         ahora = datetime.now()
         delta = reserva.fecha_hora - ahora
         minutos = int(delta.total_seconds() // 60)
-        # Si la reserva ya está en curso, cambiamos el estado a 'ocupada', actualizamos la vista y forzamos refresco
         if minutos < 0:
-            if self.mesa.estado == 'reservada':
-                self.mesa.estado = 'ocupada'  # Cambio automático de estado
-                self.estado_label.setText(self.get_estado_texto())
-                self.apply_styles()
             self.contador_label.hide()
             self.contador_label.setText("")
             self.contador_label.setToolTip("")
             self._contador_timer.stop()
             self._resaltar_contador(False)
-            self.updateGeometry()
-            self.repaint()
             return
-        # Si la reserva es futura, mostrar el contador
         texto = f"⏳ {minutos} min"
         self.contador_label.setText(texto)
         self.contador_label.setToolTip(f"Próxima reserva: {reserva.fecha_hora.strftime('%H:%M')} - {getattr(reserva, 'cliente', '')}")

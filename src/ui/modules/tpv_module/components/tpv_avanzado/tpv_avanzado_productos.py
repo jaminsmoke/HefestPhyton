@@ -166,5 +166,3 @@ def agregar_producto(parent, nombre, precio):
     """Agrega un producto al pedido actual"""
     if hasattr(parent, 'agregar_producto_pedido'):
         parent.agregar_producto_pedido(nombre, precio)
-    else:
-        print(f"Producto agregado: {nombre} - €{precio:.2f}")

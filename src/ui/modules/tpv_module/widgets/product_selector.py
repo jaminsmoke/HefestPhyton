@@ -383,10 +383,4 @@ if __name__ == "__main__":
     widget.show()
     widget.resize(800, 600)
     
-    # Conectar señal para pruebas
-    def on_product_selected(producto: Producto, cantidad: int):
-        print(f"Producto seleccionado: {producto.nombre} x{cantidad}")
-    
-    widget.product_selected.connect(on_product_selected)
-    
     sys.exit(app.exec())

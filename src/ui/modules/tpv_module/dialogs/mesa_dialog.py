@@ -486,8 +486,9 @@ class MesaDialog(QDialog):
                     notas=notas
                 )
                 self.reserva_creada.emit()  # Notifica a la agenda
-            except Exception as e:
-                print(f"Error guardando reserva en ReservaService: {e}")
+            except Exception:
+                # (Eliminado print de error de debug)
+                pass
         # ...actualiza estado local...
         if self.mesa:
             self.mesa.estado = 'reservada'

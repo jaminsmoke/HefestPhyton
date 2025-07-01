@@ -65,6 +65,7 @@ class MesasArea(QFrame):
         else:
             restaurar_datos_temporales(self, mesas)
         self.mesas = mesas
+        self.sincronizar_reservas_en_mesas()
         self.update_filtered_mesas()
         populate_grid(self)
         update_stats_from_mesas(self)
@@ -78,16 +79,38 @@ class MesasArea(QFrame):
             guardar_dato_temporal(self, None)
             restaurar_datos_temporales(self, nuevas_mesas)
             self.mesas = nuevas_mesas
-        # Sincronizar reservas activas
-        if hasattr(self, 'reserva_service') and self.reserva_service:
-            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-            for mesa in self.mesas:
-                mesa.reservada = mesa.id in reservas_por_mesa
-                # --- AJUSTE: liberar mesa si ya no tiene reservas activas ---
-                if mesa.id not in reservas_por_mesa and getattr(mesa, 'estado', None) == 'reservada':
-                    mesa.estado = 'libre'
+        # Sincronizar reservas activas y calcular próxima reserva
+        self.sincronizar_reservas_en_mesas()
         self.update_filtered_mesas()
         populate_grid(self)
+
+    def sincronizar_reservas_en_mesas(self):
+        """Sincroniza reservas activas y calcula próxima reserva para cada mesa."""
+        if hasattr(self, 'reserva_service') and self.reserva_service:
+            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+            from datetime import datetime
+            ahora = datetime.now()
+            for mesa in self.mesas:
+                tiene_reservas = mesa.id in reservas_por_mesa
+                reservas = reservas_por_mesa.get(mesa.id, [])
+                # Determinar si hay una reserva en curso
+                reserva_en_curso = None
+                for r in reservas:
+                    if r.fecha_hora <= ahora and r.estado == 'activa':
+                        reserva_en_curso = r
+                        break
+                if reserva_en_curso:
+                    mesa.estado = 'ocupada'
+                elif tiene_reservas:
+                    mesa.estado = 'reservada'
+                elif getattr(mesa, 'estado', None) in ('reservada', 'ocupada'):
+                    mesa.estado = 'libre'
+                # Calcular próxima reserva activa (>= ahora)
+                futuras = [r for r in reservas if r.fecha_hora >= ahora and r.estado == 'activa']
+                if futuras:
+                    mesa.proxima_reserva = min(futuras, key=lambda r: r.fecha_hora)
+                else:
+                    mesa.proxima_reserva = None
 
     def update_filtered_mesas(self):
         if not self.mesas:

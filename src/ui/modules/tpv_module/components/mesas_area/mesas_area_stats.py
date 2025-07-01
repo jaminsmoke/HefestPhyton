@@ -101,8 +101,9 @@ def _update_stat_widget(widget, new_value: str):
                 value_label = value_item.widget()
                 value_label.setText(str(new_value))
                 value_label.update()
-    except Exception as e:
-        print(f"Error actualizando widget de estadística: {e}")
+    except Exception:
+        # (Eliminado print de error de debug)
+        pass
 
 def update_stats_from_mesas(instance):
     if not instance.mesas:
