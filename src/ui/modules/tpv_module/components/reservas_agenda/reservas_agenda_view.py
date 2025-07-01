@@ -5,9 +5,9 @@ Widget visual para la agenda/listado de reservas activas.
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, QPushButton, QHBoxLayout, QDialog, QFormLayout, QLineEdit, QDateTimeEdit, QSpinBox, QMessageBox
 from PyQt6.QtCore import Qt, QDateTime, pyqtSignal, QTimer
 from .reserva_service import ReservaService
-from .reserva_model import Reserva
+from core.hefest_data_models import Reserva
 from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
-from datetime import datetime
+from datetime import datetime, timedelta
 from services.tpv_service import Mesa
 
 class CrearReservaDialog(QDialog):
@@ -17,6 +17,7 @@ class CrearReservaDialog(QDialog):
         layout = QFormLayout(self)
         self.mesa_id_input = QLineEdit()
         self.cliente_input = QLineEdit()
+        self.telefono_input = QLineEdit()
         self.fecha_hora_input = QDateTimeEdit(QDateTime.currentDateTime())
         self.fecha_hora_input.setCalendarPopup(True)
         self.duracion_input = QSpinBox()
@@ -25,6 +26,7 @@ class CrearReservaDialog(QDialog):
         self.notas_input = QLineEdit()
         layout.addRow("Mesa ID:", self.mesa_id_input)
         layout.addRow("Cliente:", self.cliente_input)
+        layout.addRow("Teléfono:", self.telefono_input)
         layout.addRow("Fecha y hora:", self.fecha_hora_input)
         layout.addRow("Duración (min):", self.duracion_input)
         layout.addRow("Notas:", self.notas_input)
@@ -41,6 +43,7 @@ class CrearReservaDialog(QDialog):
         return {
             'mesa_id': self.mesa_id_input.text(),
             'cliente': self.cliente_input.text(),
+            'telefono': self.telefono_input.text(),
             'fecha_hora': self.fecha_hora_input.dateTime().toPyDateTime(),
             'duracion_min': self.duracion_input.value(),
             'notas': self.notas_input.text()
@@ -97,11 +100,28 @@ class ReservasAgendaView(QWidget):
             try:
                 mesa_id = int(mesa_id_input.text())
                 fecha_hora = datetime.combine(data['fecha'], data['hora'])
+                duracion_min = int(data['duracion_horas'] * 60)
+                # Validación de solapamiento frontend
+                reservas_activas = self.reserva_service.obtener_reservas_activas_por_mesa().get(mesa_id, [])
+                nueva_inicio = fecha_hora
+                nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
+                solapada = False
+                for r in reservas_activas:
+                    existente_inicio = r.fecha_hora
+                    existente_fin = existente_inicio + timedelta(minutes=r.duracion_min)
+                    if (nueva_inicio < existente_fin) and (nueva_fin > existente_inicio):
+                        solapada = True
+                        break
+                if solapada:
+                    QMessageBox.warning(self, "Solapamiento de reserva", "Ya existe una reserva para esa mesa en el rango horario seleccionado.")
+                    return
                 self.reserva_service.crear_reserva(
                     mesa_id=mesa_id,
                     cliente=data['cliente'],
                     fecha_hora=fecha_hora,
-                    duracion_min=int(data['duracion_horas'] * 60),
+                    duracion_min=duracion_min,
+                    telefono=data.get('telefono'),
+                    personas=data.get('personas'),
                     notas=data['notas'] or None
                 )
                 QMessageBox.information(self, "Reserva creada", "La reserva se ha creado correctamente.")
@@ -136,14 +156,18 @@ class ReservasAgendaView(QWidget):
                 QMessageBox.critical(self, "Error", f"No se pudo cancelar la reserva: {e}")
 
     def format_reserva(self, reserva: Reserva) -> str:
-        alias = None
-        if self.tpv_service:
-            try:
-                mesas = self.tpv_service.get_mesas()
-                mesa = next((m for m in mesas if m.id == reserva.mesa_id), None)
-                if mesa and getattr(mesa, 'alias', None):
-                    alias = mesa.alias
-            except Exception:
-                pass
-        alias_str = f" ({alias})" if alias else ""
-        return f"Mesa {reserva.mesa_id}{alias_str} | {reserva.cliente} | {reserva.fecha_hora.strftime('%d/%m/%Y %H:%M')} | {reserva.duracion_min} min | {reserva.estado}"
+        alias_str = f" ({getattr(reserva, 'alias', '')})" if getattr(reserva, 'alias', None) else ""
+        telefono_str = f" | Tel: {reserva.cliente_telefono}" if getattr(reserva, 'cliente_telefono', None) else ""
+        personas_str = f" | Personas: {reserva.numero_personas}" if getattr(reserva, 'numero_personas', None) else ""
+        # Unificar fecha y hora
+        fecha_hora_str = ""
+        if getattr(reserva, 'fecha_reserva', None) and getattr(reserva, 'hora_reserva', None):
+            if reserva.fecha_reserva is not None:
+                fecha_hora_str = f"{reserva.fecha_reserva.strftime('%d/%m/%Y')} {reserva.hora_reserva}"
+            else:
+                fecha_hora_str = f"{reserva.hora_reserva}"
+        elif getattr(reserva, 'fecha_reserva', None):
+            if reserva.fecha_reserva is not None:
+                fecha_hora_str = reserva.fecha_reserva.strftime('%d/%m/%Y')
+        # No hay duracion_min en el modelo unificado, así que lo omitimos o lo calculamos si es necesario
+        return f"Mesa {reserva.mesa_id}{alias_str} | {reserva.cliente_nombre} | {fecha_hora_str}{personas_str}{telefono_str} | {reserva.estado}"

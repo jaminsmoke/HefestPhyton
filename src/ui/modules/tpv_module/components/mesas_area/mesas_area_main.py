@@ -59,6 +59,7 @@ class MesasArea(QFrame):
         self.tpv_service = tpv_service
 
     def set_mesas(self, mesas: List[Mesa], datos_temporales: Optional[Dict] = None):
+        print("[MesasArea] set_mesas llamado")
         guardar_dato_temporal(self, None)  # Guarda temporales actuales
         if datos_temporales is not None:
             restaurar_datos_temporales(self, mesas)
@@ -74,6 +75,7 @@ class MesasArea(QFrame):
         self.reserva_service = reserva_service
 
     def refresh_mesas(self):
+        print("[MesasArea] refresh_mesas llamado")
         if self.tpv_service:
             nuevas_mesas = self.tpv_service.get_mesas()
             guardar_dato_temporal(self, None)
@@ -85,10 +87,10 @@ class MesasArea(QFrame):
         populate_grid(self)
 
     def sincronizar_reservas_en_mesas(self):
-        """Sincroniza reservas activas y calcula próxima reserva para cada mesa."""
+        """Sincroniza reservas activas y calcula próxima reserva para cada mesa. SOLO modelo unificado."""
         if hasattr(self, 'reserva_service') and self.reserva_service:
             reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-            from datetime import datetime
+            from datetime import datetime, time
             ahora = datetime.now()
             for mesa in self.mesas:
                 tiene_reservas = mesa.id in reservas_por_mesa
@@ -96,7 +98,24 @@ class MesasArea(QFrame):
                 # Determinar si hay una reserva en curso
                 reserva_en_curso = None
                 for r in reservas:
-                    if r.fecha_hora <= ahora and r.estado == 'activa':
+                    # Unificar fecha_hora para modelo unificado
+                    fecha = getattr(r, 'fecha_reserva', None)
+                    hora = getattr(r, 'hora_reserva', None)
+                    if fecha and hora:
+                        try:
+                            if isinstance(hora, str):
+                                hora_obj = datetime.strptime(hora, '%H:%M').time()
+                            else:
+                                hora_obj = hora
+                        except Exception:
+                            hora_obj = time(0, 0)
+                        fecha_hora = datetime.combine(fecha, hora_obj)
+                    elif fecha:
+                        fecha_hora = datetime.combine(fecha, time(0, 0))
+                    else:
+                        fecha_hora = None
+                    estado = getattr(r, 'estado', None)
+                    if fecha_hora is not None and estado is not None and fecha_hora <= ahora and estado == 'activa':
                         reserva_en_curso = r
                         break
                 if reserva_en_curso:
@@ -106,11 +125,59 @@ class MesasArea(QFrame):
                 elif getattr(mesa, 'estado', None) in ('reservada', 'ocupada'):
                     mesa.estado = 'libre'
                 # Calcular próxima reserva activa (>= ahora)
-                futuras = [r for r in reservas if r.fecha_hora >= ahora and r.estado == 'activa']
+                futuras = []
+                for r in reservas:
+                    fecha = getattr(r, 'fecha_reserva', None)
+                    hora = getattr(r, 'hora_reserva', None)
+                    if fecha and hora:
+                        try:
+                            if isinstance(hora, str):
+                                hora_obj = datetime.strptime(hora, '%H:%M').time()
+                            else:
+                                hora_obj = hora
+                        except Exception:
+                            hora_obj = time(0, 0)
+                        fecha_hora = datetime.combine(fecha, hora_obj)
+                    elif fecha:
+                        fecha_hora = datetime.combine(fecha, time(0, 0))
+                    else:
+                        fecha_hora = None
+                    estado = getattr(r, 'estado', None)
+                    if fecha_hora is not None and estado is not None and fecha_hora >= ahora and estado == 'activa':
+                        futuras.append((fecha_hora, r))
                 if futuras:
-                    mesa.proxima_reserva = min(futuras, key=lambda r: r.fecha_hora)
+                    # Elegir la reserva más próxima
+                    mesa.proxima_reserva = min(futuras, key=lambda t: t[0])[1]
                 else:
                     mesa.proxima_reserva = None
+        # Eliminar vestigio legacy: _convert_reserva_legacy y referencias legacy eliminadas
+
+    def _convert_reserva_legacy(self, r):
+        """Convierte una reserva legacy (con fecha y hora separados) al modelo unificado."""
+        # r.fecha y r.hora pueden no existir en el modelo unificado, así que usar fecha_reserva y hora_reserva
+        from datetime import datetime
+        fecha = getattr(r, 'fecha_reserva', None) or getattr(r, 'fecha', None)
+        hora = getattr(r, 'hora_reserva', None) or getattr(r, 'hora', None)
+        if fecha and hora:
+            if isinstance(hora, str):
+                try:
+                    hora = datetime.strptime(hora, '%H:%M').time()
+                except Exception:
+                    hora = None
+            fecha_hora = datetime.combine(fecha, hora) if hora else fecha
+        else:
+            fecha_hora = fecha or datetime.now()
+        return type('Reserva', (), {
+            'id': getattr(r, 'id', None),
+            'mesa_id': getattr(r, 'mesa_id', None),
+            'cliente_nombre': getattr(r, 'cliente_nombre', getattr(r, 'cliente', '')),
+            'fecha_reserva': fecha,
+            'hora_reserva': hora.strftime('%H:%M') if hora else '',
+            'numero_personas': getattr(r, 'numero_personas', getattr(r, 'personas', 1)),
+            'estado': getattr(r, 'estado', 'activa'),
+            'notas': getattr(r, 'notas', ''),
+            'cliente_telefono': getattr(r, 'cliente_telefono', getattr(r, 'telefono', ''))
+        })()
 
     def update_filtered_mesas(self):
         if not self.mesas:
@@ -181,6 +248,7 @@ class MesasArea(QFrame):
                     m.alias = nuevo_alias if nuevo_alias else None
             for w in self.mesa_widgets:
                 if w.mesa.id == mesa.id:
+                    print(f"[MesasArea] update_mesa llamado para mesa.id={m.id} estado={m.estado} proxima_reserva={getattr(m, 'proxima_reserva', None)}")
                     w.update_mesa(m)
         self.update_filtered_mesas()
         from .mesas_area_grid import populate_grid

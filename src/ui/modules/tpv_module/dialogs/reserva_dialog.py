@@ -9,16 +9,18 @@ from PyQt6.QtGui import QFont, QRegularExpressionValidator
 from PyQt6.QtCore import QRegularExpression
 from datetime import datetime, timedelta
 from services.tpv_service import Mesa
+from core.hefest_data_models import Reserva
 
 class ReservaDialog(QDialog):
-    reserva_creada = pyqtSignal(dict)
+    reserva_creada = pyqtSignal(object)
 
-    def __init__(self, parent=None, mesa: Optional[Mesa] = None):
+    def __init__(self, parent=None, mesa: Optional[Mesa] = None, reserva_service=None):
         super().__init__(parent)
         self.setWindowTitle("🍽️ Crear Reserva")
         self.setModal(True)
         self.setFixedSize(480, 620)
         self.mesa = mesa
+        self.reserva_service = reserva_service
         self.setup_ui()
         self.setup_styles()
         self.connect_signals()
@@ -87,7 +89,7 @@ class ReservaDialog(QDialog):
         self.cliente_input = self.create_input("Nombre completo del cliente")
         section_layout.addWidget(self.cliente_input)
 
-        self.telefono_input = self.create_input("Teléfono de contacto")
+        self.telefono_input = self.create_input("Teléfono")
         phone_validator = QRegularExpressionValidator(QRegularExpression(r"^[+]?[0-9\s\-\(\)]{9,15}$"))
         self.telefono_input.setValidator(phone_validator)
         section_layout.addWidget(self.telefono_input)
@@ -160,6 +162,14 @@ class ReservaDialog(QDialog):
         self.estado_combo.addItems(["Confirmada", "Pendiente", "Tentativa"])
         section_layout.addWidget(estado_label)
         section_layout.addWidget(self.estado_combo)
+
+        self.hora_input.timeChanged.connect(self.validar_hora_reserva)
+        self.fecha_input.dateChanged.connect(self.validar_hora_reserva)
+        self.duracion_combo.currentIndexChanged.connect(self.validar_hora_reserva)
+        self.hora_feedback_label = QLabel("")
+        self.hora_feedback_label.setFont(QFont("Segoe UI", 9))
+        self.hora_feedback_label.setStyleSheet("color: #d32f2f;")
+        hora_container.addWidget(self.hora_feedback_label)
 
         layout.addWidget(section_frame)
 
@@ -301,6 +311,45 @@ class ReservaDialog(QDialog):
             else:
                 self.personas_input.setStyleSheet("")
 
+    def validar_hora_reserva(self):
+        if not self.mesa:
+            self.hora_feedback_label.setText("")
+            return
+        from datetime import datetime, timedelta
+        mesa_id = getattr(self.mesa, 'id', None)
+        if mesa_id is None:
+            self.hora_feedback_label.setText("")
+            return
+        fecha = self.fecha_input.date().toPyDate()
+        hora = self.hora_input.time().toPyTime()
+        duracion_text = self.duracion_combo.currentText()
+        duracion_horas = float(duracion_text.split()[0]) if duracion_text != "Más de 3 horas" else 3.5
+        duracion_min = int(duracion_horas * 60)
+        nueva_inicio = datetime.combine(fecha, hora)
+        nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
+        # Obtener reservas activas de la mesa para ese día
+        reservas_activas = []
+        if self.reserva_service:
+            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+            reservas_activas = [r for r in reservas_por_mesa.get(mesa_id, []) if r.fecha_hora.date() == fecha]
+        solapada = False
+        proxima_hora_libre = None
+        for r in sorted(reservas_activas, key=lambda x: x.fecha_hora):
+            existente_inicio = r.fecha_hora
+            existente_fin = existente_inicio + timedelta(minutes=r.duracion_min)
+            if (nueva_inicio < existente_fin) and (nueva_fin > existente_inicio):
+                solapada = True
+                if nueva_inicio < existente_fin:
+                    proxima_hora_libre = existente_fin.time()
+                break
+        if solapada:
+            texto = f"Hora no disponible. Próxima hora libre: {proxima_hora_libre.strftime('%H:%M') if proxima_hora_libre else '-'}"
+            self.hora_feedback_label.setText(texto)
+            self.hora_feedback_label.setStyleSheet("color: #d32f2f;")
+        else:
+            self.hora_feedback_label.setText("Hora disponible")
+            self.hora_feedback_label.setStyleSheet("color: #388e3c;")
+
     def validar_y_aceptar(self):
         if not self.cliente_input.text().strip():
             QMessageBox.warning(self, "Campo requerido", "El nombre del cliente es obligatorio.")
@@ -329,7 +378,19 @@ class ReservaDialog(QDialog):
                     return
 
         datos_reserva = self.get_data()
-        self.reserva_creada.emit(datos_reserva)
+        # Crear objeto Reserva unificado
+        reserva = Reserva(
+            id=None,
+            mesa_id=datos_reserva["mesa_id"],
+            cliente_nombre=datos_reserva["cliente"],
+            cliente_telefono=datos_reserva["telefono"],
+            fecha_reserva=datos_reserva["fecha"],
+            hora_reserva=datos_reserva["hora"].strftime('%H:%M'),
+            numero_personas=datos_reserva["personas"],
+            estado="confirmada",  # o datos_reserva["estado"] si se requiere
+            notas=datos_reserva["notas"]
+        )
+        self.reserva_creada.emit(reserva)
         self.accept()
 
     def get_data(self):

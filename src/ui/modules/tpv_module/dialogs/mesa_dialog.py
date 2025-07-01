@@ -461,34 +461,93 @@ class MesaDialog(QDialog):
 
     def on_reserva_btn_clicked(self):
         """Abre el diálogo de reserva para la mesa actual"""
-        reserva_dialog = ReservaDialog(self, self.mesa)
+        reserva_dialog = ReservaDialog(self, self.mesa, reserva_service=self.reserva_service)
         reserva_dialog.reserva_creada.connect(self.procesar_reserva)
         reserva_dialog.exec()
 
     def procesar_reserva(self, datos_reserva):
         """Procesa los datos de la nueva reserva y la guarda en ReservaService"""
-        # Guardar en ReservaService si está disponible
-        if self.reserva_service:
-            try:
+        # Permitir tanto dict como objeto Reserva
+        if hasattr(datos_reserva, '__dict__') and not isinstance(datos_reserva, dict):
+            # Es un objeto Reserva
+            r = datos_reserva
+            mesa_id = getattr(r, 'mesa_id', None)
+            cliente = getattr(r, 'cliente_nombre', getattr(r, 'cliente', ''))
+            telefono = getattr(r, 'cliente_telefono', getattr(r, 'telefono', ''))
+            fecha = getattr(r, 'fecha_reserva', None)
+            hora = getattr(r, 'hora_reserva', None)
+            if isinstance(hora, str):
                 from datetime import datetime
-                mesa_id = datos_reserva.get('mesa_id')
-                cliente = datos_reserva.get('cliente')
-                fecha = datos_reserva.get('fecha')
-                hora = datos_reserva.get('hora')
-                fecha_hora = datetime.combine(fecha, hora)
-                duracion_min = int(datos_reserva.get('duracion_horas', 1) * 60)
-                notas = datos_reserva.get('notas')
+                try:
+                    hora_obj = datetime.strptime(hora, '%H:%M').time()
+                except Exception:
+                    hora_obj = None
+            else:
+                hora_obj = hora
+            fecha_hora = None
+            if fecha and hora_obj:
+                from datetime import datetime
+                fecha_hora = datetime.combine(fecha, hora_obj)
+            elif fecha:
+                fecha_hora = fecha
+            duracion_min = 120  # Valor por defecto si no se provee
+            personas = getattr(r, 'numero_personas', getattr(r, 'personas', 1))
+            notas = getattr(r, 'notas', '')
+            estado = getattr(r, 'estado', 'confirmada')
+        else:
+            # Es un dict
+            mesa_id = datos_reserva.get('mesa_id')
+            cliente = datos_reserva.get('cliente')
+            telefono = datos_reserva.get('telefono')
+            fecha = datos_reserva.get('fecha')
+            hora = datos_reserva.get('hora')
+            from datetime import datetime
+            fecha_hora = datetime.combine(fecha, hora) if fecha and hora else fecha
+            duracion_min = int(datos_reserva.get('duracion_horas', 1) * 60)
+            personas = datos_reserva.get('personas', 1)
+            notas = datos_reserva.get('notas')
+            estado = datos_reserva.get('estado', 'confirmada')
+        # Validación de solapamiento frontend
+        if self.reserva_service and mesa_id and fecha_hora:
+            try:
+                from datetime import timedelta
+                reservas_activas = self.reserva_service.obtener_reservas_activas_por_mesa().get(mesa_id, [])
+                nueva_inicio = fecha_hora
+                nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
+                solapada = False
+                for r in reservas_activas:
+                    existente_inicio = getattr(r, 'fecha_hora', None)
+                    existente_fin = None
+                    if hasattr(r, 'duracion_min'):
+                        existente_fin = existente_inicio + timedelta(minutes=getattr(r, 'duracion_min', 120))
+                    elif hasattr(r, 'hora_reserva') and hasattr(r, 'fecha_reserva'):
+                        try:
+                            hora_obj = r.hora_reserva
+                            if isinstance(hora_obj, str):
+                                hora_obj = datetime.strptime(hora_obj, '%H:%M').time()
+                            existente_inicio = datetime.combine(r.fecha_reserva, hora_obj)
+                            existente_fin = existente_inicio + timedelta(minutes=120)
+                        except Exception:
+                            existente_fin = None
+                    if existente_inicio and existente_fin:
+                        if (nueva_inicio < existente_fin) and (nueva_fin > existente_inicio):
+                            solapada = True
+                            break
+                if solapada:
+                    QMessageBox.warning(self, "Solapamiento de reserva", "Ya existe una reserva para esa mesa en el rango horario seleccionado.")
+                    return
                 self.reserva_service.crear_reserva(
                     mesa_id=mesa_id,
                     cliente=cliente,
                     fecha_hora=fecha_hora,
                     duracion_min=duracion_min,
+                    telefono=telefono,
+                    personas=personas,
                     notas=notas
                 )
                 self.reserva_creada.emit()  # Notifica a la agenda
-            except Exception:
-                # (Eliminado print de error de debug)
-                pass
+            except Exception as e:
+                QMessageBox.critical(self, "Error", f"No se pudo guardar la reserva: {e}")
         # ...actualiza estado local...
         if self.mesa:
             self.mesa.estado = 'reservada'

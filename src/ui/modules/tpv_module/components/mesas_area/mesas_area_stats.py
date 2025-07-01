@@ -93,7 +93,7 @@ def _update_stat_widget(widget, new_value: str):
         if not widget or not hasattr(widget, 'layout') or not widget.layout():
             return
         layout = widget.layout()
-        
+
         # Buscar específicamente el QLabel del valor (índice 2)
         if layout.count() >= 3:
             value_item = layout.itemAt(2)  # Tercer elemento = valor
@@ -129,7 +129,7 @@ def update_ultra_premium_stats(instance):
     mesas_libres = total_mesas - mesas_ocupadas
     mesas_reservadas = len([m for m in instance.mesas if hasattr(m, 'estado') and m.estado == 'reservada'])
     zonas_unicas = len(set(getattr(m, 'zona', 'Sin zona') for m in instance.mesas))
-    
+
     # Usar _update_stat_widget para actualizar correctamente
     if hasattr(instance, 'mesas_ocupadas_widget'):
         _update_stat_widget(instance.mesas_ocupadas_widget, str(mesas_ocupadas))

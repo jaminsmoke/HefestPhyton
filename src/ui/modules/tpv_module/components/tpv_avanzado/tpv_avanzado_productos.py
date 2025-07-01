@@ -2,7 +2,7 @@
 TPV Avanzado - Panel de productos modularizado
 """
 
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, 
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
                             QTabWidget, QGridLayout, QPushButton, QLabel, QFrame)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -14,7 +14,7 @@ def create_productos_panel(parent, splitter):
     layout = QVBoxLayout(widget)
     layout.setContentsMargins(10, 10, 10, 10)
     layout.setSpacing(10)
-    
+
     # Barra de búsqueda
     search_frame = QFrame()
     search_frame.setStyleSheet("""
@@ -26,7 +26,7 @@ def create_productos_panel(parent, splitter):
         }
     """)
     search_layout = QHBoxLayout(search_frame)
-    
+
     search_input = QLineEdit()
     search_input.setPlaceholderText("🔍 Buscar productos...")
     search_input.setStyleSheet("""
@@ -39,7 +39,7 @@ def create_productos_panel(parent, splitter):
     """)
     search_layout.addWidget(search_input)
     layout.addWidget(search_frame)
-    
+
     # Pestañas de categorías
     tabs = QTabWidget()
     tabs.setStyleSheet("""
@@ -61,13 +61,13 @@ def create_productos_panel(parent, splitter):
             border-bottom: 1px solid white;
         }
     """)
-    
+
     # Crear pestañas de categorías
     categorias = ["Bebidas", "Entrantes", "Principales", "Postres"]
     for categoria in categorias:
         tab = create_categoria_tab(parent, categoria)
         tabs.addTab(tab, categoria)
-    
+
     layout.addWidget(tabs)
     splitter.addWidget(widget)
 
@@ -77,17 +77,17 @@ def create_categoria_tab(parent, categoria):
     tab = QWidget()
     layout = QVBoxLayout(tab)
     layout.setContentsMargins(15, 15, 15, 15)
-    
+
     # Grid de productos
     grid_layout = QGridLayout()
     grid_layout.setSpacing(10)
-    
+
     # Obtener productos de la categoría
     if parent.tpv_service:
         productos = parent.tpv_service.get_productos_por_categoria(categoria)
     else:
         productos = []
-    
+
     # Si no hay productos, mostrar algunos de ejemplo
     if not productos:
         productos_ejemplo = {
@@ -99,21 +99,21 @@ def create_categoria_tab(parent, categoria):
         productos_data = productos_ejemplo.get(categoria, [])
     else:
         productos_data = [(p.nombre, p.precio) for p in productos]
-    
+
     # Crear botones de productos
     row, col = 0, 0
     for nombre, precio in productos_data:
         btn = create_producto_button(parent, nombre, precio)
         grid_layout.addWidget(btn, row, col)
-        
+
         col += 1
         if col >= 3:  # 3 columnas
             col = 0
             row += 1
-    
+
     layout.addLayout(grid_layout)
     layout.addStretch()
-    
+
     return tab
 
 
@@ -121,20 +121,20 @@ def create_producto_button(parent, nombre, precio):
     """Crea un botón para un producto"""
     btn = QPushButton()
     btn.setFixedSize(120, 80)
-    
+
     # Layout interno del botón
     btn_layout = QVBoxLayout()
-    
+
     nombre_label = QLabel(nombre)
     nombre_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
     nombre_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     nombre_label.setWordWrap(True)
-    
+
     precio_label = QLabel(f"€{precio:.2f}")
     precio_label.setFont(QFont("Segoe UI", 12, QFont.Weight.Bold))
     precio_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     precio_label.setStyleSheet("color: #059669;")
-    
+
     btn.setStyleSheet("""
         QPushButton {
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
@@ -152,13 +152,13 @@ def create_producto_button(parent, nombre, precio):
             background: #bfdbfe;
         }
     """)
-    
+
     # Conectar click del botón
     btn.clicked.connect(lambda: agregar_producto(parent, nombre, precio))
-    
+
     # Texto del botón
     btn.setText(f"{nombre}\n€{precio:.2f}")
-    
+
     return btn
 
 

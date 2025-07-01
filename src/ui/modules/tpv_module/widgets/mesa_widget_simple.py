@@ -59,6 +59,8 @@ class MesaWidget(QFrame):
 
         self.setup_ui()
         self.apply_styles()
+        # --- Solución bug refresco: asegurar que siempre se ejecuta update_mesa al crear el widget ---
+        self.update_mesa(self.mesa)
 
     def setup_ui(self):
         from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
@@ -332,13 +334,14 @@ class MesaWidget(QFrame):
                 color: #b26a00;
                 background: #fff3cd;
                 border-radius: 5px;
-                padding: 2px 10px;
+                padding: 3px 10px; /* Padding vertical más moderado */
                 font-weight: 600;
                 font-size: 13px;
                 min-width: 48px;
-                min-height: 20px;
+                min-height: 20px; /* Altura mínima más compacta */
                 border: 1px solid #ffe082;
-                margin-top: 2px;
+                margin-top: 1px;
+                margin-bottom: 1px;
             }
         """)
 
@@ -418,6 +421,11 @@ class MesaWidget(QFrame):
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario"""
         self.mesa = mesa
         nueva_reserva = getattr(mesa, 'proxima_reserva', None)
+        print(f"[MesaWidget] update_mesa: mesa.id={getattr(mesa, 'id', None)} estado={getattr(mesa, 'estado', None)} proxima_reserva={nueva_reserva}")
+        if nueva_reserva:
+            print(f"[MesaWidget] proxima_reserva.numero_personas={getattr(nueva_reserva, 'numero_personas', None)} personas_display={mesa.personas_display}")
+        else:
+            print(f"[MesaWidget] SIN proxima_reserva, personas_display={mesa.personas_display}")
         # Excepción funcional: Si la mesa está reservada/ocupada y no hay proxima_reserva, conservar la última reserva activa localmente
         if nueva_reserva is not None:
             self.proxima_reserva = nueva_reserva
@@ -445,7 +453,7 @@ class MesaWidget(QFrame):
             self._contador_timer.stop()
 
     def _actualizar_contador_reserva(self):
-        from datetime import datetime
+        from datetime import datetime, time
         reserva = self.proxima_reserva
         if reserva is None:
             self.contador_label.hide()
@@ -455,12 +463,27 @@ class MesaWidget(QFrame):
             self._resaltar_contador(False)
             return
         ahora = datetime.now()
-        delta = reserva.fecha_hora - ahora
+        # Unificar fecha y hora
+        fecha = getattr(reserva, 'fecha_reserva', None)
+        hora = getattr(reserva, 'hora_reserva', None)
+        if fecha and hora:
+            if isinstance(hora, str):
+                try:
+                    hora_obj = datetime.strptime(hora, '%H:%M').time()
+                except Exception:
+                    hora_obj = time(0, 0)
+            else:
+                hora_obj = hora
+            fecha_hora = datetime.combine(fecha, hora_obj)
+        elif fecha:
+            fecha_hora = fecha
+        else:
+            fecha_hora = ahora
+        delta = fecha_hora - ahora
         minutos = int(delta.total_seconds() // 60)
-        # Si la reserva ya está en curso, cambiamos el estado a 'ocupada', actualizamos la vista y forzamos refresco
         if minutos < 0:
             if self.mesa.estado == 'reservada':
-                self.mesa.estado = 'ocupada'  # Cambio automático de estado
+                self.mesa.estado = 'ocupada'
                 self.estado_label.setText(self.get_estado_texto())
                 self.apply_styles()
             self.contador_label.hide()
@@ -471,18 +494,19 @@ class MesaWidget(QFrame):
             self.updateGeometry()
             self.repaint()
             return
-        # Si la reserva es futura, mostrar el contador
         texto = f"⏳ {minutos} min"
         self.contador_label.setText(texto)
-        self.contador_label.setToolTip(f"Próxima reserva: {reserva.fecha_hora.strftime('%H:%M')} - {getattr(reserva, 'cliente', '')}")
+        cliente = getattr(reserva, 'cliente_nombre', getattr(reserva, 'cliente', ''))
+        self.contador_label.setToolTip(f"Próxima reserva: {hora if hora else ''} - {cliente}")
         self.contador_label.show()
         self._resaltar_contador(minutos < 10)
 
     def _resaltar_contador(self, resaltar: bool):
+        base_style = "border-radius: 5px; padding: 3px 10px; font-weight: 600; font-size: 13px; min-width: 48px; min-height: 20px; border: 1px solid #ffe082; margin-top: 1px; margin-bottom: 1px;"
         if resaltar:
-            self.contador_label.setStyleSheet("color: #fff; background: #e53935; border-radius: 6px; padding: 2px 8px; font-weight: bold;")
+            self.contador_label.setStyleSheet(f"color: #fff; background: #e53935; {base_style}")
         else:
-            self.contador_label.setStyleSheet("color: #333; background: #ffe0b2; border-radius: 6px; padding: 2px 8px; font-weight: bold;")
+            self.contador_label.setStyleSheet(f"color: #b26a00; background: #fff3cd; {base_style}")
 
     def _emitir_restaurar(self):
         """Emite una señal para restaurar la mesa a su estado original"""

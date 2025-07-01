@@ -25,6 +25,8 @@ Hefest/
 │   ├── development/
 │   ├── logs/
 │   └── ...
+├── logs/             # Logs y reportes de pruebas
+├── logs_debug/       # Logs temporales de depuración puntual (no producción)
 ├── scripts/          # Scripts de utilidad, análisis, testing, migración
 │   ├── analysis/
 │   ├── maintenance/

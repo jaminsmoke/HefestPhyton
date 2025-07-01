@@ -20,25 +20,25 @@ logger = logging.getLogger(__name__)
 
 class ProductCard(QFrame):
     """Tarjeta individual de producto con diseño moderno"""
-    
+
     product_selected = pyqtSignal(Producto, int)
-    
+
     def __init__(self, producto: Producto, parent=None):
         super().__init__(parent)
         self.producto = producto
         self.quantity = 1
         self.setup_ui()
         self.setup_styles()
-        
+
     def setup_ui(self):
         """Configura la interfaz de la tarjeta de producto"""
         self.setFixedSize(180, 220)
         self.setFrameStyle(QFrame.Shape.Box)
-        
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 12, 12, 12)
         layout.setSpacing(8)
-        
+
         # Imagen del producto (placeholder)
         self.image_label = QLabel()
         self.image_label.setFixedSize(120, 80)
@@ -54,7 +54,7 @@ class ProductCard(QFrame):
         """)
         self.image_label.setText("📦\nImagen")
         layout.addWidget(self.image_label, alignment=Qt.AlignmentFlag.AlignCenter)
-        
+
         # Nombre del producto
         self.name_label = QLabel(self.producto.nombre)
         self.name_label.setWordWrap(True)
@@ -64,7 +64,7 @@ class ProductCard(QFrame):
         font.setBold(True)
         self.name_label.setFont(font)
         layout.addWidget(self.name_label)
-        
+
         # Precio
         self.price_label = QLabel(f"€{self.producto.precio:.2f}")
         self.price_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -74,7 +74,7 @@ class ProductCard(QFrame):
         self.price_label.setFont(font)
         self.price_label.setStyleSheet("color: #2e7d32;")
         layout.addWidget(self.price_label)
-        
+
         # Stock disponible
         if hasattr(self.producto, 'stock_actual') and self.producto.stock_actual is not None:
             stock_text = f"Stock: {self.producto.stock_actual}"
@@ -82,18 +82,18 @@ class ProductCard(QFrame):
         else:
             stock_text = "Disponible"
             stock_color = "#1976d2"
-            
+
         self.stock_label = QLabel(stock_text)
         self.stock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.stock_label.setStyleSheet(f"color: {stock_color}; font-size: 9px;")
         layout.addWidget(self.stock_label)
-        
+
         # Botón de añadir
         self.add_button = QPushButton("Añadir")
         self.add_button.setFixedHeight(32)
         self.add_button.clicked.connect(self.on_add_clicked)
         layout.addWidget(self.add_button)
-        
+
     def setup_styles(self):
         """Configura los estilos de la tarjeta"""
         self.setStyleSheet("""
@@ -121,15 +121,15 @@ class ProductCard(QFrame):
                 background-color: #0d47a1;
             }
         """)
-        
+
     def on_add_clicked(self):
         """Maneja el clic en el botón añadir"""
         self.product_selected.emit(self.producto, self.quantity)
-        
+
         # Animación de feedback
         self.add_button.setText("✓ Añadido")
         QApplication.processEvents()
-        
+
         # Restaurar texto después de un momento
         from PyQt6.QtCore import QTimer
         QTimer.singleShot(1000, lambda: self.add_button.setText("Añadir"))
@@ -137,9 +137,9 @@ class ProductCard(QFrame):
 
 class ProductSelectorWidget(QWidget):
     """Widget selector de productos profesional y moderno"""
-    
+
     product_selected = pyqtSignal(Producto, int)
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.productos: List[Producto] = []
@@ -147,20 +147,20 @@ class ProductSelectorWidget(QWidget):
         self.product_cards: List[ProductCard] = []
         self.current_category = "Todos"
         self.search_text = ""
-        
+
         self.setup_ui()
         self.load_sample_data()
         self.update_product_grid()
-        
+
     def setup_ui(self):
         """Configura la interfaz principal"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(16)
-        
+
         # Header con título
         header_layout = QHBoxLayout()
-        
+
         title_label = QLabel("Selector de Productos")
         font = QFont()
         font.setPointSize(16)
@@ -168,18 +168,18 @@ class ProductSelectorWidget(QWidget):
         title_label.setFont(font)
         title_label.setStyleSheet("color: #1976d2; margin-bottom: 8px;")
         header_layout.addWidget(title_label)
-        
+
         header_layout.addStretch()
         layout.addLayout(header_layout)
-        
+
         # Filtros y búsqueda
         filters_layout = QHBoxLayout()
-        
+
         # Búsqueda
         search_label = QLabel("Buscar:")
         search_label.setStyleSheet("font-weight: bold; color: #333;")
         filters_layout.addWidget(search_label)
-        
+
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar productos...")
         self.search_input.setFixedHeight(36)
@@ -196,14 +196,14 @@ class ProductSelectorWidget(QWidget):
             }
         """)
         filters_layout.addWidget(self.search_input)
-        
+
         filters_layout.addSpacing(20)
-        
+
         # Filtro por categoría
         category_label = QLabel("Categoría:")
         category_label.setStyleSheet("font-weight: bold; color: #333;")
         filters_layout.addWidget(category_label)
-        
+
         self.category_combo = QComboBox()
         self.category_combo.setFixedHeight(36)
         self.category_combo.currentTextChanged.connect(self.on_category_changed)
@@ -230,16 +230,16 @@ class ProductSelectorWidget(QWidget):
             }
         """)
         filters_layout.addWidget(self.category_combo)
-        
+
         filters_layout.addStretch()
         layout.addLayout(filters_layout)
-        
+
         # Separador
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
         separator.setStyleSheet("color: #e0e0e0;")
         layout.addWidget(separator)
-        
+
         # Área de productos con scroll
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
@@ -252,22 +252,22 @@ class ProductSelectorWidget(QWidget):
                 border-radius: 8px;
             }
         """)
-        
+
         # Widget contenedor de productos
         self.products_widget = QWidget()
         self.products_layout = QGridLayout(self.products_widget)
         self.products_layout.setSpacing(16)
         self.products_layout.setContentsMargins(16, 16, 16, 16)
-        
+
         self.scroll_area.setWidget(self.products_widget)
         layout.addWidget(self.scroll_area, 1)
-        
+
         # Información de estado
         self.status_label = QLabel("Cargando productos...")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.status_label.setStyleSheet("color: #666; font-style: italic; padding: 20px;")
         layout.addWidget(self.status_label)
-        
+
     def load_sample_data(self):
         """Carga datos de ejemplo para demostración"""
         sample_productos = [
@@ -277,30 +277,30 @@ class ProductSelectorWidget(QWidget):
             Producto(4, "Té Verde", 2.00, "Bebidas", 15),
             Producto(5, "Agua Mineral", 1.50, "Bebidas", 50),
             Producto(6, "Refresco Cola", 2.20, "Bebidas", 35),
-            
+
             Producto(7, "Sandwich Mixto", 4.50, "Comida", 18),
             Producto(8, "Tostada con Jamón", 3.80, "Comida", 12),
             Producto(9, "Croissant", 2.80, "Comida", 8),
             Producto(10, "Ensalada César", 8.50, "Comida", 6),
             Producto(11, "Pasta Carbonara", 12.00, "Comida", 4),
             Producto(12, "Pizza Margarita", 10.50, "Comida", 3),
-            
+
             Producto(13, "Tarta de Chocolate", 4.20, "Postres", 7),
             Producto(14, "Helado Vainilla", 3.50, "Postres", 10),
             Producto(15, "Flan Casero", 3.80, "Postres", 5),
-            
+
             Producto(16, "Cerveza", 2.80, "Alcohol", 40),
             Producto(17, "Vino Tinto Copa", 4.50, "Alcohol", 25),
             Producto(18, "Gin Tonic", 8.00, "Alcohol", 15),
         ]
-        
+
         self.productos = sample_productos
-        
+
         # Actualizar combo de categorías
         categorias = ["Todos"] + list(set(p.categoria for p in self.productos))
         self.category_combo.clear()
         self.category_combo.addItems(categorias)
-        
+
     def update_product_grid(self):
         """Actualiza la grilla de productos"""
         # Limpiar tarjetas existentes
@@ -308,79 +308,79 @@ class ProductSelectorWidget(QWidget):
             card.setParent(None)
             card.deleteLater()
         self.product_cards.clear()
-        
+
         # Filtrar productos
         self.filtered_productos = self.filter_products()
-        
+
         if not self.filtered_productos:
             self.status_label.setText("No se encontraron productos con los filtros aplicados")
             self.status_label.show()
             return
-        
+
         self.status_label.hide()
-        
+
         # Crear nuevas tarjetas
         columns = 4  # Número de columnas en la grilla
         for i, producto in enumerate(self.filtered_productos):
             card = ProductCard(producto)
             card.product_selected.connect(self.product_selected.emit)
-            
+
             row = i // columns
             col = i % columns
             self.products_layout.addWidget(card, row, col)
             self.product_cards.append(card)
-        
+
         # Añadir espaciador para mantener las tarjetas alineadas arriba
         spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         final_row = (len(self.filtered_productos) - 1) // columns + 1
         self.products_layout.addItem(spacer, final_row, 0, 1, columns)
-        
+
     def filter_products(self) -> List[Producto]:
         """Filtra productos según criterios actuales"""
         filtered = self.productos
-        
+
         # Filtrar por categoría
         if self.current_category != "Todos":
             filtered = [p for p in filtered if p.categoria == self.current_category]
-        
+
         # Filtrar por búsqueda
         if self.search_text:
             search_lower = self.search_text.lower()
             filtered = [p for p in filtered if search_lower in p.nombre.lower()]
-        
+
         return filtered
-        
+
     def on_search_changed(self, text: str):
         """Maneja cambios en el texto de búsqueda"""
         self.search_text = text.strip()
         self.update_product_grid()
-        
+
     def on_category_changed(self, category: str):
         """Maneja cambios en la categoría seleccionada"""
         self.current_category = category
         self.update_product_grid()
-        
+
     def set_productos(self, productos: List[Producto]):
         """Establece la lista de productos"""
         self.productos = productos
-        
+
         # Actualizar combo de categorías
         categorias = ["Todos"] + list(set(p.categoria for p in productos))
         self.category_combo.clear()
         self.category_combo.addItems(categorias)
-        
+
         self.update_product_grid()
 
 
 if __name__ == "__main__":
     import sys
     from PyQt6.QtWidgets import QApplication
-    
+
     app = QApplication(sys.argv)
-    
+
     # Crear y mostrar el widget
     widget = ProductSelectorWidget()
     widget.show()
     widget.resize(800, 600)
-    
+
     sys.exit(app.exec())

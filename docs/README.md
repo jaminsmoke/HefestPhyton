@@ -27,7 +27,7 @@ docs/
 └── ...
 ```
 
-- Explica brevemente la función de los principales archivos y subcarpetas.
+- `logs/`: Carpeta para logs y reportes de pruebas.
 
 ---
 

@@ -5,7 +5,7 @@ Servicio de gestión del Terminal Punto de Venta (TPV).
 import logging
 from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 
 from .base_service import BaseService
 
@@ -29,16 +29,39 @@ class Mesa:
 
     @property
     def nombre_display(self) -> str:
-        """Obtiene el nombre a mostrar: alias si existe, si no el nombre predeterminado"""
+        """
+        Obtiene el nombre a mostrar para la mesa:
+        1. Si hay próxima reserva activa y tiene cliente_nombre, mostrar ese nombre
+        2. Si hay alias temporal, mostrar alias
+        3. Si no, mostrar nombre predeterminado
+        """
+        if self.proxima_reserva is not None:
+            cliente = getattr(self.proxima_reserva, 'cliente_nombre', None)
+            if cliente:
+                return cliente
         if self.alias:
             return self.alias
         return f"Mesa {self.numero}"
 
     @property
     def personas_display(self) -> int:
-        """Obtiene el número de personas a mostrar (temporal si existe, sino el por defecto)"""
+        """Obtiene el número de personas a mostrar:
+        - Si hay próxima reserva activa y tiene personas válidas, muestra ese valor
+        - Si no, muestra el valor temporal si existe
+        - Si no, la capacidad real de la mesa
+        """
+        # 1. Prioridad: próxima reserva activa
+        if self.proxima_reserva is not None:
+            # Intentar primero 'numero_personas' (modelo unificado), luego 'personas' (legacy)
+            personas_reserva = getattr(self.proxima_reserva, 'numero_personas', None)
+            if personas_reserva is None:
+                personas_reserva = getattr(self.proxima_reserva, 'personas', None)
+            if personas_reserva is not None and isinstance(personas_reserva, int) and personas_reserva > 0:
+                return personas_reserva
+        # 2. Valor temporal (edición manual)
         if self.personas_temporal is not None:
             return self.personas_temporal
+        # 3. Capacidad real
         return self.capacidad
 
 
@@ -136,15 +159,23 @@ class Factura:
 
 @dataclass
 class Reserva:
-    """Modelo de datos para una reserva de mesa"""
+    """Modelo de datos unificado para una reserva de mesa"""
     id: int
     mesa_id: int
     cliente: str
-    fecha: date
-    hora: time
-    personas: int
-    notas: str = ""
+    fecha_hora: datetime
+    duracion_min: int
     estado: str = "activa"  # activa, cancelada, finalizada
+    notas: str = ""
+    telefono: str = ""
+    personas: int = 1
+
+    @property
+    def fecha(self):
+        return self.fecha_hora.date()
+    @property
+    def hora(self):
+        return self.fecha_hora.time()
 
 
 class TPVService(BaseService):
@@ -954,46 +985,47 @@ class TPVService(BaseService):
             self.logger.error(f"Error reseteando alias de mesa {mesa_id}: {e}")
             return False
 
-    def crear_reserva(self, mesa_id: int, cliente: str, fecha: date, hora: time, personas: int, notas: str = "") -> Optional[Reserva]:
-        """Crea una reserva persistente para una mesa"""
+    def crear_reserva(self, mesa_id: int, cliente: str, fecha_hora: datetime, duracion_min: int = 120, telefono: str = "", personas: int = 1, notas: str = "") -> Optional[Reserva]:
+        """Crea una reserva persistente para una mesa (modelo unificado)"""
         if not self.db_manager:
             self.logger.warning("No hay conexión a base de datos para crear reserva")
             return None
         # Validar solapamiento
-        if self.reserva_solapada(mesa_id, fecha, hora):
-            self.logger.warning("Ya existe una reserva para esa mesa, fecha y hora")
+        if self.reserva_solapada(mesa_id, fecha_hora.date(), fecha_hora.time(), duracion_min):
+            self.logger.warning("Ya existe una reserva para esa mesa, fecha y rango horario")
             return None
         try:
             reserva_id = self.db_manager.execute(
                 """
-                INSERT INTO reservas (mesa_id, cliente, fecha, hora, personas, notas, estado)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO reservas (mesa_id, cliente, fecha_hora, duracion_min, estado, notas, telefono, personas)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                (mesa_id, cliente, fecha.isoformat(), hora.strftime("%H:%M:%S"), personas, notas, "activa")
+                (mesa_id, cliente, fecha_hora.isoformat(), duracion_min, "activa", notas, telefono, personas)
             )
             return Reserva(
                 id=reserva_id,
                 mesa_id=mesa_id,
                 cliente=cliente,
-                fecha=fecha,
-                hora=hora,
-                personas=personas,
+                fecha_hora=fecha_hora,
+                duracion_min=duracion_min,
+                estado="activa",
                 notas=notas,
-                estado="activa"
+                telefono=telefono,
+                personas=personas
             )
         except Exception as e:
             self.logger.error(f"Error creando reserva: {e}")
             return None
 
     def get_reservas_mesa(self, mesa_id: int, fecha: Optional[date] = None) -> list:
-        """Obtiene reservas activas de una mesa, opcionalmente filtradas por fecha"""
+        """Obtiene reservas activas de una mesa, opcionalmente filtradas por fecha (modelo unificado)"""
         if not self.db_manager:
             return []
         try:
-            query = "SELECT id, mesa_id, cliente, fecha, hora, personas, notas, estado FROM reservas WHERE mesa_id = ? AND estado = 'activa'"
+            query = "SELECT id, mesa_id, cliente, fecha_hora, duracion_min, estado, notas, telefono, personas FROM reservas WHERE mesa_id = ? AND estado = 'activa'"
             params: list[Any] = [mesa_id]
             if fecha:
-                query += " AND fecha = ?"
+                query += " AND date(fecha_hora) = ?"
                 params.append(fecha.isoformat())
             rows = self.db_manager.query(query, tuple(params))
             reservas = [
@@ -1001,11 +1033,12 @@ class TPVService(BaseService):
                     id=row[0],
                     mesa_id=row[1],
                     cliente=row[2],
-                    fecha=datetime.strptime(row[3], "%Y-%m-%d").date(),
-                    hora=datetime.strptime(row[4], "%H:%M:%S").time(),
-                    personas=row[5],
+                    fecha_hora=datetime.fromisoformat(row[3]),
+                    duracion_min=row[4],
+                    estado=row[5],
                     notas=row[6] or "",
-                    estado=row[7]
+                    telefono=row[7] or "",
+                    personas=row[8] if row[8] is not None else 1
                 ) for row in rows
             ]
             return reservas
@@ -1027,16 +1060,29 @@ class TPVService(BaseService):
             self.logger.error(f"Error cancelando reserva: {e}")
             return False
 
-    def reserva_solapada(self, mesa_id: int, fecha: date, hora: time) -> bool:
-        """Comprueba si existe una reserva activa para la mesa en la fecha y hora dadas"""
+    def reserva_solapada(self, mesa_id: int, fecha: date, hora: time, duracion_min: int = 120) -> bool:
+        """Comprueba si existe una reserva activa para la mesa en la fecha y rango horario dados (solapamiento real)"""
         if not self.db_manager:
             return False
         try:
+            from datetime import datetime, timedelta
+            hora_inicio_nueva = datetime.combine(fecha, hora)
+            hora_fin_nueva = hora_inicio_nueva + timedelta(minutes=duracion_min)
             rows = self.db_manager.query(
-                "SELECT COUNT(*) FROM reservas WHERE mesa_id = ? AND fecha = ? AND hora = ? AND estado = 'activa'",
-                (mesa_id, fecha.isoformat(), hora.strftime("%H:%M:%S"))
+                "SELECT hora, duracion_min FROM reservas WHERE mesa_id = ? AND fecha = ? AND estado = 'activa'",
+                (mesa_id, fecha.isoformat())
             )
-            return rows[0][0] > 0
+            for row in rows:
+                hora_existente = datetime.combine(fecha, datetime.strptime(row[0], "%H:%M:%S").time())
+                duracion_existente = row[1] if row[1] is not None else 120
+                hora_fin_existente = hora_existente + timedelta(minutes=duracion_existente)
+                # Solapamiento: inicio < fin_existente y fin > inicio_existente
+                if (hora_inicio_nueva < hora_fin_existente) and (hora_fin_nueva > hora_existente):
+                    return True
+            return False
         except Exception as e:
             self.logger.error(f"Error comprobando solapamiento de reserva: {e}")
             return False
+
+# TODO: Revisar y migrar todos los usos de Reserva en el sistema para usar este modelo unificado.
+# TODO: Documentar en README de área y dejar registro de excepción si algún flujo requiere compatibilidad temporal.
