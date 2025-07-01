@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QMenuBar,
     QMenu,
     QMessageBox,
+    QScrollArea,  # <-- Añadido
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime
 from PyQt6.QtGui import QCloseEvent, QAction
@@ -82,6 +83,11 @@ class MainWindow(QMainWindow):
         self.setup_ui()
         self.setup_connections()
         self.setup_menu()
+        # Forzar ventana maximizada
+        self.showMaximized()
+        # Deshabilitar resize libre (solo minimizar/maximizar)
+        self.setWindowFlag(Qt.WindowType.WindowMinMaxButtonsHint, True)
+        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, True)
         # Cargar módulo inicial después de asegurar que el usuario esté autenticado
         QTimer.singleShot(500, self.load_initial_module)
 
@@ -102,7 +108,7 @@ class MainWindow(QMainWindow):
             return False
 
         required_role = self.module_permissions[module_id]
-        
+
         current_user = self.auth_service.current_user
         is_authenticated = self.auth_service.is_authenticated
         current_session = self.auth_service.current_session
@@ -157,12 +163,16 @@ class MainWindow(QMainWindow):
         self.sidebar = ModernSidebar(auth_service=self.auth_service)
         main_layout.addWidget(self.sidebar)
 
-        # Contenedor de módulos
+        # Contenedor de módulos con scroll/clipping
         self.module_container = QWidget()
         self.module_layout = QVBoxLayout(self.module_container)
         self.module_layout.setContentsMargins(0, 0, 0, 0)
         self.module_layout.setSpacing(0)
-        main_layout.addWidget(self.module_container, stretch=1)
+        # Envolver en QScrollArea para clipping/scroll
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.module_container)
+        main_layout.addWidget(self.scroll_area, stretch=1)
 
         # Barra de estado moderna
         self.setup_status_bar()
@@ -261,14 +271,14 @@ class MainWindow(QMainWindow):
         else:
             widget = self.create_module_widget(module_id)
             self.module_widgets[module_id] = widget
-        
+
         # Limpiar el contenedor de módulos
         for i in reversed(range(self.module_layout.count())):
             item = self.module_layout.itemAt(i)
             old_widget = item.widget() if item else None
             if old_widget:
                 old_widget.setParent(None)
-        
+
         self.module_layout.addWidget(widget)
         self.current_module = module_id
         self.module_changed.emit(module_id)
