@@ -69,12 +69,23 @@ class MesasArea(QFrame):
         populate_grid(self)
         update_stats_from_mesas(self)
 
+    def set_reserva_service(self, reserva_service):
+        self.reserva_service = reserva_service
+
     def refresh_mesas(self):
         if self.tpv_service:
             nuevas_mesas = self.tpv_service.get_mesas()
             guardar_dato_temporal(self, None)
             restaurar_datos_temporales(self, nuevas_mesas)
             self.mesas = nuevas_mesas
+        # Sincronizar reservas activas
+        if hasattr(self, 'reserva_service') and self.reserva_service:
+            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+            for mesa in self.mesas:
+                mesa.reservada = mesa.id in reservas_por_mesa
+                # --- AJUSTE: liberar mesa si ya no tiene reservas activas ---
+                if mesa.id not in reservas_por_mesa and getattr(mesa, 'estado', None) == 'reservada':
+                    mesa.estado = 'libre'
         self.update_filtered_mesas()
         populate_grid(self)
 
@@ -287,3 +298,7 @@ class MesasArea(QFrame):
             other_syncing['flag'] = False
         scroll_area.verticalScrollBar().valueChanged.connect(on_scroll)
         other_scroll_area.verticalScrollBar().valueChanged.connect(on_other_scroll)
+
+    def sync_reservas(self, reserva_service):
+        self.set_reserva_service(reserva_service)
+        self.refresh_mesas()

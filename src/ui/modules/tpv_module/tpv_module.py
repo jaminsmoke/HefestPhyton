@@ -16,6 +16,7 @@ from PyQt6.QtGui import QFont, QPalette, QColor
 
 from ui.modules.module_base_interface import BaseModule
 from services.tpv_service import TPVService, Mesa, Producto, Comanda, LineaComanda
+from .components.reservas_agenda.reserva_service import ReservaService
 
 # Importar componentes refactorizados
 from .components.tpv_dashboard import TPVDashboard
@@ -23,6 +24,7 @@ from .components.mesas_area import MesasArea
 from .widgets.filters_panel import FiltersPanel
 from .widgets.statistics_panel import StatisticsPanel
 from .controllers.mesa_controller import MesaController
+from .components.reservas_agenda.reservas_agenda_tab import ReservasAgendaTab
 
 logger = logging.getLogger(__name__)
 
@@ -71,22 +73,27 @@ class TPVModule(BaseModule):
         self.mesa_controller.error_occurred.connect(self._on_controller_error)
 
     def setup_ui(self):
-        """Configura la interfaz principal refactorizada"""
         layout = self.main_layout
-
         # Dashboard de métricas (refactorizado)
         self.dashboard = TPVDashboard(self.tpv_service)
         layout.addWidget(self.dashboard)
-
         # Línea separadora
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
         separator.setLineWidth(1)
         separator.setStyleSheet("color: #e0e0e0; background-color: #e0e0e0;")
         layout.addWidget(separator)
-
         # Área principal con pestañas refactorizada
         self.create_main_tabs(layout)
+        # --- Sincronizar reservas con mesas ---
+        # Si existe MesasArea y ReservaService, sincronizar reservas al iniciar
+        if hasattr(self, 'mesas_area') and self.db_manager is not None:
+            try:
+                reserva_service = ReservaService(getattr(self.db_manager, 'db_path', 'data/hefest.db'))
+                self.mesas_area.sync_reservas(reserva_service)  # type: ignore[reportAttributeAccessIssue]
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"No se pudo sincronizar reservas con mesas: {e}")
 
     def create_main_tabs(self, layout: QVBoxLayout):
         """Crea las pestañas principales usando componentes refactorizados"""
@@ -117,6 +124,8 @@ class TPVModule(BaseModule):
 
         # Pestaña de mesas (refactorizada)
         self.create_mesas_tab_refactored()
+        # Pestaña de agenda de reservas
+        self.create_reservas_agenda_tab()
         # Pestañas de desarrollo (mantenemos las existentes)
         self.create_venta_rapida_tab()
         self.create_reportes_tab()
@@ -143,6 +152,20 @@ class TPVModule(BaseModule):
         # Ya no necesitamos el FiltersPanel separado - ahora está integrado en MesasArea
 
         self.tab_widget.addTab(mesas_widget, "🍽️ Gestión de Mesas")
+
+    def create_reservas_agenda_tab(self):
+        """Crea la pestaña de agenda de reservas"""
+        reservas_agenda_tab = ReservasAgendaTab(tpv_service=self.tpv_service)
+        self.tab_widget.addTab(reservas_agenda_tab, "📅 Agenda Reservas")
+        # --- Wiring de sincronización reactiva ---
+        if hasattr(self, 'mesas_area'):
+            try:
+                reserva_service = reservas_agenda_tab.agenda_view.reserva_service
+                reservas_agenda_tab.agenda_view.reserva_creada.connect(lambda: self.mesas_area.sync_reservas(reserva_service))
+                reservas_agenda_tab.agenda_view.reserva_cancelada.connect(lambda: self.mesas_area.sync_reservas(reserva_service))
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"No se pudo conectar señales de reservas: {e}")
 
     def create_venta_rapida_tab(self):
         """Crea la pestaña de venta rápida"""
@@ -251,19 +274,26 @@ class TPVModule(BaseModule):
         """Callback cuando se hace clic en una mesa"""
         try:
             logger.info(f"Mesa {mesa.numero} seleccionada")
-            # Abrir el nuevo diálogo de gestión de mesa
             from .dialogs.mesa_dialog import MesaDialog
-
-            dialog = MesaDialog(mesa, self)
-
-            # Conectar señales del diálogo
+            from .components.reservas_agenda.reserva_service import ReservaService
+            from .components.reservas_agenda.reservas_agenda_tab import ReservasAgendaTab
+            reserva_service = ReservaService(getattr(self.db_manager, 'db_path', 'data/hefest.db'))
+            dialog = MesaDialog(mesa, self, reserva_service=reserva_service)
             dialog.iniciar_tpv_requested.connect(self._on_iniciar_tpv)
             dialog.crear_reserva_requested.connect(self._on_crear_reserva)
             dialog.cambiar_estado_requested.connect(self._on_cambiar_estado_mesa)
             dialog.mesa_updated.connect(self._on_mesa_updated)
-
+            dialog.reserva_cancelada.connect(lambda: self.mesas_area.sync_reservas(reserva_service))
+            # Conexión directa a la agenda usando isinstance
+            reservas_agenda_tab = None
+            for i in range(self.tab_widget.count()):
+                widget = self.tab_widget.widget(i)
+                if isinstance(widget, ReservasAgendaTab):
+                    reservas_agenda_tab = widget
+                    break
+            if reservas_agenda_tab:
+                dialog.reserva_creada.connect(reservas_agenda_tab.agenda_view.load_reservas)
             dialog.exec()
-
         except Exception as e:
             logger.error(f"Error procesando clic en mesa: {e}")
             QMessageBox.critical(self, "Error", f"Error al abrir diálogo de mesa: {str(e)}")

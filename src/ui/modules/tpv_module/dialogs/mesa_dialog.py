@@ -25,10 +25,13 @@ class MesaDialog(QDialog):
     iniciar_tpv_requested = pyqtSignal(int)  # mesa_id
     crear_reserva_requested = pyqtSignal(int)  # mesa_id
     cambiar_estado_requested = pyqtSignal(int, str)  # mesa_id, nuevo_estado
+    reserva_cancelada = pyqtSignal()
+    reserva_creada = pyqtSignal()  # Señal global para agenda
 
-    def __init__(self, mesa: Mesa, parent=None):
+    def __init__(self, mesa: Mesa, parent=None, reserva_service=None):
         super().__init__(parent)
         self.mesa = mesa
+        self.reserva_service = reserva_service  # Puede ser None
         self.setup_ui()
         self.connect_signals()
 
@@ -463,12 +466,29 @@ class MesaDialog(QDialog):
         reserva_dialog.exec()
 
     def procesar_reserva(self, datos_reserva):
-        """Procesa los datos de la nueva reserva"""
-        # Aquí puedes agregar la lógica para guardar la reserva
-        # Por ejemplo, en una base de datos o archivo
-        print(f"Nueva reserva creada: {datos_reserva}")
-
-        # Actualizar el estado de la mesa si es necesario
+        """Procesa los datos de la nueva reserva y la guarda en ReservaService"""
+        # Guardar en ReservaService si está disponible
+        if self.reserva_service:
+            try:
+                from datetime import datetime
+                mesa_id = datos_reserva.get('mesa_id')
+                cliente = datos_reserva.get('cliente')
+                fecha = datos_reserva.get('fecha')
+                hora = datos_reserva.get('hora')
+                fecha_hora = datetime.combine(fecha, hora)
+                duracion_min = int(datos_reserva.get('duracion_horas', 1) * 60)
+                notas = datos_reserva.get('notas')
+                self.reserva_service.crear_reserva(
+                    mesa_id=mesa_id,
+                    cliente=cliente,
+                    fecha_hora=fecha_hora,
+                    duracion_min=duracion_min,
+                    notas=notas
+                )
+                self.reserva_creada.emit()  # Notifica a la agenda
+            except Exception as e:
+                print(f"Error guardando reserva en ReservaService: {e}")
+        # ...actualiza estado local...
         if self.mesa:
             self.mesa.estado = 'reservada'
             self.mesa_updated.emit(self.mesa)
@@ -485,6 +505,7 @@ class MesaDialog(QDialog):
         self.mesa.personas_temporal = 0  # Reinicia el número de personas temporal
         self.mesa.alias = ''  # Limpia el alias temporal
         self.mesa_updated.emit(self.mesa)
+        self.reserva_cancelada.emit()  # Reactividad: notificar cancelación
         self.update_ui()
 
     def on_save_btn_clicked(self):

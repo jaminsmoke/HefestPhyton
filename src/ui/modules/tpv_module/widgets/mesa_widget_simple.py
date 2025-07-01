@@ -192,7 +192,38 @@ class MesaWidget(QFrame):
         return colores.get(self.mesa.estado, colores['libre'])
 
     def apply_styles(self):
-        """Aplica estilos ultra-compactos ajustados al contenido"""
+        """Aplica estilos visuales según el estado de la mesa"""
+        base_style = """
+            QFrame#mesa_widget {
+                background-color: #f8fafc;
+                border: 2px solid #cbd5e1;
+                border-radius: 12px;
+            }
+        """
+        if getattr(self.mesa, 'reservada', False):
+            # Color y borde especial para mesas reservadas
+            base_style += """
+                QFrame#mesa_widget {
+                    background-color: #ffe9c6;
+                    border: 2.5px solid #f59e42;
+                }
+            """
+        elif self.mesa.estado == "ocupada":
+            base_style += """
+                QFrame#mesa_widget {
+                    background-color: #fbeaea;
+                    border: 2.5px solid #e11d48;
+                }
+            """
+        elif self.mesa.estado == "libre":
+            base_style += """
+                QFrame#mesa_widget {
+                    background-color: #e0f7fa;
+                    border: 2.5px solid #38bdf8;
+                }
+            """
+        self.setStyleSheet(base_style)
+
         colores = self.get_colores()
 
         # Estilo principal del widget - Compacto y ajustado

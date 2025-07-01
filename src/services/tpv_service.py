@@ -24,6 +24,7 @@ class Mesa:
     alias: Optional[str] = None  # Alias temporal de la mesa (no persistente)
     personas_temporal: Optional[int] = None  # Número de personas temporal (no persistente)
     notas: Optional[str] = None  # Notas temporales de la mesa (no persistente)
+    reservada: bool = False  # Indica si la mesa está reservada actualmente
 
     @property
     def nombre_display(self) -> str:
