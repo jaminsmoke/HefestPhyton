@@ -30,36 +30,36 @@ logger = logging.getLogger(__name__)
 
 class TPVModule(BaseModule):
     """Módulo TPV principal con interfaz moderna y profesional (Refactorizado)"""
-    
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        
+
         # Inicializar servicios
         self._init_services()
-        
+
         # Inicializar controladores
         self._init_controllers()
-        
+
         # Configurar UI y cargar datos
         self.setup_ui()
         self.load_data()
-        
+
     def _init_services(self):
         """Inicializa los servicios necesarios"""
         try:
             from data.db_manager import DatabaseManager
-            
+
             self.db_manager = DatabaseManager()
             logger.info("TPVModule: DatabaseManager creado correctamente")
         except Exception as e:
             logger.error(f"TPVModule: Error creando DatabaseManager: {e}")
             self.db_manager = None
-            
+
         self.tpv_service = TPVService(self.db_manager)
         self.mesas: List[Mesa] = []
         self.productos: List[Producto] = []
         self.current_comanda: Optional[Comanda] = None
-        
+
     def _init_controllers(self):
         """Inicializa los controladores"""
         self.mesa_controller = MesaController(self.tpv_service)
@@ -69,25 +69,25 @@ class TPVModule(BaseModule):
         self.mesa_controller.mesa_deleted.connect(self._on_mesa_deleted)
         self.mesa_controller.mesas_updated.connect(self._on_mesas_updated)
         self.mesa_controller.error_occurred.connect(self._on_controller_error)
-        
+
     def setup_ui(self):
         """Configura la interfaz principal refactorizada"""
         layout = self.main_layout
-        
+
         # Dashboard de métricas (refactorizado)
         self.dashboard = TPVDashboard(self.tpv_service)
         layout.addWidget(self.dashboard)
-        
+
         # Línea separadora
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
         separator.setLineWidth(1)
         separator.setStyleSheet("color: #e0e0e0; background-color: #e0e0e0;")
         layout.addWidget(separator)
-        
+
         # Área principal con pestañas refactorizada
-        self.create_main_tabs(layout)        
-    
+        self.create_main_tabs(layout)
+
     def create_main_tabs(self, layout: QVBoxLayout):
         """Crea las pestañas principales usando componentes refactorizados"""
         self.tab_widget = QTabWidget()
@@ -114,42 +114,42 @@ class TPVModule(BaseModule):
                 background-color: #1976d2;
                 color: white;
             }        """)
-        
+
         # Pestaña de mesas (refactorizada)
         self.create_mesas_tab_refactored()
         # Pestañas de desarrollo (mantenemos las existentes)
         self.create_venta_rapida_tab()
         self.create_reportes_tab()
-        
+
         layout.addWidget(self.tab_widget, 1)
-        
+
     def create_mesas_tab_refactored(self):
         """Crea la pestaña de mesas con layout contextualizado y grid principal"""
         mesas_widget = QWidget()
         layout = QVBoxLayout(mesas_widget)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(12)
-        
+
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
         self.mesas_area = MesasArea()        # Conectar señales
         self.mesas_area.mesa_clicked.connect(self._on_mesa_clicked)
         self.mesas_area.nueva_mesa_requested.connect(self.nueva_mesa)
         self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)
         self.mesas_area.eliminar_mesa_requested.connect(self.eliminar_mesa)
-        
+
         # El área de mesas ocupa todo el espacio disponible
         layout.addWidget(self.mesas_area, 1)
-        
+
         # Ya no necesitamos el FiltersPanel separado - ahora está integrado en MesasArea
-        
+
         self.tab_widget.addTab(mesas_widget, "🍽️ Gestión de Mesas")
-        
+
     def create_venta_rapida_tab(self):
         """Crea la pestaña de venta rápida"""
         venta_widget = QWidget()
         layout = QVBoxLayout(venta_widget)
         layout.setContentsMargins(24, 24, 24, 24)
-        
+
         # Placeholder para venta rápida
         placeholder = QLabel("🚀 Venta Rápida - En desarrollo")
         placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -161,15 +161,15 @@ class TPVModule(BaseModule):
             }
         """)
         layout.addWidget(placeholder)
-        
+
         self.tab_widget.addTab(venta_widget, "⚡ Venta Rápida")
-    
+
     def create_reportes_tab(self):
         """Crea la pestaña de reportes"""
         reportes_widget = QWidget()
         layout = QVBoxLayout(reportes_widget)
         layout.setContentsMargins(24, 24, 24, 24)
-        
+
         # Placeholder para reportes
         placeholder = QLabel("📊 Reportes - En desarrollo")
         placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -181,11 +181,11 @@ class TPVModule(BaseModule):
             }
         """)
         layout.addWidget(placeholder)
-        
+
         self.tab_widget.addTab(reportes_widget, "📈 Reportes")
-    
+
     # ======= CALLBACKS DEL CONTROLADOR =======
-    
+
     def _on_mesa_created(self, mesa: Mesa):
         """Callback cuando se crea una mesa"""
         try:
@@ -195,7 +195,7 @@ class TPVModule(BaseModule):
             QMessageBox.information(self, "Éxito", f"Mesa {mesa.numero} creada correctamente")
         except Exception as e:
             logger.error(f"Error procesando creación de mesa: {e}")
-    
+
     def _on_mesa_updated(self, mesa: Mesa):
         """Callback cuando se actualiza una mesa"""
         try:
@@ -208,7 +208,7 @@ class TPVModule(BaseModule):
             self._refresh_all_components()
         except Exception as e:
             logger.error(f"Error procesando actualización de mesa: {e}")
-    
+
     def _on_mesa_deleted(self, mesa_id: int):
         """Callback cuando se elimina una mesa"""
         try:
@@ -217,7 +217,7 @@ class TPVModule(BaseModule):
             self._refresh_all_components()
         except Exception as e:
             logger.error(f"Error procesando eliminación de mesa: {e}")
-    
+
     def _on_mesas_updated(self, mesas: List[Mesa]):
         """Callback cuando se actualiza la lista completa de mesas"""
         try:
@@ -232,57 +232,58 @@ class TPVModule(BaseModule):
                 self._refresh_all_components()
         except Exception as e:
             logger.error(f"Error procesando actualización de mesas: {e}")
-    
+
     def _on_controller_error(self, error_message: str):
         """Callback cuando ocurre un error en el controlador"""
         logger.error(f"Error del controlador: {error_message}")
         QMessageBox.critical(self, "Error", error_message)
-    
+
     def _on_filters_changed(self, filters: Dict[str, Any]):
         """Callback cuando cambian los filtros"""
         try:
             logger.info(f"Filtros cambiados: {filters}")
             if hasattr(self, 'mesas_area'):
-                self.mesas_area.populate_grid()
+                self.mesas_area.set_mesas(self.mesas)
         except Exception as e:
             logger.error(f"Error aplicando filtros: {e}")
-    
+
     def _on_mesa_clicked(self, mesa: Mesa):
         """Callback cuando se hace clic en una mesa"""
         try:
             logger.info(f"Mesa {mesa.numero} seleccionada")
             # Abrir el nuevo diálogo de gestión de mesa
             from .dialogs.mesa_dialog import MesaDialog
-            
+
             dialog = MesaDialog(mesa, self)
-            
+
             # Conectar señales del diálogo
             dialog.iniciar_tpv_requested.connect(self._on_iniciar_tpv)
             dialog.crear_reserva_requested.connect(self._on_crear_reserva)
             dialog.cambiar_estado_requested.connect(self._on_cambiar_estado_mesa)
-            
+            dialog.mesa_updated.connect(self._on_mesa_updated)
+
             dialog.exec()
-            
+
         except Exception as e:
             logger.error(f"Error procesando clic en mesa: {e}")
             QMessageBox.critical(self, "Error", f"Error al abrir diálogo de mesa: {str(e)}")
-    
+
     def _refresh_all_components(self):
         """Refresca todos los componentes después de cambios en los datos"""
         try:
             # Actualizar dashboard
             if hasattr(self, 'dashboard'):
                 self.dashboard.update_metrics()
-            
+
             # Actualizar área de mesas con los datos actuales
             if hasattr(self, 'mesas_area'):                self.mesas_area.set_mesas(self.mesas)
-            
+
             # Las estadísticas compactas se actualizan automáticamente en MesasArea
-                
+
         except Exception as e:            logger.error(f"Error refrescando componentes: {e}")
-    
+
     # ======= MÉTODOS SIMPLIFICADOS (DELEGADOS AL CONTROLADOR) =======
-    
+
     def nueva_mesa(self):
         """Crea una nueva mesa usando el controlador"""
         try:
@@ -291,7 +292,7 @@ class TPVModule(BaseModule):
         except Exception as e:
             logger.error(f"Error creando nueva mesa: {e}")
             QMessageBox.critical(self, "Error", f"Error al crear mesa: {str(e)}")
-    
+
     def nueva_mesa_con_zona(self, capacidad: int, zona: str):
         """Crea una nueva mesa con parámetros específicos usando el controlador"""
         try:
@@ -300,7 +301,7 @@ class TPVModule(BaseModule):
         except Exception as e:
             logger.error(f"Error creando nueva mesa con zona: {e}")
             QMessageBox.critical(self, "Error", f"Error al crear mesa: {str(e)}")
-    
+
     def eliminar_mesa(self, mesa_id: int):
         """Elimina una mesa usando el controlador"""
         try:
@@ -312,71 +313,71 @@ class TPVModule(BaseModule):
         except Exception as e:
             logger.error(f"Error eliminando mesa: {e}")
             QMessageBox.critical(self, "Error", f"Error al eliminar mesa: {str(e)}")
-    
+
     def load_data(self):
         """Carga los datos iniciales usando el controlador"""
         try:
             logger.info("Cargando datos del TPV...")
             self.mesa_controller.cargar_mesas()
-            
+
             if self.tpv_service:
                 self.productos = self.tpv_service.get_productos()
                 logger.info("Datos del TPV cargados correctamente")                # Cargar datos iniciales en MesasArea si ya está inicializada
                 if hasattr(self, 'mesas_area') and self.mesas:
                     self.mesas_area.set_mesas(self.mesas)
-                
+
                 # Las estadísticas compactas se actualizan automáticamente en MesasArea
                 logger.info("Datos del TPV cargados correctamente")
-                    
+
             else:
                 logger.warning("No hay servicio TPV disponible")
         except Exception as e:
             logger.error(f"Error cargando datos del TPV: {e}")
-    
+
     def _on_iniciar_tpv(self, mesa_id: int):
         """Inicia el TPV para una mesa específica"""
         try:
             mesa = next((m for m in self.mesas if m.id == mesa_id), None)
             if mesa:
                 logger.info(f"Iniciando TPV para mesa {mesa.numero}")
-                
+
                 # Importar y crear el TPV avanzado
                 from .components.tpv_avanzado import TPVAvanzado
                 from PyQt6.QtWidgets import QDialog, QVBoxLayout
-                
+
                 # Crear diálogo para el TPV
                 dialog = QDialog(self)
                 dialog.setWindowTitle(f"TPV - Mesa {mesa.numero}")
                 dialog.setModal(True)
                 dialog.resize(900, 700)
-                
+
                 layout = QVBoxLayout(dialog)
                 layout.setContentsMargins(0, 0, 0, 0)
-                
+
                 # Crear el componente TPV avanzado
                 tpv_widget = TPVAvanzado(mesa, self.tpv_service, dialog)
-                
+
                 # Conectar señales
                 tpv_widget.pedido_completado.connect(
                     lambda mesa_id, total: self._on_pedido_completado(mesa_id, total, dialog)
                 )
-                
+
                 layout.addWidget(tpv_widget)
                 dialog.exec()
-                
+
             else:
                 QMessageBox.warning(self, "Error", "Mesa no encontrada")
         except Exception as e:
             logger.error(f"Error iniciando TPV: {e}")
             QMessageBox.critical(self, "Error", f"Error al abrir TPV: {str(e)}")
-    
+
     def _on_pedido_completado(self, mesa_id: int, total: float, dialog):
         """Maneja la finalización de un pedido"""
         try:
             mesa = next((m for m in self.mesas if m.id == mesa_id), None)
             if mesa:
                 QMessageBox.information(
-                    self, "Pedido Completado", 
+                    self, "Pedido Completado",
                     f"Pedido de Mesa {mesa.numero} completado\nTotal: €{total:.2f}"
                 )
                 # Cerrar el diálogo del TPV
@@ -385,7 +386,7 @@ class TPVModule(BaseModule):
                 self.mesa_controller.cargar_mesas()
         except Exception as e:
             logger.error(f"Error procesando pedido completado: {e}")
-    
+
     def _on_crear_reserva(self, mesa_id: int):
         """Crea una reserva para una mesa específica"""
         try:
@@ -398,7 +399,7 @@ class TPVModule(BaseModule):
                 QMessageBox.warning(self, "Error", "Mesa no encontrada")
         except Exception as e:
             logger.error(f"Error creando reserva: {e}")
-    
+
     def _on_cambiar_estado_mesa(self, mesa_id: int, nuevo_estado: str):
         """Cambia el estado de una mesa"""
         try:
@@ -410,45 +411,45 @@ class TPVModule(BaseModule):
                 QMessageBox.warning(self, "Error", "No se pudo cambiar el estado de la mesa")
         except Exception as e:
             logger.error(f"Error cambiando estado de mesa: {e}")
-            QMessageBox.critical(self, "Error", f"Error al cambiar estado: {str(e)}")    
+            QMessageBox.critical(self, "Error", f"Error al cambiar estado: {str(e)}")
     # MÉTODO ELIMINADO: on_search_changed - La búsqueda ahora se maneja en el header ultra-premium
     # def on_search_changed(self, text):
     #     """Maneja cambios en el campo de búsqueda"""
     #     if hasattr(self, 'mesas_area'):
     #         self.mesas_area.apply_search(text)
-    
+
     def venta_rapida(self):
         """TODO: Implementar venta rápida"""
         QMessageBox.information(self, "Venta Rápida", "Funcionalidad en desarrollo")
-    
+
     def cerrar_caja(self):
         """TODO: Implementar cierre de caja"""
         QMessageBox.information(self, "Cerrar Caja", "Funcionalidad en desarrollo")
-    
+
     def update_compact_stats(self):
         """Actualiza las estadísticas compactas basadas en datos reales"""
         try:
             if not hasattr(self, 'mesas_area') or not self.mesas_area:
                 return
-                
+
             # Obtener datos reales de las mesas
             total_mesas = len(self.mesas)
             mesas_libres = len([m for m in self.mesas if m.estado == "libre"])
             mesas_ocupadas = len([m for m in self.mesas if m.estado == "ocupada"])
             mesas_reservadas = len([m for m in self.mesas if m.estado == "reservada"])
-            
+
             # Obtener zonas únicas
             zonas_activas = len(set(m.zona for m in self.mesas)) if self.mesas else 0
               # Actualizar las estadísticas
             stats_config = [
                 ("📍", "Zonas Activas", str(zonas_activas)),
-                ("🍽️", "Mesas Totales", str(total_mesas)), 
+                ("🍽️", "Mesas Totales", str(total_mesas)),
                 ("🟢", "Disponibles", str(mesas_libres)),
                 ("🔴", "Ocupadas", str(mesas_ocupadas))
             ]
-            
+
             # TODO: Implementar actualización dinámica de estadísticas cuando sea necesario
-                                
+
         except Exception as e:
             logger.error(f"Error actualizando estadísticas compactas: {e}")
 
@@ -458,24 +459,24 @@ class TPVModule(BaseModule):
             if not self.mesas:
                 return {
                     "zonas_activas": "0",
-                    "mesas_totales": "0", 
+                    "mesas_totales": "0",
                     "disponibles": "0",
                     "ocupadas": "0"
                 }
-            
+
             # Calcular estadísticas reales
             zonas_unicas = set(mesa.zona for mesa in self.mesas)
             mesas_totales = len(self.mesas)
             disponibles = len([m for m in self.mesas if m.estado == "libre"])
             ocupadas = len([m for m in self.mesas if m.estado == "ocupada"])
-            
+
             return {
                 "zonas_activas": str(len(zonas_unicas)),
                 "mesas_totales": str(mesas_totales),
-                "disponibles": str(disponibles), 
+                "disponibles": str(disponibles),
                 "ocupadas": str(ocupadas)
             }
-            
+
         except Exception as e:
             logger.error(f"Error calculando estadísticas: {e}")
             return {
@@ -483,23 +484,23 @@ class TPVModule(BaseModule):
                 "mesas_totales": "0",                "disponibles": "0",
                 "ocupadas": "0"
             }
-    
+
     def create_compact_stat(self, icon: str, label: str, value: str) -> QWidget:
         """Crea una estadística compacta mejorada y más visible"""
         from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
         from PyQt6.QtCore import Qt
         from PyQt6.QtGui import QFont
-        
+
         # Frame principal con estilos más sólidos
         stat_widget = QFrame()
         stat_widget.setFrameStyle(QFrame.Shape.StyledPanel)
         stat_widget.setLineWidth(1)
-        
+
         # Layout vertical con más espaciado
         layout = QVBoxLayout(stat_widget)
         layout.setContentsMargins(12, 8, 12, 8)
         layout.setSpacing(4)
-        
+
         # Etiqueta superior (título)
         label_widget = QLabel(f"{icon} {label}")
         label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -510,7 +511,7 @@ class TPVModule(BaseModule):
         label_widget.setFont(title_font)
         label_widget.setStyleSheet("color: #64748b; margin: 0px; padding: 0px;")
         layout.addWidget(label_widget)
-        
+
         # Valor inferior (destacado)
         value_widget = QLabel(value)
         value_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)        # Font para el valor
@@ -520,7 +521,7 @@ class TPVModule(BaseModule):
         value_widget.setFont(value_font)
         value_widget.setStyleSheet("color: #1f2937; margin: 0px; padding: 0px; background-color: transparent;")  # Color más oscuro
         layout.addWidget(value_widget)
-        
+
         # Estilo del frame contenedor con más contraste
         stat_widget.setStyleSheet("""
             QFrame {
@@ -533,21 +534,21 @@ class TPVModule(BaseModule):
                 border-color: #2563eb;
             }
         """)
-        
+
         # Tamaño fijo más grande para mejor visibilidad
         stat_widget.setFixedSize(130, 70)
-        
+
         return stat_widget
 
 if __name__ == "__main__":
     import sys
     from PyQt6.QtWidgets import QApplication
-    
+
     app = QApplication(sys.argv)
-    
+
     # Crear y mostrar el módulo TPV
     tpv = TPVModule()
     tpv.show()
     tpv.resize(1200, 800)
-    
+
     sys.exit(app.exec())

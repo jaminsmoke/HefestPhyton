@@ -267,7 +267,12 @@ class MesaWidget(QFrame):
 
     def _ajustar_fuente_nombre(self):
         """Responsividad: una sola línea, elipsis si no cabe, tooltip si hay elipsis. Ajuste fino con reducción de 16px a la derecha."""
-        label = self.alias_label
+        label = getattr(self, 'alias_label', None)
+        try:
+            if label is None or not hasattr(label, 'width') or not label.isVisible():
+                return  # Evita crash si el QLabel ya fue destruido o no es visible
+        except RuntimeError:
+            return  # El objeto C++ ya fue destruido
         alias = self.mesa.alias if self.mesa.alias else self.mesa.nombre_display
 
         # Ajuste fino: reducción de 20px para el margen derecho

@@ -423,8 +423,21 @@ class MesaDialog(QDialog):
 
     def on_reserva_btn_clicked(self):
         """Abre el diálogo de reserva para la mesa actual"""
-        reserva_dialog = ReservaDialog(self.mesa.id, self)
+        reserva_dialog = ReservaDialog(self, self.mesa)
+        reserva_dialog.reserva_creada.connect(self.procesar_reserva)
         reserva_dialog.exec()
+
+    def procesar_reserva(self, datos_reserva):
+        """Procesa los datos de la nueva reserva"""
+        # Aquí puedes agregar la lógica para guardar la reserva
+        # Por ejemplo, en una base de datos o archivo
+        print(f"Nueva reserva creada: {datos_reserva}")
+
+        # Actualizar el estado de la mesa si es necesario
+        if self.mesa:
+            self.mesa.estado = 'reservada'
+            self.mesa_updated.emit(self.mesa)
+            self.update_ui()
 
     def on_estado_btn_clicked(self):
         """Cambia el estado de la mesa"""
@@ -434,8 +447,8 @@ class MesaDialog(QDialog):
     def on_liberar_btn_clicked(self):
         """Libera la mesa actual"""
         self.mesa.estado = 'libre'
-        self.mesa.personas_display = 0
-        self.mesa.nombre_display = ''
+        self.mesa.personas_temporal = 0  # Reinicia el número de personas temporal
+        self.mesa.alias = ''  # Limpia el alias temporal
         self.mesa_updated.emit(self.mesa)
         self.update_ui()
 
