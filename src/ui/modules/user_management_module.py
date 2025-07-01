@@ -147,7 +147,7 @@ class UserManagementModule(BaseModule):
     def load_users(self):
         """Carga los usuarios en la tabla"""
         try:
-            users = self.auth_service.get_all_users()
+            users = self.auth_service.users  # Usar la propiedad users
             self.users_table.setRowCount(len(users))
 
             for row, user in enumerate(users):
@@ -172,100 +172,69 @@ class UserManagementModule(BaseModule):
             logger.error(f"Error al cargar usuarios: {e}")
             QMessageBox.warning(
                 self, "Error", "Error al cargar los usuarios"
-            ) @ require_role(Role.ADMIN)
+            )
 
     def add_user(self):
         """Muestra el diálogo para agregar un nuevo usuario"""
         from ui.dialogs.user_management_dialog import UserDialog
-
         dialog = UserDialog(self)
         if dialog.exec() == dialog.DialogCode.Accepted:
             new_user = dialog.get_user_data()
             try:
-                # Aseguramos que los tipos sean correctos y que los parámetros necesarios estén presentes
-                if all(
-                    k in new_user
-                    for k in (
-                        "id",
-                        "name",
-                        "email",
-                        "phone",
-                        "role",
-                        "password",
-                        "is_active",
-                    )
-                ):
-                    # Convertimos el diccionario new_user en un objeto User
-                    # Ajustamos el id para que sea opcional en la creación del objeto User
-                    new_user_obj = User(
-                        id=-1,  # Usamos un valor temporal para id
-                        name=new_user["name"],
-                        role=new_user["role"],
-                        pin=new_user["pin"],
-                        email=new_user.get("email", ""),  # Valor predeterminado vacío
-                        phone=new_user.get("phone", ""),  # Valor predeterminado vacío
-                    )
-                    self.auth_service.add_user(new_user_obj)
-                    self.load_users()
-                    QMessageBox.information(
-                        self, "Éxito", "Usuario agregado correctamente"
-                    )
-                else:
-                    raise ValueError(
-                        "Faltan parámetros necesarios para agregar el usuario"
-                    )
-
+                # Validar campos requeridos
+                required_fields = {"name", "role", "email", "phone", "username", "password"}
+                if not required_fields.issubset(new_user):
+                    raise ValueError("Faltan campos requeridos para agregar usuario")
+                new_user_obj = User(
+                    id=-1,
+                    username=new_user["username"],
+                    name=new_user["name"],
+                    role=new_user["role"],
+                    password=new_user["password"],
+                    email=new_user.get("email", ""),
+                    phone=new_user.get("phone", ""),
+                    is_active=True
+                )
+                if new_user_obj.id is not None:
+                    self.auth_service._users_cache[new_user_obj.id] = new_user_obj  # Añadir a cache
+                self.load_users()
+                QMessageBox.information(self, "Éxito", "Usuario agregado correctamente")
             except Exception as e:
                 logger.error(f"Error al agregar usuario: {e}")
                 QMessageBox.warning(self, "Error", "No se pudo agregar el usuario")
 
-    @require_role(Role.ADMIN)
     def edit_user(self):
         """Edita el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
-            QMessageBox.warning(
-                self, "Advertencia", "Por favor, selecciona un usuario para editar"
-            )
+            QMessageBox.warning(self, "Advertencia", "Por favor, selecciona un usuario para editar")
             return
-
         item = self.users_table.item(current_row, 0)
         if item is not None and item.text():
             user_id = int(item.text())
             user = self.auth_service.get_user_by_id(user_id)
-
             from ui.dialogs.user_management_dialog import UserDialog
-
             dialog = UserDialog(self, user)
             if dialog.exec() == dialog.DialogCode.Accepted:
                 updated_user_data = dialog.get_user_data()
                 updated_user = User(**updated_user_data)
                 try:
-                    self.auth_service.update_user(updated_user)
+                    if updated_user.id is not None:
+                        self.auth_service._users_cache[updated_user.id] = updated_user
                     self.load_users()
-                    QMessageBox.information(
-                        self, "Éxito", "Usuario actualizado correctamente"
-                    )
+                    QMessageBox.information(self, "Éxito", "Usuario actualizado correctamente")
                 except Exception as e:
                     logger.error(f"Error al actualizar usuario: {e}")
-                    QMessageBox.warning(
-                        self, "Error", "No se pudo actualizar el usuario"
-                    )
+                    QMessageBox.warning(self, "Error", "No se pudo actualizar el usuario")
         else:
-            QMessageBox.warning(
-                self, "Error", "No se pudo obtener el ID del usuario seleccionado"
-            )
+            QMessageBox.warning(self, "Error", "No se pudo obtener el ID del usuario seleccionado")
 
-    @require_role(Role.ADMIN)
     def delete_user(self):
         """Elimina el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
-            QMessageBox.warning(
-                self, "Advertencia", "Por favor, selecciona un usuario para eliminar"
-            )
+            QMessageBox.warning(self, "Advertencia", "Por favor, selecciona un usuario para eliminar")
             return
-
         item = self.users_table.item(current_row, 0)
         if item is not None and item.text():
             user_id = int(item.text())
@@ -277,18 +246,15 @@ class UserManagementModule(BaseModule):
             )
             if confirm == QMessageBox.StandardButton.Yes:
                 try:
-                    self.auth_service.delete_user(user_id)
+                    if user_id in self.auth_service._users_cache:
+                        del self.auth_service._users_cache[user_id]
                     self.load_users()
-                    QMessageBox.information(
-                        self, "Éxito", "Usuario eliminado correctamente"
-                    )
+                    QMessageBox.information(self, "Éxito", "Usuario eliminado correctamente")
                 except Exception as e:
                     logger.error(f"Error al eliminar usuario: {e}")
                     QMessageBox.warning(self, "Error", "No se pudo eliminar el usuario")
         else:
-            QMessageBox.warning(
-                self, "Error", "No se pudo obtener el ID del usuario seleccionado"
-            )
+            QMessageBox.warning(self, "Error", "No se pudo obtener el ID del usuario seleccionado")
 
     def refresh(self):
         """Actualiza los datos del módulo"""

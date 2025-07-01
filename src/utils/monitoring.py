@@ -11,13 +11,18 @@ Recolecta y reporta métricas del sistema:
 - Alertas automáticas
 """
 
-import psutil
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
+
 import time
 import json
 import logging
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 import threading
 from dataclasses import dataclass
 import sqlite3
@@ -32,7 +37,7 @@ class Metric:
     name: str
     value: float
     timestamp: datetime
-    tags: Dict[str, str] = None
+    tags: Optional[Dict[str, str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -75,7 +80,7 @@ class MetricsCollector:
 
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_metrics_name_timestamp 
+                CREATE INDEX IF NOT EXISTS idx_metrics_name_timestamp
                 ON metrics(name, timestamp)
             """
             )
@@ -120,19 +125,22 @@ class MetricsCollector:
         self.add_metric("system.cpu.usage", cpu_percent, now)
 
         # Memoria
-        memory = psutil.virtual_memory()
-        self.add_metric("system.memory.usage_percent", memory.percent, now)
-        self.add_metric("system.memory.available_gb", memory.available / 1024**3, now)
+        if HAS_PSUTIL:
+            memory = psutil.virtual_memory()
+            self.add_metric("system.memory.usage_percent", memory.percent, now)
+            self.add_metric("system.memory.available_gb", memory.available / 1024**3, now)
 
         # Disco
-        disk = psutil.disk_usage("/")
-        self.add_metric("system.disk.usage_percent", disk.percent, now)
-        self.add_metric("system.disk.free_gb", disk.free / 1024**3, now)
+        if HAS_PSUTIL:
+            disk = psutil.disk_usage("/")
+            self.add_metric("system.disk.usage_percent", disk.percent, now)
+            self.add_metric("system.disk.free_gb", disk.free / 1024**3, now)
 
         # Red
-        net_io = psutil.net_io_counters()
-        self.add_metric("system.network.bytes_sent", net_io.bytes_sent, now)
-        self.add_metric("system.network.bytes_recv", net_io.bytes_recv, now)
+        if HAS_PSUTIL:
+            net_io = psutil.net_io_counters()
+            self.add_metric("system.network.bytes_sent", net_io.bytes_sent, now)
+            self.add_metric("system.network.bytes_recv", net_io.bytes_recv, now)
 
     def _collect_application_metrics(self):
         """Recolecta métricas específicas de la aplicación."""
@@ -162,8 +170,8 @@ class MetricsCollector:
         self,
         name: str,
         value: float,
-        timestamp: datetime = None,
-        tags: Dict[str, str] = None,
+        timestamp: Optional[datetime] = None,
+        tags: Optional[Dict[str, str]] = None,
     ):
         """Añade una métrica al buffer."""
         if timestamp is None:
@@ -199,7 +207,7 @@ class MetricsCollector:
         except Exception as e:
             logger.error(f"Error guardando métricas: {e}")
 
-    def get_metrics(self, name: str = None, hours: int = 24) -> List[Dict[str, Any]]:
+    def get_metrics(self, name: Optional[str] = None, hours: int = 24) -> List[Dict[str, Any]]:
         """Obtiene métricas de la base de datos."""
         since = datetime.now() - timedelta(hours=hours)
 
@@ -209,7 +217,7 @@ class MetricsCollector:
             if name:
                 cursor = conn.execute(
                     """
-                    SELECT * FROM metrics 
+                    SELECT * FROM metrics
                     WHERE name = ? AND timestamp >= ?
                     ORDER BY timestamp DESC
                 """,
@@ -218,7 +226,7 @@ class MetricsCollector:
             else:
                 cursor = conn.execute(
                     """
-                    SELECT * FROM metrics 
+                    SELECT * FROM metrics
                     WHERE timestamp >= ?
                     ORDER BY timestamp DESC
                 """,
@@ -234,12 +242,12 @@ class MetricsCollector:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 """
-                SELECT 
+                SELECT
                     AVG(value) as avg_value,
                     MIN(value) as min_value,
                     MAX(value) as max_value,
                     COUNT(*) as count
-                FROM metrics 
+                FROM metrics
                 WHERE name = ? AND timestamp >= ?
             """,
                 (name, since.isoformat()),

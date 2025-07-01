@@ -3,7 +3,7 @@ Servicio de gestión del Terminal Punto de Venta (TPV).
 """
 
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime, date, time
 
@@ -989,7 +989,7 @@ class TPVService(BaseService):
             return []
         try:
             query = "SELECT id, mesa_id, cliente, fecha, hora, personas, notas, estado FROM reservas WHERE mesa_id = ? AND estado = 'activa'"
-            params = [mesa_id]
+            params: list[Any] = [mesa_id]
             if fecha:
                 query += " AND fecha = ?"
                 params.append(fecha.isoformat())

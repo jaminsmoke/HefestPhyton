@@ -6,17 +6,30 @@ Versión: v0.0.13 - FIXED RESPONSIVE ALIAS
 """
 
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent
 from PyQt6.QtGui import QFont
+import sys
+from PyQt6.QtCore import qInstallMessageHandler
 
 from services.tpv_service import Mesa
+
+
+def qt_message_handler(mode, context, message):
+    if (
+        "Unknown property overflow" in message
+        or "Unknown property text-overflow" in message
+    ):
+        return  # Ignorar estas advertencias
+    sys.stderr.write(message + "\n")
+
+
+qInstallMessageHandler(qt_message_handler)
 
 
 class MesaWidget(QFrame):
     """Widget compacto y profesional para mostrar una mesa con diseño optimizado y nombre editable"""
     # Señales
     mesa_clicked = pyqtSignal(Mesa)
-    mesa_double_clicked = pyqtSignal(Mesa)
     alias_changed = pyqtSignal(Mesa, str)  # Señal para cambio de alias
     personas_changed = pyqtSignal(Mesa, int)  # Señal para cambio de personas
     restaurar_original = pyqtSignal(int)  # Señal para restaurar valores originales
@@ -51,8 +64,12 @@ class MesaWidget(QFrame):
         alias_layout.setContentsMargins(0, 0, 0, 0)
         alias_layout.setSpacing(4)
         self.alias_label = QLabel(self.mesa.nombre_display)
-        self.alias_label.setWordWrap(True)
+        self.alias_label.setWordWrap(False)
         self.alias_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        self.alias_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        self.alias_label.setToolTip("")
+        self.alias_label.setStyleSheet("text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+        self.alias_label.installEventFilter(self)
         alias_layout.addWidget(self.alias_label, 10)  # Prioridad máxima
         self.edit_btn = QPushButton()
         self.edit_btn.setFixedSize(22, 22)
@@ -410,15 +427,16 @@ class MesaWidget(QFrame):
                 self.click_timer.start(300)  # 300ms de delay
         super().mousePressEvent(event)
 
-    # Eliminar eventFilter: ya no es necesario
     def eventFilter(self, obj, event):
+        # Mostrar tooltip claro con el alias completo al hacer hover sobre el alias_label
+        if obj == self.alias_label:
+            if event.type() == QEvent.Type.Enter:
+                alias = self.mesa.alias if self.mesa.alias else self.mesa.nombre_display
+                if self.alias_label.toolTip() and self.alias_label.toolTip() != "":
+                    self.alias_label.setToolTip(alias)
+            elif event.type() == QEvent.Type.Leave:
+                self.alias_label.setToolTip("")
         return super().eventFilter(obj, event)
-
-    # Eliminar lógica de doble click para edición
-    def mouseDoubleClickEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.mesa_double_clicked.emit(self.mesa)
-        super().mouseDoubleClickEvent(event)
 
     def keyPressEvent(self, event):
         """Maneja eventos de teclado"""

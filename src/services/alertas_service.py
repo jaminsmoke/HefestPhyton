@@ -142,10 +142,9 @@ class AlertasService:
 
                 db_manager = DatabaseManager()
                 inventario_service = InventarioService(db_manager)
-                alertas_inventario = inventario_service.get_alertas_activas()
-                alertas_centralizadas = self.registrar_alertas_inventario(
-                    alertas_inventario
-                )
+                # Cambiado: obtener productos con stock bajo como alertas activas
+                alertas_inventario = inventario_service.get_productos_stock_bajo()
+                alertas_centralizadas = self.registrar_alertas_inventario(alertas_inventario)
             except Exception as e:
                 self.logger.error(f"Error obteniendo alertas de inventario: {e}")
                 alertas_centralizadas = []

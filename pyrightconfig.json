@@ -1,0 +1,19 @@
+{
+  "include": ["src"],
+  "exclude": [
+    ".venv",
+    "build-tools",
+    "htmlcov",
+    "logs",
+    "backups",
+    "version-backups",
+    "tests",
+    "scripts",
+    "docs",
+    "development-config",
+    "assets"
+  ],
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "typeCheckingMode": "basic"
+}

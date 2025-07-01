@@ -4,7 +4,7 @@ TPV Avanzado - Componente principal modularizado
 
 import logging
 from typing import Optional
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSplitter
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal
 
 from services.tpv_service import TPVService, Mesa
@@ -18,50 +18,54 @@ logger = logging.getLogger(__name__)
 
 class TPVAvanzado(QWidget):
     """TPV Avanzado modularizado para gestión completa de ventas"""
-    
+
     pedido_completado = pyqtSignal(int, float)  # mesa_id, total
-    
+
     def __init__(self, mesa: Optional[Mesa] = None, tpv_service: Optional[TPVService] = None, parent=None):
         super().__init__(parent)
         self.mesa = mesa
         self.tpv_service = tpv_service or TPVService()
         self.current_order = None
+        self.header_mesa_label: Optional[QLabel] = None  # Añadido para evitar error de Pyright
         self.setup_ui()
-        
+
     def setup_ui(self):
         """Configura la interfaz principal"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        
+
         # Header modularizado
+        if self.header_mesa_label is None:
+            self.header_mesa_label = QLabel("")
+            layout.addWidget(self.header_mesa_label)
         create_header(self, layout)
-        
+
         # Splitter principal
         splitter = QSplitter(Qt.Orientation.Horizontal)
-        
+
         # Panel de productos (izquierda)
         create_productos_panel(self, splitter)
-        
+
         # Panel de pedido (derecha)
         create_pedido_panel(self, splitter)
-        
+
         # Configurar proporciones
         splitter.setSizes([400, 350])
         layout.addWidget(splitter)
-        
+
     def set_mesa(self, mesa: Mesa):
         """Establece la mesa activa"""
         self.mesa = mesa
-        if hasattr(self, 'header_mesa_label'):
+        if self.header_mesa_label is not None:
             self.header_mesa_label.setText(f"Mesa {mesa.numero} - {mesa.zona}")
-            
+
     def nuevo_pedido(self):
         """Inicia un nuevo pedido"""
         if self.mesa and self.tpv_service:
             self.current_order = self.tpv_service.crear_comanda(self.mesa.id)
             logger.info(f"Nuevo pedido iniciado para mesa {self.mesa.numero}")
-            
+
     def procesar_pago(self):
         """Procesa el pago del pedido actual"""
         if self.current_order and self.mesa:

@@ -268,7 +268,7 @@ class MesaDialog(QDialog):
 
     def setup_config_panel(self, parent_layout: QVBoxLayout):
         """Panel de configuración rápida (scroll limitado dentro del borde)"""
-        from PyQt6.QtWidgets import QScrollArea, QWidget, QSizePolicy, QVBoxLayout
+        from PyQt6.QtWidgets import QScrollArea, QWidget, QSizePolicy, QVBoxLayout, QLabel, QHBoxLayout
 
         bordered_frame = QFrame()
         bordered_frame.setStyleSheet("""
@@ -285,7 +285,6 @@ class MesaDialog(QDialog):
         bordered_layout = QVBoxLayout(bordered_frame)
         bordered_layout.setContentsMargins(8, 8, 8, 8)
         bordered_layout.setSpacing(0)
-
         # Título fuera del scroll
         title = QLabel("Configuración Rápida")
         title.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
@@ -295,7 +294,6 @@ class MesaDialog(QDialog):
         title.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         bordered_layout.addWidget(title)
         bordered_layout.addSpacing(6)
-
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setStyleSheet("""
@@ -310,8 +308,14 @@ class MesaDialog(QDialog):
         scroll_layout = QVBoxLayout(scroll_content)
         scroll_layout.setContentsMargins(0, 0, 0, 0)
         scroll_layout.setSpacing(8)
-
-        # Configuración rápida
+        # Alias (horizontal)
+        alias_row = QHBoxLayout()
+        alias_row.setContentsMargins(0, 0, 0, 0)
+        alias_row.setSpacing(8)
+        alias_title = QLabel("Alias de mesa")
+        alias_title.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        alias_title.setStyleSheet("color: #495057; min-width: 120px; text-align: right;")
+        alias_row.addWidget(alias_title)
         self.alias_input = QLineEdit(self.mesa.nombre_display)
         self.alias_input.setPlaceholderText("Alias de la mesa")
         self.alias_input.setFont(QFont("Segoe UI", 12))
@@ -327,8 +331,16 @@ class MesaDialog(QDialog):
                 outline: none;
             }
         """)
-        scroll_layout.addWidget(self.alias_input)
-
+        alias_row.addWidget(self.alias_input, 1)
+        scroll_layout.addLayout(alias_row)
+        # Capacidad (horizontal)
+        capacidad_row = QHBoxLayout()
+        capacidad_row.setContentsMargins(0, 0, 0, 0)
+        capacidad_row.setSpacing(8)
+        capacidad_title = QLabel("Capacidad")
+        capacidad_title.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        capacidad_title.setStyleSheet("color: #495057; min-width: 120px; text-align: right;")
+        capacidad_row.addWidget(capacidad_title)
         self.capacidad_input = QSpinBox()
         self.capacidad_input.setValue(self.mesa.capacidad)
         self.capacidad_input.setRange(1, 100)
@@ -339,14 +351,35 @@ class MesaDialog(QDialog):
                 border-radius: 8px;
                 padding: 6px 12px;
                 font-size: 14px;
+                background: white;
             }
             QSpinBox:focus {
                 border-color: #80bdff;
                 outline: none;
             }
+            QSpinBox::up-button, QSpinBox::down-button {
+                width: 18px;
+                height: 14px;
+                background: #e9ecef;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                margin: 1px;
+            }
+            QSpinBox::up-arrow, QSpinBox::down-arrow {
+                width: 10px;
+                height: 10px;
+            }
         """)
-        scroll_layout.addWidget(self.capacidad_input)
-
+        capacidad_row.addWidget(self.capacidad_input, 1)
+        scroll_layout.addLayout(capacidad_row)
+        # Notas adicionales (alineado a la izquierda, campo grande a la derecha)
+        notas_row = QHBoxLayout()
+        notas_row.setContentsMargins(0, 0, 0, 0)
+        notas_row.setSpacing(8)
+        notas_title = QLabel("Notas adicionales")
+        notas_title.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
+        notas_title.setStyleSheet("color: #495057; min-width: 120px; text-align: right; margin-top: 8px;")
+        notas_row.addWidget(notas_title, 0, )
         self.notas_input = QTextEdit(self.mesa.notas)
         self.notas_input.setPlaceholderText("Notas adicionales")
         self.notas_input.setFont(QFont("Segoe UI", 12))
@@ -356,14 +389,16 @@ class MesaDialog(QDialog):
                 border-radius: 8px;
                 padding: 6px 12px;
                 font-size: 14px;
+                min-height: 64px;
+                background: white;
             }
             QTextEdit:focus {
                 border-color: #80bdff;
                 outline: none;
             }
         """)
-        scroll_layout.addWidget(self.notas_input)
-
+        notas_row.addWidget(self.notas_input, 1)
+        scroll_layout.addLayout(notas_row)
         scroll_area.setWidget(scroll_content)
         bordered_layout.addWidget(scroll_area)
         parent_layout.addWidget(bordered_frame)
@@ -468,7 +503,15 @@ class MesaDialog(QDialog):
 
     def update_ui(self):
         """Actualiza la interfaz con los datos actuales de la mesa"""
+        # Actualiza texto y color del estado
         self.estado_value.setText(self.mesa.estado.title())
+        estado_color = {
+            'libre': '#28a745',
+            'ocupada': '#dc3545',
+            'reservada': '#ffc107',
+            'mantenimiento': '#6c757d'
+        }.get(self.mesa.estado, '#6c757d')
+        self.estado_value.setStyleSheet(f"color: {estado_color};")
         self.personas_value.setText(f"{self.mesa.personas_display}/{self.mesa.capacidad}")
         self.alias_value.setText(self.mesa.nombre_display)
 

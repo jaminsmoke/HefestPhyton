@@ -447,7 +447,7 @@ def create_ultra_premium_stat(icon: str, label: str, value: str, color: str, bg_
     value_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
     value_widget.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {color}; margin-top: 2px;")
     layout.addWidget(value_widget)
-    stat_widget.value_label = value_widget  # Guardar referencia para actualización
+    stat_widget.setProperty('value_label', value_widget)  # Guardar referencia para actualización compatible con Pyright
     return stat_widget
 
 def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, reservadas):
