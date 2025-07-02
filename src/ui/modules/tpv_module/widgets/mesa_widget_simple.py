@@ -28,6 +28,31 @@ qInstallMessageHandler(qt_message_handler)
 
 
 class MesaWidget(QFrame):
+    # --- Selección múltiple para acciones por lotes ---
+    def set_batch_mode(self, enabled: bool):
+        self.batch_mode = enabled
+        if enabled:
+            if not hasattr(self, 'batch_checkbox'):
+                from PyQt6.QtWidgets import QCheckBox
+                self.batch_checkbox = QCheckBox()
+                self.batch_checkbox.setChecked(False)
+                self.batch_checkbox.setStyleSheet("margin-left:2px;margin-right:2px;")
+                self.layout_principal.insertWidget(0, self.batch_checkbox)
+                self.batch_checkbox.stateChanged.connect(self._on_batch_checkbox_changed)
+            self.batch_checkbox.show()
+        else:
+            if hasattr(self, 'batch_checkbox'):
+                self.batch_checkbox.hide()
+
+    def _on_batch_checkbox_changed(self, state):
+        # Buscar el ancestro que tenga el método toggle_mesa_selection
+        parent = self.parent()
+        while parent is not None:
+            toggle = getattr(parent, 'toggle_mesa_selection', None)
+            if callable(toggle):
+                toggle(self.mesa.id)
+                break
+            parent = getattr(parent, 'parent', lambda: None)()
     """
     Widget compacto y profesional para mostrar una mesa con diseño optimizado y nombre editable.
 

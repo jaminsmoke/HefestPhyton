@@ -21,6 +21,54 @@ from .mesas_area_utils import calcular_columnas_optimas, restaurar_datos_tempora
 logger = logging.getLogger(__name__)
 
 class MesasArea(QFrame):
+    # --- Lógica de selección múltiple y acciones por lotes ---
+    def enable_batch_mode(self, enabled: bool):
+        self.batch_mode = enabled
+        for w in self.mesa_widgets:
+            if hasattr(w, 'set_batch_mode'):
+                w.set_batch_mode(enabled)
+        self.selected_mesas = set()
+        self.update_batch_action_btn()
+
+    def toggle_mesa_selection(self, mesa_id):
+        if not hasattr(self, 'selected_mesas'):
+            self.selected_mesas = set()
+        if mesa_id in self.selected_mesas:
+            self.selected_mesas.remove(mesa_id)
+        else:
+            self.selected_mesas.add(mesa_id)
+        self.update_batch_action_btn()
+
+    def update_batch_action_btn(self):
+        # Busca el botón de acción por lotes en el header y lo habilita/deshabilita
+        # Solución: buscar el widget en el layout del header
+        if hasattr(self, 'header'):
+            # Buscar en los hijos del header un QPushButton con texto 'Acción por lotes'
+            from PyQt6.QtWidgets import QPushButton
+            def find_batch_btn(widget):
+                for child in widget.findChildren(QPushButton):
+                    if child.text() == "Acción por lotes":
+                        return child
+                return None
+            batch_btn = find_batch_btn(self.header)
+            if batch_btn:
+                batch_btn.setEnabled(bool(self.selected_mesas))
+
+    def do_batch_action(self):
+        # Ejemplo: eliminar todas las mesas seleccionadas (solo UI, no base de datos)
+        if not hasattr(self, 'selected_mesas') or not self.selected_mesas:
+            return
+        self.filtered_mesas = [m for m in self.filtered_mesas if m.id not in self.selected_mesas]
+        self.mesas = [m for m in self.mesas if m.id not in self.selected_mesas]
+        self.selected_mesas = set()
+        self.update_filtered_mesas()
+        populate_grid(self)
+        self.update_batch_action_btn()
+    def toggle_view_mode(self):
+        """Alterna entre vista grid y lista"""
+        self.view_mode = "list" if self.view_mode == "grid" else "grid"
+        # TODO: Implementar renderizado de vista lista si es necesario
+        populate_grid(self)
     """Área de visualización y gestión de mesas (modularizado)"""
     nueva_mesa_requested = pyqtSignal()
     nueva_mesa_con_zona_requested = pyqtSignal(int, int, str)
@@ -36,6 +84,7 @@ class MesasArea(QFrame):
         self.current_zone_filter = "Todas"
         self.current_status_filter = "Todos"
         self.view_mode = "grid"
+        self._chips_refs = []  # Referencias a chips de filtro rápido
         self.setup_ui()
 
 
@@ -54,7 +103,7 @@ class MesasArea(QFrame):
         container_layout.setContentsMargins(16, 16, 16, 16)
         container_layout.setSpacing(16)
         # Header modularizado
-        create_header(self, self, container_layout)
+        self.header = create_header(self, self, container_layout)
         # Área de scroll modularizada
         create_scroll_area(self, container_layout)
 
@@ -217,6 +266,10 @@ class MesasArea(QFrame):
 
     def _on_status_changed(self, status: str):
         self.current_status_filter = status
+        # Sincronizar chips rápidos
+        if hasattr(self, '_chips_refs'):
+            for chip in self._chips_refs:
+                chip.setChecked(chip.text() == (status if status != "Todos" else "Todas"))
         self.update_filtered_mesas()
         populate_grid(self)
 
