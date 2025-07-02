@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 class MesaDialog(QDialog):
     """Diálogo mejorado para la gestión completa de una mesa"""
 
+    mesa_updated = pyqtSignal(Mesa)  # Señal para actualizar el grid
     iniciar_tpv_requested = pyqtSignal(int)  # mesa_id
     crear_reserva_requested = pyqtSignal(int)  # mesa_id
     cambiar_estado_requested = pyqtSignal(int, str)  # mesa_id, nuevo_estado
@@ -632,6 +633,8 @@ class MesaDialog(QDialog):
         else:
             self.mesa.personas_temporal = None
         self.mesa.capacidad = nueva_capacidad
+        # Emitir ambas señales para asegurar actualización
+        self.mesa_updated.emit(self.mesa)
         mesa_event_bus.mesa_actualizada.emit(self.mesa)
         self.accept()
 
