@@ -14,6 +14,31 @@ logger = logging.getLogger(__name__)
 
 
 class MesaController(QObject):
+    def crear_mesa_con_numero(self, numero: int, capacidad: int, zona: str) -> bool:
+        """Crea una nueva mesa con número específico delegando en TPVService"""
+        try:
+            if not self.tpv_service:
+                self.error_occurred.emit("No hay servicio TPV disponible")
+                return False
+            nueva_mesa = None
+            if hasattr(self.tpv_service, "crear_mesa_con_numero"):
+                nueva_mesa = self.tpv_service.crear_mesa_con_numero(numero, capacidad, zona)
+            else:
+                # Fallback: usar crear_mesa normal (sin número específico)
+                nueva_mesa = self.tpv_service.crear_mesa(capacidad, zona)
+            if nueva_mesa:
+                self.mesas.append(nueva_mesa)
+                self.load_mesas()  # Recargar desde servicio tras crear
+                logger.info(f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}")
+                return True
+            else:
+                self.error_occurred.emit("Error creando la mesa")
+                return False
+        except Exception as e:
+            error_msg = f"Error creando mesa con número: {e}"
+            logger.error(error_msg)
+            self.error_occurred.emit(error_msg)
+            return False
     """Controlador para la lógica de negocio de las mesas"""
 
     # Señales
@@ -39,13 +64,15 @@ class MesaController(QObject):
                 return
 
             self.mesas = self.tpv_service.get_mesas()
-            MesaController.mesa_event_bus.mesas_actualizadas.emit(self.mesas)
+            print(f"[DEBUG MesaController] load_mesas: {len(self.mesas)} mesas recibidas de tpv_service.get_mesas()")
+            # El servicio debe emitir la señal global, no el controlador
 
             logger.info(f"Cargadas {len(self.mesas)} mesas")
 
         except Exception as e:
             error_msg = f"Error cargando mesas: {e}"
             logger.error(error_msg)
+            print(f"[DEBUG MesaController] load_mesas: error {e}")
             self.error_occurred.emit(error_msg)
 
     def crear_mesa(self, capacidad: int, zona: str) -> bool:
@@ -63,9 +90,7 @@ class MesaController(QObject):
 
             if nueva_mesa:
                 self.mesas.append(nueva_mesa)
-                MesaController.mesa_event_bus.mesa_creada.emit(nueva_mesa)
-                MesaController.mesa_event_bus.mesas_actualizadas.emit(self.mesas)
-
+                self.load_mesas()  # Recargar desde servicio tras crear
                 logger.info(f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}")
                 return True
             else:
@@ -107,7 +132,7 @@ class MesaController(QObject):
             mesa_actual.zona = zona
 
             MesaController.mesa_event_bus.mesa_actualizada.emit(mesa_actual)
-            MesaController.mesa_event_bus.mesas_actualizadas.emit(self.mesas)
+            self.load_mesas()  # Recargar desde servicio tras editar
 
             logger.info(f"Mesa {numero} actualizada correctamente")
             return True
@@ -146,7 +171,7 @@ class MesaController(QObject):
                 self.mesas = [mesa for mesa in self.mesas if mesa.id != mesa_id]
 
                 MesaController.mesa_event_bus.mesa_eliminada.emit(mesa_id)
-                MesaController.mesa_event_bus.mesas_actualizadas.emit(self.mesas)
+                self.load_mesas()  # Recargar desde servicio tras eliminar
 
                 logger.info(f"Mesa {mesa_actual.numero} eliminada correctamente")
                 return True
@@ -188,7 +213,7 @@ class MesaController(QObject):
             mesa_actual.estado = nuevo_estado
 
             MesaController.mesa_event_bus.mesa_actualizada.emit(mesa_actual)
-            MesaController.mesa_event_bus.mesas_actualizadas.emit(self.mesas)
+            self.load_mesas()  # Recargar desde servicio tras cambiar estado
 
             logger.info(f"Estado de mesa {mesa_actual.numero} cambiado a {nuevo_estado}")
             return True
@@ -257,7 +282,7 @@ class MesaController(QObject):
 
             mesas = self.tpv_service.get_mesas()
             self.mesas = mesas
-            MesaController.mesa_event_bus.mesas_actualizadas.emit(mesas)
+            # El servicio debe emitir la señal global, no el controlador
 
             logger.info(f"Cargadas {len(mesas)} mesas desde el servicio")
 

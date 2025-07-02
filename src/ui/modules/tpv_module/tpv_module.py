@@ -35,6 +35,7 @@ class TPVModule(BaseModule):
     """Módulo TPV principal con interfaz moderna y profesional (Refactorizado)"""
 
     def __init__(self, parent=None):
+        # ...existing code...
         super().__init__(parent)
 
         # Inicializar servicios
@@ -46,6 +47,7 @@ class TPVModule(BaseModule):
         # Configurar UI y cargar datos
         self.setup_ui()
         self.load_data()
+        # ...existing code...
         self._connect_event_bus()
 
     def _connect_event_bus(self):
@@ -55,6 +57,13 @@ class TPVModule(BaseModule):
         mesa_event_bus.mesa_creada.connect(self._on_mesa_creada)
         mesa_event_bus.mesa_eliminada.connect(self._on_mesa_eliminada)
         mesa_event_bus.alias_cambiado.connect(self._on_alias_cambiado)
+        # Forzar emisión de mesas tras conectar señales para asegurar que la UI reciba la lista inicial
+        try:
+            from services.tpv_service import TPVService
+            if hasattr(self, 'tpv_service') and self.tpv_service:
+                mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
+        except Exception:
+            pass
 
     def _init_services(self):
         """Inicializa los servicios necesarios"""
@@ -146,8 +155,9 @@ class TPVModule(BaseModule):
         layout.setSpacing(12)
 
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
-        self.mesas_area = MesasArea()        # Conectar señales
-        # Eliminar conexión directa a self.mesas_area.mesa_clicked.connect, self.mesas_area.nueva_mesa_requested.connect, self.mesas_area.nueva_mesa_con_zona_requested.connect, self.mesas_area.eliminar_mesa.connect
+        self.mesas_area = MesasArea()
+        self.mesas_area.eliminar_mesa_requested.connect(self.eliminar_mesa)
+        self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)
 
         # El área de mesas ocupa todo el espacio disponible
         layout.addWidget(self.mesas_area, 1)
@@ -318,35 +328,61 @@ class TPVModule(BaseModule):
 
     # ======= MÉTODOS SIMPLIFICADOS (DELEGADOS AL CONTROLADOR) =======
 
+    # MÉTODO OBSOLETO: La creación de mesas debe hacerse siempre vía nueva_mesa_con_zona
+    # Se mantiene solo para compatibilidad, pero no debe usarse. Será eliminado en futuras versiones.
+    # TODO v0.0.13: Eliminar este método y actualizar todos los llamados a nueva_mesa_con_zona
     def nueva_mesa(self):
-        """Crea una nueva mesa usando el controlador"""
-        try:
-            # Usar nomenclatura automática contextualizada
-            self.mesa_controller.crear_mesa(4, "Principal")
-        except Exception as e:
-            logger.error(f"Error creando nueva mesa: {e}")
-            QMessageBox.critical(self, "Error", f"Error al crear mesa: {str(e)}")
+        """[OBSOLETO] Crea una nueva mesa usando el controlador. Usar nueva_mesa_con_zona en su lugar."""
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.warning(self, "Obsoleto", "El método 'nueva_mesa' está obsoleto. Usa 'nueva_mesa_con_zona'.")
+        # No realiza ninguna acción
 
-    def nueva_mesa_con_zona(self, capacidad: int, zona: str):
-        """Crea una nueva mesa con parámetros específicos usando el controlador"""
+    def nueva_mesa_con_zona(self, numero: int, capacidad: int, zona: str):
+        """Crea una nueva mesa de forma robusta y global, asegurando consistencia en UI y datos."""
         try:
-            self.mesa_controller.crear_mesa(capacidad, zona)
-            logger.info(f"Mesa creada en zona '{zona}' con capacidad {capacidad}")
+            resultado = False
+            if hasattr(self, 'mesa_controller') and self.mesa_controller:
+                resultado = self.mesa_controller.crear_mesa_con_numero(numero, capacidad, zona) if hasattr(self.mesa_controller, 'crear_mesa_con_numero') else self.mesa_controller.crear_mesa(capacidad, zona)
+            elif hasattr(self, 'tpv_service') and self.tpv_service:
+                resultado = self.tpv_service.crear_mesa_con_numero(numero, capacidad, zona) if hasattr(self.tpv_service, 'crear_mesa_con_numero') else self.tpv_service.crear_mesa(capacidad, zona)
+            if resultado:
+                logger.info(f"Mesa creada en zona '{zona}' con número {numero} y capacidad {capacidad}")
+                # Emitir evento global para refrescar UI
+                mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
+                from PyQt6.QtWidgets import QMessageBox
+                QMessageBox.information(self, "Éxito", f"Mesa creada correctamente en zona '{zona}' con número {numero}")
+            else:
+                logger.warning(f"No se pudo crear la mesa en zona '{zona}' con número {numero}")
+                from PyQt6.QtWidgets import QMessageBox
+                QMessageBox.warning(self, "No se pudo crear", f"No se pudo crear la mesa en zona '{zona}' con número {numero}. Puede que ya exista o haya un error interno.")
         except Exception as e:
             logger.error(f"Error creando nueva mesa con zona: {e}")
+            from PyQt6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Error al crear mesa: {str(e)}")
 
     def eliminar_mesa(self, mesa_id: int):
-        """Elimina una mesa usando el controlador"""
+        """Elimina una mesa de forma robusta y global, asegurando consistencia en UI y datos."""
         try:
-            if self.mesa_controller.eliminar_mesa(mesa_id):
+            resultado = False
+            if hasattr(self, 'mesa_controller') and self.mesa_controller:
+                resultado = self.mesa_controller.eliminar_mesa(mesa_id)
+            elif hasattr(self, 'tpv_service') and self.tpv_service:
+                resultado = self.tpv_service.eliminar_mesa(mesa_id)
+            if resultado:
                 logger.info(f"Mesa {mesa_id} eliminada correctamente")
+                self.mesas = [m for m in self.mesas if m.id != mesa_id]
+                # Emitir evento global para refrescar UI
+                mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
+                from PyQt6.QtWidgets import QMessageBox
                 QMessageBox.information(self, "Éxito", "Mesa eliminada correctamente")
             else:
-                QMessageBox.warning(self, "Error", "No se pudo eliminar la mesa")
+                logger.warning(f"No se pudo eliminar la mesa {mesa_id}")
+                from PyQt6.QtWidgets import QMessageBox
+                QMessageBox.warning(self, "No se pudo eliminar", f"No se pudo eliminar la mesa {mesa_id}. Puede que esté ocupada o haya un error interno.")
         except Exception as e:
             logger.error(f"Error eliminando mesa: {e}")
-            QMessageBox.critical(self, "Error", f"Error al eliminar mesa: {str(e)}")
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.critical(self, "Error", f"Error eliminando mesa: {e}")
 
     def load_data(self):
         """Carga los datos iniciales usando el controlador"""

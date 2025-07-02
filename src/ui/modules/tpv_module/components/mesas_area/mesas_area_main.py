@@ -37,10 +37,9 @@ class MesasArea(QFrame):
         self.current_status_filter = "Todos"
         self.view_mode = "grid"
         self.setup_ui()
-        mesa_event_bus.mesas_actualizadas.connect(self._on_mesas_actualizadas)
 
-    def _on_mesas_actualizadas(self, mesas):
-        self.set_mesas(mesas)
+
+
 
     def setup_ui(self):
         self.setStyleSheet("""

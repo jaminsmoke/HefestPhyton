@@ -19,6 +19,7 @@ Breve descripción del propósito de la carpeta y su rol en la estructura del pr
 
 ```
 components/
+├── TabbedDialog.py               # Diálogo base con pestañas horizontales
 ├── hospitality_metric_card.py    # Tarjeta de métricas para hostelería
 ├── main_navigation_sidebar.py     # Barra lateral de navegación principal
 ├── user_selector.py              # Selector de usuario

@@ -1,6 +1,8 @@
-"""
-Servicio de gestión del Terminal Punto de Venta (TPV).
-"""
+
+
+
+
+# Servicio de gestión del Terminal Punto de Venta (TPV).
 
 import logging
 from typing import List, Dict, Optional, Any
@@ -162,6 +164,40 @@ class Factura:
 
 
 class TPVService(BaseService):
+
+    def update_mesa(self, mesa_actualizada: 'Mesa') -> bool:
+        """
+        Actualiza una mesa en la base de datos y en el caché global.
+        Emite eventos globales tras la persistencia para sincronización desacoplada.
+        """
+        from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+        try:
+            if not self.db_manager:
+                logger.warning("No hay conexión a base de datos para actualizar mesa")
+                return False
+            # Actualizar en base de datos (solo campos persistentes)
+            self.db_manager.execute(
+                """
+                UPDATE mesas SET numero = ?, zona = ?, estado = ?, capacidad = ?, notas = ? WHERE id = ?
+                """,
+                (mesa_actualizada.numero, mesa_actualizada.zona, mesa_actualizada.estado, mesa_actualizada.capacidad, mesa_actualizada.notas, mesa_actualizada.id)
+            )
+            # Actualizar en caché (incluye alias temporal y otros campos no persistentes)
+            for idx, mesa in enumerate(self._mesas_cache):
+                if mesa.id == mesa_actualizada.id:
+                    self._mesas_cache[idx] = mesa_actualizada
+                    break
+            print(f"[DEBUG TPVService] _mesas_cache al emitir: {[m.id for m in self._mesas_cache]}")
+            import traceback
+            print(f"[DEBUG TPVService] update_mesa: stack trace before emit:\n{''.join(traceback.format_stack(limit=5))}")
+            # Emisión global: mesa individual y lista completa
+            mesa_event_bus.mesa_actualizada.emit(mesa_actualizada)
+            mesa_event_bus.mesas_actualizadas.emit(self._mesas_cache.copy())
+            print(f"[DEBUG TPVService] update_mesa: emitido mesas_actualizadas con {len(self._mesas_cache)} mesas")
+            return True
+        except Exception as e:
+            logger.error(f"Error actualizando mesa: {e}")
+            return False
     """Servicio para la gestión del TPV"""
 
     def __init__(self, db_manager=None):
@@ -184,7 +220,9 @@ class TPVService(BaseService):
 
         if self.db_manager:
             self.logger.info("Intentando cargar datos del TPV desde base de datos")
+            print("[DEBUG TPVService] _load_datos: llamando a _load_mesas_from_db")
             self._load_mesas_from_db()
+            print(f"[DEBUG TPVService] _load_datos: después de _load_mesas_from_db, _mesas_cache tiene {len(self._mesas_cache)} mesas")
             self._load_categorias_from_db()
             self._load_productos_from_db()
             self._load_comandas_from_db()
@@ -193,6 +231,9 @@ class TPVService(BaseService):
             if self._mesas_cache or self._productos_cache:
                 data_loaded = True
                 self.logger.info("Datos cargados exitosamente desde base de datos")
+                # Emitir la señal global con la lista inicial de mesas
+                from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+                mesa_event_bus.mesas_actualizadas.emit(self._mesas_cache.copy())
 
         # Si no hay base de datos o no se cargaron datos, usar datos de prueba
         if not data_loaded:
@@ -201,6 +242,9 @@ class TPVService(BaseService):
             else:
                 self.logger.warning("TPVService inicializado SIN base de datos, usando datos de prueba")
             self._load_datos_prueba()
+            # Emitir la señal global con la lista inicial de mesas de prueba
+            from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+            mesa_event_bus.mesas_actualizadas.emit(self._mesas_cache.copy())
 
     def _load_mesas_from_db(self):
         """Carga las mesas desde la base de datos"""
@@ -209,6 +253,7 @@ class TPVService(BaseService):
             return
 
         try:
+            print("[DEBUG TPVService] _load_mesas_from_db llamado")
             result = self.db_manager.query("SELECT id, numero, zona, estado, capacidad FROM mesas")
             self._mesas_cache = []
             for row in result:
@@ -220,9 +265,11 @@ class TPVService(BaseService):
                     capacidad=row[4] or 4
                 )
                 self._mesas_cache.append(mesa)
+            print(f"[DEBUG TPVService] _load_mesas_from_db: {len(self._mesas_cache)} mesas cargadas")
             self.logger.info(f"Cargadas {len(self._mesas_cache)} mesas desde la base de datos")
         except Exception as e:
             self.logger.error(f"Error cargando mesas: {e}")
+            print(f"[DEBUG TPVService] _load_mesas_from_db: error {e}")
             self._mesas_cache = []
 
     def _load_categorias_from_db(self):
@@ -830,6 +877,10 @@ class TPVService(BaseService):
 
             self._mesas_cache.append(nueva_mesa)
             logger.info(f"Mesa {numero_mesa} creada correctamente en zona {zona} con ID {mesa_id}")
+
+            # Emitir evento global de mesas actualizadas
+            from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+            mesa_event_bus.mesas_actualizadas.emit(self._mesas_cache.copy())
 
             return nueva_mesa
 
