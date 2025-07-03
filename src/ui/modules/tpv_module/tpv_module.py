@@ -112,7 +112,10 @@ class TPVModule(BaseModule):
 
     def create_main_tabs(self, layout: QVBoxLayout):
         """Crea las pestañas principales usando componentes refactorizados"""
+        from PyQt6.QtWidgets import QSizePolicy
         self.tab_widget = QTabWidget()
+        # Forzar expansión horizontal del QTabWidget
+        self.tab_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.tab_widget.setStyleSheet("""
             QTabWidget::pane {
                 border: none;
@@ -148,23 +151,57 @@ class TPVModule(BaseModule):
         layout.addWidget(self.tab_widget, 1)
 
     def create_mesas_tab_refactored(self):
-        """Crea la pestaña de mesas con layout contextualizado y grid principal"""
-        mesas_widget = QWidget()
-        layout = QVBoxLayout(mesas_widget)
-        layout.setContentsMargins(16, 16, 16, 16)
-        layout.setSpacing(12)
+        """Crea la pestaña de mesas con layout contextualizado y grid principal (usa referencias globales, el layout interno es de MesasArea)"""
+        from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout
+        # Widget principal de la pestaña de mesas
+        self.mesas_widget = QWidget()
+        self.mesas_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        # Layout principal de la pestaña de mesas
+        self.mesas_layout = QVBoxLayout(self.mesas_widget)
+        self.mesas_layout.setContentsMargins(16, 16, 16, 16)
+        self.mesas_layout.setSpacing(12)
 
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
         self.mesas_area = MesasArea()
         self.mesas_area.eliminar_mesa_requested.connect(self.eliminar_mesa)
+        self.mesas_area.eliminar_mesas_requested.connect(self.eliminar_mesas)
         self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)
 
-        # El área de mesas ocupa todo el espacio disponible
-        layout.addWidget(self.mesas_area, 1)
+        # Añadir el widget MesasArea al layout de la pestaña
+        self.mesas_layout.addWidget(self.mesas_area)
 
-        # Ya no necesitamos el FiltersPanel separado - ahora está integrado en MesasArea
+        self.tab_widget.addTab(self.mesas_widget, "🍽️ Gestión de Mesas")
 
-        self.tab_widget.addTab(mesas_widget, "🍽️ Gestión de Mesas")
+    def eliminar_mesas(self, mesa_ids: list):
+        """Elimina varias mesas de forma robusta y global, asegurando consistencia en UI y datos."""
+        exitos = []
+        fallos = []
+        for mesa_id in mesa_ids:
+            try:
+                resultado = False
+                if hasattr(self, 'mesa_controller') and self.mesa_controller:
+                    resultado = self.mesa_controller.eliminar_mesa(mesa_id)
+                elif hasattr(self, 'tpv_service') and self.tpv_service:
+                    resultado = self.tpv_service.eliminar_mesa(mesa_id)
+                if resultado:
+                    exitos.append(mesa_id)
+                else:
+                    fallos.append(mesa_id)
+            except Exception as e:
+                fallos.append(mesa_id)
+        # Refrescar UI y mostrar mensaje
+        if exitos:
+            self.mesas = [m for m in self.mesas if m.id not in exitos]
+            if hasattr(self, 'tpv_service') and self.tpv_service:
+                from .mesa_event_bus import mesa_event_bus
+                mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.information(self, "Éxito", f"Mesas eliminadas correctamente: {', '.join(str(e) for e in exitos)}")
+        if fallos:
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "No se pudo eliminar", f"No se pudo eliminar alguna mesa: {', '.join(str(f) for f in fallos)}. Puede que estén ocupadas o haya un error interno.")
+        self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)
+        # Todo el manejo de layout y tab está ahora en self.mesas_layout y self.mesas_widget
 
     def create_reservas_agenda_tab(self):
         """Crea la pestaña de agenda de reservas"""

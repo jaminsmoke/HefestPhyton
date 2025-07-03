@@ -13,6 +13,7 @@ from services.tpv_service import Mesa, TPVService
 from ...mesa_event_bus import mesa_event_bus
 
 # Importar subcomponentes
+from .mesas_area_header import FiltersSectionUltraPremium
 from .mesas_area_header import create_header
 from .mesas_area_grid import create_scroll_area, populate_grid
 from .mesas_area_stats import update_stats_from_mesas
@@ -73,6 +74,7 @@ class MesasArea(QFrame):
     nueva_mesa_requested = pyqtSignal()
     nueva_mesa_con_zona_requested = pyqtSignal(int, int, str)
     eliminar_mesa_requested = pyqtSignal(int)
+    eliminar_mesas_requested = pyqtSignal(list)
 
     def __init__(self, tpv_service: Optional[TPVService] = None, parent=None):
         super().__init__(parent)
@@ -85,12 +87,16 @@ class MesasArea(QFrame):
         self.current_status_filter = "Todos"
         self.view_mode = "grid"
         self._chips_refs = []  # Referencias a chips de filtro rápido
+        # Forzar expansión horizontal
+        from PyQt6.QtWidgets import QSizePolicy
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.setup_ui()
 
 
 
 
     def setup_ui(self):
+        from PyQt6.QtWidgets import QSizePolicy
         self.setStyleSheet("""
             QFrame {
                 background-color: #ffffff;
@@ -102,10 +108,15 @@ class MesasArea(QFrame):
         container_layout = QVBoxLayout(self)
         container_layout.setContentsMargins(16, 16, 16, 16)
         container_layout.setSpacing(16)
+        # Forzar expansión horizontal del layout
+        from PyQt6.QtCore import Qt
+        container_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         # Header modularizado
         self.header = create_header(self, self, container_layout)
         # Área de scroll modularizada
-        create_scroll_area(self, container_layout)
+        scroll_area = create_scroll_area(self, container_layout)
+        # Forzar expansión horizontal del área de scroll
+        scroll_area.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def set_service(self, tpv_service: TPVService):
         self.tpv_service = tpv_service
@@ -117,6 +128,15 @@ class MesasArea(QFrame):
         else:
             restaurar_datos_temporales(self, mesas)
         self.mesas = mesas
+        # Buscar el widget de filtros en el header y actualizar chips de zona si existe
+        if hasattr(self, 'header'):
+            filtros = None
+            for child in self.header.findChildren(FiltersSectionUltraPremium):
+                if child.objectName() == "FiltersSectionUltraPremium":
+                    filtros = child
+                    break
+            if filtros and hasattr(filtros, 'update_zonas_chips'):
+                filtros.update_zonas_chips()
         self.sincronizar_reservas_en_mesas()
         self.update_filtered_mesas()
         populate_grid(self)
@@ -335,9 +355,10 @@ class MesasArea(QFrame):
         populate_grid(self)
 
     def _on_nueva_mesa_clicked(self):
-        """Maneja el click del botón Nueva Mesa con selección de zona"""
+        """Maneja el click del botón Nueva Mesa con nomenclatura correlativa por zona"""
         try:
             from PyQt6.QtWidgets import QInputDialog, QMessageBox
+            import re
             # Obtener zonas disponibles (dinámicamente de las mesas existentes + opciones estándar)
             zonas_existentes = set(mesa.zona for mesa in self.mesas if mesa.zona)
             zonas_estandar = {"Terraza", "Interior", "Privada", "Barra", "Principal", "Salon"}
@@ -352,70 +373,92 @@ class MesasArea(QFrame):
                 False
             )
             if ok and zona_seleccionada:
-                # Calcular el próximo número de mesa disponible
-                numeros_existentes = []
-                for mesa in self.mesas:
-                    if str(mesa.numero).isdigit():
-                        numeros_existentes.append(int(mesa.numero))
-                siguiente_numero = max(numeros_existentes, default=0) + 1
+                # Buscar mesas de la zona seleccionada
+                mesas_zona = [m for m in self.mesas if (getattr(m, 'zona', None) or '').lower() == zona_seleccionada.lower()]
+                max_num = 0
+                prefijo = ''
+                formato = '{{:02d}}'  # Por defecto dos dígitos
+                for mesa in mesas_zona:
+                    num = str(getattr(mesa, 'numero', ''))
+                    # Buscar prefijo y número (ej: T04, B12, etc)
+                    match = re.match(r'([A-Za-z]+)?(\d+)', num)
+                    if match:
+                        pref, n = match.groups()
+                        n = int(n)
+                        if n > max_num:
+                            max_num = n
+                            prefijo = pref or ''
+                            # Mantener formato de ceros a la izquierda
+                            if len(match.group(2)) > 1:
+                                formato = '{{:0{}d}}'.format(len(match.group(2)))
+                siguiente_numero = max_num + 1
+                nuevo_codigo = f"{prefijo}{formato.format(siguiente_numero)}" if prefijo else f"{formato.format(siguiente_numero)}"
                 respuesta = QMessageBox.question(
                     self,
                     "Confirmar Nueva Mesa",
                     f"¿Crear nueva mesa con los siguientes datos?\n\n"
                     f"📍 Zona: {zona_seleccionada}\n"
-                    f"🔢 Número: {siguiente_numero}\n"
+                    f"🔢 Número: {nuevo_codigo}\n"
                     f"👥 Capacidad: 4 personas\n\n"
                     f"Podrá modificar estos valores después de la creación.",
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.Yes
                 )
                 if respuesta == QMessageBox.StandardButton.Yes:
-                    self.nueva_mesa_con_zona_requested.emit(siguiente_numero, 4, zona_seleccionada)
+                    self.nueva_mesa_con_zona_requested.emit(nuevo_codigo, 4, zona_seleccionada)
         except Exception as e:
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Error al procesar la creación de mesa: {str(e)}")
 
     def _on_eliminar_mesa_clicked(self):
-        """Maneja el click del botón Eliminar Mesa"""
+        """Maneja el click del botón Eliminar Mesa (soporta selección múltiple)"""
         try:
-            from PyQt6.QtWidgets import QInputDialog, QMessageBox
+            from PyQt6.QtWidgets import QListWidget, QListWidgetItem, QDialog, QVBoxLayout, QDialogButtonBox, QMessageBox
             if not self.mesas:
                 QMessageBox.information(self, "Sin mesas", "No hay mesas disponibles para eliminar.")
                 return
-            opciones_mesas = []
-            mesas_disponibles = []
-            for mesa in self.mesas:
-                if getattr(mesa, 'estado', None) == "libre":
-                    texto_opcion = f"Mesa {mesa.numero} - {mesa.zona}"
-                    opciones_mesas.append(texto_opcion)
-                    mesas_disponibles.append(mesa)
-            if not opciones_mesas:
+            mesas_libres = [m for m in self.mesas if getattr(m, 'estado', None) == "libre"]
+            if not mesas_libres:
                 QMessageBox.information(
                     self,
                     "Sin mesas disponibles",
                     "No hay mesas libres disponibles para eliminar.\nSolo se pueden eliminar mesas que estén libres."
                 )
                 return
-            opcion_seleccionada, ok = QInputDialog.getItem(
-                self,
-                "Eliminar Mesa",
-                "Selecciona la mesa que deseas eliminar:",
-                opciones_mesas,
-                0,
-                False
-            )
-            if ok and opcion_seleccionada:
-                indice_seleccionado = opciones_mesas.index(opcion_seleccionada)
-                mesa_a_eliminar = mesas_disponibles[indice_seleccionado]
+            # Diálogo personalizado con QListWidget selección múltiple
+            dlg = QDialog(self)
+            dlg.setWindowTitle("Eliminar Mesas")
+            layout = QVBoxLayout(dlg)
+            list_widget = QListWidget()
+            list_widget.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+            for mesa in mesas_libres:
+                item = QListWidgetItem(f"Mesa {mesa.numero} - {mesa.zona}")
+                item.setData(32, mesa.id)
+                list_widget.addItem(item)
+            layout.addWidget(list_widget)
+            btn_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+            layout.addWidget(btn_box)
+            btn_box.accepted.connect(dlg.accept)
+            btn_box.rejected.connect(dlg.reject)
+            if dlg.exec() == QDialog.DialogCode.Accepted:
+                selected_items = list_widget.selectedItems()
+                if not selected_items:
+                    return
+                mesas_a_eliminar = [(item.text(), item.data(32)) for item in selected_items]
+                nombres = "\n".join([txt for txt, _ in mesas_a_eliminar])
                 respuesta = QMessageBox.question(
                     self,
                     "Confirmar eliminación",
-                    f"¿Estás seguro de que quieres eliminar la Mesa {mesa_a_eliminar.numero}?\nEsta acción no se puede deshacer.",
+                    f"¿Estás seguro de que quieres eliminar las siguientes mesas?\n\n{nombres}\n\nEsta acción no se puede deshacer.",
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     QMessageBox.StandardButton.No
                 )
                 if respuesta == QMessageBox.StandardButton.Yes:
-                    self.eliminar_mesa_requested.emit(mesa_a_eliminar.id)
+                    ids = [mid for _, mid in mesas_a_eliminar]
+                    if len(ids) == 1:
+                        self.eliminar_mesa_requested.emit(ids[0])
+                    else:
+                        self.eliminar_mesas_requested.emit(ids)
         except Exception as e:
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.critical(self, "Error", f"Error al procesar la eliminación de mesa: {str(e)}")
@@ -446,3 +489,22 @@ class MesasArea(QFrame):
     def sync_reservas(self, reserva_service):
         self.set_reserva_service(reserva_service)
         self.refresh_mesas()
+
+    def crear_zona(self, nombre_zona: str):
+        """Crea una nueva zona y actualiza la UI y chips de zonas."""
+        # Opcional: aquí podrías persistir en base de datos si es necesario
+        # Añadir la zona a una lista interna o forzar refresco de chips
+        if not hasattr(self, '_zonas_personalizadas'):
+            self._zonas_personalizadas = set()
+        self._zonas_personalizadas.add(nombre_zona)
+        # Forzar actualización de chips de zona en el header
+        if hasattr(self, 'header'):
+            for child in self.header.findChildren(FiltersSectionUltraPremium):
+                if hasattr(child, 'update_zonas_chips'):
+                    child.update_zonas_chips()
+        # Mensaje de confirmación visual
+        try:
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.information(self, "Zona creada", f"Zona '{nombre_zona}' creada correctamente.")
+        except Exception:
+            pass

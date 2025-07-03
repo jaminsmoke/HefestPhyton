@@ -1,11 +1,14 @@
+import sys
+import os
+from data.db_manager import DatabaseManager
+from ...mesa_event_bus import mesa_event_bus
 """
 mesas_area_header.py
 Componentes de header, filtros y estadísticas para MesasArea
 """
 
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QMenu
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction
+
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSizePolicy
 
 def create_title_section_ultra_premium():
     section = QFrame()
@@ -108,270 +111,518 @@ def create_ultra_premium_separator():
     sep.setStyleSheet("background: transparent; border: none;")
     return sep
 
-def create_filters_section_ultra_premium(instance):
-    from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QComboBox, QPushButton, QLineEdit, QMenu, QSizePolicy
-    from PyQt6.QtGui import QAction
-    from PyQt6.QtCore import Qt
-    section = QFrame()
-    section.setObjectName("FiltersSectionUltraPremium")
-    section.setStyleSheet("""
-        QFrame#FiltersSectionUltraPremium {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 #f0f9ff, stop:0.5 #e0f2fe, stop:1 #f0f9ff);
-            border: 1.5px solid #0ea5e9;
-            border-radius: 14px;
-            padding: 10px 14px 12px 14px;
-            margin: 4px;
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QMenu, QGridLayout, QSizePolicy
+from PyQt6.QtCore import Qt
+
+
+# --- NUEVA CLASE SOLO UI MODERNA DE CHIPS ---
+class FiltersSectionUltraPremium(QFrame):
+    def editar_zona(self):
+        from PyQt6.QtWidgets import QMessageBox, QInputDialog
+        zonas_db = [z for z in self.db.get_zonas() if z['nombre'] != "Todas"]
+        if not zonas_db:
+            QMessageBox.information(self, "Editar zona", "No hay zonas para editar.")
+            return
+        zonas_nombres = [z['nombre'] for z in zonas_db]
+        zona_a_editar, ok = QInputDialog.getItem(self, "Editar zona", "Selecciona la zona a editar:", zonas_nombres, 0, False)
+        if not (ok and zona_a_editar):
+            return
+        zona_obj = next((z for z in zonas_db if z['nombre'] == zona_a_editar), None)
+        if not zona_obj:
+            QMessageBox.critical(self, "Error", "No se encontró la zona en la base de datos.")
+            return
+        nuevo_nombre, ok2 = QInputDialog.getText(self, "Nuevo nombre", f"Nuevo nombre para la zona '{zona_a_editar}':")
+        if not (ok2 and nuevo_nombre):
+            return
+        nuevo_nombre = nuevo_nombre.strip()
+        if not nuevo_nombre:
+            QMessageBox.warning(self, "Nombre inválido", "El nombre de la zona no puede estar vacío.")
+            return
+        if any(z['nombre'] == nuevo_nombre for z in zonas_db):
+            QMessageBox.warning(self, "Duplicado", f"Ya existe una zona con el nombre '{nuevo_nombre}'.")
+            return
+        try:
+            self.db.update_zona_nombre(zona_obj['id'], nuevo_nombre)
+            mesa_event_bus.zonas_actualizadas.emit(self.db.get_zonas())
+            QMessageBox.information(self, "Zona editada", f"Zona '{zona_a_editar}' renombrada a '{nuevo_nombre}' correctamente.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"No se pudo editar la zona: {e}")
+    def eliminar_zona(self):
+        from PyQt6.QtWidgets import QMessageBox, QInputDialog
+        zonas_db = [z for z in self.db.get_zonas()]
+        zonas_nombres = [z['nombre'] for z in zonas_db if z['nombre'] != "Todas"]
+        if not zonas_nombres:
+            QMessageBox.information(self, "Eliminar zona", "No hay zonas para eliminar.")
+            return
+        zona_a_eliminar, ok = QInputDialog.getItem(self, "Eliminar zona", "Selecciona la zona a eliminar:", zonas_nombres, 0, False)
+        if ok and zona_a_eliminar:
+            # Verificar si hay mesas asociadas a la zona
+            mesas_asociadas = False
+            if hasattr(self.instance, 'mesas'):
+                mesas_asociadas = any(getattr(m, 'zona', None) == zona_a_eliminar for m in getattr(self.instance, 'mesas', []))
+            if mesas_asociadas:
+                QMessageBox.warning(self, "No permitido", f"No se puede eliminar la zona '{zona_a_eliminar}' porque tiene mesas asociadas.")
+                return
+            zona_obj = next((z for z in zonas_db if z['nombre'] == zona_a_eliminar), None)
+            if not zona_obj:
+                QMessageBox.critical(self, "Error", "No se encontró la zona en la base de datos.")
+                return
+            confirm = QMessageBox.question(self, "Confirmar eliminación", f"¿Seguro que deseas eliminar la zona '{zona_a_eliminar}'?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if confirm == QMessageBox.StandardButton.Yes:
+                try:
+                    self.db.delete_zona(zona_obj['id'])
+                    mesa_event_bus.zona_eliminada.emit(zona_obj['id'])
+                    mesa_event_bus.zonas_actualizadas.emit(self.db.get_zonas())
+                    QMessageBox.information(self, "Zona eliminada", f"Zona '{zona_a_eliminar}' eliminada correctamente.")
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", f"No se pudo eliminar la zona: {e}")
+    def __init__(self, instance):
+        super().__init__()
+        self.setObjectName("FiltersSectionUltraPremium")
+        self.setStyleSheet("""
+            QFrame#FiltersSectionUltraPremium {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #f0f9ff, stop:0.5 #e0f2fe, stop:1 #f0f9ff);
+                border: 1.5px solid #0ea5e9;
+                border-radius: 14px;
+                padding: 6px 0px 8px 0px; /* Padding mínimo */
+                margin: 2px;
+                min-width: 420px;
+                min-height: 200px;
+            }
+        """)
+        self.db = DatabaseManager()
+        mesa_event_bus.zonas_actualizadas.connect(self.update_zonas_chips)
+        # Permitir expansión horizontal total (sin máximo)
+        from PyQt6.QtWidgets import QSizePolicy
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+        main_hbox = QHBoxLayout(self)
+        main_hbox.setContentsMargins(0, 0, 0, 0)  # Sin margen extra
+        main_hbox.setSpacing(2)  # Espacio mínimo entre subcontenedores
+
+        # --- Subcontenedor de Estados ---
+        subcontenedor_estados = QFrame()
+        subcontenedor_estados.setObjectName("SubcontenedorEstados")
+        subcontenedor_estados.setStyleSheet("""
+            QFrame#SubcontenedorEstados {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f1f5f9, stop:1 #e0e7ef);
+                border: 1.2px dashed #38bdf8;
+                border-radius: 8px;
+                min-width: 0px;
+                min-height: 90px;
+            }
+        """)
+        subcontenedor_estados.setMinimumHeight(90)
+        subcontenedor_estados.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        right_vbox = QVBoxLayout(subcontenedor_estados)
+        right_vbox.setContentsMargins(0, 0, 0, 8)  # Padding inferior estándar para estados
+        right_vbox.setSpacing(5)
+        estados_title = QLabel("Estados")
+        estados_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        estados_title.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: 800;
+                color: #fff;
+                letter-spacing: 0.5px;
+                padding: 0px 0 6px 0;
+                min-width: 0px;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0ea5e9, stop:1 #38bdf8);
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                border-bottom-left-radius: 0px;
+                border-bottom-right-radius: 0px;
+                border: none;
+                margin: 0px;
+            }
+        """)
+        right_vbox.addWidget(estados_title, alignment=Qt.AlignmentFlag.AlignTop)
+        chips_container = QFrame()
+        chips_container.setObjectName("ChipsEstadosContainer")
+        chips_container.setStyleSheet("QFrame#ChipsEstadosContainer { background: transparent; border: none; min-width: 0px; padding-left: 0px; padding-right: 0px; }")
+        chips_layout = QVBoxLayout(chips_container)
+        chips_layout.setSpacing(6)
+        chips_layout.setContentsMargins(0, 0, 0, 0)
+        self.estado_chips = []
+        estados = [
+            ("Todos", "#64748b"),
+            ("Libre", "#22c55e"),
+            ("Ocupada", "#ef4444"),
+            ("Reservada", "#f59e0b")
+        ]
+        def on_chip_clicked_factory(estado):
+            def handler():
+                self.set_estado_chip_selected(estado)
+                if hasattr(instance, '_on_status_changed'):
+                    instance._on_status_changed(estado)
+            return handler
+        for nombre, color in estados:
+            btn = QPushButton(nombre)
+            btn.setCheckable(True)
+            btn.setStyleSheet(f'''
+                QPushButton {{
+                    background: #fff;
+                    color: {color};
+                    border: 1.2px solid {color};
+                    border-radius: 14px;
+                    padding: 2px 8px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    min-width: 0px;
+                    min-height: 22px;
+                    text-align: center;
+                }}
+                QPushButton:checked {{
+                    background: {color};
+                    color: #fff;
+                    border: 2px solid {color};
+                }}
+            ''')
+            btn.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+            chips_layout.addWidget(btn)
+            btn.clicked.connect(on_chip_clicked_factory(nombre))
+            self.estado_chips.append(btn)
+        right_vbox.addWidget(chips_container, alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.set_estado_chip_selected("Todos")
+        right_vbox.addLayout(chips_layout)
+        right_vbox.addStretch(1)
+        main_hbox.addWidget(subcontenedor_estados)
+
+        # --- Subcontenedor de Zonas ---
+        subcontenedor_zonas = QFrame()
+        subcontenedor_zonas.setObjectName("SubcontenedorZonas")
+        subcontenedor_zonas.setStyleSheet("""
+            QFrame#SubcontenedorZonas {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f1f5f9, stop:1 #e0e7ef);
+                border: 1.2px dashed #38bdf8;
+                border-radius: 8px;
+                min-width: 0px;
+                min-height: 90px;
+            }
+        """)
+        subcontenedor_zonas.setMinimumHeight(90)
+        subcontenedor_zonas.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        zonas_vbox = QVBoxLayout(subcontenedor_zonas)
+        zonas_vbox.setContentsMargins(0, 0, 0, 20)  # Aumentar padding inferior para igualar altura visual
+        zonas_vbox.setSpacing(5)
+        zonas_title = QLabel("Zonas")
+        zonas_title.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        zonas_title.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: 800;
+                color: #fff;
+                letter-spacing: 0.5px;
+                padding: 0px 0 6px 0;
+                min-width: 0px;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #38bdf8, stop:1 #0ea5e9);
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                border-bottom-left-radius: 0px;
+                border-bottom-right-radius: 0px;
+                border: none;
+                margin: 0px;
+            }
+        """)
+        zonas_vbox.addWidget(zonas_title, alignment=Qt.AlignmentFlag.AlignTop)
+        self.chips_zonas_container = QFrame()
+        self.chips_zonas_container.setObjectName("ChipsZonasContainer")
+        self.chips_zonas_container.setStyleSheet("QFrame#ChipsZonasContainer { background: transparent; border: none; min-width: 0px; padding: 0; }")
+        from PyQt6.QtWidgets import QSizePolicy as QSP
+        self.chips_zonas_container.setSizePolicy(QSP.Policy.Minimum, QSP.Policy.Fixed)
+        self.chips_zonas_layout = QGridLayout(self.chips_zonas_container)
+        self.chips_zonas_layout.setSpacing(8)
+        self.chips_zonas_layout.setContentsMargins(0, 0, 0, 0)
+        self.zonas_chips = []
+        zonas_vbox.addWidget(self.chips_zonas_container)
+        zonas_vbox.addStretch(1)
+        main_hbox.addWidget(subcontenedor_zonas)
+
+        # --- Subcontenedor de Búsqueda/Acción (a la derecha de Zonas) ---
+        subcontenedor_busqueda_accion = QFrame()
+        subcontenedor_busqueda_accion.setObjectName("SubcontenedorBusquedaAccion")
+        subcontenedor_busqueda_accion.setStyleSheet("""
+            QFrame#SubcontenedorBusquedaAccion {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f1f5f9, stop:1 #e0e7ef);
+                border: 1.2px dashed #38bdf8;
+                border-radius: 8px;
+                min-width: 0px;
+                min-height: 90px;
+            }
+        """)
+        subcontenedor_busqueda_accion.setMinimumHeight(90)
+        subcontenedor_busqueda_accion.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        subcontenedor_busqueda_accion.setMaximumWidth(700)  # Limita el ancho máximo del contenedor de gestión
+        # Layout vertical para varias filas de botones
+        busqueda_accion_vbox = QVBoxLayout(subcontenedor_busqueda_accion)
+        busqueda_accion_vbox.setContentsMargins(0, 0, 0, 20)
+        busqueda_accion_vbox.setSpacing(6)
+        # Título arriba
+        busqueda_accion_title = QLabel("Gestión")
+        busqueda_accion_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        busqueda_accion_title.setStyleSheet("""
+            QLabel {
+                font-size: 18px;
+                font-weight: 800;
+                color: #fff;
+                letter-spacing: 0.5px;
+                padding: 0px 0 6px 0;
+                min-width: 0px;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0ea5e9, stop:1 #38bdf8);
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+                border-bottom-left-radius: 0px;
+                border-bottom-right-radius: 0px;
+                border: none;
+                margin: 0px;
+            }
+        """)
+        busqueda_accion_vbox.addWidget(busqueda_accion_title)
+
+        # Botones de gestión divididos en 3 filas
+        gestion_buttons = [
+            {"text": "Nueva Mesa", "icon": "➕🍽️", "tooltip": "Crear nueva mesa"},
+            {"text": "Eliminar Mesa", "icon": "🗑️🍽️", "tooltip": "Eliminar mesa seleccionada"},
+            {"text": "Nueva Zona", "icon": "➕📍", "tooltip": "Crear nueva zona"},
+            {"text": "Eliminar Zona", "icon": "🗑️📍", "tooltip": "Eliminar zona seleccionada"},
+            {"text": "Editar Zona", "icon": "✏️📍", "tooltip": "Editar zona seleccionada"},
+            {"text": "Refrescar Estado", "icon": "🔄", "tooltip": "Refrescar estado de mesas y zonas"},
+            {"text": "Ver Historial", "icon": "📜", "tooltip": "Ver historial de cambios"},
+            {"text": "Mover Comanda de Mesa", "icon": "🔀🧾", "tooltip": "Mover comanda de una mesa a otra (próximamente)"},
+        ]
+        filas = [
+            gestion_buttons[0:3],  # Nueva Mesa, Eliminar Mesa, Nueva Zona
+            gestion_buttons[3:6],  # Eliminar Zona, Editar Zona, Refrescar Estado
+            gestion_buttons[6:8],  # Ver Historial, Mover Comanda de Mesa
+        ]
+        self.gestion_btns = []
+        for fila in filas:
+            fila_hbox = QHBoxLayout()
+            fila_hbox.setSpacing(6)
+            for btn_info in fila:
+                # Ajuste especial para los botones de zona (emoji más pequeño)
+                if btn_info['text'] in ["Nueva Zona", "Eliminar Zona"]:
+                    btn = QPushButton(f"{btn_info['icon']} {btn_info['text']}")
+                    btn.setToolTip(btn_info["tooltip"])
+                    btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                    btn.setStyleSheet('''
+                        QPushButton {
+                            background: #f1f5f9;
+                            color: #0ea5e9;
+                            border: 1.2px solid #38bdf8;
+                            border-radius: 8px;
+                            padding: 2px 7px;
+                            font-size: 10px; /* Más pequeño solo para zona */
+                            font-weight: 600;
+                            min-width: 0px;
+                            min-height: 22px;
+                        }
+                        QPushButton:hover {
+                            background: #e0e7ef;
+                            color: #0284c7;
+                            border: 1.5px solid #0ea5e9;
+                        }
+                    ''')
+                    btn.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+                else:
+                    btn = QPushButton(f"{btn_info['icon']} {btn_info['text']}")
+                    btn.setToolTip(btn_info["tooltip"])
+                    btn.setCursor(Qt.CursorShape.PointingHandCursor)
+                    btn.setStyleSheet('''
+                        QPushButton {
+                            background: #f1f5f9;
+                            color: #0ea5e9;
+                            border: 1.2px solid #38bdf8;
+                            border-radius: 8px;
+                            padding: 2px 7px;
+                            font-size: 12px;
+                            font-weight: 600;
+                            min-width: 0px;
+                            min-height: 22px;
+                        }
+                        QPushButton:hover {
+                            background: #e0e7ef;
+                            color: #0284c7;
+                            border: 1.5px solid #0ea5e9;
+                        }
+                    ''')
+                    btn.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+                fila_hbox.addWidget(btn)
+                self.gestion_btns.append(btn)
+            fila_hbox.addStretch(1)
+            busqueda_accion_vbox.addLayout(fila_hbox)
+
+        # Lógica de creación de zona para el botón 'Nueva Zona'
+        def crear_nueva_zona():
+            from PyQt6.QtWidgets import QInputDialog, QMessageBox
+            zonas_db = [z['nombre'] for z in self.db.get_zonas()]
+            nueva_zona, ok = QInputDialog.getText(self, "Crear nueva zona", "Nombre de la nueva zona:")
+            if ok and nueva_zona:
+                nueva_zona = nueva_zona.strip()
+                if not nueva_zona:
+                    QMessageBox.warning(self, "Zona inválida", "El nombre de la zona no puede estar vacío.")
+                    return
+                if nueva_zona in zonas_db:
+                    QMessageBox.warning(self, "Zona duplicada", f"La zona '{nueva_zona}' ya existe.")
+                    return
+                try:
+                    self.db.create_zona(nueva_zona)
+                    mesa_event_bus.zona_creada.emit({'nombre': nueva_zona})
+                    mesa_event_bus.zonas_actualizadas.emit(self.db.get_zonas())
+                    QMessageBox.information(self, "Zona creada", f"Zona '{nueva_zona}' creada correctamente.")
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", f"No se pudo crear la zona: {e}")
+
+        # Conectar el botón 'Nueva Zona' a la función
+        for btn in self.gestion_btns:
+            if btn.text().endswith('Nueva Zona'):
+                btn.clicked.connect(crear_nueva_zona)
+            if btn.text().endswith('Eliminar Zona'):
+                try:
+                    btn.clicked.disconnect()
+                except Exception:
+                    pass
+                btn.clicked.connect(self.eliminar_zona)
+            if btn.text().endswith('Editar Zona'):
+                try:
+                    btn.clicked.disconnect()
+                except Exception:
+                    pass
+                btn.clicked.connect(self.editar_zona)
+
+        # Fila 4: Barra de búsqueda avanzada
+        from PyQt6.QtWidgets import QLineEdit
+        search_line = QLineEdit()
+        search_line.setPlaceholderText("Buscar mesa, zona o alias...")
+        search_line.setClearButtonEnabled(True)
+        search_line.setStyleSheet('''
+            QLineEdit {
+                background: #fff;
+                border: 1.5px solid #38bdf8;
+                border-radius: 8px;
+                padding: 0px 0px 0px 0px;
+                font-size: 14px;
+                color: #0ea5e9;
+                margin-top: 1px;
+                margin-bottom: 0px;
+                min-height: 22px;
+            }
+            QLineEdit:focus {
+                border: 2px solid #0ea5e9;
+                background: #f0f9ff;
+            }
+        ''')
+        # Forzar expansión horizontal máxima de la barra de búsqueda
+        search_line.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        # Conectar búsqueda avanzada
+        if hasattr(instance, '_on_search_changed'):
+            search_line.textChanged.connect(instance._on_search_changed)
+        # Guardar referencia para acceso externo
+        self.search_input = search_line
+        if hasattr(instance, 'set_search_input'):
+            instance.set_search_input(search_line)
+        busqueda_accion_vbox.addWidget(search_line)
+        busqueda_accion_vbox.addStretch(1)
+        main_hbox.addWidget(subcontenedor_busqueda_accion)
+
+        # Añadir un espacio expansivo al final para forzar alineación a la izquierda
+        from PyQt6.QtWidgets import QSpacerItem, QSizePolicy as QSP
+        main_hbox.addSpacerItem(QSpacerItem(0, 0, QSP.Policy.Expanding, QSP.Policy.Minimum))
+        self.instance = instance
+
+        # --- Conexión lógica de botones de acción ---
+        # Asume que 'instance' es MesasArea y tiene los métodos _on_nueva_mesa_clicked, _on_eliminar_mesa_clicked, etc.
+        btn_map = {
+            'Nueva Mesa': '_on_nueva_mesa_clicked',
+            'Eliminar Mesa': '_on_eliminar_mesa_clicked',
+            # TODO: Añadir aquí los métodos para los otros botones cuando estén implementados
+            # 'Nueva Zona': '_on_nueva_zona_clicked',
+            # 'Eliminar Zona': '_on_eliminar_zona_clicked',
+            # 'Editar Zona': '_on_editar_zona_clicked',
+            # 'Refrescar Estado': '_on_refrescar_estado_clicked',
+            # 'Ver Historial': '_on_ver_historial_clicked',
+            # 'Mover Comanda de Mesa': '_on_mover_comanda_clicked',
         }
-    """)
-    layout = QVBoxLayout(section)
-    layout.setContentsMargins(6, 2, 6, 2)
-    layout.setSpacing(4)
-    header_layout = QHBoxLayout()
-    header_layout.setContentsMargins(0, 0, 0, 0)
-    header_layout.setSpacing(0)
-    section_title = QLabel("🔍 Filtros y Control")
-    section_title.setStyleSheet("""
-        QLabel {
-            font-size: 12px;
-            font-weight: bold;
-            color: #0369a1;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 #dbeafe, stop:1 #bfdbfe);
-            border: 1px solid #93c5fd;
-            border-radius: 8px;
-            padding: 5px 14px;
-            margin: 0px;
-            letter-spacing: 0.5px;
-        }
-    """)
-    header_layout.addWidget(section_title)
-    header_layout.addStretch(1)
-    layout.addLayout(header_layout)
-    # --- Nuevo layout tipo grid para filtros y controles ---
-    grid = QGridLayout()
-    grid.setContentsMargins(0, 0, 0, 0)
-    grid.setHorizontalSpacing(16)
-    grid.setVerticalSpacing(2)
-    # Etiquetas elegantes con icono
-    search_label = QLabel("<span style='font-size:12px;'>🔎</span> <span style='font-size:11px;font-weight:600;'>Buscar</span>")
-    search_label.setStyleSheet("""
-        QLabel {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e0f2fe, stop:1 #bae6fd);
-            border: 1px solid #38bdf8;
-            border-radius: 8px;
-            padding: 3px 14px 3px 10px;
-            color: #0369a1;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin-bottom: 2px;
-            min-width: 60px;
-        }
-    """)
-    zone_label = QLabel("<span style='font-size:12px;'>🗺️</span> <span style='font-size:11px;font-weight:600;'>Zona</span>")
-    zone_label.setStyleSheet("""
-        QLabel {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e0f2fe, stop:1 #bae6fd);
-            border: 1px solid #38bdf8;
-            border-radius: 8px;
-            padding: 3px 14px 3px 10px;
-            color: #0369a1;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin-bottom: 2px;
-            min-width: 50px;
-        }
-    """)
-    status_label = QLabel("<span style='font-size:12px;'>📊</span> <span style='font-size:11px;font-weight:600;'>Estado</span>")
-    status_label.setStyleSheet("""
-        QLabel {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #e0f2fe, stop:1 #bae6fd);
-            border: 1px solid #38bdf8;
-            border-radius: 8px;
-            padding: 3px 14px 3px 10px;
-            color: #0369a1;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin-bottom: 2px;
-            min-width: 50px;
-        }
-    """)
-    # Campos
-    search_input = QLineEdit()
-    search_input.setPlaceholderText("Buscar mesa o zona...")
-    search_input.setMinimumWidth(0)
-    search_input.setMaximumWidth(16777215)
-    search_input.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-    search_input.setStyleSheet("""
-        QLineEdit {
-            border: 1.5px solid #38bdf8;
-            border-radius: 7px;
-            padding: 6px 10px;
-            font-size: 12px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f0f9ff, stop:1 #e0f2fe);
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        QLineEdit:focus {
-            border-color: #2563eb;
-            background: #f8fafc;
-        }
-    """)
-    search_input.textChanged.connect(instance._on_search_changed)
-    instance.set_search_input(search_input)
-    zone_combo = QComboBox()
-    zone_combo.addItems(["Todas", "Terraza", "Interior", "Privada", "Barra"])
-    zone_combo.setFixedWidth(100)
-    zone_combo.setStyleSheet("""
-        QComboBox {
-            border: 1.5px solid #38bdf8;
-            border-radius: 7px;
-            padding: 6px 10px;
-            font-size: 12px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f0f9ff, stop:1 #e0f2fe);
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        QComboBox:focus {
-            border-color: #2563eb;
-            background: #f8fafc;
-        }
-        QComboBox::drop-down {
-            border: none;
-            width: 20px;
-            background: #f1f5f9;
-            border-top-right-radius: 7px;
-            border-bottom-right-radius: 7px;
-        }
-        QComboBox::down-arrow {
-            image: none;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 6px solid #0ea5e9;
-            margin-right: 4px;
-        }
-    """)
-    zone_combo.currentTextChanged.connect(instance._on_zone_changed)
-    instance.set_zone_combo(zone_combo)
-    status_combo = QComboBox()
-    status_combo.addItems(["Todos", "Libre", "Ocupada", "Reservada"])
-    status_combo.setFixedWidth(100)
-    status_combo.setStyleSheet("""
-        QComboBox {
-            border: 1.5px solid #38bdf8;
-            border-radius: 7px;
-            padding: 6px 10px;
-            font-size: 12px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f0f9ff, stop:1 #e0f2fe);
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        QComboBox:focus {
-            border-color: #2563eb;
-            background: #f8fafc;
-        }
-        QComboBox::drop-down {
-            border: none;
-            width: 20px;
-            background: #f1f5f9;
-            border-top-right-radius: 7px;
-            border-bottom-right-radius: 7px;
-        }
-        QComboBox::down-arrow {
-            image: none;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 6px solid #0ea5e9;
-            margin-right: 4px;
-        }
-    """)
-    status_combo.currentTextChanged.connect(instance._on_status_changed)
-    instance.set_status_combo(status_combo)
-    # Botón Gestionar
-    acciones_btn = QPushButton("Gestionar ▼")
-    acciones_btn.setFixedWidth(110)
-    acciones_btn.setStyleSheet("""
-        QPushButton {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #10b981, stop:1 #059669);
-            color: white;
-            border: 1.5px solid #047857;
-            border-radius: 7px;
-            padding: 7px 10px;
-            font-size: 12px;
-            font-weight: bold;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            text-align: left;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #059669, stop:1 #047857);
-        }
-    """)
-    menu_acciones = QMenu(acciones_btn)
-    menu_acciones.setStyleSheet("""
-        QMenu {
-            background-color: white;
-            border: 2px solid #10b981;
-            border-radius: 8px;
-            padding: 4px;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 12px;
-        }
-        QMenu::item {
-            background-color: transparent;
-            padding: 8px 16px;
-            margin: 2px;
-            border-radius: 4px;
-            color: #374151;
-        }
-        QMenu::item:selected {
-            background-color: #10b981;
-            color: white;
-        }
-    """)
-    accion_nueva = QAction("➕ Nueva Mesa", menu_acciones)
-    accion_nueva.setToolTip("Crear una nueva mesa")
-    accion_nueva.triggered.connect(instance._on_nueva_mesa_clicked)
-    menu_acciones.addAction(accion_nueva)
-    menu_acciones.addSeparator()
-    accion_eliminar = QAction("🗑️ Eliminar Mesa", menu_acciones)
-    accion_eliminar.setToolTip("Eliminar una mesa existente")
-    accion_eliminar.triggered.connect(instance._on_eliminar_mesa_clicked)
-    menu_acciones.addAction(accion_eliminar)
-    acciones_btn.setMenu(menu_acciones)
-    # Botón Refrescar
-    refresh_btn = QPushButton("⟳")
-    refresh_btn.setFixedSize(36, 32)
-    refresh_btn.setStyleSheet("""
-        QPushButton {
-            border: 1.5px solid #60a5fa;
-            border-radius: 7px;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f0f9ff, stop:1 #e0f2fe);
-            font-size: 16px;
-            color: #2563eb;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: #e0f2fe;
-            border-color: #2563eb;
-        }
-    """)
-    refresh_btn.clicked.connect(instance.refresh_mesas)
-    refresh_btn.setToolTip("Actualizar vista de mesas")
-    # --- Añadir al grid ---
-    # Etiquetas en la fila 0
-    grid.addWidget(search_label, 0, 0)
-    grid.addWidget(zone_label, 0, 1)
-    grid.addWidget(status_label, 0, 2)
-    # Campos en la fila 1
-    grid.addWidget(search_input, 1, 0)
-    grid.addWidget(zone_combo, 1, 1)
-    grid.addWidget(status_combo, 1, 2)
-    grid.addWidget(acciones_btn, 1, 3)
-    grid.addWidget(refresh_btn, 1, 4)
-    grid.setColumnStretch(0, 6)
-    grid.setColumnStretch(1, 1)
-    grid.setColumnStretch(2, 1)
-    grid.setColumnStretch(3, 0)
-    grid.setColumnStretch(4, 0)
-    layout.addLayout(grid)
-    return section
+        for btn in self.gestion_btns:
+            for key, method in btn_map.items():
+                if key in btn.text() and hasattr(self.instance, method):
+                    btn.clicked.connect(getattr(self.instance, method))
+
+        self.update_zonas_chips()
+
+    def set_estado_chip_selected(self, selected_estado):
+        for btn in self.estado_chips:
+            btn.setChecked(btn.text() == selected_estado)
+
+    def set_zona_chip_selected(self, selected_zona):
+        for btn in self.zonas_chips:
+            btn.setChecked(btn.text() == selected_zona)
+        if hasattr(self.instance, '_on_zone_changed'):
+            self.instance._on_zone_changed(selected_zona)
+
+    def update_zonas_chips(self):
+        # Elimina los chips actuales
+        for i in reversed(range(self.chips_zonas_layout.count())):
+            item = self.chips_zonas_layout.itemAt(i)
+            widget = item.widget() if item is not None else None
+            if widget is not None:
+                widget.setParent(None)
+        self.zonas_chips.clear()
+        zonas_actuales = [z['nombre'] for z in self.db.get_zonas()]
+        zonas_actuales = ["Todas"] + sorted(zonas_actuales)
+        def on_zona_chip_clicked_factory(zona):
+            def handler():
+                self.set_zona_chip_selected(zona)
+            return handler
+        # --- Organización en columnas ---
+        max_filas = 3  # Menos elementos por columna para evitar solapamiento
+        col = 0
+        fila = 0
+        for idx, nombre in enumerate(zonas_actuales):
+            btn = QPushButton(nombre)
+            btn.setCheckable(True)
+            btn.setStyleSheet(f'''
+                QPushButton {{
+                    background: #fff;
+                    color: #0ea5e9;
+                    border: 1.2px solid #0ea5e9;
+                    border-radius: 14px;
+                    padding: 2px 8px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    min-width: 0px;
+                    min-height: 28px;
+                    text-align: center;
+                }}
+                QPushButton:checked {{
+                    background: #0ea5e9;
+                    color: #fff;
+                    border: 2px solid #0ea5e9;
+                }}
+            ''')
+            btn.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+            self.chips_zonas_layout.addWidget(btn, fila, col)
+            btn.clicked.connect(on_zona_chip_clicked_factory(nombre))
+            self.zonas_chips.append(btn)
+            fila += 1
+            if fila >= max_filas:
+                fila = 0
+                col += 1
+        self.set_zona_chip_selected("Todas")
+
+    def get_zonas_from_instance(self):
+        zonas_unicas = set()
+        if hasattr(self.instance, 'mesas') and self.instance.mesas:
+            for mesa in self.instance.mesas:
+                if hasattr(mesa, 'zona') and mesa.zona:
+                    zonas_unicas.add(mesa.zona)
+        # Incluir zonas personalizadas aunque no haya mesas asociadas
+        if hasattr(self.instance, '_zonas_personalizadas'):
+            zonas_unicas.update(self.instance._zonas_personalizadas)
+        return ["Todas"] + sorted(zonas_unicas)
 
 def create_stats_section_ultra_premium(instance):
-    from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QGridLayout
+    # Imports locales eliminados (ya están al inicio del archivo)
     section = QFrame()
     section.setObjectName("StatsSectionUltraPremium")
     section.setStyleSheet("""
@@ -380,9 +631,9 @@ def create_stats_section_ultra_premium(instance):
                 stop:0 #fef7ff, stop:0.5 #fdf4ff, stop:1 #fef7ff);
             border: 1.5px solid #d946ef;
             border-radius: 14px;
-            padding: 2px 8px 32px 8px; /* Más padding inferior */
+            padding: 2px 8px 8px 8px; /* Menos padding inferior */
             margin: 2px 0 8px 0;
-            min-height: 160px; /* Más alto para igualar azul */
+            min-height: 32px; /* Ajuste altura chip rosa (zonas) */
         }
     """)
     layout = QVBoxLayout(section)
@@ -413,8 +664,7 @@ def create_stats_section_ultra_premium(instance):
     return section
 
 def create_ultra_premium_stat(icon: str, label: str, value: str, color: str, bg_color: str, size: int = 80, height: int = 80):
-    from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
-    from PyQt6.QtCore import Qt
+    # Imports locales eliminados (ya están al inicio del archivo)
     stat_widget = QFrame()
     stat_widget.setFixedSize(size, height)
     stat_widget.setStyleSheet(f"""
@@ -470,7 +720,7 @@ def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, rese
             widget.repaint()
 
 def create_header(parent, instance, layout):
-    from PyQt6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QSizePolicy
+    # Imports locales eliminados (ya están al inicio del archivo)
     # Contenedor principal del header
     header_container = QFrame()
     header_container.setObjectName("HeaderContainerUltraPremium")
@@ -489,29 +739,43 @@ def create_header(parent, instance, layout):
         }
     """)
     header_layout = QHBoxLayout(header_container)
-    header_layout.setContentsMargins(24, 16, 24, 16)
-    header_layout.setSpacing(8)  # Reducir el spacing entre azul y rosa
+    header_layout.setContentsMargins(8, 6, 8, 6)  # Márgenes más pequeños
+    header_layout.setSpacing(4)  # Menos espacio entre subcontenedores
     # Sección izquierda: solo título y estado
-    left_section = QVBoxLayout()
-    left_section.setSpacing(8)
+    from PyQt6.QtWidgets import QSizePolicy, QWidget
+    left_section_widget = QWidget()
+    left_section_layout = QVBoxLayout(left_section_widget)
+    left_section_layout.setSpacing(8)
     title_status_container = create_title_section_ultra_premium()
-    left_section.addWidget(title_status_container)
-    header_layout.addLayout(left_section, 0)
+    left_section_layout.addWidget(title_status_container)
+    left_section_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+    header_layout.addWidget(left_section_widget, 0)
     # Separador
     separator1 = create_ultra_premium_separator()
     header_layout.addWidget(separator1, 0)
-    # Sección central: filtros y control
-    filters_container = create_filters_section_ultra_premium(instance)
+    # Sección central: filtros y control (solo UI moderna de chips)
+    filters_container = FiltersSectionUltraPremium(instance)
+    # Permitir expansión máxima horizontal del header (aunque requiera scroll)
     filters_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-    header_layout.addWidget(filters_container, 4)  # Más stretch para el azul
+    # Ajuste: sin stretch para el contenedor azul, solo expansión natural
+    header_layout.addWidget(filters_container)  # Sin stretch
     # Separador
     separator2 = create_ultra_premium_separator()
     header_layout.addWidget(separator2, 0)
     # Sección derecha: estadísticas premium
-    right_section = QVBoxLayout()
-    right_section.setSpacing(8)
+    right_section_widget = QWidget()
+    right_section_widget.setMinimumWidth(320)
+    right_section_layout = QVBoxLayout(right_section_widget)
+    right_section_layout.setSpacing(8)
     stats_container = create_stats_section_ultra_premium(instance)
-    right_section.addWidget(stats_container)
-    header_layout.addLayout(right_section, 2)  # Menos stretch para el rosa
+    right_section_layout.addWidget(stats_container)
+    right_section_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+    header_layout.addWidget(right_section_widget, 2)  # Menos stretch para el rosa
+    # El header debe expandirse horizontalmente según el contenido
+    # Eliminar min-width global, solo policies expansivas
+    header_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
     layout.addWidget(header_container)
     return header_container
+
+# Export explícito para el import en mesas_area_main
+__all__ = ["create_header", "FiltersSectionUltraPremium"]

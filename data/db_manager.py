@@ -3,6 +3,42 @@ from contextlib import contextmanager
 import os
 
 class DatabaseManager:
+    def update_zona_nombre(self, zona_id, nuevo_nombre):
+        """Actualiza el nombre de una zona y todas las mesas asociadas a esa zona."""
+        # Obtener el nombre actual de la zona
+        zona = self.get_by_id('zonas', zona_id)
+        if not zona:
+            return False
+        nombre_anterior = zona['nombre']
+        # Actualizar el nombre en la tabla zonas
+        self.execute("UPDATE zonas SET nombre = ? WHERE id = ?", (nuevo_nombre, zona_id))
+        # Actualizar todas las mesas que tengan esa zona
+        self.execute("UPDATE mesas SET zona = ? WHERE zona = ?", (nuevo_nombre, nombre_anterior))
+        return True
+    def sync_zonas_from_mesas(self):
+        """Sincroniza la tabla zonas con los valores únicos de la columna zona de mesas (ignora nulos y 'Todas')."""
+        zonas_mesas = self.query("SELECT DISTINCT zona FROM mesas WHERE zona IS NOT NULL AND zona != '' AND zona != 'Todas'")
+        zonas_db = set(z['nombre'] for z in self.get_zonas())
+        nuevas_zonas = [z['zona'] for z in zonas_mesas if z['zona'] and z['zona'] not in zonas_db]
+        for nombre in nuevas_zonas:
+            self.create_zona(nombre)
+    # Métodos para gestión de zonas (persistencia real)
+    def get_zonas(self):
+        """Obtiene todas las zonas ordenadas por nombre ASC"""
+        return self.query("SELECT * FROM zonas ORDER BY nombre ASC")
+
+    def create_zona(self, nombre):
+        """Crea una nueva zona (si no existe)"""
+        return self.execute("INSERT INTO zonas (nombre) VALUES (?)", (nombre,))
+
+    def delete_zona(self, zona_id):
+        """Elimina una zona por id"""
+        return self.execute("DELETE FROM zonas WHERE id = ?", (zona_id,))
+
+    def get_zona_by_nombre(self, nombre):
+        """Obtiene una zona por nombre"""
+        result = self.query("SELECT * FROM zonas WHERE nombre = ?", (nombre,))
+        return result[0] if result else None
     def __init__(self, path=None):
         if path is None:
             # Calcular la ruta absoluta a la base de datos
@@ -11,7 +47,9 @@ class DatabaseManager:
         else:
             self.db_path = path
         self._init_db()
-    
+        # Sincronizar zonas históricas de mesas al inicializar
+        self.sync_zonas_from_mesas()
+
     def _init_db(self):
         with self._get_connection() as conn:
             # Tabla de usuarios
@@ -26,7 +64,7 @@ class DatabaseManager:
                 is_active BOOLEAN DEFAULT 1,
                 ultimo_acceso TEXT
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS productos (
                 id INTEGER PRIMARY KEY,
                 nombre TEXT NOT NULL,
@@ -34,7 +72,7 @@ class DatabaseManager:
                 stock INTEGER,
                 categoria TEXT
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS mesas (
                 id INTEGER PRIMARY KEY,
                 numero TEXT NOT NULL,
@@ -42,7 +80,7 @@ class DatabaseManager:
                 estado TEXT,
                 capacidad INTEGER
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY,
                 nombre TEXT NOT NULL,
@@ -51,7 +89,7 @@ class DatabaseManager:
                 telefono TEXT,
                 email TEXT
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS habitaciones (
                 id INTEGER PRIMARY KEY,
                 numero TEXT NOT NULL,
@@ -59,7 +97,7 @@ class DatabaseManager:
                 estado TEXT,
                 precio_base REAL
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS reservas (
                 id INTEGER PRIMARY KEY,
                 cliente_id INTEGER,
@@ -70,7 +108,7 @@ class DatabaseManager:
                 FOREIGN KEY (cliente_id) REFERENCES clientes (id),
                 FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id)
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS empleados (
                 id INTEGER PRIMARY KEY,
                 username TEXT UNIQUE,
@@ -81,7 +119,7 @@ class DatabaseManager:
                 password TEXT,
                 active INTEGER DEFAULT 1
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS comandas (
                 id INTEGER PRIMARY KEY,
                 mesa_id INTEGER,
@@ -92,7 +130,7 @@ class DatabaseManager:
                 FOREIGN KEY (mesa_id) REFERENCES mesas (id),
                 FOREIGN KEY (empleado_id) REFERENCES empleados (id)
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS comanda_detalles (
                 id INTEGER PRIMARY KEY,
                 comanda_id INTEGER,
@@ -103,7 +141,7 @@ class DatabaseManager:
                 FOREIGN KEY (comanda_id) REFERENCES comandas (id),
                 FOREIGN KEY (producto_id) REFERENCES productos (id)
             )''')
-    
+
             # Tablas de inventario avanzado
             conn.execute('''CREATE TABLE IF NOT EXISTS categorias (
                 id INTEGER PRIMARY KEY,
@@ -112,7 +150,7 @@ class DatabaseManager:
                 fecha_creacion TEXT,
                 activa BOOLEAN DEFAULT 1
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS proveedores (
                 id INTEGER PRIMARY KEY,
                 nombre TEXT NOT NULL,
@@ -124,7 +162,7 @@ class DatabaseManager:
                 activo BOOLEAN DEFAULT 1,
                 notas TEXT
             )''')
-            
+
             conn.execute('''CREATE TABLE IF NOT EXISTS movimientos_stock (
                 id INTEGER PRIMARY KEY,
                 producto_id INTEGER NOT NULL,
@@ -138,16 +176,16 @@ class DatabaseManager:
                 FOREIGN KEY (producto_id) REFERENCES productos (id),
                 FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
             )''')
-    
+
             # Insertar usuarios predeterminados si no existen
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM usuarios")
             if cursor.fetchone()[0] == 0:
                 usuarios_default = [
-                    (1, "Administrador", "ADMIN", "admin123", "admin@hefest.com", "+34-600-000-001", 
+                    (1, "Administrador", "ADMIN", "admin123", "admin@hefest.com", "+34-600-000-001",
                      "2025-06-10", 1, None),
-                    (2, "Manager", "MANAGER", "manager123", "manager@hefest.com", "+34-600-000-002", 
-                     "2025-06-10", 1, None),                (3, "Empleado", "EMPLOYEE", "employee123", "empleado@hefest.com", "+34-600-000-003", 
+                    (2, "Manager", "MANAGER", "manager123", "manager@hefest.com", "+34-600-000-002",
+                     "2025-06-10", 1, None),                (3, "Empleado", "EMPLOYEE", "employee123", "empleado@hefest.com", "+34-600-000-003",
                      "2025-06-10", 1, None)
                 ]
                 conn.executemany("""
@@ -155,7 +193,7 @@ class DatabaseManager:
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, usuarios_default)
                 conn.commit()  # ¡Importante! Hacer commit de los usuarios por defecto
-    
+
     @contextmanager
     def _get_connection(self):
         conn = sqlite3.connect(self.db_path)
@@ -164,49 +202,49 @@ class DatabaseManager:
             yield conn
         finally:
             conn.close()
-    
+
     def query(self, sql, params=()):
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             return cursor.fetchall()
-    
+
     def execute(self, sql, params=()):
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             conn.commit()
             return cursor.lastrowid
-            
+
     def execute_many(self, sql, params_list):
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.executemany(sql, params_list)
             conn.commit()
-            
+
     def get_by_id(self, table, id):
         sql = f"SELECT * FROM {table} WHERE id = ?"
         result = self.query(sql, (id,))
         return result[0] if result else None
-        
+
     def insert(self, table, data):
         columns = ', '.join(data.keys())
         placeholders = ', '.join(['?'] * len(data))
         values = tuple(data.values())
         sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
         return self.execute(sql, values)
-        
+
     def update(self, table, id, data):
         set_clause = ', '.join([f"{key} = ?" for key in data.keys()])
         values = tuple(data.values()) + (id,)
-        
+
         sql = f"UPDATE {table} SET {set_clause} WHERE id = ?"
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, values)
             conn.commit()
             return cursor.rowcount > 0  # Retorna True si se actualizó alguna fila
-        
+
     def delete(self, table, id):
         sql = f"DELETE FROM {table} WHERE id = ?"
         with self._get_connection() as conn:
@@ -214,37 +252,37 @@ class DatabaseManager:
             cursor.execute(sql, (id,))
             conn.commit()
             return cursor.rowcount > 0  # Retorna True si se eliminó alguna fila
-    
+
     # Métodos para gestión de usuarios
     def get_usuarios(self):
         """Obtiene todos los usuarios"""
         return self.query("SELECT * FROM usuarios WHERE is_active = 1")
-    
+
     def get_usuario_by_id(self, user_id):
         """Obtiene un usuario por ID"""
         result = self.query("SELECT * FROM usuarios WHERE id = ? AND is_active = 1", (user_id,))
         return result[0] if result else None
-    
+
     def validate_user_login(self, user_id, pin):
         """Valida las credenciales de usuario"""
         result = self.query(
-            "SELECT * FROM usuarios WHERE id = ? AND pin = ? AND is_active = 1", 
+            "SELECT * FROM usuarios WHERE id = ? AND pin = ? AND is_active = 1",
             (user_id, pin)
         )
         return result[0] if result else None
-    
+
     def update_ultimo_acceso(self, user_id, timestamp):
         """Actualiza el último acceso del usuario"""
         self.execute(
             "UPDATE usuarios SET ultimo_acceso = ? WHERE id = ?",
             (timestamp, user_id)
         )
-    
+
     def create_usuario(self, nombre, role, pin, email=None, telefono=None):
         """Crea un nuevo usuario"""
         from datetime import datetime
         fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
         return self.execute("""
             INSERT INTO usuarios (nombre, role, pin, email, telefono, fecha_creacion, is_active)
             VALUES (?, ?, ?, ?, ?, ?, 1)
@@ -253,33 +291,33 @@ class DatabaseManager:
         """Actualiza campos de un usuario"""
         fields = []
         values = []
-        
+
         for field, value in kwargs.items():
             if field in ['nombre', 'role', 'pin', 'email', 'telefono', 'is_active']:
                 fields.append(f"{field} = ?")
                 values.append(value)
-        
+
         if fields:
             values.append(user_id)
             sql = f"UPDATE usuarios SET {', '.join(fields)} WHERE id = ?"
             self.execute(sql, values)
-    
+
     def delete_usuario(self, user_id):
         """Desactiva un usuario (soft delete)"""
         self.execute("UPDATE usuarios SET is_active = 0 WHERE id = ?", (user_id,))
-    
+
     # Métodos para gestión de habitaciones
     def get_habitaciones(self):
         """Obtiene todas las habitaciones"""
         return self.query("SELECT * FROM habitaciones")
-    
+
     def update_estado_habitacion(self, habitacion_id, estado):
         """Actualiza el estado de una habitación"""
         self.execute(
             "UPDATE habitaciones SET estado = ? WHERE id = ?",
             (estado, habitacion_id)
         )
-    
+
     # Métodos para gestión de reservas
     def get_reservas(self):
         """Obtiene todas las reservas con información del cliente"""
@@ -291,7 +329,7 @@ class DatabaseManager:
             JOIN habitaciones h ON r.habitacion_id = h.id
             ORDER BY r.fecha_entrada
         """)
-    
+
     def create_reserva(self, cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado='pendiente'):
         """Crea una nueva reserva"""
         return self.execute("""
@@ -307,17 +345,17 @@ class DatabaseManager:
         """
         try:
             metrics = {}
-            
+
             # Métricas de ventas (desde comandas)
             ventas_result = self.query("""
-                SELECT 
+                SELECT
                     COALESCE(SUM(total), 0) as ventas_totales,
                     COUNT(*) as num_comandas,
                     COALESCE(AVG(total), 0) as ticket_promedio
-                FROM comandas 
+                FROM comandas
                 WHERE DATE(fecha_hora) = DATE('now')
             """)
-            
+
             if ventas_result:
                 ventas_data = ventas_result[0]
                 metrics['ventas'] = float(ventas_data['ventas_totales'])
@@ -327,42 +365,42 @@ class DatabaseManager:
                 metrics['ventas'] = 0.0
                 metrics['ticket_promedio'] = 0.0
                 metrics['ordenes_activas'] = 0
-            
+
             # Métricas de ocupación hotelera
             ocupacion_result = self.query("""
-                SELECT 
+                SELECT
                     COUNT(*) as total_habitaciones,
                     SUM(CASE WHEN estado = 'ocupada' THEN 1 ELSE 0 END) as habitaciones_ocupadas
                 FROM habitaciones
             """)
-            
+
             if ocupacion_result and ocupacion_result[0]['total_habitaciones'] > 0:
-                ocupacion_data = ocupacion_result[0] 
+                ocupacion_data = ocupacion_result[0]
                 ocupacion_porcentaje = (ocupacion_data['habitaciones_ocupadas'] / ocupacion_data['total_habitaciones']) * 100
                 metrics['ocupacion'] = float(ocupacion_porcentaje)
             else:
                 metrics['ocupacion'] = 0.0
-            
+
             # Métricas de tiempo de servicio (estimado desde comandas)
             tiempo_result = self.query("""
-                SELECT 
+                SELECT
                     COUNT(*) as comandas_completadas,
                     COALESCE(AVG(julianday('now') - julianday(fecha_hora)) * 24 * 60, 0) as tiempo_promedio_minutos
-                FROM comandas 
+                FROM comandas
                 WHERE estado = 'completada' AND DATE(fecha_hora) = DATE('now')
             """)
-            
+
             if tiempo_result:
                 tiempo_data = tiempo_result[0]
                 metrics['tiempo_servicio'] = float(tiempo_data['tiempo_promedio_minutos'])
             else:
                 metrics['tiempo_servicio'] = 0.0
-            
+
             # Satisfacción por defecto (hasta tener sistema de reviews)
             metrics['satisfaccion'] = 0.0
-            
+
             return metrics
-            
+
         except Exception as e:
             import logging
             logging.error(f"Error al obtener métricas administrativas: {e}")
@@ -375,12 +413,12 @@ class DatabaseManager:
                 'ordenes_activas': 0,
                 'ticket_promedio': 0.0
             }
-    
+
     def get_inventory_metrics(self):
         """Obtiene métricas de inventario reales"""
         try:
             result = self.query("""
-                SELECT 
+                SELECT
                     COUNT(*) as total_productos,
                     SUM(CASE WHEN stock = 0 THEN 1 ELSE 0 END) as productos_sin_stock,
                     SUM(CASE WHEN stock < 5 THEN 1 ELSE 0 END) as productos_stock_bajo,
@@ -388,7 +426,7 @@ class DatabaseManager:
                     COALESCE(SUM(stock * precio), 0) as valor_total_inventario
                 FROM productos
             """)
-            
+
             if result:
                 data = result[0]
                 return {
@@ -406,7 +444,7 @@ class DatabaseManager:
                     'precio_promedio': 0.0,
                     'valor_total_inventario': 0.0
                 }
-                
+
         except Exception as e:
             import logging
             logging.error(f"Error al obtener métricas de inventario: {e}")
@@ -417,13 +455,13 @@ class DatabaseManager:
                 'precio_promedio': 0.0,
                 'valor_total_inventario': 0.0
             }
-    
+
     def get_hospitality_metrics(self):
         """Obtiene métricas de hospedería reales"""
         try:
             # Métricas de reservas
             reservas_result = self.query("""
-                SELECT 
+                SELECT
                     COUNT(*) as total_reservas,
                     SUM(CASE WHEN estado = 'confirmada' THEN 1 ELSE 0 END) as reservas_confirmadas,
                     SUM(CASE WHEN DATE(fecha_entrada) = DATE('now') THEN 1 ELSE 0 END) as check_ins_hoy,
@@ -431,10 +469,10 @@ class DatabaseManager:
                 FROM reservas
                 WHERE fecha_entrada >= DATE('now', '-30 days')
             """)
-            
+
             # Métricas de habitaciones
             habitaciones_result = self.query("""
-                SELECT 
+                SELECT
                     COUNT(*) as total_habitaciones,
                     SUM(CASE WHEN estado = 'ocupada' THEN 1 ELSE 0 END) as habitaciones_ocupadas,
                     SUM(CASE WHEN estado = 'disponible' THEN 1 ELSE 0 END) as habitaciones_disponibles,
@@ -442,9 +480,9 @@ class DatabaseManager:
                     COALESCE(AVG(precio_base), 0) as precio_promedio_noche
                 FROM habitaciones
             """)
-            
+
             metrics = {}
-            
+
             if reservas_result:
                 reservas_data = reservas_result[0]
                 metrics.update({
@@ -453,7 +491,7 @@ class DatabaseManager:
                     'check_ins_hoy': int(reservas_data['check_ins_hoy']),
                     'check_outs_hoy': int(reservas_data['check_outs_hoy'])
                 })
-            
+
             if habitaciones_result:
                 habitaciones_data = habitaciones_result[0]
                 metrics.update({
@@ -463,16 +501,16 @@ class DatabaseManager:
                     'habitaciones_mantenimiento': int(habitaciones_data['habitaciones_mantenimiento']),
                     'precio_promedio_noche': float(habitaciones_data['precio_promedio_noche'])
                 })
-            
+
             # Calcular ocupación si hay habitaciones
             if metrics.get('total_habitaciones', 0) > 0:
                 ocupacion_porcentaje = (metrics['habitaciones_ocupadas'] / metrics['total_habitaciones']) * 100
                 metrics['ocupacion_porcentaje'] = round(ocupacion_porcentaje, 1)
             else:
                 metrics['ocupacion_porcentaje'] = 0.0
-            
+
             return metrics
-            
+
         except Exception as e:
             import logging
             logging.error(f"Error al obtener métricas de hospedería: {e}")
