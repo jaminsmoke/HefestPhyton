@@ -171,7 +171,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         if self.data_manager:
             self.data_manager.metric_updated.connect(self.on_metric_data_updated)
             self.data_manager.data_updated.connect(self.on_all_data_updated)
-            logger.debug(f"Tarjeta {metric_type} conectada al RealDataManager")
+            # logger.debug(f"Tarjeta {metric_type} conectada al RealDataManager")
 
         self.setup_hospitality_features()
 
@@ -179,24 +179,24 @@ class HospitalityMetricCard(UltraModernMetricCard):
         if self.data_manager and self.auto_refresh_enabled:
             self.start_auto_refresh()
 
-        logger.debug(
-            f"HospitalityMetricCard creada para {metric_type} - Auto-gestionada: {bool(self.data_manager)}"
-        )
+        # logger.debug(
+        #     f"HospitalityMetricCard creada para {metric_type} - Auto-gestionada: {bool(self.data_manager)}"
+        # )
 
     def start_auto_refresh(self, interval_ms=3000):
         """Iniciar actualización automática de datos"""
         if self.data_manager and not self.refresh_timer.isActive():
             self.refresh_timer.start(interval_ms)
             self.auto_refresh_data()  # Primera actualización inmediata
-            logger.debug(
-                f"Auto-refresh iniciado para {self.metric_type} cada {interval_ms}ms"
-            )
+            # logger.debug(
+            #     f"Auto-refresh iniciado para {self.metric_type} cada {interval_ms}ms"
+            # )
 
     def stop_auto_refresh(self):
         """Detener actualización automática"""
         if self.refresh_timer.isActive():
             self.refresh_timer.stop()
-            logger.debug(f"Auto-refresh detenido para {self.metric_type}")
+            # logger.debug(f"Auto-refresh detenido para {self.metric_type}")
 
     def auto_refresh_data(self):
         """Actualización automática de datos desde el RealDataManager"""
@@ -213,9 +213,9 @@ class HospitalityMetricCard(UltraModernMetricCard):
 
             if metric_data:
                 self.update_from_real_data(metric_data)
-                logger.debug(
-                    f"Datos auto-actualizados para {self.metric_type}: {metric_data}"
-                )
+                # logger.debug(
+                #     f"Datos auto-actualizados para {self.metric_type}: {metric_data}"
+                # )
 
         except Exception as e:
             logger.error(f"Error en auto-refresh de {self.metric_type}: {e}")
@@ -241,9 +241,9 @@ class HospitalityMetricCard(UltraModernMetricCard):
             # Actualizar usando el método especializado de hostelería
             self.update_metric_data(value, trend, metric_data)
 
-            logger.debug(
-                f"Métrica {self.metric_type} actualizada desde datos reales: {value}"
-            )
+            # logger.debug(
+            #     f"Métrica {self.metric_type} actualizada desde datos reales: {value}"
+            # )
 
         except Exception as e:
             logger.error(
@@ -343,7 +343,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
                 },
             )
 
-            logger.debug(f"Métrica hostelera {self.metric_type} actualizada: {value}")
+            # logger.debug(f"Métrica hostelera {self.metric_type} actualizada: {value}")
 
         except Exception as e:
             logger.error(
@@ -428,9 +428,9 @@ class HospitalityMetricCard(UltraModernMetricCard):
                 # Desconectar señales del data manager
                 self.data_manager.metric_updated.disconnect(self.on_metric_data_updated)
                 self.data_manager.data_updated.disconnect(self.on_all_data_updated)
-                logger.debug(
-                    f"Tarjeta {self.metric_type} desconectada del RealDataManager"
-                )
+                # logger.debug(
+                #     f"Tarjeta {self.metric_type} desconectada del RealDataManager"
+                # )
 
         except Exception as e:
             logger.warning(f"Error en cleanup de {self.metric_type}: {e}")

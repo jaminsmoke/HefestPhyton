@@ -32,6 +32,17 @@ logger = logging.getLogger(__name__)
 
 
 
+def clear_layout(widget):
+    """Elimina el layout existente de un widget, si lo tiene, para evitar warnings de layouts duplicados."""
+    old_layout = widget.layout() if hasattr(widget, 'layout') else None
+    if old_layout is not None:
+        while old_layout.count():
+            item = old_layout.takeAt(0)
+            w = item.widget()
+            if w is not None:
+                w.setParent(None)
+        old_layout.deleteLater()
+
 class TPVModule(BaseModule):
     """Módulo TPV principal con interfaz moderna y profesional (Refactorizado)"""
 
@@ -167,10 +178,25 @@ class TPVModule(BaseModule):
         # Widget principal de la pestaña de mesas
         self.mesas_widget = QWidget()
         self.mesas_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        # Layout principal de la pestaña de mesas
-        self.mesas_layout = QVBoxLayout(self.mesas_widget)
+        # Refuerzo defensivo: limpiar layout anterior antes de crear uno nuevo y asignar layout con setLayout
+        import logging
+        clear_layout(self.mesas_widget)
+        old_layout = self.mesas_widget.layout()
+        if old_layout is not None:
+            while old_layout.count():
+                item = old_layout.takeAt(0)
+                if item is not None:
+                    widget = item.widget()
+                    if widget:
+                        widget.setParent(None)
+            try:
+                old_layout.deleteLater()
+            except Exception:
+                pass
+        self.mesas_layout = QVBoxLayout()
         self.mesas_layout.setContentsMargins(16, 16, 16, 16)
         self.mesas_layout.setSpacing(12)
+        self.mesas_widget.setLayout(self.mesas_layout)
 
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
         self.mesas_area = MesasArea()
@@ -231,6 +257,7 @@ class TPVModule(BaseModule):
     def create_venta_rapida_tab(self):
         """Crea la pestaña de venta rápida"""
         venta_widget = QWidget()
+        clear_layout(venta_widget)
         layout = QVBoxLayout(venta_widget)
         layout.setContentsMargins(24, 24, 24, 24)
 
@@ -251,6 +278,7 @@ class TPVModule(BaseModule):
     def create_reportes_tab(self):
         """Crea la pestaña de reportes"""
         reportes_widget = QWidget()
+        clear_layout(reportes_widget)
         layout = QVBoxLayout(reportes_widget)
         layout.setContentsMargins(24, 24, 24, 24)
 

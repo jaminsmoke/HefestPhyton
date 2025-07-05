@@ -21,7 +21,13 @@ import os
 try:
     from PyQt6.QtCore import qInstallMessageHandler
     def qt_message_handler(mode, context, message):
-        if "box-shadow" in message or "transform" in message:
+        # Filtrar todos los avisos irrelevantes de estilos no soportados
+        if (
+            "box-shadow" in message
+            or "transform" in message
+            or "Unknown property overflow" in message
+            or "Unknown property text-overflow" in message
+        ):
             return  # Ignora estos avisos de estilos
         print(message)
     qInstallMessageHandler(qt_message_handler)
@@ -34,14 +40,14 @@ def setup_environment():
     # Obtener el directorio del proyecto
     current_dir = os.path.dirname(os.path.abspath(__file__))
     src_dir = os.path.join(current_dir, 'src')
-    
+
     # Agregar src al path si no está ya presente
     if src_dir not in sys.path:
         sys.path.insert(0, src_dir)
-    
+
     # Configurar variables de entorno si es necesario
     os.environ.setdefault('HEFEST_ROOT', current_dir)
-    
+
     return src_dir
 
 def main():
@@ -49,7 +55,7 @@ def main():
     try:
         # Configurar entorno
         src_dir = setup_environment()
-        
+
         # Verificar que el directorio src existe
         if not os.path.exists(src_dir):
             print(f"Error: No se encontró el directorio src en {src_dir}")
@@ -63,16 +69,16 @@ def main():
         try:
             import importlib.util
             spec = importlib.util.spec_from_file_location("hefest_application", os.path.join(src_dir, "hefest_application.py"))
-            
+
             # Verificar que spec y loader no sean None
             if spec is None:
                 print(f"Error: No se pudo crear spec para {main_file}")
                 return 1
-                
+
             if spec.loader is None:
                 print(f"Error: No se pudo obtener loader para {main_file}")
                 return 1
-            
+
             main_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(main_module)
             print("🚀 Iniciando Hefest...")
@@ -85,17 +91,18 @@ def main():
         except Exception as e:
             print(f"Error al ejecutar la aplicación: {e}")
             return 1
-            
+
     except Exception as e:
         print(f"Error crítico en el launcher: {e}")
         return 1
 
 if __name__ == "__main__":
+    debug_mode = False
     try:
         exit_code = main()
         if exit_code is None:
             exit_code = 0
-        
+
         # Detectar si estamos en modo debug (VS Code, PyCharm, etc.)
         import sys
         debug_mode = (
@@ -104,7 +111,7 @@ if __name__ == "__main__":
             'pydevd' in sys.modules or   # PyCharm debugger
             '--debug' in sys.argv        # Argumento explícito
         )
-        
+
         if debug_mode:
             # En modo debug, evitar sys.exit para mejor compatibilidad
             print(f"🔧 [DEBUG MODE] Aplicación terminada con código: {exit_code}")
@@ -113,7 +120,7 @@ if __name__ == "__main__":
         else:
             # Ejecución normal, usar sys.exit
             sys.exit(exit_code)
-            
+
     except KeyboardInterrupt:
         print("\n⏹️ Aplicación interrumpida por el usuario")
         if not debug_mode:

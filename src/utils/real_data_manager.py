@@ -65,7 +65,7 @@ class RealDataManager(QObject):
             for metric_name, metric_data in data.items():
                 self.metric_updated.emit(metric_name, metric_data)
 
-            logger.debug(f"Datos reales actualizados: {len(data)} métricas")
+            # logger.debug(f"Datos reales actualizados: {len(data)} métricas")
 
         except Exception as e:
             error_msg = f"Error obteniendo datos reales: {e}"
@@ -175,7 +175,7 @@ class RealDataManager(QObject):
             return trend_text, trend_numeric
 
         except Exception as e:
-            logger.debug(f"Error calculando tendencia para {metric_name}: {e}")
+            # logger.debug(f"Error calculando tendencia para {metric_name}: {e}")
             return "+0.0%", 0.0
 
     def _get_historical_metric_value(self, metric_name: str) -> Optional[float]:
@@ -272,7 +272,7 @@ class RealDataManager(QObject):
             return None
 
         except Exception as e:
-            logger.debug(f"Error obteniendo datos históricos de {metric_name}: {e}")
+            # logger.debug(f"Error obteniendo datos históricos de {metric_name}: {e}")
             return None
 
     def _get_raw_hospitality_metrics(self) -> Dict[str, Any]:
@@ -440,7 +440,7 @@ class RealDataManager(QObject):
                 return result[0][0]
             return default_value
         except Exception as e:
-            logger.debug(f"Query falló (normal en config inicial): {e}")
+            # logger.debug(f"Query falló (normal en config inicial): {e}")
             return default_value
 
     def get_last_update(self) -> Optional[datetime]:

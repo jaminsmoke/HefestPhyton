@@ -20,7 +20,7 @@ from PyQt6.QtGui import QFont
 
 from ui.modules.module_base_interface import BaseModule
 from core.hefest_data_models import User, Role
-from services.auth_service import AuthService
+from services.auth_service import get_auth_service
 from services.audit_service import AuditService
 from utils.decorators import require_role
 
@@ -33,7 +33,7 @@ class UserManagementModule(BaseModule):
     def __init__(self, parent=None):
         logger.info("Inicializando UserManagementModule...")
         super().__init__(parent)
-        self.auth_service = AuthService()
+        self.auth_service = get_auth_service()
         logger.info("AuthService inicializado correctamente.")
         self.setup_ui()
         logger.info("Interfaz de usuario configurada.")

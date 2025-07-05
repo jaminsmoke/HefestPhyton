@@ -4,7 +4,7 @@ Funciones auxiliares para control de acceso y otras funcionalidades.
 """
 
 from functools import wraps
-from services.auth_service import AuthService
+from services.auth_service import get_auth_service
 from core.hefest_data_models import Role
 from PyQt6.QtWidgets import QMessageBox
 
@@ -24,7 +24,7 @@ def require_role(role):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            if not AuthService().has_permission(role):
+            if not get_auth_service().has_permission(role):
                 QMessageBox.warning(
                     args[0] if args else None,
                     "Acceso denegado",

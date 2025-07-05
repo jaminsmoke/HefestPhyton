@@ -154,9 +154,23 @@ class ProductSelectorWidget(QWidget):
 
     def setup_ui(self):
         """Configura la interfaz principal"""
-        layout = QVBoxLayout(self)
+        import logging
+        old_layout = self.layout()
+        if old_layout is not None:
+            while old_layout.count():
+                item = old_layout.takeAt(0)
+                if item is not None:
+                    widget = item.widget()
+                    if widget:
+                        widget.setParent(None)
+            try:
+                old_layout.deleteLater()
+            except Exception:
+                pass
+        layout = QVBoxLayout()
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(16)
+        self.setLayout(layout)
 
         # Header con título
         header_layout = QHBoxLayout()

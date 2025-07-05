@@ -64,7 +64,7 @@ class MesaController(QObject):
                 return
 
             self.mesas = self.tpv_service.get_mesas()
-            print(f"[DEBUG MesaController] load_mesas: {len(self.mesas)} mesas recibidas de tpv_service.get_mesas()")
+            # ...
             # El servicio debe emitir la señal global, no el controlador
 
             logger.info(f"Cargadas {len(self.mesas)} mesas")
@@ -72,7 +72,7 @@ class MesaController(QObject):
         except Exception as e:
             error_msg = f"Error cargando mesas: {e}"
             logger.error(error_msg)
-            print(f"[DEBUG MesaController] load_mesas: error {e}")
+            # ...
             self.error_occurred.emit(error_msg)
 
     def crear_mesa(self, capacidad: int, zona: str) -> bool:

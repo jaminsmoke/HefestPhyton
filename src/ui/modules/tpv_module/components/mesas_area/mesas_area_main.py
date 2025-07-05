@@ -106,12 +106,25 @@ class MesasArea(QFrame):
                 margin: 4px;
             }
         """)
-        container_layout = QVBoxLayout(self)
+        # Refuerzo: limpiar layout anterior y crear layout sin parent
+        old_layout = self.layout()
+        if old_layout is not None:
+            while old_layout.count():
+                item = old_layout.takeAt(0)
+                if item is not None:
+                    widget = item.widget()
+                    if widget:
+                        widget.setParent(None)
+            try:
+                old_layout.deleteLater()
+            except Exception:
+                pass
+        container_layout = QVBoxLayout()
         container_layout.setContentsMargins(16, 16, 16, 16)
         container_layout.setSpacing(16)
-        # Forzar expansión horizontal del layout
         from PyQt6.QtCore import Qt
         container_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self.setLayout(container_layout)
         # Header modularizado
         self.header = create_header(self, self, container_layout)
         # Área de scroll modularizada

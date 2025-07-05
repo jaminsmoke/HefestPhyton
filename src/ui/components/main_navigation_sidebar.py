@@ -16,7 +16,7 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
 # Importar servicios de autenticación
-from services.auth_service import AuthService
+from services.auth_service import get_auth_service
 from services.audit_service import AuditService
 from core.hefest_data_models import Role
 
@@ -33,10 +33,10 @@ class ModernSidebar(QFrame):
     def __init__(self, parent=None, auth_service=None):
         super().__init__(parent)
         logger.info("Inicializando ModernSidebar")
-        logger.debug("Constructor de ModernSidebar inicializado correctamente.")
+        # logger.debug("Constructor de ModernSidebar inicializado correctamente.")
 
         # Usar el servicio de autenticación pasado o crear uno nuevo
-        self.auth_service = auth_service if auth_service else AuthService()
+        self.auth_service = auth_service if auth_service else get_auth_service()
         self.current_active = None
         self.nav_buttons = {}
 
@@ -122,7 +122,7 @@ class ModernSidebar(QFrame):
 
     def create_navigation(self, layout):
         """Crea los botones de navegación según los permisos del usuario"""
-        logger.debug("Método create_navigation llamado correctamente.")
+        # logger.debug("Método create_navigation llamado correctamente.")
 
         nav_container = QWidget()
         nav_layout = QVBoxLayout(nav_container)
@@ -153,18 +153,18 @@ class ModernSidebar(QFrame):
             ("users", "👥", "Usuarios", "Gestión de usuarios", Role.ADMIN),
         ]
 
-        logger.debug("Lista de módulos configurados en el sidebar:")
+        # logger.debug("Lista de módulos configurados en el sidebar:")
         for module_id, icon, title, description, required_role in modules:
-            logger.debug(f"  {module_id}: {title} (Requiere: {required_role.value})")
+            pass  # Eliminado debug duplicado
 
         # Filtrar módulos según permisos del usuario
         current_user = self.auth_service.current_user
         if current_user:
-            logger.debug(
-                f"Usuario actual: {current_user.name} ({current_user.role.value})"
-            )
-            logger.debug("Módulos disponibles según permisos:")
-            logger.debug("Iniciando evaluación de módulos para la barra lateral...")
+            # logger.debug(
+            #     f"Usuario actual: {current_user.name} ({current_user.role.value})"
+            # )
+            # logger.debug("Módulos disponibles según permisos:")
+            # logger.debug("Iniciando evaluación de módulos para la barra lateral...")
             for module_id, icon, title, description, required_role in modules:
                 has_permission = self.auth_service.has_permission(required_role)
 
@@ -257,7 +257,12 @@ class ModernSidebar(QFrame):
         )
 
         # Conectar señal
-        btn.clicked.connect(lambda: self.module_selected.emit(module_id))
+        def log_and_emit():
+            logger.info(f"[SIDEBAR] Botón pulsado: {module_id}")
+            if module_id == "tpv":
+                logger.info("[SIDEBAR] Entrando al módulo TPV desde sidebar (log explícito)")
+            self.module_selected.emit(module_id)
+        btn.clicked.connect(log_and_emit)
 
         # Tooltip
         btn.setToolTip(f"{title}\n{description}")

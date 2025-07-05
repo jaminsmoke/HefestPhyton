@@ -14,10 +14,9 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 
-# Inicializar logger
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+# EXCEPCIÓN FUNCIONAL: No configurar logging global aquí para evitar duplicidad de handlers.
+# El logging global se configura únicamente en el entrypoint principal (hefest_application.py).
+# TODO(v0.0.12): Si se requiere logging específico, usar solo loggers de módulo sin basicConfig ni handlers globales.
 logger = logging.getLogger(__name__)
 
 

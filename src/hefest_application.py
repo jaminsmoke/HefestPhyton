@@ -11,9 +11,33 @@ from PyQt6.QtWidgets import QApplication, QDialog, QInputDialog, QLineEdit, QMes
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
-# Configurar logging
-logging.basicConfig(level=logging.INFO)
+# Configuración avanzada de logging global
+import os
+from logging.handlers import RotatingFileHandler
+
+LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG_FILE = os.path.join(LOG_DIR, 'hefest_app.log')
+
+# Formato detallado para consola y archivo
+LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+
+# Handler de archivo rotativo (5MB, 3 backups)
+file_handler = RotatingFileHandler(LOG_FILE, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+
+# Handler de consola
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+
+# Configuración global
+logging.basicConfig(level=logging.DEBUG, handlers=[file_handler, console_handler])
 logger = logging.getLogger(__name__)
+
+# Asegurar propagación y nivel DEBUG para todos los loggers
+logging.captureWarnings(True)
 
 # Importar componentes necesarios
 from data.db_manager import DatabaseManager
@@ -27,7 +51,7 @@ from utils.qt_css_compat import (
 )
 
 # Importar servicios de autenticación y auditoría
-from services.auth_service import AuthService
+from services.auth_service import get_auth_service
 from services.audit_service import AuditService
 from core.hefest_data_models import Role
 from utils.modern_styles import modern_styles
@@ -51,7 +75,7 @@ class Hefest:
         # Inicializar componentes
         self.db = DatabaseManager()
         # Inicializar servicio de autenticación
-        self.auth_service = AuthService()
+        self.auth_service = get_auth_service()
         # Logging inicial
         AuditService.log("Sistema iniciado", details={"version": "1.0.0"})
 

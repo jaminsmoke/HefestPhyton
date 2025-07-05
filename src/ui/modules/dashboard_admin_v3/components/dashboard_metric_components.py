@@ -582,7 +582,7 @@ class UltraModernMetricCard(UltraModernCard):
                 self.value = str(value)
                 self.current_numeric_value = self._parse_value(value)
                 self.value_label.setText(str(value))
-                logger.debug(f"📊 Valor actualizado: {value} para {self.title}")
+                # logger.debug(f"📊 Valor actualizado: {value} para {self.title}")
 
             # Actualizar tendencia si se proporciona
             if trend is not None:
@@ -614,7 +614,7 @@ class UltraModernMetricCard(UltraModernCard):
                 self.trend_label.setStyleSheet(
                     convert_to_qt_compatible_css(trend_style)
                 )
-                logger.debug(f"📈 Tendencia actualizada: {trend} para {self.title}")
+                # logger.debug(f"📈 Tendencia actualizada: {trend} para {self.title}")
 
             # Actualizar objetivo si se proporciona
             if target is not None:
@@ -630,9 +630,9 @@ class UltraModernMetricCard(UltraModernCard):
                     )
                     if hasattr(self, "progress_indicator"):
                         self.progress_indicator.setValue(progress_value, animated=True)
-                        logger.debug(
-                            f"📊 Progreso calculado: {progress_value*100:.1f}% para {self.title}"
-                        )
+                        # logger.debug(
+                        #     f"📊 Progreso calculado: {progress_value*100:.1f}% para {self.title}"
+                        # )
 
             # Actualizar progreso con porcentaje específico (datos administrativos reales)
             if progress_percentage is not None and hasattr(self, "progress_indicator"):
@@ -643,9 +643,9 @@ class UltraModernMetricCard(UltraModernCard):
                     progress_value = progress_percentage
 
                 self.progress_indicator.setValue(progress_value, animated=True)
-                logger.debug(
-                    f"📊 Progreso administrativo real: {progress_percentage:.1f}% para {self.title}"
-                )
+                # logger.debug(
+                #     f"📊 Progreso administrativo real: {progress_percentage:.1f}% para {self.title}"
+                # )
 
             # Actualizar tooltip con los nuevos datos
             self.update_tooltip()

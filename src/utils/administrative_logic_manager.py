@@ -123,9 +123,9 @@ class AdministrativeLogicManager:
                 "has_real_data": current_data.get("has_real_data", False),
             }
 
-            logger.debug(
-                f"Métrica '{dashboard_title}': {current_data['formatted_value']} ({trend_data['text']})"
-            )
+            # logger.debug(
+            #     f"Métrica '{dashboard_title}': {current_data['formatted_value']} ({trend_data['text']})"
+            # )
 
         logger.info(
             f"✅ Generadas {len(admin_metrics)} métricas administrativas con datos reales de BD"

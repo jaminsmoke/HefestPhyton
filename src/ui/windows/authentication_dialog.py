@@ -19,7 +19,7 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QFont, QPalette, QColor
 
 from utils.animation_helper import AnimationHelper, EffectsHelper
-from services.auth_service import AuthService
+from services.auth_service import get_auth_service
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +210,7 @@ class LoginDialog(QDialog):
             return
 
         try:
-            auth_service = AuthService()
+            auth_service = get_auth_service()
             logger.info(f"Intentando login con usuario: '{username}'")
 
             # Usar el método de login básico
@@ -227,9 +227,4 @@ class LoginDialog(QDialog):
             logger.error(f"Error durante el login: {e}")
             self.error_label.setText(f"Error de conexión: {str(e)}")
 
-    def keyPressEvent(self, event):
-        """Manejar eventos de teclado"""
-        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-            self.try_login()
-        else:
-            super().keyPressEvent(event)
+    # Eliminado keyPressEvent para evitar doble trigger de login

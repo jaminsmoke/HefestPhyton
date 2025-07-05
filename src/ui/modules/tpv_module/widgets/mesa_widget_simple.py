@@ -9,22 +9,11 @@ from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent
 from PyQt6.QtGui import QFont
 import sys
-from PyQt6.QtCore import qInstallMessageHandler
 
 from services.tpv_service import Mesa
 from ..mesa_event_bus import mesa_event_bus
 
 
-def qt_message_handler(mode, context, message):
-    if (
-        "Unknown property overflow" in message
-        or "Unknown property text-overflow" in message
-    ):
-        return  # Ignorar estas advertencias
-    sys.stderr.write(message + "\n")
-
-
-qInstallMessageHandler(qt_message_handler)
 
 
 class MesaWidget(QFrame):
@@ -89,6 +78,19 @@ class MesaWidget(QFrame):
     def setup_ui(self):
         from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
         from PyQt6.QtGui import QIcon
+        # Protección: limpiar layout anterior si existe
+        old_layout = self.layout()
+        if old_layout is not None:
+            while old_layout.count():
+                item = old_layout.takeAt(0)
+                if item is not None:
+                    widget = item.widget()
+                    if widget:
+                        widget.setParent(None)
+            try:
+                old_layout.deleteLater()
+            except Exception:
+                pass
         self.layout_principal = QVBoxLayout(self)
         layout = self.layout_principal
         layout.setContentsMargins(8, 6, 8, 6)
@@ -692,9 +694,24 @@ class MesaWidget(QFrame):
                         color: #333;
                     }
                 """)
-                layout = QVBoxLayout(self)
+                # Solución: evitar warning de Qt creando el layout sin padre y usando setLayout
+                old_layout = self.layout()
+                if old_layout is not None:
+                    while old_layout.count():
+                        item = old_layout.takeAt(0)
+                        if item is not None:
+                            widget = item.widget()
+                            if widget:
+                                widget.setParent(None)
+                    # Eliminar el layout anterior si es posible
+                    try:
+                        old_layout.deleteLater()
+                    except Exception:
+                        pass
+                layout = QVBoxLayout()
                 layout.setContentsMargins(18, 18, 18, 12)
                 layout.setSpacing(8)
+                self.setLayout(layout)
                 # Icono
                 icono = QLabel("👥")
                 icono.setObjectName("icono")

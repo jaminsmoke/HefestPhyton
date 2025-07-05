@@ -1,3 +1,13 @@
+def clear_layout(widget):
+    """Elimina el layout existente de un widget, si lo tiene, para evitar warnings de layouts duplicados."""
+    old_layout = widget.layout() if hasattr(widget, 'layout') else None
+    if old_layout is not None:
+        while old_layout.count():
+            item = old_layout.takeAt(0)
+            w = item.widget()
+            if w is not None:
+                w.setParent(None)
+        old_layout.deleteLater()
 """
 HEFEST - DASHBOARD ADMIN V3 ULTRA-MODERNO
 Rediseño completo del dashboard administrativo con arquitectura visual V3
@@ -75,10 +85,10 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         self.setup_admin_dashboard()
         self.setup_admin_features()
         self.setup_centralized_data_refresh()
-        
-        logger.info(
-            "Dashboard Admin V3 Ultra-Moderno inicializado con DataManager centralizado"
-        )
+
+        # logger.info(
+        #     "Dashboard Admin V3 Ultra-Moderno inicializado con DataManager centralizado"
+        # )
 
     def setup_admin_dashboard(self):
         """Configurar estructura del dashboard administrativo"""
@@ -259,6 +269,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
     def create_metrics_tab(self):
         """Crear tab de métricas principales con estructura mejorada"""
         widget = QWidget()
+        clear_layout(widget)
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(16, 16, 16, 16)
 
@@ -364,6 +375,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         )
 
         widget = QWidget()
+        clear_layout(widget)
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(24, 24, 24, 24)  # Incrementar márgenes
         layout.setSpacing(32)  # Incrementar espaciado entre secciones principales
@@ -484,7 +496,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         kpis_grid.setSpacing(20)  # Aumentar espaciado entre tarjetas
 
         # Obtener métricas administrativas reales con lógica de negocio
-        logger.info("📊 Obteniendo métricas administrativas con lógica real...")
+        # logger.info("📊 Obteniendo métricas administrativas con lógica real...")
         administrative_metrics = self.admin_logic.get_administrative_metrics()
 
         # Convertir métricas administrativas al formato requerido por las tarjetas KPI
@@ -504,9 +516,9 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
             }
             executive_kpis.append(kpi_data)
 
-        logger.info(
-            f"✅ Cargadas {len(executive_kpis)} métricas administrativas reales"
-        )
+        # logger.info(
+        #     f"✅ Cargadas {len(executive_kpis)} métricas administrativas reales"
+        # )
 
         # Crear cards KPI ejecutivos con estilo diferenciado
         for i, kpi in enumerate(executive_kpis):
@@ -562,6 +574,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
     def create_analytics_tab(self):
         """Crear tab de análisis avanzado"""
         widget = QWidget()
+        clear_layout(widget)
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(16, 16, 16, 16)
 
@@ -684,8 +697,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         scroll_area.setFrameStyle(QFrame.Shape.NoFrame)
         scroll_area.setStyleSheet(
             f"""
-            QScrollArea {{ 
-                background: transparent; 
+            QScrollArea {{
+                background: transparent;
                 border: none;
             }}
             QScrollBar:vertical {{
@@ -928,6 +941,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
     def create_comparison_view(self):
         """🔄 VISTA COMPARATIVA - Análisis de tendencias y comparaciones temporales"""
         widget = QWidget()
+        clear_layout(widget)
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(20)
@@ -1050,6 +1064,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
     def create_system_tab(self):
         """Crear tab de gestión del sistema"""
         widget = QWidget()
+        clear_layout(widget)
         layout = QVBoxLayout(widget)
         layout.setContentsMargins(16, 16, 16, 16)
 
@@ -1068,12 +1083,12 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         system_details = QLabel(
             f"""
         🚀 Hefest Dashboard Admin V3 Ultra-Moderno
-        
+
         📅 Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
         🎨 Sistema Visual: V3 Ultra-Moderno
         ⚡ Motor: PyQt6 nativo
         🔧 Estado: Operativo
-        
+
         ✅ Características activas:
         • Dashboard con métricas en tiempo real
         • Componentes ultra-modernos sin filtros destructivos
@@ -1141,23 +1156,23 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
     def setup_admin_features(self):
         """Configurar características administrativas y conexiones de datos reales"""
-        logger.info("Configurando características administrativas avanzadas")
+        # logger.info("Configurando características administrativas avanzadas")
 
         # Configurar actualización automática de datos reales
         self.setup_data_refresh()
 
         # Hacer una primera carga de datos reales
-        logger.info("📊 Realizando carga inicial de datos reales")
+        # logger.info("📊 Realizando carga inicial de datos reales")
         self.data_manager.fetch_all_real_data()
 
-        logger.info("✅ Características administrativas configuradas con datos reales")
+        # logger.info("✅ Características administrativas configuradas con datos reales")
 
     def refresh_admin_data(self):
         """
         Actualizar manualmente todos los datos administrativos
         Método requerido por la interfaz del dashboard
         """
-        logger.info("Actualizando datos administrativos manualmente")
+        # logger.info("Actualizando datos administrativos manualmente")
         if hasattr(self, "data_manager"):
             self.data_manager.fetch_all_real_data()
         else:
@@ -1170,9 +1185,9 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
         # Iniciar monitoreo centralizado
         self.data_manager.start_monitoring(5000)  # 5 segundos
-        logger.info(
-            "DataManager centralizado configurado (5s) - Tarjetas auto-gestionadas"
-        )
+        # logger.info(
+        #     "DataManager centralizado configurado (5s) - Tarjetas auto-gestionadas"
+        # )
 
     def setup_centralized_data_refresh(self):
         """Alias para compatibilidad"""
@@ -1180,12 +1195,12 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
     def on_metric_selected(self, title, data):
         """Manejar selección de métrica"""
-        logger.info(f"Métrica seleccionada: {title}")
+        # logger.info(f"Métrica seleccionada: {title}")
         self.metric_selected.emit(title, data)
 
     def on_action_requested(self, action):
         """Manejar solicitud de acción"""
-        logger.info(f"Acción solicitada: {action}")
+        # logger.info(f"Acción solicitada: {action}")
         self.action_requested.emit(action)
 
     def resizeEvent(self, event):
@@ -1194,13 +1209,13 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         Adapta el número de columnas según el ancho disponible
         """
         super().resizeEvent(event)
-        logger.debug(
-            f"Dashboard redimensionado a {event.size().width()}x{event.size().height()}"
-        )
+        # logger.debug(
+        #     f"Dashboard redimensionado a {event.size().width()}x{event.size().height()}"
+        # )
 
     def _create_metric_cards_from_real_data(self, metrics_layout):
         """Crear tarjetas de métricas usando componentes especializados auto-gestionados"""
-        logger.info("🔄 Creando tarjetas auto-gestionadas con HospitalityMetricCard")
+        # logger.info("🔄 Creando tarjetas auto-gestionadas con HospitalityMetricCard")
 
         # Lista de métricas de hostelería que se auto-gestionan
         hospitality_metrics = [
@@ -1217,8 +1232,6 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
         # Crear tarjetas especializadas que se auto-gestionan completamente
         for i, metric_type in enumerate(hospitality_metrics):
-            logger.debug(f"📋 Creando tarjeta auto-gestionada: {metric_type}")
-
             # Crear tarjeta especializada que se conecta directamente al RealDataManager
             card = HospitalityMetricCard(
                 metric_type=metric_type,
@@ -1240,14 +1253,14 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
             # Solo guardar referencia para limpieza, NO para gestión de datos
             self.metric_cards.append(card)
-        logger.info(f"✅ Creadas {len(self.metric_cards)} tarjetas auto-gestionadas")
-        logger.info(
-            "📌 Dashboard liberado de lógica de KPIs - Componentes completamente autónomos"
-        )
+        # logger.info(f"✅ Creadas {len(self.metric_cards)} tarjetas auto-gestionadas")
+        # logger.info(
+        #     "📌 Dashboard liberado de lógica de KPIs - Componentes completamente autónomos"
+        # )
 
     def _create_detailed_metric_cards_from_real_data(self, metrics_layout):
         """Crear tarjetas detalladas usando componentes especializados auto-gestionados"""
-        logger.info("🔄 Creando vista detallada con tarjetas auto-gestionadas")
+        # logger.info("🔄 Creando vista detallada con tarjetas auto-gestionadas")
 
         # Lista extendida de métricas de hostelería para vista detallada
         detailed_hospitality_metrics = [
@@ -1268,8 +1281,6 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
 
         # Crear tarjetas especializadas detalladas que se auto-gestionan completamente
         for i, metric_type in enumerate(detailed_hospitality_metrics):
-            logger.debug(f"📋 Creando tarjeta detallada auto-gestionada: {metric_type}")
-
             # Crear tarjeta especializada que se conecta directamente al RealDataManager
             card = HospitalityMetricCard(
                 metric_type=metric_type,
@@ -1291,17 +1302,17 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
             # Solo guardar referencia para limpieza, NO para gestión de datos
             self.metric_cards.append(card)
 
-        logger.info(
-            f"✅ Creadas {len(detailed_hospitality_metrics)} tarjetas detalladas auto-gestionadas"
-        )
-        logger.info(
-            "📌 Vista detallada liberada de lógica de KPIs - Componentes completamente autónomos"
-        )
+        # logger.info(
+        #     f"✅ Creadas {len(detailed_hospitality_metrics)} tarjetas detalladas auto-gestionadas"
+        # )
+        # logger.info(
+        #     "📌 Vista detallada liberada de lógica de KPIs - Componentes completamente autónomos"
+        # )
 
     def cleanup(self):
         """Limpiar recursos y cerrar conexiones al cerrar el dashboard"""
         try:
-            logger.info("🧹 Iniciando limpieza del dashboard")
+            # logger.info("🧹 Iniciando limpieza del dashboard")
 
             # Limpiar tarjetas auto-gestionadas
             for card in self.metric_cards:
@@ -1311,11 +1322,10 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
             # Detener el RealDataManager
             if self.data_manager:
                 self.data_manager.stop_monitoring()
-                logger.debug("RealDataManager detenido")            # Limpiar lista de tarjetas
             self.metric_cards.clear()
 
-            logger.info("✅ Limpieza del dashboard completada")
-            
+            # logger.info("✅ Limpieza del dashboard completada")
+
         except Exception as e:
             logger.warning(f"Error durante limpieza del dashboard: {e}")
 
@@ -1349,15 +1359,15 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
             ),  # Porcentaje administrativo real
         )
 
-        logger.info(
-            f"📊 Configurando datos administrativos reales para {kpi_data.get('title')}:"
-        )
-        logger.info(f"   - Valor: {kpi_data.get('value')}")
-        logger.info(
-            f"   - Tendencia: {kpi_data.get('trend')} ({kpi_data.get('trend_direction')})"
-        )
-        logger.info(f"   - Progreso: {kpi_data.get('progress', 0):.1f}%")
-        logger.info(f"   - Objetivo: {kpi_data.get('target')}")
+        # logger.info(
+        #     f"📊 Configurando datos administrativos reales para {kpi_data.get('title')}:"
+        # )
+        # logger.info(f"   - Valor: {kpi_data.get('value')}")
+        # logger.info(
+        #     f"   - Tendencia: {kpi_data.get('trend')} ({kpi_data.get('trend_direction')})"
+        # )
+        # logger.info(f"   - Progreso: {kpi_data.get('progress', 0):.1f}%")
+        # logger.info(f"   - Objetivo: {kpi_data.get('target')}")
         # Ajustar tamaño para el grid - AUMENTADO para mejor visualización
         card.setMinimumSize(280, 180)  # Aumentado de 200x140 a 280x180
         card.setMaximumSize(400, 240)  # Aumentado de 350x180 a 400x240

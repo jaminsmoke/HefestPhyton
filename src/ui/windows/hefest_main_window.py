@@ -35,7 +35,7 @@ from ..modules.dashboard_admin_v3.ultra_modern_admin_dashboard import (
 from utils.qt_css_compat import purge_modern_css_from_widget_tree
 
 # Importar servicios de autenticación y auditoría
-from services.auth_service import AuthService
+from services.auth_service import get_auth_service
 from services.audit_service import AuditService
 from core.hefest_data_models import Role
 from data.db_manager import DatabaseManager
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(1000, 600)
 
         # Usar el servicio de autenticación pasado o crear uno nuevo
-        self.auth_service = auth_service if auth_service else AuthService()
+        self.auth_service = auth_service if auth_service else get_auth_service()
 
         # Inicializar el gestor de base de datos
         self.db_manager = DatabaseManager()

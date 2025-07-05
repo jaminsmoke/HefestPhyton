@@ -200,7 +200,7 @@ class AdministrativeAlertsComponent(QWidget):
                 border: 1px solid {colors['border']};
                 border-radius: 12px;
             }}
-            
+
             /* Header */
             QFrame#alerts_header {{
                 background-color: {colors['surface_variant']};
@@ -208,12 +208,12 @@ class AdministrativeAlertsComponent(QWidget):
                 border-radius: 8px;
                 padding: 8px;
             }}
-            
+
             QLabel#alerts_title {{
                 color: {colors['text_primary']};
                 font-weight: bold;
             }}
-            
+
             QPushButton#alerts_refresh_btn {{
                 background-color: {colors['primary']};
                 color: white;
@@ -222,62 +222,62 @@ class AdministrativeAlertsComponent(QWidget):
                 padding: 6px 12px;
                 font-weight: 500;
             }}
-            
+
             QPushButton#alerts_refresh_btn:hover {{
                 background-color: {colors['primary_hover']};
             }}
-            
+
             QPushButton#alerts_refresh_btn:pressed {{
                 background-color: {colors['primary_pressed']};
             }}
-            
+
             /* Scroll Area */
             QScrollArea#alerts_scroll_area {{
                 border: none;
                 background-color: transparent;
             }}
-            
+
             QScrollArea#alerts_scroll_area QScrollBar:vertical {{
                 background-color: {colors['surface_variant']};
                 width: 8px;
                 border-radius: 4px;
             }}
-            
+
             QScrollArea#alerts_scroll_area QScrollBar::handle:vertical {{
                 background-color: {colors['secondary']};
                 border-radius: 4px;
                 min-height: 20px;
             }}
-            
+
             QScrollArea#alerts_scroll_area QScrollBar::handle:vertical:hover {{
                 background-color: {colors['secondary_hover']};
             }}
-            
+
             /* Status Label */
             QLabel#alerts_status_label {{
                 color: {colors['text_secondary']};
                 font-size: 14px;
                 padding: 20px;
             }}
-            
+
             /* Footer */
             QFrame#alerts_footer {{
                 background-color: {colors['surface_variant']};
                 border: none;
                 border-radius: 6px;
             }}
-            
+
             QLabel#alerts_last_update {{
                 color: {colors['text_secondary']};
                 font-size: 12px;
             }}
-            
+
             QLabel#alerts_count {{
                 color: {colors['text_primary']};
                 font-size: 12px;
                 font-weight: 500;
             }}
-            
+
             /* Tarjetas de alerta */
             ClickableFrame {{
                 background-color: {colors['surface']};
@@ -286,38 +286,38 @@ class AdministrativeAlertsComponent(QWidget):
                 padding: 12px;
                 margin: 4px;
             }}
-            
+
             ClickableFrame:hover {{
                 background-color: {colors['surface_hover']};
                 border-color: {colors['border_focus']};
             }}
-            
+
             ClickableFrame[alertType="critical"] {{
                 border-left: 4px solid {colors['error']};
                 background-color: {colors['surface_variant']};
             }}
-            
+
             ClickableFrame[alertType="warning"] {{
                 border-left: 4px solid {colors['warning']};
                 background-color: {colors['surface_variant']};
             }}
-            
+
             ClickableFrame[alertType="info"] {{
                 border-left: 4px solid {colors['info']};
                 background-color: {colors['surface_variant']};
             }}
-            
+
             QLabel.alert_title {{
                 color: {colors['text_primary']};
                 font-size: 13px;
                 font-weight: 600;
             }}
-            
+
             QLabel.alert_message {{
                 color: {colors['text_secondary']};
                 font-size: 12px;
             }}
-            
+
             QLabel.alert_timestamp {{
                 color: {colors['text_muted']};
                 font-size: 11px;
@@ -332,7 +332,7 @@ class AdministrativeAlertsComponent(QWidget):
     def refresh_alerts(self):
         """Actualiza las alertas obteniendo datos reales de la base de datos."""
         try:
-            logger.debug("Iniciando actualización de alertas administrativas")
+            # logger.debug("Iniciando actualización de alertas administrativas")
 
             # Obtener alertas reales del manager
             alerts_data = self.administrative_logic.get_administrative_alerts()
@@ -340,7 +340,7 @@ class AdministrativeAlertsComponent(QWidget):
                 alerts_data.get("alerts", []) if isinstance(alerts_data, dict) else []
             )
 
-            logger.debug(f"Obtenidas {len(alerts)} alertas del sistema")
+            # logger.debug(f"Obtenidas {len(alerts)} alertas del sistema")
 
             # Actualizar el estado interno
             self.current_alerts = alerts
@@ -361,7 +361,7 @@ class AdministrativeAlertsComponent(QWidget):
             # Emitir señal de actualización completada
             self.refresh_requested.emit()
 
-            logger.debug("Actualización de alertas completada exitosamente")
+            # logger.debug("Actualización de alertas completada exitosamente")
 
         except Exception as e:
             logger.error(f"Error actualizando alertas: {e}")
@@ -548,7 +548,7 @@ class AdministrativeAlertsComponent(QWidget):
             alert: Datos de la alerta clickeada
         """
         try:
-            logger.debug(f"Alerta clickeada: {alert.get('title', 'Sin título')}")
+            # logger.debug(f"Alerta clickeada: {alert.get('title', 'Sin título')}")
 
             # Emitir señal con los datos de la alerta
             self.alert_clicked.emit(alert)
@@ -625,12 +625,12 @@ class AdministrativeAlertsComponent(QWidget):
         try:
             if enabled:
                 self.refresh_timer.start(interval_seconds * 1000)
-                logger.debug(
-                    f"Auto-refresh habilitado cada {interval_seconds} segundos"
-                )
+                # logger.debug(
+                #     f"Auto-refresh habilitado cada {interval_seconds} segundos"
+                # )
             else:
                 self.refresh_timer.stop()
-                logger.debug("Auto-refresh deshabilitado")
+                # logger.debug("Auto-refresh deshabilitado")
         except Exception as e:
             logger.error(f"Error configurando auto-refresh: {e}")
 
@@ -641,7 +641,7 @@ class AdministrativeAlertsComponent(QWidget):
             if hasattr(self, "refresh_timer"):
                 self.refresh_timer.stop()
 
-            logger.debug("AdministrativeAlertsComponent cerrado correctamente")
+            # logger.debug("AdministrativeAlertsComponent cerrado correctamente")
             super().closeEvent(event)
 
         except Exception as e:

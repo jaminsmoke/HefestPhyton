@@ -1,5 +1,6 @@
 import sys
 import os
+import logging
 from data.db_manager import DatabaseManager
 from ...mesa_event_bus import mesa_event_bus
 """
@@ -44,8 +45,22 @@ def create_title_section_ultra_premium():
             border-radius: 26px;
         }
     """)
-    icon_layout = QVBoxLayout(icon_container)
+    # Refuerzo: limpiar layout anterior de icon_container
+    old_icon_layout = icon_container.layout()
+    if old_icon_layout is not None:
+        while old_icon_layout.count():
+            item = old_icon_layout.takeAt(0)
+            if item is not None:
+                widget = item.widget()
+                if widget:
+                    widget.setParent(None)
+        try:
+            old_icon_layout.deleteLater()
+        except Exception:
+            pass
+    icon_layout = QVBoxLayout()
     icon_layout.setContentsMargins(0, 0, 0, 0)
+    icon_container.setLayout(icon_layout)
     icon_label = QLabel("🍽️")
     icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     icon_label.setStyleSheet("""
@@ -57,9 +72,13 @@ def create_title_section_ultra_premium():
         }        """)
     icon_layout.addWidget(icon_label)
     layout.addWidget(icon_container)
-    text_container = QVBoxLayout()
-    text_container.setSpacing(1)
-    text_container.setContentsMargins(0, 0, 0, 0)
+    # Refuerzo: crear text_container como QWidget y asignar layout
+    from PyQt6.QtWidgets import QWidget
+    text_widget = QWidget()
+    text_layout = QVBoxLayout()
+    text_layout.setSpacing(1)
+    text_layout.setContentsMargins(0, 0, 0, 0)
+    text_widget.setLayout(text_layout)
     title_label = QLabel("GESTIÓN DE MESAS")
     title_label.setStyleSheet("""
         QLabel {
@@ -73,7 +92,7 @@ def create_title_section_ultra_premium():
             line-height: 1.1;
         }
     """)
-    text_container.addWidget(title_label)
+    text_layout.addWidget(title_label)
     subtitle_label = QLabel("Terminal Punto de Venta")
     subtitle_label.setStyleSheet("""
         QLabel {
@@ -86,8 +105,8 @@ def create_title_section_ultra_premium():
             line-height: 1.0;
         }
     """)
-    text_container.addWidget(subtitle_label)
-    text_container.addStretch()
+    text_layout.addWidget(subtitle_label)
+    text_layout.addStretch()
     status_label = QLabel("● Sistema Activo")
     status_label.setStyleSheet("""
         QLabel {
@@ -100,8 +119,8 @@ def create_title_section_ultra_premium():
             line-height: 1.0;
         }
     """)
-    text_container.addWidget(status_label)
-    layout.addLayout(text_container)
+    text_layout.addWidget(status_label)
+    layout.addWidget(text_widget)
     layout.addStretch()
     return section
 
@@ -285,7 +304,6 @@ class FiltersSectionUltraPremium(QFrame):
             self.estado_chips.append(btn)
         right_vbox.addWidget(chips_container, alignment=Qt.AlignmentFlag.AlignHCenter)
         self.set_estado_chip_selected("Todos")
-        right_vbox.addLayout(chips_layout)
         right_vbox.addStretch(1)
         main_hbox.addWidget(subcontenedor_estados, 1)  # Dar peso al subcontenedor
 
@@ -622,12 +640,12 @@ class FiltersSectionUltraPremium(QFrame):
             zonas_unicas.update(self.instance._zonas_personalizadas)
         return ["Todas"] + sorted(zonas_unicas)
 
-def create_stats_section_ultra_premium(instance):
+def create_subcontenedor_metric_cards(instance):
     # Imports locales eliminados (ya están al inicio del archivo)
     section = QFrame()
-    section.setObjectName("StatsSectionUltraPremium")
+    section.setObjectName("SubContenedorMetricCards")
     section.setStyleSheet("""
-        QFrame#StatsSectionUltraPremium {
+        QFrame#SubContenedorMetricCards {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                 stop:0 #fef7ff, stop:0.5 #fdf4ff, stop:1 #fef7ff);
             border: 1.5px solid #d946ef;
@@ -775,7 +793,7 @@ def create_header(parent, instance, layout):
     right_section_widget.setMaximumWidth(650)  # Ancho máximo para evitar expansión excesiva
     right_section_layout = QVBoxLayout(right_section_widget)
     right_section_layout.setSpacing(8)
-    stats_container = create_stats_section_ultra_premium(instance)
+    stats_container = create_subcontenedor_metric_cards(instance)
     right_section_layout.addWidget(stats_container)
     right_section_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
     header_layout.addWidget(right_section_widget, 0)  # Sin stretch para mantener tamaño fijo

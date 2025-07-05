@@ -220,9 +220,9 @@ class TPVService(BaseService):
 
         if self.db_manager:
             self.logger.info("Intentando cargar datos del TPV desde base de datos")
-            print("[DEBUG TPVService] _load_datos: llamando a _load_mesas_from_db")
+            # print("[DEBUG TPVService] _load_datos: llamando a _load_mesas_from_db")  # Eliminado debug
             self._load_mesas_from_db()
-            print(f"[DEBUG TPVService] _load_datos: después de _load_mesas_from_db, _mesas_cache tiene {len(self._mesas_cache)} mesas")
+            # print(f"[DEBUG TPVService] _load_datos: después de _load_mesas_from_db, _mesas_cache tiene {len(self._mesas_cache)} mesas")  # Eliminado debug
             self._load_categorias_from_db()
             self._load_productos_from_db()
             self._load_comandas_from_db()
@@ -253,7 +253,7 @@ class TPVService(BaseService):
             return
 
         try:
-            print("[DEBUG TPVService] _load_mesas_from_db llamado")
+            # print("[DEBUG TPVService] _load_mesas_from_db llamado")  # Eliminado debug
             result = self.db_manager.query("SELECT id, numero, zona, estado, capacidad FROM mesas")
             self._mesas_cache = []
             for row in result:
@@ -265,11 +265,11 @@ class TPVService(BaseService):
                     capacidad=row[4] or 4
                 )
                 self._mesas_cache.append(mesa)
-            print(f"[DEBUG TPVService] _load_mesas_from_db: {len(self._mesas_cache)} mesas cargadas")
+            # print(f"[DEBUG TPVService] _load_mesas_from_db: {len(self._mesas_cache)} mesas cargadas")  # Eliminado debug
             self.logger.info(f"Cargadas {len(self._mesas_cache)} mesas desde la base de datos")
         except Exception as e:
             self.logger.error(f"Error cargando mesas: {e}")
-            print(f"[DEBUG TPVService] _load_mesas_from_db: error {e}")
+            # print(f"[DEBUG TPVService] _load_mesas_from_db: error {e}")  # Eliminado debug
             self._mesas_cache = []
 
     def _load_categorias_from_db(self):

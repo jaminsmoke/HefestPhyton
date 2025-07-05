@@ -6,13 +6,13 @@ Lógica de estadísticas y widgets de KPIs para MesasArea
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
 from PyQt6.QtCore import Qt
 
-def create_stats_section_ultra_premium(instance):
+def create_subcontenedor_metric_cards(instance):
     from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout
     from PyQt6.QtCore import Qt
     section = QFrame()
-    section.setObjectName("StatsSectionUltraPremium")
+    section.setObjectName("SubContenedorMetricCards")
     section.setStyleSheet("""
-        QFrame#StatsSectionUltraPremium {
+        QFrame#SubContenedorMetricCards {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                 stop:0 #fef7ff, stop:0.5 #fdf4ff, stop:1 #fef7ff);
             border: 1.5px solid #d946ef;
