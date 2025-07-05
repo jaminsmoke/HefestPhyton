@@ -20,7 +20,8 @@ from .components.reservas_agenda.reserva_service import ReservaService
 from .mesa_event_bus import mesa_event_bus
 
 # Importar componentes refactorizados
-from .components.tpv_dashboard import TPVDashboard
+# TPVDashboard eliminado para evitar métricas duplicadas
+# from .components.tpv_dashboard import TPVDashboard
 from .components.mesas_area import MesasArea
 from .widgets.filters_panel import FiltersPanel
 from .widgets.statistics_panel import StatisticsPanel
@@ -87,17 +88,27 @@ class TPVModule(BaseModule):
           # Conectar señales del controlador
         # Eliminar las líneas de conexión directa a self.mesa_controller.mesa_updated.connect, self.mesa_controller.mesas_updated.connect, self.mesas_area.mesa_clicked.connect, etc.
 
+    def create_module_header(self):
+        # No usar header base, así el contenido se pega arriba
+        return None
+
     def setup_ui(self):
-        layout = self.main_layout
-        # Dashboard de métricas (refactorizado)
-        self.dashboard = TPVDashboard(self.tpv_service)
-        layout.addWidget(self.dashboard)
-        # Línea separadora
+        # Usar el layout de contenido, no el main_layout
+        layout = self.content_layout
+        layout.setContentsMargins(0, 0, 0, 0)  # Eliminar márgenes
+        layout.setSpacing(0)
+        # Añadir el título pegado arriba
+        title_section = self.create_title_section()
+        layout.addWidget(title_section)
+        # Separador visual después del título
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
         separator.setLineWidth(1)
         separator.setStyleSheet("color: #e0e0e0; background-color: #e0e0e0;")
         layout.addWidget(separator)
+
+        # Restablecer espaciado normal para el resto de elementos
+        layout.setSpacing(8)
         # Área principal con pestañas refactorizada
         self.create_main_tabs(layout)
         # --- Sincronizar reservas con mesas ---
@@ -257,6 +268,73 @@ class TPVModule(BaseModule):
 
         self.tab_widget.addTab(reportes_widget, "📈 Reportes")
 
+    def create_title_section(self) -> QWidget:
+        """Crea una sección de título/información con fondo y efecto visual cohesivo con el header gris de HEFEST"""
+        title_container = QFrame()
+        title_container.setObjectName("TitleContainer")
+
+        # Altura igualada visualmente al header gris
+        title_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        title_container.setMinimumHeight(120)
+        title_container.setMaximumHeight(120)
+        title_container.setStyleSheet("""
+            QFrame#TitleContainer {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #f3f4f6, stop:1 #e5e7eb);
+                border: none;
+                border-radius: 0px;
+                margin: 0px;
+                padding: 0px;
+                box-shadow: 0px 4px 16px 0px rgba(60,60,60,0.04);
+                border-bottom: 2px solid #e0e0e0;
+            }
+        """)
+
+        layout = QHBoxLayout(title_container)
+        layout.setContentsMargins(32, 0, 32, 0)
+        layout.setSpacing(20)
+
+        # Icono y título principal
+        icon_label = QLabel("🍽️")
+        icon_label.setStyleSheet("font-size: 32px; margin-right: 16px;")
+        layout.addWidget(icon_label)
+
+        title_info = QVBoxLayout()
+        title_info.setSpacing(2)
+
+        main_title = QLabel("GESTIÓN DE MESAS - TPV")
+        main_title.setStyleSheet("""
+            font-size: 22px;
+            font-weight: bold;
+            color: #1e293b;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        """)
+        title_info.addWidget(main_title)
+
+        subtitle = QLabel("Sistema de Terminal Punto de Venta")
+        subtitle.setStyleSheet("""
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        """)
+        title_info.addWidget(subtitle)
+
+        layout.addLayout(title_info)
+        layout.addStretch()
+
+        # Estado del sistema
+        status_container = QVBoxLayout()
+        status_container.setSpacing(2)
+        status_label = QLabel("● Sistema Activo")
+        status_label.setStyleSheet("font-size: 13px; color: #16a34a; font-weight: bold;")
+        status_container.addWidget(status_label)
+        time_label = QLabel("Actualizado en tiempo real")
+        time_label.setStyleSheet("font-size: 11px; color: #6b7280; font-style: italic;")
+        status_container.addWidget(time_label)
+        layout.addLayout(status_container)
+
+        return title_container
+
     # ======= CALLBACKS DEL CONTROLADOR =======
 
     def _on_mesa_created(self, mesa: Mesa):
@@ -352,16 +430,18 @@ class TPVModule(BaseModule):
     def _refresh_all_components(self):
         """Refresca todos los componentes después de cambios en los datos"""
         try:
-            # Actualizar dashboard
-            if hasattr(self, 'dashboard'):
-                self.dashboard.update_metrics()
+            # Dashboard de métricas duplicadas eliminado
+            # if hasattr(self, 'dashboard'):
+            #     self.dashboard.update_metrics()
 
             # Actualizar área de mesas con los datos actuales
-            if hasattr(self, 'mesas_area'):                self.mesas_area.set_mesas(self.mesas)
+            if hasattr(self, 'mesas_area'):
+                self.mesas_area.set_mesas(self.mesas)
 
             # Las estadísticas compactas se actualizan automáticamente en MesasArea
 
-        except Exception as e:            logger.error(f"Error refrescando componentes: {e}")
+        except Exception as e:
+            logger.error(f"Error refrescando componentes: {e}")
 
     # ======= MÉTODOS SIMPLIFICADOS (DELEGADOS AL CONTROLADOR) =======
 

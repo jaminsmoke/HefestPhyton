@@ -87,6 +87,7 @@ class MesasArea(QFrame):
         self.current_status_filter = "Todos"
         self.view_mode = "grid"
         self._chips_refs = []  # Referencias a chips de filtro rápido
+        self.mesas_layout = None  # Inicializar para evitar errores
         # Forzar expansión horizontal
         from PyQt6.QtWidgets import QSizePolicy
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)

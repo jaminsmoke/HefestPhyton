@@ -117,6 +117,8 @@ def populate_grid(instance):
 
 def clear_mesa_widgets(instance):
     try:
+        if not hasattr(instance, 'mesas_layout') or instance.mesas_layout is None:
+            return
         instance.mesa_widgets.clear()
         while instance.mesas_layout.count():
             child = instance.mesas_layout.takeAt(0)
@@ -131,6 +133,8 @@ def clear_mesa_widgets(instance):
 def show_no_mesas_message(instance):
     from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
     try:
+        if not hasattr(instance, 'mesas_layout') or instance.mesas_layout is None:
+            return
         message_container = QFrame()
         message_container.setStyleSheet("""
             QFrame {
