@@ -95,6 +95,17 @@ def populate_grid(instance):
     if scroll:
         scroll.valueChanged.connect(on_scroll)
     lazy_load_rows()
+
+    # REFRESCO GLOBAL: Forzar el estilo correcto en todos los widgets de mesa
+    # Esto garantiza que todos los labels se vean correctamente desde el inicio
+    # sin necesidad de interacción previa (click, cerrar diálogo, etc.)
+    from PyQt6.QtCore import QTimer
+    def aplicar_refresco_global():
+        refresh_all_mesa_widgets_styles(instance)
+
+    # Usar QTimer para ejecutar el refresco después de que se hayan renderizado completamente
+    QTimer.singleShot(50, aplicar_refresco_global)
+
     total_filtered = len(instance.filtered_mesas)
     total_all = len(instance.mesas)
     if hasattr(instance, 'status_info'):
@@ -161,4 +172,16 @@ def create_mesas_grid(parent, mesas):
     # ...agregar widgets de mesa aquí...
     return grid_widget
 
-# ...migrar helpers de grid y lógica de renderizado aquí...
+def refresh_all_mesa_widgets_styles(instance):
+    """
+    Refresca los estilos de todos los widgets de mesa existentes.
+    Ejecuta _ajustar_fuente_nombre() en cada widget para garantizar que
+    todos los labels tengan el estilo correcto desde el inicio.
+    """
+    for mesa_widget in instance.mesa_widgets:
+        if hasattr(mesa_widget, '_ajustar_fuente_nombre'):
+            try:
+                mesa_widget._ajustar_fuente_nombre()
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Error refrescando estilo de mesa widget: {e}")

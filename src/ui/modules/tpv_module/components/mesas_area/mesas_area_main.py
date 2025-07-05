@@ -263,7 +263,14 @@ class MesasArea(QFrame):
             mesas_estado = mesas_zona
         search = self.search_input.text().strip().lower() if hasattr(self, 'search_input') else ""
         if search:
-            self.filtered_mesas = [m for m in mesas_estado if search in str(m.numero).lower() or search in (m.zona or '').lower() or search in (m.alias or '').lower()]
+            # Búsqueda ampliada: número, zona, alias y nombre predeterminado/display
+            self.filtered_mesas = [m for m in mesas_estado if (
+                search in str(m.numero).lower() or
+                search in (m.zona or '').lower() or
+                search in (m.alias or '').lower() or
+                search in m.nombre_display.lower() or  # Incluir nombre display
+                search in f"mesa {m.numero}".lower()   # Incluir nombre predeterminado explícito
+            )]
         else:
             self.filtered_mesas = mesas_estado
 

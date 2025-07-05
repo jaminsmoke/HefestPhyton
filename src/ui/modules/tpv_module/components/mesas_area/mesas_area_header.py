@@ -187,18 +187,19 @@ class FiltersSectionUltraPremium(QFrame):
                 border-radius: 14px;
                 padding: 6px 0px 8px 0px; /* Padding mínimo */
                 margin: 2px;
-                min-width: 420px;
+                min-width: 480px;  /* Aumentar ancho mínimo al tener más espacio */
+                max-width: 800px;  /* Aumentar ancho máximo para aprovechar el espacio liberado */
                 min-height: 200px;
             }
         """)
         self.db = DatabaseManager()
         mesa_event_bus.zonas_actualizadas.connect(self.update_zonas_chips)
-        # Permitir expansión horizontal total (sin máximo)
+        # Aplicar política de tamaño más conservadora para evitar expansión excesiva
         from PyQt6.QtWidgets import QSizePolicy
-        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         main_hbox = QHBoxLayout(self)
         main_hbox.setContentsMargins(0, 0, 0, 0)  # Sin margen extra
-        main_hbox.setSpacing(2)  # Espacio mínimo entre subcontenedores
+        main_hbox.setSpacing(4)  # Aumentar espacio entre subcontenedores
 
         # --- Subcontenedor de Estados ---
         subcontenedor_estados = QFrame()
@@ -213,7 +214,7 @@ class FiltersSectionUltraPremium(QFrame):
             }
         """)
         subcontenedor_estados.setMinimumHeight(90)
-        subcontenedor_estados.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        subcontenedor_estados.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         right_vbox = QVBoxLayout(subcontenedor_estados)
         right_vbox.setContentsMargins(0, 0, 0, 8)  # Padding inferior estándar para estados
         right_vbox.setSpacing(5)
@@ -286,7 +287,7 @@ class FiltersSectionUltraPremium(QFrame):
         self.set_estado_chip_selected("Todos")
         right_vbox.addLayout(chips_layout)
         right_vbox.addStretch(1)
-        main_hbox.addWidget(subcontenedor_estados)
+        main_hbox.addWidget(subcontenedor_estados, 1)  # Dar peso al subcontenedor
 
         # --- Subcontenedor de Zonas ---
         subcontenedor_zonas = QFrame()
@@ -301,7 +302,7 @@ class FiltersSectionUltraPremium(QFrame):
             }
         """)
         subcontenedor_zonas.setMinimumHeight(90)
-        subcontenedor_zonas.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        subcontenedor_zonas.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
         zonas_vbox = QVBoxLayout(subcontenedor_zonas)
         zonas_vbox.setContentsMargins(0, 0, 0, 20)  # Aumentar padding inferior para igualar altura visual
         zonas_vbox.setSpacing(5)
@@ -336,7 +337,7 @@ class FiltersSectionUltraPremium(QFrame):
         self.zonas_chips = []
         zonas_vbox.addWidget(self.chips_zonas_container)
         zonas_vbox.addStretch(1)
-        main_hbox.addWidget(subcontenedor_zonas)
+        main_hbox.addWidget(subcontenedor_zonas, 2)  # Dar más peso al subcontenedor de zonas
 
         # --- Subcontenedor de Búsqueda/Acción (a la derecha de Zonas) ---
         subcontenedor_busqueda_accion = QFrame()
@@ -346,13 +347,13 @@ class FiltersSectionUltraPremium(QFrame):
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #f1f5f9, stop:1 #e0e7ef);
                 border: 1.2px dashed #38bdf8;
                 border-radius: 8px;
-                min-width: 0px;
+                min-width: 360px;  /* Ancho mínimo para asegurar espacio suficiente */
                 min-height: 90px;
             }
         """)
         subcontenedor_busqueda_accion.setMinimumHeight(90)
-        subcontenedor_busqueda_accion.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        subcontenedor_busqueda_accion.setMaximumWidth(700)  # Limita el ancho máximo del contenedor de gestión
+        subcontenedor_busqueda_accion.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        subcontenedor_busqueda_accion.setMaximumWidth(900)  # Aumentar ancho máximo para más espacio
         # Layout vertical para varias filas de botones
         busqueda_accion_vbox = QVBoxLayout(subcontenedor_busqueda_accion)
         busqueda_accion_vbox.setContentsMargins(0, 0, 0, 20)
@@ -493,7 +494,7 @@ class FiltersSectionUltraPremium(QFrame):
         # Fila 4: Barra de búsqueda avanzada
         from PyQt6.QtWidgets import QLineEdit
         search_line = QLineEdit()
-        search_line.setPlaceholderText("Buscar mesa, zona o alias...")
+        search_line.setPlaceholderText("Buscar mesa por nombre, número, zona o alias...")
         search_line.setClearButtonEnabled(True)
         search_line.setStyleSheet('''
             QLineEdit {
@@ -523,11 +524,11 @@ class FiltersSectionUltraPremium(QFrame):
             instance.set_search_input(search_line)
         busqueda_accion_vbox.addWidget(search_line)
         busqueda_accion_vbox.addStretch(1)
-        main_hbox.addWidget(subcontenedor_busqueda_accion)
+        main_hbox.addWidget(subcontenedor_busqueda_accion, 3)  # Aumentar peso para dar más espacio
 
-        # Añadir un espacio expansivo al final para forzar alineación a la izquierda
-        from PyQt6.QtWidgets import QSpacerItem, QSizePolicy as QSP
-        main_hbox.addSpacerItem(QSpacerItem(0, 0, QSP.Policy.Expanding, QSP.Policy.Minimum))
+        # Eliminar el spacer expansivo para evitar espacio libre a la derecha
+        # from PyQt6.QtWidgets import QSpacerItem, QSizePolicy as QSP
+        # main_hbox.addSpacerItem(QSpacerItem(0, 0, QSP.Policy.Expanding, QSP.Policy.Minimum))
         self.instance = instance
 
         # --- Conexión lógica de botones de acción ---
@@ -636,6 +637,10 @@ def create_stats_section_ultra_premium(instance):
             min-height: 32px; /* Ajuste altura chip rosa (zonas) */
         }
     """)
+
+    # Aplicar política de tamaño más conservadora para evitar expansión excesiva
+    from PyQt6.QtWidgets import QSizePolicy
+    section.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
     layout = QVBoxLayout(section)
     layout.setContentsMargins(4, 2, 4, 4)
     layout.setSpacing(2)
@@ -740,37 +745,40 @@ def create_header(parent, instance, layout):
     """)
     header_layout = QHBoxLayout(header_container)
     header_layout.setContentsMargins(8, 6, 8, 6)  # Márgenes más pequeños
-    header_layout.setSpacing(4)  # Menos espacio entre subcontenedores
-    # Sección izquierda: solo título y estado
-    from PyQt6.QtWidgets import QSizePolicy, QWidget
-    left_section_widget = QWidget()
-    left_section_layout = QVBoxLayout(left_section_widget)
-    left_section_layout.setSpacing(8)
-    title_status_container = create_title_section_ultra_premium()
-    left_section_layout.addWidget(title_status_container)
-    left_section_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-    header_layout.addWidget(left_section_widget, 0)
-    # Separador
-    separator1 = create_ultra_premium_separator()
-    header_layout.addWidget(separator1, 0)
-    # Sección central: filtros y control (solo UI moderna de chips)
+    header_layout.setSpacing(6)  # Más espacio entre los contenedores principales
+
+    # Eliminar sección izquierda del título para compactar el header
+    # from PyQt6.QtWidgets import QSizePolicy, QWidget
+    # left_section_widget = QWidget()
+    # left_section_layout = QVBoxLayout(left_section_widget)
+    # left_section_layout.setSpacing(8)
+    # title_status_container = create_title_section_ultra_premium()
+    # left_section_layout.addWidget(title_status_container)
+    # left_section_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+    # header_layout.addWidget(left_section_widget, 0)
+    # # Separador
+    # separator1 = create_ultra_premium_separator()
+    # header_layout.addWidget(separator1, 0)
+
+    # Sección principal: filtros y control (solo UI moderna de chips)
     filters_container = FiltersSectionUltraPremium(instance)
-    # Permitir expansión máxima horizontal del header (aunque requiera scroll)
+    # Dar más espacio al contenedor de filtros ahora que no hay título
     filters_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-    # Ajuste: sin stretch para el contenedor azul, solo expansión natural
-    header_layout.addWidget(filters_container)  # Sin stretch
+    header_layout.addWidget(filters_container, 1)  # Dar peso para expansión
     # Separador
     separator2 = create_ultra_premium_separator()
     header_layout.addWidget(separator2, 0)
     # Sección derecha: estadísticas premium
+    from PyQt6.QtWidgets import QWidget
     right_section_widget = QWidget()
-    right_section_widget.setMinimumWidth(320)
+    right_section_widget.setMinimumWidth(580)  # Ancho mínimo ajustado para 5 tarjetas de 110px + espaciado
+    right_section_widget.setMaximumWidth(650)  # Ancho máximo para evitar expansión excesiva
     right_section_layout = QVBoxLayout(right_section_widget)
     right_section_layout.setSpacing(8)
     stats_container = create_stats_section_ultra_premium(instance)
     right_section_layout.addWidget(stats_container)
-    right_section_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-    header_layout.addWidget(right_section_widget, 2)  # Menos stretch para el rosa
+    right_section_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+    header_layout.addWidget(right_section_widget, 0)  # Sin stretch para mantener tamaño fijo
     # El header debe expandirse horizontalmente según el contenido
     # Eliminar min-width global, solo policies expansivas
     header_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)

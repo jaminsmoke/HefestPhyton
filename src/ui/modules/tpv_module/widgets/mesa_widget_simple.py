@@ -296,16 +296,19 @@ class MesaWidget(QFrame):
             }}
         """)
 
-        # Alias de mesa - Prominente pero compacto
+        # Alias de mesa - Prominente pero compacto - DIMENSIONES IGUALES AL QLINEEDIT
         self.alias_label.setStyleSheet(f"""
             QLabel#alias_label {{
                 color: {colores['texto']};
                 font-weight: bold;
                 background-color: transparent;
-                border: none;
-                padding: 1px;
+                border: 2px solid transparent;  /* Mismo border que QLineEdit pero transparente */
+                border-radius: 8px;  /* Mismo border-radius que QLineEdit */
+                padding: 4px 8px;  /* Mismo padding que QLineEdit */
                 margin: 0px;
-                min-height: 24px;
+                font-size: 16px;  /* Tamaño de fuente similar al QLineEdit pero ligeramente menor */
+                min-height: 20px;  /* Altura mínima ajustada */
+                max-height: 32px;  /* Altura máxima para mantener consistencia */
             }}
         """)
 
@@ -552,7 +555,8 @@ class MesaWidget(QFrame):
         self.alias_label.hide()
         self.alias_line_edit = QLineEdit(self.mesa.alias or "", self)
         self.alias_line_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.alias_line_edit.setFont(QFont("Segoe UI", 20, QFont.Weight.Bold))
+        # Usar fuente similar al QLabel para mantener consistencia
+        self.alias_line_edit.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
         self.alias_line_edit.setStyleSheet("""
             QLineEdit {
                 border: 2px solid #2196f3;
@@ -560,6 +564,9 @@ class MesaWidget(QFrame):
                 padding: 4px 8px;
                 background: #f5faff;
                 color: #1f2937;
+                font-size: 16px;  /* Mismo tamaño que el QLabel */
+                min-height: 20px;  /* Misma altura mínima que el QLabel */
+                max-height: 32px;  /* Misma altura máxima que el QLabel */
             }
         """)
         self.alias_line_edit.setGeometry(self.alias_label.geometry())
