@@ -1,4 +1,8 @@
+# Unificación de widgets KPI: importar la versión avanzada desde mesas_area_stats.py
+from .mesas_area_stats import create_ultra_premium_stat, create_subcontenedor_metric_cards
 import sys
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, pyqtSlot, QTimer
+from PyQt6.QtGui import QColor
 import os
 import logging
 from data.db_manager import DatabaseManager
@@ -640,101 +644,137 @@ class FiltersSectionUltraPremium(QFrame):
             zonas_unicas.update(self.instance._zonas_personalizadas)
         return ["Todas"] + sorted(zonas_unicas)
 
-def create_subcontenedor_metric_cards(instance):
-    # Imports locales eliminados (ya están al inicio del archivo)
-    section = QFrame()
-    section.setObjectName("SubContenedorMetricCards")
-    section.setStyleSheet("""
-        QFrame#SubContenedorMetricCards {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 #fef7ff, stop:0.5 #fdf4ff, stop:1 #fef7ff);
-            border: 1.5px solid #d946ef;
-            border-radius: 14px;
-            padding: 2px 8px 8px 8px; /* Menos padding inferior */
-            margin: 2px 0 8px 0;
-            min-height: 32px; /* Ajuste altura chip rosa (zonas) */
-        }
-    """)
 
-    # Aplicar política de tamaño más conservadora para evitar expansión excesiva
-    from PyQt6.QtWidgets import QSizePolicy
-    section.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-    layout = QVBoxLayout(section)
-    layout.setContentsMargins(4, 2, 4, 4)
-    layout.setSpacing(2)
-    title_row = QHBoxLayout()
-    title_label = QLabel("<span style='font-size:11px; font-weight:600; color:#a21caf; vertical-align:middle;'>📊 Estadísticas en Tiempo Real</span>")
-    title_label.setStyleSheet("background: #f3e8ff; border-radius: 6px; padding: 1px 10px 1px 6px; border: 1px solid #d946ef; margin-bottom: 0px;")
-    title_row.addWidget(title_label, 0, Qt.AlignmentFlag.AlignLeft)
-    title_row.addStretch(1)
-    layout.addLayout(title_row)
-    grid = QGridLayout()
-    grid.setSpacing(12)
-    grid.setContentsMargins(0, 0, 0, 0)
-    grid.setAlignment(Qt.AlignmentFlag.AlignTop)
-    # Asignar widgets premium SIEMPRE a instance
-    instance.zonas_widget = create_ultra_premium_stat("📍", "Zonas", "0", "#8b5cf6", "#f3e8ff", size=110, height=110)
-    instance.mesas_total_widget = create_ultra_premium_stat("🍽️", "Total", "0", "#3b82f6", "#dbeafe", size=110, height=110)
-    instance.mesas_libres_widget = create_ultra_premium_stat("🟢", "Libres", "0", "#22c55e", "#dcfce7", size=110, height=110)
-    instance.mesas_ocupadas_widget = create_ultra_premium_stat("🔴", "Ocupadas", "0", "#ef4444", "#fee2e2", size=110, height=110)
-    instance.mesas_reservadas_widget = create_ultra_premium_stat("📅", "Reservadas", "0", "#f59e0b", "#fef3c7", size=110, height=110)
-    grid.addWidget(instance.zonas_widget, 0, 0)
-    grid.addWidget(instance.mesas_total_widget, 0, 1)
-    grid.addWidget(instance.mesas_libres_widget, 0, 2)
-    grid.addWidget(instance.mesas_ocupadas_widget, 0, 3)
-    grid.addWidget(instance.mesas_reservadas_widget, 0, 4)
-    layout.addLayout(grid)
-    return section
 
-def create_ultra_premium_stat(icon: str, label: str, value: str, color: str, bg_color: str, size: int = 80, height: int = 80):
-    # Imports locales eliminados (ya están al inicio del archivo)
-    stat_widget = QFrame()
-    stat_widget.setFixedSize(size, height)
-    stat_widget.setStyleSheet(f"""
-        QFrame {{
-            background: {bg_color};
-            border: 2px solid {color};
-            border-radius: 14px;
-            margin: 2px;
-        }}
-    """)
-    layout = QVBoxLayout(stat_widget)
-    layout.setContentsMargins(6, 10, 6, 8)
-    layout.setSpacing(2)
-    icon_container = QFrame()
-    icon_container.setFixedHeight(36)
-    icon_container.setStyleSheet("background: transparent; border: none;")
-    icon_layout = QVBoxLayout(icon_container)
-    icon_layout.setContentsMargins(0, 0, 0, 0)
-    icon_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    icon_label = QLabel(icon)
-    icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    icon_label.setStyleSheet(f"font-size: 28px; color: {color}; line-height: 1.0;")
-    icon_layout.addWidget(icon_label)
-    layout.addWidget(icon_container)
-    label_widget = QLabel(label)
-    label_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    label_widget.setStyleSheet("font-size: 11px; color: #6b7280; font-weight: 600; margin: 2px 0;")
-    layout.addWidget(label_widget)
-    value_widget = QLabel(str(value))
-    value_widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    value_widget.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {color}; margin-top: 2px;")
-    layout.addWidget(value_widget)
-    stat_widget.setProperty('value_label', value_widget)  # Guardar referencia para actualización compatible con Pyright
-    return stat_widget
+
 
 def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, reservadas):
     """Actualiza los valores de las tarjetas premium del header (solo UI, sin lógica de cálculo)"""
-    if hasattr(instance, 'zonas_widget') and hasattr(instance.zonas_widget, 'value_label'):
-        instance.zonas_widget.value_label.setText(str(zonas))
-    if hasattr(instance, 'mesas_total_widget') and hasattr(instance.mesas_total_widget, 'value_label'):
-        instance.mesas_total_widget.value_label.setText(str(total))
-    if hasattr(instance, 'mesas_libres_widget') and hasattr(instance.mesas_libres_widget, 'value_label'):
-        instance.mesas_libres_widget.value_label.setText(str(libres))
-    if hasattr(instance, 'mesas_ocupadas_widget') and hasattr(instance.mesas_ocupadas_widget, 'value_label'):
-        instance.mesas_ocupadas_widget.value_label.setText(str(ocupadas))
-    if hasattr(instance, 'mesas_reservadas_widget') and hasattr(instance.mesas_reservadas_widget, 'value_label'):
-        instance.mesas_reservadas_widget.value_label.setText(str(reservadas))
+    # Helper para animar highlight cuando cambia el valor
+    def animate_pulse(widget):
+        if not widget:
+            return
+        anim = QPropertyAnimation(widget, b"styleSheet")
+        anim.setDuration(350)
+        anim.setEasingCurve(QEasingCurve.Type.OutQuad)
+        orig_style = widget.styleSheet()
+        highlight = orig_style.replace("background:", "background: #fffbe6;") if "background:" in orig_style else orig_style + "\nbackground: #fffbe6;"
+        anim.setStartValue(highlight)
+        anim.setEndValue(orig_style)
+        widget._pulse_anim = anim
+        anim.start()
+
+    # Transición suave de números
+    def animate_number(label, old_value, new_value, duration=350):
+        try:
+            old = int(old_value)
+            new = int(new_value)
+        except Exception:
+            label.setText(str(new_value))
+            return
+        if old == new:
+            label.setText(str(new_value))
+            return
+        steps = max(10, int(duration / 30))
+        delta = (new - old) / steps
+        current = [float(old)]
+        count = [0]
+        def update():
+            if count[0] >= steps:
+                label.setText(str(new))
+                timer.stop()
+                return
+            value = int(round(current[0]))
+            label.setText(str(value))
+            current[0] += delta
+            count[0] += 1
+        timer = QTimer()
+        timer.timeout.connect(update)
+        timer.start(int(duration / steps))
+        # Mantener referencia para evitar garbage collection
+        label._number_anim_timer = timer
+
+    # Actualizar y animar si cambia el valor
+    def set_value_and_animate(widget, new_value, badge_logic=None):
+        if widget and hasattr(widget, 'value_label'):
+            label = widget.value_label
+            trend = getattr(widget, 'trend_label', None)
+            badge = getattr(widget, 'badge_label', None)
+            old = label.text()
+            # Tendencia: comparar con último valor
+            try:
+                prev = int(widget._last_value) if widget._last_value is not None else int(old)
+                curr = int(new_value)
+                if trend:
+                    if curr > prev:
+                        trend.setText("▲")
+                        trend.setStyleSheet("font-size: 26px; color: #22c55e; font-weight: bold; background: transparent; border: none;")
+                    elif curr < prev:
+                        trend.setText("▼")
+                        trend.setStyleSheet("font-size: 26px; color: #ef4444; font-weight: bold; background: transparent; border: none;")
+                    else:
+                        trend.setText("—")
+                        trend.setStyleSheet("font-size: 26px; color: #64748b; font-weight: bold; background: transparent; border: none;")
+            except Exception:
+                if trend:
+                    trend.setText("—")
+                    trend.setStyleSheet("font-size: 26px; color: #64748b; font-weight: bold; background: transparent; border: none;")
+            # Badge de alerta (lógica por métrica)
+            if badge and badge_logic:
+                badge_text, badge_color, badge_tooltip, show = badge_logic(new_value)
+                if show:
+                    badge.setText(badge_text)
+                    badge.setStyleSheet(f"font-size: 16px; color: #fff; background: {badge_color}; border-radius: 9px; padding: 0 6px; margin-left: 4px; font-weight: bold;")
+                    badge.setToolTip(badge_tooltip)
+                    badge.show()
+                else:
+                    badge.hide()
+            elif badge:
+                badge.hide()
+            widget._last_value = new_value
+            if str(new_value) != old:
+                try:
+                    int(old)
+                    int(new_value)
+                    animate_number(label, old, new_value)
+                except Exception:
+                    label.setText(str(new_value))
+                animate_pulse(widget)
+            else:
+                label.setText(str(new_value))
+
+    # Badge lógica para ocupadas: alerta si >80% del total
+    def badge_ocupadas(val):
+        try:
+            val = int(val)
+            total_widget = getattr(instance, 'mesas_total_widget', None)
+            total = int(total_widget.value_label.text()) if (total_widget and hasattr(total_widget, 'value_label')) else 0
+            if total > 0 and val / total >= 0.8:
+                return ("!", "#ef4444", "Alerta: Más del 80% de mesas ocupadas", True)
+        except Exception:
+            pass
+        return ("", "#ef4444", "", False)
+    # Badge lógica para reservadas: alerta si >0
+    def badge_reservadas(val):
+        try:
+            val = int(val)
+            if val > 0:
+                return ("!", "#f59e0b", "Alerta: Hay mesas reservadas", True)
+        except Exception:
+            pass
+        return ("", "#f59e0b", "", False)
+
+    set_value_and_animate(getattr(instance, 'zonas_widget', None), zonas)
+    set_value_and_animate(getattr(instance, 'mesas_total_widget', None), total)
+    set_value_and_animate(getattr(instance, 'mesas_libres_widget', None), libres)
+    set_value_and_animate(getattr(instance, 'mesas_ocupadas_widget', None), ocupadas, badge_logic=badge_ocupadas)
+    set_value_and_animate(getattr(instance, 'mesas_reservadas_widget', None), reservadas, badge_logic=badge_reservadas)
+
+    set_value_and_animate(getattr(instance, 'zonas_widget', None), zonas)
+    set_value_and_animate(getattr(instance, 'mesas_total_widget', None), total)
+    set_value_and_animate(getattr(instance, 'mesas_libres_widget', None), libres)
+    set_value_and_animate(getattr(instance, 'mesas_ocupadas_widget', None), ocupadas)
+    set_value_and_animate(getattr(instance, 'mesas_reservadas_widget', None), reservadas)
     # Forzar actualización visual
     for attr in ["zonas_widget", "mesas_total_widget", "mesas_libres_widget", "mesas_ocupadas_widget", "mesas_reservadas_widget"]:
         widget = getattr(instance, attr, None)
@@ -789,14 +829,14 @@ def create_header(parent, instance, layout):
     # Sección derecha: estadísticas premium
     from PyQt6.QtWidgets import QWidget
     right_section_widget = QWidget()
-    right_section_widget.setMinimumWidth(580)  # Ancho mínimo ajustado para 5 tarjetas de 110px + espaciado
-    right_section_widget.setMaximumWidth(650)  # Ancho máximo para evitar expansión excesiva
+    right_section_widget.setMinimumWidth(580)  # Mantener mínimo para 5 tarjetas
+    # Eliminar máximo para permitir expansión
     right_section_layout = QVBoxLayout(right_section_widget)
     right_section_layout.setSpacing(8)
     stats_container = create_subcontenedor_metric_cards(instance)
     right_section_layout.addWidget(stats_container)
-    right_section_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-    header_layout.addWidget(right_section_widget, 0)  # Sin stretch para mantener tamaño fijo
+    right_section_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+    header_layout.addWidget(right_section_widget, 1)  # Dar peso para expansión
     # El header debe expandirse horizontalmente según el contenido
     # Eliminar min-width global, solo policies expansivas
     header_container.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
