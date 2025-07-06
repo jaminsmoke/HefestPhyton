@@ -15,5 +15,5 @@
   ],
   "reportMissingImports": true,
   "reportMissingTypeStubs": false,
-  "typeCheckingMode": "basic"
+  "typeCheckingMode": "strict"
 }

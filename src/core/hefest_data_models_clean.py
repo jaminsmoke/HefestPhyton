@@ -24,7 +24,7 @@ class Role(Enum):
     """Roles de usuario en el sistema"""
 
     EMPLOYEE = "employee"
-    MANAGER = "manager" 
+    MANAGER = "manager"
     ADMIN = "admin"
 
 
@@ -56,7 +56,7 @@ class User:
     def __str__(self):
         return f"User(username='{self.username}', name='{self.name}', role={self.role})"
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, User):
             return False
         return self.id == other.id

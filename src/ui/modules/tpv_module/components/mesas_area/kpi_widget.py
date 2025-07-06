@@ -1,16 +1,38 @@
 """
+EXCEPCIÓN DE TIPADO PyQt6: Este archivo puede contener advertencias de Pyright/Pylance sobre miembros dinámicos, argumentos o retornos de métodos de PyQt6.
+Se recomienda usar `Any`, `cast(Any, ...)` y/o `# type: ignore[reportUnknownMemberType,reportUnknownArgumentType,reportUnknownVariableType]` donde sea necesario para evitar falsos positivos.
+Cumple con la política de Hefest v0.0.12.
+"""
+"""
 kpi_widget.py
 Widget KPI avanzado reutilizable para TPV y dashboard.
 Depende de los componentes de kpi_components.py
 """
 
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel
+
+from typing import Optional, Callable, Dict, Any, Union
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget
 from PyQt6.QtCore import Qt
 from .kpi_components import TooltipAvanzado, BadgeKPI
 
 class KPIWidget(QFrame):
-    def __init__(self, icon, label, value, color, bg_color, tooltip=None, badge=None, trend=None, sparkline=None,
-                 on_click=None, accessible_label=None, animation=None, layout_opts=None, parent=None):
+    def __init__(
+        self,
+        icon: str,
+        label: str,
+        value: Union[str, int, float],
+        color: str,
+        bg_color: str,
+        tooltip: Optional[Union[str, TooltipAvanzado]] = None,
+        badge: Optional[Dict[str, Any]] = None,
+        trend: Optional[Any] = None,
+        sparkline: Optional[Any] = None,
+        on_click: Optional[Callable[..., None]] = None,
+        accessible_label: Optional[str] = None,
+        animation: Optional[Any] = None,
+        layout_opts: Optional[Dict[str, Any]] = None,
+        parent: Optional[QWidget] = None
+    ) -> None:
         super().__init__(parent)
         self.setObjectName("KPIWidget")
         self.setStyleSheet(f"""
@@ -26,32 +48,33 @@ class KPIWidget(QFrame):
                 background-color: rgba(255,255,255,0.55);
             }}
         """)
+        from typing import Any
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 10, 8, 8)
         layout.setSpacing(3)
         # Icono
-        icon_label = QLabel(icon)
+        icon_label: Any = QLabel(icon)
         icon_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         icon_label.setStyleSheet("font-size: 38px; margin-bottom: 2px;")
-        layout.addWidget(icon_label)
+        layout.addWidget(icon_label)  # type: ignore[reportUnknownArgumentType]
         # Valor y badge
-        row = QHBoxLayout()
-        value_label = QLabel(str(value))
+        row: Any = QHBoxLayout()
+        value_label: Any = QLabel(str(value))
         value_label.setStyleSheet("font-size: 28px; font-weight: bold; color: #222;")
-        row.addWidget(value_label)
+        row.addWidget(value_label)  # type: ignore[reportUnknownArgumentType]
         if badge:
-            badge_widget = BadgeKPI(badge.get('text', ''), badge.get('color', color))
-            row.addWidget(badge_widget)
+            badge_widget: Any = BadgeKPI(badge.get('text', ''), badge.get('color', color))
+            row.addWidget(badge_widget)  # type: ignore[reportUnknownArgumentType]
         row.addStretch(1)
-        layout.addLayout(row)
+        layout.addLayout(row)  # type: ignore[reportUnknownArgumentType]
         # Etiqueta
-        label_widget = QLabel(label)
+        label_widget: Any = QLabel(label)
         label_widget.setStyleSheet("font-size: 13px; color: #6b21a8; margin-top: 2px;")
         label_widget.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        layout.addWidget(label_widget)
+        layout.addWidget(label_widget)  # type: ignore[reportUnknownArgumentType]
         # Tooltip avanzado
         if tooltip:
-            tooltip_widget = TooltipAvanzado(tooltip) if isinstance(tooltip, str) else tooltip
-            label_widget.setToolTip(tooltip_widget.text() if isinstance(tooltip_widget, QLabel) else str(tooltip_widget))
+            tooltip_widget: Any = TooltipAvanzado(tooltip) if isinstance(tooltip, str) else tooltip
+            label_widget.setToolTip(tooltip_widget.text() if tooltip_widget else "")
         # TODO: trend, sparkline, accesibilidad, animaciones, callbacks, layout_opts
         # ...

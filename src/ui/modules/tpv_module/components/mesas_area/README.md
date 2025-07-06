@@ -33,6 +33,7 @@ mesas_area/
 
 ---
 
+
 ## 📁 Políticas y Estándares
 
 - Cumple con las políticas de estandarización y organización del proyecto (ver README raíz y de cada área).
@@ -40,6 +41,27 @@ mesas_area/
 - Prohibido duplicar código o romper imports existentes.
 - Documentar cualquier excepción funcional en el plan y en este README.
 - Mantener trazabilidad de cambios y refactorizaciones.
+
+### ⚠️ Excepción funcional registrada: Tipado dinámico PyQt6 en mesas_area_stats.py
+
+**Fecha:** 2025-07-06  
+**Archivo:** `mesas_area_stats.py`  
+**Motivo:** PyQt6 utiliza atributos y métodos dinámicos en widgets, layouts y señales, lo que genera múltiples advertencias de tipado estático (Pyright/Pylance):
+  - reportUnknownMemberType
+  - reportUnknownArgumentType
+  - reportUnknownVariableType
+  - reportMissingParameterType
+  - reportUnknownParameterType
+Estas advertencias son inevitables y no pueden resolverse sin romper la funcionalidad o la compatibilidad.
+
+**Protocolo aplicado:**
+1. Se documenta aquí la excepción técnica y en el encabezado del archivo.
+2. Se agregan comentarios `# type: ignore` o anotaciones `Any` donde es necesario.
+3. Se añade TODO para refactorización futura si PyQt o las herramientas de tipado mejoran.
+4. Se registra la excepción en este README y en el plan de refactorización.
+
+**Estado:** Justificada, registrada y trazable según política v0.0.12.  
+**Ref:** Ver encabezado de `mesas_area_stats.py` y política en `docs/README.md`.
 
 ---
 

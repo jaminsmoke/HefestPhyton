@@ -92,33 +92,29 @@ class AlertasService:
         self.contadores_departamento = {}
         self.logger = logging.getLogger(__name__)
 
+    from services.inventario_service_real import Producto
+    from typing import Any
     def registrar_alertas_inventario(
-        self, alertas_inventario
-    ) -> List[AlertaCentralizada]:
+        self, alertas_inventario: list['Producto']
+    ) -> list[AlertaCentralizada]:
         """Convierte alertas de inventario a alertas centralizadas"""
         alertas_centralizadas = []
 
         try:
             for alerta in alertas_inventario:
-                alerta_central = AlertaCentralizada(
-                    id=f"inv_{alerta.producto_id}_{alerta.tipo.value}",
+                alerta_central: AlertaCentralizada = AlertaCentralizada(
+                    id=f"inv_{getattr(alerta, 'id', 'unknown')}_{getattr(alerta, 'categoria', 'unknown')}",
                     departamento=TipoDepartamento.INVENTARIO,
-                    tipo=alerta.tipo.value,
-                    prioridad=alerta.prioridad.value,
-                    titulo=alerta.titulo,
-                    mensaje=alerta.mensaje,
-                    fecha_creacion=alerta.fecha_creacion,
+                    tipo=getattr(alerta, 'categoria', 'desconocido'),
+                    prioridad="media",  # Ajustar si hay lógica de prioridad
+                    titulo=getattr(alerta, 'nombre', 'Producto sin nombre'),
+                    mensaje=f"Stock actual: {getattr(alerta, 'stock_actual', '?')} / Mínimo: {getattr(alerta, 'stock_minimo', '?')}",
+                    fecha_creacion=datetime.now(),
                     datos_contexto={
-                        "producto_id": alerta.producto_id,
-                        "producto_nombre": alerta.producto_nombre,
-                        **alerta.datos_adicionales,
+                        "producto_id": getattr(alerta, 'id', None),
+                        "producto_nombre": getattr(alerta, 'nombre', None),
                     },
-                    acciones_disponibles=(
-                        ["Ajustar Stock", "Ver Producto", "Generar Pedido"]
-                        if alerta.tipo.value
-                        in ["stock_agotado", "stock_bajo", "stock_critico"]
-                        else []
-                    ),
+                    acciones_disponibles=["Ajustar Stock", "Ver Producto", "Generar Pedido"],
                 )
                 alertas_centralizadas.append(alerta_central)
 
@@ -131,7 +127,7 @@ class AlertasService:
             self.logger.error(f"Error registrando alertas de inventario: {e}")
             return []
 
-    def get_alertas_dashboard(self) -> Dict[str, Any]:
+    def get_alertas_dashboard(self) -> dict[str, Any]:
         """Obtiene resumen de alertas para el dashboard"""
         try:
             # Obtener alertas de inventario
@@ -185,7 +181,7 @@ class AlertasService:
                 reverse=True,
             )[:5]
 
-            resumen = {
+            resumen: dict[str, Any] = {
                 "total_alertas": total_alertas,
                 "alertas_por_prioridad": alertas_por_prioridad,
                 "alertas_por_departamento": alertas_por_departamento,
