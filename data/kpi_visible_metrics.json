@@ -1,0 +1,10 @@
+{
+    "zonas": true,
+    "total": true,
+    "libres": true,
+    "ocupadas": true,
+    "reservadas": true,
+    "porc_ocup": true,
+    "tiempo_medio": true,
+    "clientes_atendidos": true
+}
