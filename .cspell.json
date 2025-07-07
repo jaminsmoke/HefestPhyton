@@ -1,0 +1,56 @@
+{
+  "words": [
+    "bezier",
+    "btns",
+    "cancelacion",
+    "codigo",
+    "dinámicamente",
+    "duracion",
+    "edicion",
+    "estandar",
+    "exito",
+    "gridline",
+    "hefest",
+    "modularizada",
+    "modularizado",
+    "Monitoreo",
+    "ocup",
+    "pers",
+    "porc",
+    "qlineargradient",
+    "qproperty",
+    "REDUCCION",
+    "Refactorizar",
+    "renderizado",
+    "Responsividad",
+    "scrollbars",
+    "Segoe",
+    "subcarpeta",
+    "subcarpetas",
+    "subcomponentes",
+    "telefono",
+    "tipable",
+    "tipado",
+    "TIPADO"
+  ],
+  "version": "0.2",
+  "language": "en,es",
+  // "words" reducido: solo palabras técnicas necesarias
+  "ignorePaths": [
+    "**/hefest.db",
+    "**/logs/**",
+    "**/logs_debug/**",
+    "**/htmlcov/**",
+    "**/assets/**",
+    "**/backups/**",
+    "**/version-backups/**"
+  ],
+  "enableFiletypes": [
+    "python",
+    "md",
+    "json",
+    "yml",
+    "yaml"
+  ]
+  // "import" eliminado: los diccionarios se gestionan por la extensión de VS Code
+}

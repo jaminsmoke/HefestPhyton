@@ -70,7 +70,13 @@ class AuthService(BaseService):
     - Usuarios por defecto del sistema
     """
 
-    def __init__(self, db_manager=None):
+    from typing import Any, Optional
+    try:
+        from data.db_manager import DatabaseManager
+    except ImportError:
+        DatabaseManager = Any  # fallback para tipado
+
+    def __init__(self, db_manager: Optional['DatabaseManager'] = None):
         """
         Inicializa el servicio de autenticacion
 
@@ -167,28 +173,40 @@ class AuthService(BaseService):
             cursor = conn.cursor()
             cursor.execute(
                 """
-                SELECT id, username, name, role, password, email, phone, is_active 
+                SELECT id, username, name, role, password, email, phone, is_active
                 FROM users WHERE is_active = 1
             """
             )
 
-            db_users = cursor.fetchall()
-            users = []
+            db_users: list[Any] = cursor.fetchall()
+            users: list[User] = []
 
             for db_user in db_users:
                 try:
-                    # Convertir role string a enum
-                    role = Role(db_user["role"]) if db_user["role"] else Role.EMPLOYEE
-
+                    # Si es tupla, convertir a dict para tipado robusto
+                    if isinstance(db_user, dict):
+                        row = db_user
+                    else:
+                        row = {
+                            "id": db_user[0],
+                            "username": db_user[1],
+                            "name": db_user[2],
+                            "role": db_user[3],
+                            "password": db_user[4],
+                            "email": db_user[5],
+                            "phone": db_user[6],
+                            "is_active": db_user[7],
+                        }
+                    role = Role(row["role"]) if row["role"] else Role.EMPLOYEE
                     user = User(
-                        id=db_user["id"],
-                        username=db_user["username"],
-                        name=db_user["name"],
+                        id=row["id"],
+                        username=row["username"],
+                        name=row["name"],
                         role=role,
-                        password=db_user["password"],
-                        email=db_user.get("email", ""),
-                        phone=db_user.get("phone", ""),
-                        is_active=bool(db_user.get("is_active", True)),
+                        password=row["password"],
+                        email=row["email"],
+                        phone=row["phone"],
+                        is_active=bool(row["is_active"]),
                     )
                     users.append(user)
                     if user.id is not None:

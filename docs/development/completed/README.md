@@ -40,6 +40,7 @@ Esta carpeta contiene la documentación de todos los procesos técnicos, impleme
 #### 📋 Instrucciones y Políticas
 - `[v0.0.13]_CONFIGURACION_COPILOT_INSTRUCCIONES_COMPLETADA.md` - Configuración de instrucciones Copilot
 - `[v0.0.13]_POLITICAS_RIGIDAS_EXCEPCIONES_FUNCIONALES_IMPLEMENTADA.md` - Implementación de políticas rígidas
+- `[v0.0.13]_CONFIGURACION_CSPELL_ESPANOL_COMPLETADA.md` - Configuración de cSpell con soporte español y palabras técnicas
 
 ---
 

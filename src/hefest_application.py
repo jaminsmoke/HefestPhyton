@@ -44,18 +44,8 @@ from data.db_manager import DatabaseManager
 from ui.windows.hefest_main_window import MainWindow
 from utils.modern_styles import ModernStyles
 
-# Importar la utilidad de compatibilidad CSS
-from utils.qt_css_compat import (
-    convert_to_qt_compatible_css,
-    install_global_stylesheet_filter,
-)
-
-# Importar servicios de autenticación y auditoría
 from services.auth_service import get_auth_service
 from services.audit_service import AuditService
-from core.hefest_data_models import Role
-from utils.modern_styles import modern_styles
-from utils.animation_helper import AnimationHelper
 
 
 class Hefest:
@@ -155,7 +145,8 @@ class Hefest:
             logger.info("Selección de usuario cancelada, cerrando aplicación")
             return False
 
-    def authenticate_user(self, user):
+    from core.hefest_data_models import User
+    def authenticate_user(self, user: 'User') -> bool:
         """Autentica al usuario seleccionado solicitando su PIN"""
         # Solicitar PIN
         pin, ok = QInputDialog.getText(
@@ -166,7 +157,7 @@ class Hefest:
         )
 
         if ok and pin:
-            if self.auth_service.login(user.id, pin):
+            if user.id is not None and self.auth_service.login(user.id, pin):
                 # Registro en servicio de auditoría
                 AuditService.log("Inicio de sesión", user)
                 logger.info(f"Inicio de sesión exitoso para {user.name}")

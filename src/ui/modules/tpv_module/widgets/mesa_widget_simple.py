@@ -5,18 +5,23 @@ NUEVA FEATURE: Nombre editable con doble-click (ID fijo)
 Versión: v0.0.13 - FIXED RESPONSIVE ALIAS
 """
 
-from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit
+from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit, QMenu
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent
 from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QAction
 import sys
 
 from services.tpv_service import Mesa
 from ..mesa_event_bus import mesa_event_bus
+from src.utils.modern_styles import ModernStyles
 
 
 
 
 class MesaWidget(QFrame):
+    # Señales para acciones principales
+    reservar_mesa_requested = pyqtSignal(object)  # Emite la mesa
+    iniciar_tpv_requested = pyqtSignal(object)     # Emite la mesa
     # --- Selección múltiple para acciones por lotes ---
     def set_batch_mode(self, enabled: bool):
         self.batch_mode = enabled
@@ -25,7 +30,7 @@ class MesaWidget(QFrame):
                 from PyQt6.QtWidgets import QCheckBox
                 self.batch_checkbox = QCheckBox()
                 self.batch_checkbox.setChecked(False)
-                self.batch_checkbox.setStyleSheet("margin-left:2px;margin-right:2px;")
+                self.batch_checkbox.setStyleSheet(ModernStyles.get_batch_checkbox_style())
                 self.layout_principal.insertWidget(0, self.batch_checkbox)
                 self.batch_checkbox.stateChanged.connect(self._on_batch_checkbox_changed)
             self.batch_checkbox.show()
@@ -98,38 +103,33 @@ class MesaWidget(QFrame):
 
         # --- ALIAS DE MESA + BOTONES ---
         alias_layout = QHBoxLayout()
-        alias_layout.setContentsMargins(0, 0, 0, 0)
-        alias_layout.setSpacing(4)
+        is_reservada = getattr(self.mesa, 'estado', None) == 'reservada' or getattr(self.mesa, 'reservada', False)
+        if is_reservada:
+            alias_layout.setContentsMargins(0, 0, 0, 0)
+            alias_layout.setSpacing(0)
+            alias_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        else:
+            alias_layout.setContentsMargins(0, 0, 0, 0)
+            alias_layout.setSpacing(4)
         self.alias_label = QLabel(self.mesa.nombre_display)
         self.alias_label.setWordWrap(False)
         self.alias_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.alias_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
         self.alias_label.setToolTip("")
-        self.alias_label.setStyleSheet("text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+        if is_reservada:
+            self.alias_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
+        else:
+            self.alias_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+            self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
         self.alias_label.installEventFilter(self)
-        alias_layout.addWidget(self.alias_label, 10)  # Prioridad máxima
+        alias_layout.addWidget(self.alias_label, 10, Qt.AlignmentFlag.AlignVCenter if not is_reservada else Qt.AlignmentFlag.AlignCenter)
         self.edit_btn = QPushButton()
         self.edit_btn.setFixedSize(22, 22)
         self.edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.edit_btn.setToolTip("Editar alias de mesa")
         self.edit_btn.setText("✏️")
-        self.edit_btn.setStyleSheet("""
-            QPushButton {
-                border: none;
-                background: transparent;
-                font-size: 14px;
-            }
-            QToolTip {
-                color: #fff;
-                background-color: #222;
-                border: 1px solid #444;
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 13px;
-                min-width: 0px;
-                min-height: 0px;
-            }
-        """)
+        self.edit_btn.setStyleSheet(ModernStyles.get_edit_btn_style())
         self.edit_btn.clicked.connect(self._start_edit_mode)
         alias_layout.addWidget(self.edit_btn, 0)
         self.restore_btn = QPushButton()
@@ -137,7 +137,7 @@ class MesaWidget(QFrame):
         self.restore_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.restore_btn.setToolTip("Restaurar valores originales de la mesa")
         self.restore_btn.setText("↩️")
-        self.restore_btn.setStyleSheet("border: none; background: transparent; font-size: 14px; color: #888;")
+        self.restore_btn.setStyleSheet(ModernStyles.get_restore_btn_style())
         self.restore_btn.setVisible(self._tiene_datos_temporales())
         self.restore_btn.clicked.connect(self._emitir_restaurar)
         self.restore_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
@@ -170,7 +170,7 @@ class MesaWidget(QFrame):
         self.edit_personas_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.edit_personas_btn.setToolTip("Editar número de personas")
         self.edit_personas_btn.setText("👤")
-        self.edit_personas_btn.setStyleSheet("border: none; background: transparent; font-size: 13px;")
+        self.edit_personas_btn.setStyleSheet(ModernStyles.get_edit_personas_btn_style())
         self.edit_personas_btn.clicked.connect(self._editar_personas)
         capacidad_layout.addWidget(self.edit_personas_btn, 0)
 
@@ -277,7 +277,7 @@ class MesaWidget(QFrame):
                     border: 2.5px solid #38bdf8;
                 }
             """
-        self.setStyleSheet(base_style)
+        self.setStyleSheet(ModernStyles.get_base_widget_style())
 
         colores = self.get_colores()
 
@@ -298,21 +298,9 @@ class MesaWidget(QFrame):
             }}
         """)
 
-        # Alias de mesa - Prominente pero compacto - DIMENSIONES IGUALES AL QLINEEDIT
-        self.alias_label.setStyleSheet(f"""
-            QLabel#alias_label {{
-                color: {colores['texto']};
-                font-weight: bold;
-                background-color: transparent;
-                border: 2px solid transparent;  /* Mismo border que QLineEdit pero transparente */
-                border-radius: 8px;  /* Mismo border-radius que QLineEdit */
-                padding: 4px 8px;  /* Mismo padding que QLineEdit */
-                margin: 0px;
-                font-size: 16px;  /* Tamaño de fuente similar al QLineEdit pero ligeramente menor */
-                min-height: 20px;  /* Altura mínima ajustada */
-                max-height: 32px;  /* Altura máxima para mantener consistencia */
-            }}
-        """)
+        # Alias de mesa - Solo color y peso, sin tamaño de fuente ni altura/margen (cumpliendo política)
+        # TODO v0.0.13: Cumplimiento estricto - Eliminar duplicidad de estilos, solo CSS para elipsis
+        self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
 
         # Estado - Badge ultra-compacto centrado perfectamente
         self.estado_label.setStyleSheet(f"""
@@ -330,49 +318,13 @@ class MesaWidget(QFrame):
         """)
 
         # Capacidad - Información ajustada
-        self.capacidad_label.setStyleSheet(f"""
-            QLabel#capacidad_label {{
-                color: {colores['texto']};
-                font-weight: 500;
-                background-color: rgba(255, 255, 255, 0.7);
-                border: 1px solid rgba(0, 0, 0, 0.1);
-                border-radius: 4px;
-                padding: 2px 6px;
-                min-height: 18px;
-                margin: 1px 0px;
-            }}
-        """)
+        self.capacidad_label.setStyleSheet(ModernStyles.get_capacidad_label_style())
 
         # Zona + Identificador - Información contextual compacta
-        self.zona_label.setStyleSheet(f"""
-            QLabel#zona_label {{
-                color: #555555;
-                font-weight: 500;
-                background-color: rgba(255, 255, 255, 0.8);
-                border: 1px solid rgba(0, 0, 0, 0.1);
-                border-radius: 4px;
-                padding: 2px 8px;
-                min-height: 16px;
-                margin: 0px;
-            }}
-        """)
+        self.zona_label.setStyleSheet(ModernStyles.get_zona_label_style())
 
         # Contador de próxima reserva - Estilo compacto y mejor integrado
-        self.contador_label.setStyleSheet("""
-            QLabel#contador_label {
-                color: #b26a00;
-                background: #fff3cd;
-                border-radius: 5px;
-                padding: 3px 10px; /* Padding vertical más moderado */
-                font-weight: 600;
-                font-size: 13px;
-                min-width: 48px;
-                min-height: 20px; /* Altura mínima más compacta */
-                border: 1px solid #ffe082;
-                margin-top: 1px;
-                margin-bottom: 1px;
-            }
-        """)
+        self.contador_label.setStyleSheet(ModernStyles.get_contador_label_style())
 
     def _darken_color(self, color_hex):
         """Oscurece un color hex para efectos"""
@@ -412,8 +364,13 @@ class MesaWidget(QFrame):
         available_width = max(label_width - REDUCCION_DERECHA, 40)
 
         # Buscar el tamaño de fuente óptimo para una sola línea
-        min_font_size = 8
-        max_font_size = 22
+        # Si la mesa está reservada, forzar un mínimo mayor para mejor visibilidad
+        if getattr(self.mesa, 'estado', None) == 'reservada' or getattr(self.mesa, 'reservada', False):
+            min_font_size = 10  # Antes: 6
+            max_font_size = 16  # Antes: 15
+        else:
+            min_font_size = 8
+            max_font_size = 22
         optimal_size = min_font_size
         for font_size in range(max_font_size, min_font_size - 1, -1):
             font = QFont("Segoe UI", font_size, QFont.Weight.Bold)
@@ -559,18 +516,7 @@ class MesaWidget(QFrame):
         self.alias_line_edit.setAlignment(Qt.AlignmentFlag.AlignCenter)
         # Usar fuente similar al QLabel para mantener consistencia
         self.alias_line_edit.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-        self.alias_line_edit.setStyleSheet("""
-            QLineEdit {
-                border: 2px solid #2196f3;
-                border-radius: 8px;
-                padding: 4px 8px;
-                background: #f5faff;
-                color: #1f2937;
-                font-size: 16px;  /* Mismo tamaño que el QLabel */
-                min-height: 20px;  /* Misma altura mínima que el QLabel */
-                max-height: 32px;  /* Misma altura máxima que el QLabel */
-            }
-        """)
+        self.alias_line_edit.setStyleSheet(ModernStyles.get_alias_line_edit_style())
         self.alias_line_edit.setGeometry(self.alias_label.geometry())
         self.alias_line_edit.show()
         self.alias_line_edit.returnPressed.connect(self._finish_edit_mode)
@@ -604,16 +550,55 @@ class MesaWidget(QFrame):
         QTimer.singleShot(0, self._ajustar_fuente_nombre)
 
     def mousePressEvent(self, event):
-        """Maneja click simple con delay para distinguir de doble click"""
+        """Muestra menú emergente moderno con acciones principales al hacer click izquierdo"""
+        from PyQt6.QtWidgets import QMenu
+        from PyQt6.QtGui import QAction
         if event.button() == Qt.MouseButton.LeftButton:
             if self.editing_mode:
-                # Si estamos editando, salir del modo edición
                 self._finish_edit_mode()
-            else:
-                # Iniciar timer para click simple
-                self.pending_click = True
-                self.click_timer.start(300)  # 300ms de delay
-        super().mousePressEvent(event)
+                return
+            # Menú emergente moderno
+            menu = QMenu(self)
+            menu.setStyleSheet(ModernStyles.get_menu_style())
+            reservar_action = QAction("Reservar mesa", self)
+            reservar_action.triggered.connect(self._on_reservar_mesa)
+            tpv_action = QAction("Iniciar TPV", self)
+            tpv_action.triggered.connect(self._on_iniciar_tpv)
+            detalles_action = QAction("Detalles / Configuración", self)
+            detalles_action.triggered.connect(self._on_abrir_dialogo_mesa)
+            menu.addAction(reservar_action)
+            menu.addAction(tpv_action)
+            menu.addSeparator()
+            menu.addAction(detalles_action)
+            menu.exec(event.globalPosition().toPoint())
+        else:
+            super().mousePressEvent(event)
+
+    def _on_reservar_mesa(self):
+        # Intenta abrir ReservaDialog si está disponible, si no emite señal
+        try:
+            from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
+            parent = self.window() if hasattr(self, 'window') else self.parent()
+            dialog = ReservaDialog(parent, self.mesa)
+            dialog.exec()
+        except Exception as e:
+            # Si no se puede abrir el diálogo directamente, emite señal para que el contenedor lo maneje
+            self.reservar_mesa_requested.emit(self.mesa)
+
+    def _on_iniciar_tpv(self):
+        # Emite señal para que el contenedor maneje la acción de iniciar TPV
+        self.iniciar_tpv_requested.emit(self.mesa)
+
+    def _on_abrir_dialogo_mesa(self):
+        # Abre el diálogo de detalles/configuración de la mesa
+        try:
+            from src.ui.modules.tpv_module.dialogs.mesa_dialog import MesaDialog
+            parent = self.window() if hasattr(self, 'window') else self.parent()
+            dialog = MesaDialog(self.mesa, parent)
+            dialog.exec()
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error abriendo MesaDialog: {e}")
 
     def eventFilter(self, obj, event):
         # Mostrar tooltip claro con el alias completo al hacer hover sobre el alias_label

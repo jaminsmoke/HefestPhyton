@@ -5,18 +5,20 @@ Funciones utilitarias y helpers internos para MesasArea
 
 def calcular_columnas_optimas(ancho_disponible, total_mesas):
     widget_width = 220
-    spacing = 15
-    padding = 60
-    usable_width = ancho_disponible - padding
-    cols_fit = usable_width // (widget_width + spacing)
+    spacing = 20  # Debe coincidir con setSpacing en el layout
+    margin = 20   # Debe coincidir con setContentsMargins en el layout
+    scrollbar_width = 16  # Aproximado para Windows, puede variar
+    # Restar márgenes izquierdo y derecho y el ancho del scrollbar
+    usable_width = ancho_disponible - (2 * margin) - scrollbar_width
+    import math
+    cols_fit = math.floor(usable_width / (widget_width + spacing))
+    # Si hay espacio "casi" suficiente para una columna más (resto > widget_width/2), sumar una columna extra
+    resto = usable_width % (widget_width + spacing)
+    if resto > widget_width // 2 and cols_fit < 8:
+        cols_fit += 1
     cols = max(1, min(cols_fit, 8))
     if total_mesas > 0:
-        if total_mesas <= 3:
-            cols = min(cols, total_mesas)
-        elif total_mesas <= 6:
-            cols = min(cols, 3)
-        elif total_mesas <= 12:
-            cols = min(cols, 4)
+        cols = min(cols, total_mesas)
     return cols
 
 def restaurar_datos_temporales(instance, mesas):

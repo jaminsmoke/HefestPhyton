@@ -15,7 +15,7 @@ from ...mesa_event_bus import mesa_event_bus
 # Importar subcomponentes
 from .mesas_area_header import FiltersSectionUltraPremium
 from .mesas_area_header import create_header
-from .mesas_area_grid import create_scroll_area, populate_grid
+from .mesas_area_grid import create_scroll_area, populate_grid, add_mesa_grid_callbacks_to_instance
 from .mesas_area_stats import update_stats_from_mesas
 from .mesas_area_utils import calcular_columnas_optimas, restaurar_datos_temporales, guardar_dato_temporal
 
@@ -92,6 +92,7 @@ class MesasArea(QFrame):
         from PyQt6.QtWidgets import QSizePolicy
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.setup_ui()
+        add_mesa_grid_callbacks_to_instance(self)
 
 
 

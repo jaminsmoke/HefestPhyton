@@ -1,12 +1,10 @@
-# Unificación de widgets KPI: importar la versión avanzada desde mesas_area_stats.py
-from .mesas_area_stats import create_ultra_premium_stat, create_subcontenedor_metric_cards
-import sys
-from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, pyqtSlot, QTimer
-from PyQt6.QtGui import QColor
-import os
-import logging
+
+from .mesas_area_stats import create_subcontenedor_metric_cards
+from typing import Any
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, QTimer, Qt
 from data.db_manager import DatabaseManager
 from ...mesa_event_bus import mesa_event_bus
+
 """
 mesas_area_header.py
 Componentes de header, filtros y estadísticas para MesasArea
@@ -134,13 +132,13 @@ def create_ultra_premium_separator():
     sep.setStyleSheet("background: transparent; border: none;")
     return sep
 
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QMenu, QGridLayout, QSizePolicy
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QGridLayout, QSizePolicy
 from PyQt6.QtCore import Qt
 
 
 # --- NUEVA CLASE SOLO UI MODERNA DE CHIPS ---
 class FiltersSectionUltraPremium(QFrame):
-    def editar_zona(self):
+    def editar_zona(self) -> None:
         from PyQt6.QtWidgets import QMessageBox, QInputDialog
         zonas_db = [z for z in self.db.get_zonas() if z['nombre'] != "Todas"]
         if not zonas_db:
@@ -170,7 +168,7 @@ class FiltersSectionUltraPremium(QFrame):
             QMessageBox.information(self, "Zona editada", f"Zona '{zona_a_editar}' renombrada a '{nuevo_nombre}' correctamente.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo editar la zona: {e}")
-    def eliminar_zona(self):
+    def eliminar_zona(self) -> None:
         from PyQt6.QtWidgets import QMessageBox, QInputDialog
         zonas_db = [z for z in self.db.get_zonas()]
         zonas_nombres = [z['nombre'] for z in zonas_db if z['nombre'] != "Todas"]
@@ -199,7 +197,7 @@ class FiltersSectionUltraPremium(QFrame):
                     QMessageBox.information(self, "Zona eliminada", f"Zona '{zona_a_eliminar}' eliminada correctamente.")
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"No se pudo eliminar la zona: {e}")
-    def __init__(self, instance):
+    def __init__(self, instance: Any):  # TODO: instance es dinámico, requiere Any
         super().__init__()
         self.setObjectName("FiltersSectionUltraPremium")
         self.setStyleSheet("""
@@ -267,15 +265,15 @@ class FiltersSectionUltraPremium(QFrame):
         chips_layout = QVBoxLayout(chips_container)
         chips_layout.setSpacing(6)
         chips_layout.setContentsMargins(0, 0, 0, 0)
-        self.estado_chips = []
+        self.estado_chips: list[Any] = []
         estados = [
             ("Todos", "#64748b"),
             ("Libre", "#22c55e"),
             ("Ocupada", "#ef4444"),
             ("Reservada", "#f59e0b")
         ]
-        def on_chip_clicked_factory(estado):
-            def handler():
+        def on_chip_clicked_factory(estado: Any) -> Any:
+            def handler() -> None:
                 self.set_estado_chip_selected(estado)
                 if hasattr(instance, '_on_status_changed'):
                     instance._on_status_changed(estado)
@@ -356,7 +354,7 @@ class FiltersSectionUltraPremium(QFrame):
         self.chips_zonas_layout = QGridLayout(self.chips_zonas_container)
         self.chips_zonas_layout.setSpacing(8)
         self.chips_zonas_layout.setContentsMargins(0, 0, 0, 0)
-        self.zonas_chips = []
+        self.zonas_chips: list[Any] = []
         zonas_vbox.addWidget(self.chips_zonas_container)
         zonas_vbox.addStretch(1)
         main_hbox.addWidget(subcontenedor_zonas, 2)  # Dar más peso al subcontenedor de zonas
@@ -418,7 +416,7 @@ class FiltersSectionUltraPremium(QFrame):
             gestion_buttons[3:6],  # Eliminar Zona, Editar Zona, Refrescar Estado
             gestion_buttons[6:8],  # Ver Historial, Mover Comanda de Mesa
         ]
-        self.gestion_btns = []
+        self.gestion_btns: list[Any] = []
         for fila in filas:
             fila_hbox = QHBoxLayout()
             fila_hbox.setSpacing(6)
@@ -476,7 +474,7 @@ class FiltersSectionUltraPremium(QFrame):
             busqueda_accion_vbox.addLayout(fila_hbox)
 
         # Lógica de creación de zona para el botón 'Nueva Zona'
-        def crear_nueva_zona():
+        def crear_nueva_zona() -> None:
             from PyQt6.QtWidgets import QInputDialog, QMessageBox
             zonas_db = [z['nombre'] for z in self.db.get_zonas()]
             nueva_zona, ok = QInputDialog.getText(self, "Crear nueva zona", "Nombre de la nueva zona:")
@@ -573,17 +571,17 @@ class FiltersSectionUltraPremium(QFrame):
 
         self.update_zonas_chips()
 
-    def set_estado_chip_selected(self, selected_estado):
+    def set_estado_chip_selected(self, selected_estado: str) -> None:
         for btn in self.estado_chips:
             btn.setChecked(btn.text() == selected_estado)
 
-    def set_zona_chip_selected(self, selected_zona):
+    def set_zona_chip_selected(self, selected_zona: str) -> None:
         for btn in self.zonas_chips:
             btn.setChecked(btn.text() == selected_zona)
         if hasattr(self.instance, '_on_zone_changed'):
             self.instance._on_zone_changed(selected_zona)
 
-    def update_zonas_chips(self):
+    def update_zonas_chips(self) -> None:
         # Elimina los chips actuales
         for i in reversed(range(self.chips_zonas_layout.count())):
             item = self.chips_zonas_layout.itemAt(i)
@@ -593,15 +591,15 @@ class FiltersSectionUltraPremium(QFrame):
         self.zonas_chips.clear()
         zonas_actuales = [z['nombre'] for z in self.db.get_zonas()]
         zonas_actuales = ["Todas"] + sorted(zonas_actuales)
-        def on_zona_chip_clicked_factory(zona):
-            def handler():
+        def on_zona_chip_clicked_factory(zona: Any) -> Any:
+            def handler() -> None:
                 self.set_zona_chip_selected(zona)
             return handler
         # --- Organización en columnas ---
         max_filas = 3  # Menos elementos por columna para evitar solapamiento
         col = 0
         fila = 0
-        for idx, nombre in enumerate(zonas_actuales):
+        for nombre in zonas_actuales:
             btn = QPushButton(nombre)
             btn.setCheckable(True)
             btn.setStyleSheet(f'''
@@ -633,7 +631,7 @@ class FiltersSectionUltraPremium(QFrame):
                 col += 1
         self.set_zona_chip_selected("Todas")
 
-    def get_zonas_from_instance(self):
+    def get_zonas_from_instance(self) -> list[str]:
         zonas_unicas = set()
         if hasattr(self.instance, 'mesas') and self.instance.mesas:
             for mesa in self.instance.mesas:
@@ -648,10 +646,10 @@ class FiltersSectionUltraPremium(QFrame):
 
 
 
-def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, reservadas):
+def update_ultra_premium_stats_ui(instance: Any, zonas: int, total: int, libres: int, ocupadas: int, reservadas: int) -> None:
     """Actualiza los valores de las tarjetas premium del header (solo UI, sin lógica de cálculo)"""
     # Helper para animar highlight cuando cambia el valor
-    def animate_pulse(widget):
+    def animate_pulse(widget: Any) -> None:
         if not widget:
             return
         anim = QPropertyAnimation(widget, b"styleSheet")
@@ -665,7 +663,7 @@ def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, rese
         anim.start()
 
     # Transición suave de números
-    def animate_number(label, old_value, new_value, duration=350):
+    def animate_number(label: Any, old_value: Any, new_value: Any, duration: int = 350) -> None:
         try:
             old = int(old_value)
             new = int(new_value)
@@ -695,7 +693,7 @@ def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, rese
         label._number_anim_timer = timer
 
     # Actualizar y animar si cambia el valor
-    def set_value_and_animate(widget, new_value, badge_logic=None):
+    def set_value_and_animate(widget: Any, new_value: Any, badge_logic: Any = None) -> None:
         if widget and hasattr(widget, 'value_label'):
             label = widget.value_label
             trend = getattr(widget, 'trend_label', None)
@@ -744,7 +742,7 @@ def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, rese
                 label.setText(str(new_value))
 
     # Badge lógica para ocupadas: alerta si >80% del total
-    def badge_ocupadas(val):
+    def badge_ocupadas(val: Any) -> tuple[str, str, str, bool]:
         try:
             val = int(val)
             total_widget = getattr(instance, 'mesas_total_widget', None)
@@ -755,7 +753,7 @@ def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, rese
             pass
         return ("", "#ef4444", "", False)
     # Badge lógica para reservadas: alerta si >0
-    def badge_reservadas(val):
+    def badge_reservadas(val: Any) -> tuple[str, str, str, bool]:
         try:
             val = int(val)
             if val > 0:
@@ -782,7 +780,7 @@ def update_ultra_premium_stats_ui(instance, zonas, total, libres, ocupadas, rese
             widget.update()
             widget.repaint()
 
-def create_header(parent, instance, layout):
+def create_header(parent: Any, instance: Any, layout: Any) -> Any:
     # Imports locales eliminados (ya están al inicio del archivo)
     # Contenedor principal del header
     header_container = QFrame()
@@ -845,3 +843,10 @@ def create_header(parent, instance, layout):
 
 # Export explícito para el import en mesas_area_main
 __all__ = ["create_header", "FiltersSectionUltraPremium"]
+
+# TODO: Existen métodos y atributos dinámicos en 'instance' y en los chips/botones.
+#       Se utiliza 'Any' para cumplir con la integración dinámica del sistema.
+#       Refactorizar a futuro si la arquitectura lo permite para tipado estricto.
+
+# NOTA: Algunos avisos de tipado parcial en métodos de PyQt y base de datos son inevitables por la naturaleza dinámica de PyQt y la integración con objetos externos.
+#       Esta excepción está documentada en este archivo y debe revisarse si se refactoriza la arquitectura.
