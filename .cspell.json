@@ -1,0 +1,24 @@
+{
+  "words": [
+    "hefest",
+    "telefono",
+    "duracion",
+    "btns",
+    "cancelacion",
+    "exito"
+  ],
+  "version": "0.2",
+  "language": "en,es",
+  // "words" reducido: solo palabras técnicas necesarias
+  "ignorePaths": [
+    "**/hefest.db",
+    "**/logs/**",
+    "**/logs_debug/**",
+    "**/htmlcov/**",
+    "**/assets/**",
+    "**/backups/**",
+    "**/version-backups/**"
+  ],
+  "enableFiletypes": ["python", "md", "json", "yml", "yaml"]
+  // "import" eliminado: los diccionarios se gestionan por la extensión de VS Code
+}
