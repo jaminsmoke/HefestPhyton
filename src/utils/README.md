@@ -43,10 +43,35 @@ utils/
 
 ---
 
-## 🚀 Uso e Integración (opcional)
+
+## 🚀 Uso e Integración
 
 - Importa los módulos según la necesidad del sistema.
 - Consulta los README de cada subcarpeta para detalles específicos.
+
+### Ejemplo de integración de estilos visuales
+
+```python
+from src.utils.modern_styles import ModernStyles
+
+# Aplicar estilo a un widget
+my_widget.setStyleSheet(ModernStyles.get_base_widget_style())
+
+# Aplicar estilo a un label de alias
+alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
+
+# Usar estilos para botones modernos
+my_button.setStyleSheet(ModernStyles.get_button_styles())
+```
+
+### Ejemplo de integración de animaciones
+
+```python
+from src.utils.animation_helper import AnimationHelper
+
+# Animar aparición de un widget
+AnimationHelper.fade_in(my_widget, duration=400)
+```
 
 ---
 
