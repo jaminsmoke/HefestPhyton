@@ -68,13 +68,26 @@ class KPIWidget(QFrame):
         row.addStretch(1)
         layout.addLayout(row)  # type: ignore[reportUnknownArgumentType]
         # Etiqueta
-        label_widget: Any = QLabel(label)
-        label_widget.setStyleSheet("font-size: 13px; color: #6b21a8; margin-top: 2px;")
-        label_widget.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        class AliasLabel(QLabel):
+            def __init__(self, text):
+                super().__init__(text)
+                self.setStyleSheet("font-size: 12px; color: #6b21a8; margin-top: 2px; padding: 0 4px; max-width: 170px; min-width: 60px; min-height: 18px; max-height: 28px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+                self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+                self.setWordWrap(False)
+            def resizeEvent(self, event):
+                fm = self.fontMetrics()
+                if self.height() < 22 or fm.horizontalAdvance(self.text()) > 160:
+                    self.setStyleSheet("font-size: 10px; color: #6b21a8; margin-top: 1px; padding: 0 2px; max-width: 170px; min-width: 60px; min-height: 14px; max-height: 22px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+                else:
+                    self.setStyleSheet("font-size: 12px; color: #6b21a8; margin-top: 2px; padding: 0 4px; max-width: 170px; min-width: 60px; min-height: 18px; max-height: 28px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+                super().resizeEvent(event)
+        label_widget: Any = AliasLabel(label)
         layout.addWidget(label_widget)  # type: ignore[reportUnknownArgumentType]
-        # Tooltip avanzado
+        # Tooltip avanzado: aplicar a toda la tarjeta y opcionalmente al label
         if tooltip:
             tooltip_widget: Any = TooltipAvanzado(tooltip) if isinstance(tooltip, str) else tooltip
-            label_widget.setToolTip(tooltip_widget.text() if tooltip_widget else "")
+            tooltip_text = tooltip_widget.text() if tooltip_widget else ""
+            self.setToolTip(tooltip_text)
+            label_widget.setToolTip(tooltip_text)
         # TODO: trend, sparkline, accesibilidad, animaciones, callbacks, layout_opts
         # ...

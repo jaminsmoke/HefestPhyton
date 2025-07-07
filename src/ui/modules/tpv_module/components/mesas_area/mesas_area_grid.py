@@ -43,7 +43,8 @@ def create_scroll_area(instance, layout):
     instance.mesas_layout = QGridLayout(mesas_container)
     instance.mesas_layout.setSpacing(20)
     instance.mesas_layout.setContentsMargins(20, 20, 20, 20)
-    instance.mesas_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+    # Centrar el grid de mesas horizontalmente y mantener alineado arriba
+    instance.mesas_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
     scroll_area.setWidget(mesas_container)
     layout.addWidget(scroll_area, 1)
     instance.scroll_area = scroll_area

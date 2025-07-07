@@ -5,12 +5,14 @@ Versión: v0.0.13
 
 import logging
 from typing import Optional
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QFrame
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QFont
 
 from services.tpv_service import TPVService
-from utils.qt_css_compat import convert_to_qt_compatible_css
+
+# Unificación widgets KPI: solo se usan KPIWidget y kpi_components
+from .mesas_area.kpi_widget import KPIWidget
 
 logger = logging.getLogger(__name__)
 
@@ -47,82 +49,66 @@ class TPVDashboard(QWidget):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(16)
-          # Métricas dinámicas del día
+        # Configuración de métricas y tooltips/badges
         metrics_config = [
-            ("mesas_activas", "🍽️", "Mesas Ocupadas", "0/0", "#2196f3"),
-            ("ventas_dia", "💰", "Ventas Hoy", "€0.00", "#4caf50"),
-            ("comandas_activas", "📝", "Comandas Activas", "0", "#ff9800"),
-            ("tiempo_promedio", "⏱️", "Tiempo Prom.", "0min", "#9c27b0")
+            {
+                "key": "mesas_activas",
+                "icon": "🍽️",
+                "label": "Mesas Ocupadas",
+                "value": "0/0",
+                "color": "#2196f3",
+                "bg_color": "#e0f2fe",
+                "tooltip": "Cantidad de mesas ocupadas respecto al total.",
+                "badge": {"text": "M", "color": "#2196f3"}
+            },
+            {
+                "key": "ventas_dia",
+                "icon": "💰",
+                "label": "Ventas Hoy",
+                "value": "€0.00",
+                "color": "#4caf50",
+                "bg_color": "#e8f5e9",
+                "tooltip": "Total de ventas del día en curso.",
+                "badge": {"text": "$", "color": "#4caf50"}
+            },
+            {
+                "key": "comandas_activas",
+                "icon": "📝",
+                "label": "Comandas Activas",
+                "value": "0",
+                "color": "#ff9800",
+                "bg_color": "#fff3e0",
+                "tooltip": "Número de comandas abiertas actualmente.",
+                "badge": {"text": "C", "color": "#ff9800"}
+            },
+            {
+                "key": "tiempo_promedio",
+                "icon": "⏱️",
+                "label": "Tiempo Prom.",
+                "value": "0min",
+                "color": "#9c27b0",
+                "bg_color": "#f3e8ff",
+                "tooltip": "Tiempo promedio de ocupación de mesa.",
+                "badge": {"text": "T", "color": "#9c27b0"}
+            }
         ]
 
-        for metric_key, icon, title, default_value, color in metrics_config:
-            metric_widget = self.create_metric_card(metric_key, icon, title, default_value, color)
-            self.metric_cards[metric_key] = metric_widget
+        for metric in metrics_config:
+            metric_widget = KPIWidget(
+                icon=str(metric["icon"]),
+                label=str(metric["label"]),
+                value=str(metric["value"]),
+                color=str(metric["color"]),
+                bg_color=str(metric["bg_color"]),
+                tooltip=str(metric["tooltip"]),
+                badge=metric["badge"]
+            )
+            self.metric_cards[metric["key"]] = metric_widget
             layout.addWidget(metric_widget)
 
         layout.addStretch()
 
-    def create_metric_card(self, key: str, icon: str, title: str, value: str, color: str) -> QWidget:
-        """Crea una tarjeta de métrica simple y compatible con PyQt6"""
-        card = QFrame()
-        card.setFrameShape(QFrame.Shape.StyledPanel)
-        card.setLineWidth(2)
-
-        # Estilo muy simple para máxima compatibilidad
-        card.setStyleSheet(f"""
-            QFrame {{
-                background-color: white;
-                border: 2px solid {color};
-                border-radius: 8px;
-            }}
-        """)
-        card.setFixedSize(160, 100)
-
-        layout = QVBoxLayout(card)
-        layout.setContentsMargins(8, 6, 8, 6)
-        layout.setSpacing(4)
-
-        # Header - en una sola línea para simplicidad
-        header_widget = QWidget()
-        header_layout = QHBoxLayout(header_widget)
-        header_layout.setContentsMargins(0, 0, 0, 0)
-        header_layout.setSpacing(4)
-
-        # Icono - sin CSS complejo
-        icon_label = QLabel(icon)
-        icon_label.setStyleSheet(f"font-size: 16px; color: {color};")
-        header_layout.addWidget(icon_label)
-
-        # Título - sin CSS complejo
-        title_label = QLabel(title)
-        title_label.setStyleSheet(f"font-size: 9px; font-weight: bold; color: {color};")
-        header_layout.addWidget(title_label)
-        header_layout.addStretch()
-
-        layout.addWidget(header_widget)
-
-        # Espaciador
-        layout.addStretch()
-
-        # Valor principal - configuración simple
-        value_label = QLabel(value)
-        value_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        # Configurar fuente de forma programática (más confiable que CSS)
-        font = QFont()
-        font.setPointSize(14)
-        font.setBold(True)
-        value_label.setFont(font)
-        value_label.setStyleSheet(f"color: {color};")
-
-        layout.addWidget(value_label)
-        layout.addStretch()
-
-        # Guardar referencia para actualizaciones
-        setattr(card, 'value_label', value_label)
-        setattr(card, 'metric_key', key)
-
-        return card
+    # Eliminada función create_metric_card: solo se usa KPIWidget
 
     def update_metrics(self):
         """Actualiza las métricas en tiempo real con datos del servicio"""
@@ -181,12 +167,17 @@ class TPVDashboard(QWidget):
             self.update_metric_card("tiempo_promedio", "0min")
 
     def update_metric_card(self, metric_key: str, new_value: str):
-        """Actualiza el valor de una tarjeta específica"""
+        """Actualiza el valor de una tarjeta KPIWidget"""
         if metric_key in self.metric_cards:
             card = self.metric_cards[metric_key]
-            value_label = getattr(card, 'value_label', None)
-            if value_label:
-                value_label.setText(new_value)
+            # Aquí se asume que el primer QLabel con font-size:28px es el valor
+            for child in card.findChildren(QLabel):
+                try:
+                    if "font-size: 28px" in child.styleSheet():
+                        child.setText(str(new_value))
+                        break
+                except Exception:
+                    continue
 
     def set_service(self, tpv_service: TPVService):
         """Establece el servicio TPV"""

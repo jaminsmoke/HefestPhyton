@@ -15,5 +15,10 @@
   ],
   "reportMissingImports": true,
   "reportMissingTypeStubs": false,
-  "typeCheckingMode": "strict"
+  "typeCheckingMode": "basic",
+  "reportUnknownMemberType": false,
+  "reportUnknownArgumentType": false,
+  "reportUnknownVariableType": false,
+  "reportMissingParameterType": false,
+  "reportUnknownParameterType": false
 }

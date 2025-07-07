@@ -98,16 +98,27 @@ class MesaWidget(QFrame):
 
         # --- ALIAS DE MESA + BOTONES ---
         alias_layout = QHBoxLayout()
-        alias_layout.setContentsMargins(0, 0, 0, 0)
-        alias_layout.setSpacing(4)
+        is_reservada = getattr(self.mesa, 'estado', None) == 'reservada' or getattr(self.mesa, 'reservada', False)
+        if is_reservada:
+            alias_layout.setContentsMargins(0, 0, 0, 0)
+            alias_layout.setSpacing(0)
+            alias_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        else:
+            alias_layout.setContentsMargins(0, 0, 0, 0)
+            alias_layout.setSpacing(4)
         self.alias_label = QLabel(self.mesa.nombre_display)
         self.alias_label.setWordWrap(False)
         self.alias_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.alias_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
         self.alias_label.setToolTip("")
-        self.alias_label.setStyleSheet("text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
+        if is_reservada:
+            self.alias_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.alias_label.setStyleSheet("text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding: 0px; margin: 0px; background: transparent;")
+        else:
+            self.alias_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+            self.alias_label.setStyleSheet("text-overflow: ellipsis; white-space: nowrap; overflow: hidden;")
         self.alias_label.installEventFilter(self)
-        alias_layout.addWidget(self.alias_label, 10)  # Prioridad máxima
+        alias_layout.addWidget(self.alias_label, 10, Qt.AlignmentFlag.AlignVCenter if not is_reservada else Qt.AlignmentFlag.AlignCenter)
         self.edit_btn = QPushButton()
         self.edit_btn.setFixedSize(22, 22)
         self.edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -298,19 +309,18 @@ class MesaWidget(QFrame):
             }}
         """)
 
-        # Alias de mesa - Prominente pero compacto - DIMENSIONES IGUALES AL QLINEEDIT
+        # Alias de mesa - Solo color y peso, sin tamaño de fuente ni altura/margen (cumpliendo política)
+        # TODO v0.0.13: Cumplimiento estricto - Eliminar duplicidad de estilos, solo CSS para elipsis
         self.alias_label.setStyleSheet(f"""
             QLabel#alias_label {{
                 color: {colores['texto']};
                 font-weight: bold;
                 background-color: transparent;
-                border: 2px solid transparent;  /* Mismo border que QLineEdit pero transparente */
-                border-radius: 8px;  /* Mismo border-radius que QLineEdit */
-                padding: 4px 8px;  /* Mismo padding que QLineEdit */
-                margin: 0px;
-                font-size: 16px;  /* Tamaño de fuente similar al QLineEdit pero ligeramente menor */
-                min-height: 20px;  /* Altura mínima ajustada */
-                max-height: 32px;  /* Altura máxima para mantener consistencia */
+                border: 2px solid transparent;
+                border-radius: 8px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
             }}
         """)
 
@@ -412,8 +422,13 @@ class MesaWidget(QFrame):
         available_width = max(label_width - REDUCCION_DERECHA, 40)
 
         # Buscar el tamaño de fuente óptimo para una sola línea
-        min_font_size = 8
-        max_font_size = 22
+        # Si la mesa está reservada, forzar un mínimo mayor para mejor visibilidad
+        if getattr(self.mesa, 'estado', None) == 'reservada' or getattr(self.mesa, 'reservada', False):
+            min_font_size = 10  # Antes: 6
+            max_font_size = 16  # Antes: 15
+        else:
+            min_font_size = 8
+            max_font_size = 22
         optimal_size = min_font_size
         for font_size in range(max_font_size, min_font_size - 1, -1):
             font = QFont("Segoe UI", font_size, QFont.Weight.Bold)

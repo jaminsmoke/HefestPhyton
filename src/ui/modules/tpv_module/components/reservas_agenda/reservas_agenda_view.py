@@ -3,7 +3,8 @@ reservas_agenda_view.py
 Widget visual para la agenda/listado de reservas activas.
 """
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, QPushButton, QHBoxLayout, QDialog, QFormLayout, QLineEdit, QDateTimeEdit, QSpinBox, QMessageBox
-from PyQt6.QtCore import Qt, QDateTime, pyqtSignal, QTimer
+from PyQt6.QtCore import Qt, QDateTime, pyqtSignal, QTimer, QSize
+from typing import Any, Optional
 from .reserva_service import ReservaService
 from core.hefest_data_models import Reserva
 from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
@@ -11,7 +12,7 @@ from datetime import datetime, timedelta
 from services.tpv_service import Mesa
 
 class CrearReservaDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Crear nueva reserva")
         layout = QFormLayout(self)
@@ -39,7 +40,7 @@ class CrearReservaDialog(QDialog):
         btns.addWidget(self.btn_cancel)
         layout.addRow(btns)
 
-    def get_data(self):
+    def get_data(self) -> dict[str, Any]:
         return {
             'mesa_id': self.mesa_id_input.text(),
             'cliente': self.cliente_input.text(),
@@ -53,10 +54,10 @@ class ReservasAgendaView(QWidget):
     reserva_creada = pyqtSignal()
     reserva_cancelada = pyqtSignal()
 
-    def __init__(self, reserva_service: ReservaService, tpv_service=None, parent=None):
+    def __init__(self, reserva_service: ReservaService, tpv_service: Any = None, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.reserva_service = reserva_service
-        self.tpv_service = tpv_service  # Para buscar alias
+        self.tpv_service = tpv_service  # type: ignore[reportUnknownMemberType]
         self.setWindowTitle("Agenda de Reservas")
 
         # Suscribirse a eventos globales de reservas
@@ -77,7 +78,7 @@ class ReservasAgendaView(QWidget):
         self.list_widget.itemDoubleClicked.connect(self.confirmar_cancelacion_reserva)
         self.load_reservas()
 
-    def abrir_dialogo_crear(self):
+    def abrir_dialogo_crear(self) -> None:
         dialog = ReservaDialog(self, None)  # No mesa concreta
         dialog.setWindowTitle("Crear nueva reserva (selecciona mesa)")
         # Campo para mesa_id
@@ -138,15 +139,19 @@ class ReservasAgendaView(QWidget):
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"No se pudo crear la reserva: {e}")
 
-    def load_reservas(self):
+    def load_reservas(self) -> None:
+        from .reserva_list_item_widget import ReservaListItemWidget
         self.list_widget.clear()
         reservas = self.reserva_service.obtener_reservas_activas()
         for reserva in reservas:
-            item = QListWidgetItem(self.format_reserva(reserva))
-            item.setData(Qt.ItemDataRole.UserRole, reserva.id)
+            item = QListWidgetItem()
+            item.setSizeHint(QSize(420, 70))
+            widget = ReservaListItemWidget(reserva)
             self.list_widget.addItem(item)
+            self.list_widget.setItemWidget(item, widget)
+            item.setData(Qt.ItemDataRole.UserRole, getattr(reserva, 'id', None))  # type: ignore
 
-    def confirmar_cancelacion_reserva(self, item):
+    def confirmar_cancelacion_reserva(self, item: QListWidgetItem) -> None:
         reserva_id = item.data(Qt.ItemDataRole.UserRole)
         reply = QMessageBox.question(
             self,
@@ -166,7 +171,7 @@ class ReservasAgendaView(QWidget):
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"No se pudo cancelar la reserva: {e}")
 
-    def format_reserva(self, reserva: Reserva) -> str:
+    def format_reserva(self, reserva: Any) -> str:
         alias_str = f" ({getattr(reserva, 'alias', '')})" if getattr(reserva, 'alias', None) else ""
         telefono_str = f" | Tel: {reserva.cliente_telefono}" if getattr(reserva, 'cliente_telefono', None) else ""
         personas_str = f" | Personas: {reserva.numero_personas}" if getattr(reserva, 'numero_personas', None) else ""

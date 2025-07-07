@@ -263,7 +263,10 @@ def update_ultra_premium_stats(instance: Any) -> None:
         # Si no hay datos, igual actualiza la fecha/hora
         if hasattr(instance, 'kpi_last_refresh_label'):
             now = datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-            cast(Any, instance.kpi_last_refresh_label).setText(f"Actualizado: {now}")  # type: ignore[reportUnknownMemberType]
+            try:
+                cast(Any, instance.kpi_last_refresh_label).setText(f"Actualizado: {now}")  # type: ignore[reportUnknownMemberType]
+            except RuntimeError:
+                pass  # El label ya fue destruido
         return
     total_mesas: int = len(instance.mesas)
     mesas_ocupadas: int = len([m for m in instance.mesas if hasattr(m, 'estado') and getattr(m, 'estado', None) == 'ocupada'])
@@ -302,7 +305,10 @@ def update_ultra_premium_stats(instance: Any) -> None:
     # Actualizar fecha/hora de último refresh
     if hasattr(instance, 'kpi_last_refresh_label'):
         now = datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
-        cast(Any, instance.kpi_last_refresh_label).setText(f"Actualizado: {now}")  # type: ignore[reportUnknownMemberType]
+        try:
+            cast(Any, instance.kpi_last_refresh_label).setText(f"Actualizado: {now}")  # type: ignore[reportUnknownMemberType]
+        except RuntimeError:
+            pass  # El label ya fue destruido
 
 def create_compact_stats(instance: Any, layout: Any) -> None:
     """Crea las estadísticas compactas integradas en el header (idéntico al original)"""
