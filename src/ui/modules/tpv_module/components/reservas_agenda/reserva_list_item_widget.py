@@ -4,6 +4,7 @@ Widget visual personalizado para mostrar una reserva en la agenda.
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtCore import Qt
+from src.utils.modern_styles import ModernStyles
 
 class ReservaListItemWidget(QWidget):
     def __init__(self, reserva, parent=None):
@@ -22,7 +23,7 @@ class ReservaListItemWidget(QWidget):
         badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
         badge.setFixedWidth(80)
         badge.setFont(QFont('Segoe UI', 10, QFont.Weight.Bold))
-        badge.setStyleSheet(self._badge_style(estado))
+        badge.setStyleSheet(ModernStyles.get_reserva_badge_style(estado))
         layout.addWidget(badge)
 
         # Info principal (cliente, hora, mesa)
@@ -76,19 +77,8 @@ class ReservaListItemWidget(QWidget):
             detalles_layout.addWidget(label_notas)
         layout.addLayout(detalles_layout, 1)
 
-        self.setStyleSheet("""
-            background: #fff;
-            border-radius: 10px;
-            border: 1.5px solid #e0e0e0;
-        """)
+        self.setStyleSheet(ModernStyles.get_reserva_list_item_style())
 
     def _badge_style(self, estado):
-        colores = {
-            'confirmada': '#4caf50',
-            'pendiente': '#ff9800',
-            'cancelada': '#f44336',
-            'ocupada': '#1976d2',
-            'libre': '#9e9e9e',
-        }
-        color = colores.get(estado, '#bdbdbd')
-        return f"background: {color}; color: #fff; border-radius: 6px; padding: 4px 8px;"
+        # DEPRECATED: Usar ModernStyles.get_reserva_badge_style(estado)
+        return ModernStyles.get_reserva_badge_style(estado)

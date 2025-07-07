@@ -1,4 +1,3 @@
-
 """
 Archivo: mesas_area_stats.py
 Descripción: Componente de estadísticas de área de mesas para el TPV.
@@ -27,6 +26,7 @@ Versión política: v0.0.12
 """
 
 from typing import Any
+from src.utils.modern_styles import ModernStyles
 
 # TODO: Si PyQt6 o las herramientas de tipado mejoran, intentar tipar correctamente los miembros dinámicos.
 # type: ignore[reportUnknownMemberType,reportUnknownArgumentType,reportUnknownVariableType,reportMissingParameterType,reportUnknownParameterType]
@@ -43,17 +43,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     from PyQt6.QtCore import Qt
     section = QFrame()
     section.setObjectName("SubContenedorMetricCards")
-    section.setStyleSheet("""
-        QFrame#SubContenedorMetricCards {
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 #fef7ff, stop:0.5 #fdf4ff, stop:1 #fef7ff);
-            border: 1.5px solid #d946ef;
-            border-radius: 14px;
-            padding: 2px 8px 18px 8px;
-            margin: 2px 0 8px 0;
-            min-height: 120px;
-        }
-    """)
+    section.setStyleSheet(ModernStyles.get_stats_section_style())
     layout = QVBoxLayout(section)
     layout.setContentsMargins(4, 2, 4, 4)
     layout.setSpacing(2)
@@ -61,47 +51,19 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     from PyQt6.QtWidgets import QPushButton, QDialog, QVBoxLayout, QCheckBox, QDialogButtonBox, QHBoxLayout
     title_row = QHBoxLayout()
     title_label = QLabel("<span style='font-size:11px; font-weight:600; color:#a21caf; vertical-align:middle;'>📊 Estadísticas en Tiempo Real</span>")
-    title_label.setStyleSheet("background: #f3e8ff; border-radius: 6px; padding: 1px 10px 1px 6px; border: 1px solid #d946ef; margin-bottom: 0px;")
+    title_label.setStyleSheet(ModernStyles.get_stats_title_label_style())
     title_row.addWidget(title_label, 0, Qt.AlignmentFlag.AlignLeft)
     # Botón de refresco manual
     refresh_btn = QPushButton("⟳")
     refresh_btn.setToolTip("Actualizar estadísticas ahora (también se actualizan automáticamente)")
     refresh_btn.setFixedSize(28, 28)
-    refresh_btn.setStyleSheet("""
-        QPushButton {
-            background: #f3e8ff;
-            border: 1.5px solid #d946ef;
-            border-radius: 14px;
-            font-size: 15px;
-            color: #a21caf;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-        QPushButton:hover {
-            background: #e9d5ff;
-            color: #7c2dbe;
-        }
-    """)
+    refresh_btn.setStyleSheet(ModernStyles.get_stats_refresh_btn_style())
     title_row.addWidget(refresh_btn, 0, Qt.AlignmentFlag.AlignLeft)
     # Botón de configuración de métricas
     config_btn = QPushButton("⚙️")
     config_btn.setToolTip("Configurar métricas visibles")
     config_btn.setFixedSize(28, 28)
-    config_btn.setStyleSheet("""
-        QPushButton {
-            background: #f3e8ff;
-            border: 1.5px solid #d946ef;
-            border-radius: 14px;
-            font-size: 15px;
-            color: #a21caf;
-            font-weight: bold;
-            margin-left: 6px;
-        }
-        QPushButton:hover {
-            background: #e9d5ff;
-            color: #7c2dbe;
-        }
-    """)
+    config_btn.setStyleSheet(ModernStyles.get_stats_config_btn_style())
     title_row.addWidget(config_btn, 0, Qt.AlignmentFlag.AlignLeft)
     title_row.addStretch(1)
     layout.addLayout(title_row)
@@ -211,7 +173,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     instance.kpi_last_refresh_label = QLabel()  # type: ignore[reportUnknownMemberType]
     instance.kpi_last_refresh_label.setObjectName("KPI_LastRefreshLabel")  # type: ignore[reportUnknownMemberType]
     instance.kpi_last_refresh_label.setText("Actualizado: --/--/---- --:--:--")  # type: ignore[reportUnknownMemberType]
-    instance.kpi_last_refresh_label.setStyleSheet("font-size: 10px; color: #64748b; background: #f3f4f6; border-radius: 6px; padding: 2px 8px; margin-top: 2px;")  # type: ignore[reportUnknownMemberType]
+    instance.kpi_last_refresh_label.setStyleSheet(ModernStyles.get_stats_last_refresh_label_style())  # type: ignore[reportUnknownMemberType]
     instance.kpi_last_refresh_label.setAlignment(Qt.AlignmentFlag.AlignRight)  # type: ignore[reportUnknownMemberType]
     refresh_row.addWidget(instance.kpi_last_refresh_label, 0, Qt.AlignmentFlag.AlignRight)
     layout.addLayout(refresh_row)
@@ -316,7 +278,7 @@ def create_compact_stats(instance: Any, layout: Any) -> None:
     from .kpi_widget import KPIWidget
     # Separador visual antes de las estadísticas
     separator: Any = QLabel("|")
-    separator.setStyleSheet("color: #d1d5db; font-size: 14px; margin: 0px 8px;")
+    separator.setStyleSheet(ModernStyles.get_stats_separator_style())
     layout.addWidget(separator)
     # Configuración de stats compactas
     stats_config = [

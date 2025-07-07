@@ -8,6 +8,218 @@ de la aplicación, organizados de manera modular y fácil de mantener.
 
 
 class ModernStyles:
+    @classmethod
+    def get_reserva_list_item_style(cls):
+        return "background: #fff; border-radius: 10px; border: 1.5px solid #e0e0e0;"
+
+    @classmethod
+    def get_reserva_badge_style(cls, estado):
+        colores = {
+            'confirmada': '#4caf50',
+            'pendiente': '#ff9800',
+            'cancelada': '#f44336',
+            'ocupada': '#1976d2',
+            'libre': '#9e9e9e',
+        }
+        color = colores.get(estado, '#bdbdbd')
+        return f"background: {color}; color: #fff; border-radius: 6px; padding: 4px 8px;"
+    @classmethod
+    def get_stats_section_style(cls):
+        return """
+        QFrame#SubContenedorMetricCards {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                stop:0 #fef7ff, stop:0.5 #fdf4ff, stop:1 #fef7ff);
+            border: 1.5px solid #d946ef;
+            border-radius: 14px;
+            padding: 2px 8px 18px 8px;
+            margin: 2px 0 8px 0;
+            min-height: 120px;
+        }
+        """
+
+    @classmethod
+    def get_stats_title_label_style(cls):
+        return "background: #f3e8ff; border-radius: 6px; padding: 1px 10px 1px 6px; border: 1px solid #d946ef; margin-bottom: 0px;"
+
+    @classmethod
+    def get_stats_refresh_btn_style(cls):
+        return """
+        QPushButton {
+            background: #f3e8ff;
+            border: 1.5px solid #d946ef;
+            border-radius: 14px;
+            font-size: 15px;
+            color: #a21caf;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        QPushButton:hover {
+            background: #e9d5ff;
+            color: #7c2dbe;
+        }
+        """
+
+    @classmethod
+    def get_stats_config_btn_style(cls):
+        return """
+        QPushButton {
+            background: #f3e8ff;
+            border: 1.5px solid #d946ef;
+            border-radius: 14px;
+            font-size: 15px;
+            color: #a21caf;
+            font-weight: bold;
+            margin-left: 6px;
+        }
+        QPushButton:hover {
+            background: #e9d5ff;
+            color: #7c2dbe;
+        }
+        """
+
+    @classmethod
+    def get_stats_last_refresh_label_style(cls):
+        return "font-size: 10px; color: #64748b; background: #f3f4f6; border-radius: 6px; padding: 2px 8px; margin-top: 2px;"
+
+    @classmethod
+    def get_stats_separator_style(cls):
+        return "color: #d1d5db; font-size: 14px; margin: 0px 8px;"
+    @classmethod
+    def get_kpi_widget_style(cls, color, bg_color):
+        return f"""
+        QFrame#KPIWidget {{
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                stop:0 {bg_color}, stop:0.5 #f3e8ff, stop:1 #e0e7ff);
+            border: 2.5px solid {color};
+            border-radius: 18px;
+            margin: 4px;
+            padding: 8px 6px 10px 6px;
+            box-shadow: 0 4px 24px 0 rgba(120, 60, 180, 0.10), 0 1.5px 8px 0 rgba(120, 60, 180, 0.08);
+            backdrop-filter: blur(8px);
+            background-color: rgba(255,255,255,0.55);
+        }}
+        """
+
+    @classmethod
+    def get_kpi_icon_label_style(cls):
+        return "font-size: 38px; margin-bottom: 2px;"
+
+    @classmethod
+    def get_kpi_value_label_style(cls):
+        return "font-size: 28px; font-weight: bold; color: #222;"
+
+    @classmethod
+    def get_kpi_alias_label_style(cls, small=False):
+        if small:
+            return "font-size: 10px; color: #6b21a8; margin-top: 1px; padding: 0 2px; max-width: 170px; min-width: 60px; min-height: 14px; max-height: 22px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
+        else:
+            return "font-size: 12px; color: #6b21a8; margin-top: 2px; padding: 0 4px; max-width: 170px; min-width: 60px; min-height: 18px; max-height: 28px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
+    @classmethod
+    def get_alias_label_style(cls):
+        return "text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding: 0px; margin: 0px; background: transparent;"
+
+    @classmethod
+    def get_estado_label_style(cls):
+        return "font-size: 13px; font-weight: 600; color: #fff; border-radius: 6px; padding: 2px 8px; background: #6c757d;"
+
+    @classmethod
+    def get_capacidad_label_style(cls):
+        return "font-size: 12px; color: #495057; background: #f1f3f4; border-radius: 4px; padding: 1px 6px;"
+
+    @classmethod
+    def get_zona_label_style(cls):
+        return "font-size: 12px; color: #64748b; background: #e2e8f0; border-radius: 4px; padding: 1px 6px;"
+
+    @classmethod
+    def get_contador_label_style(cls):
+        return "font-size: 12px; color: #fff; background: #e53935; border-radius: 8px; padding: 2px 8px;"
+
+    @classmethod
+    def get_edit_btn_style(cls):
+        return "border: none; background: transparent; font-size: 14px; color: #1976d2;"
+
+    @classmethod
+    def get_restore_btn_style(cls):
+        return "border: none; background: transparent; font-size: 14px; color: #888;"
+
+    @classmethod
+    def get_edit_personas_btn_style(cls):
+        return "border: none; background: transparent; font-size: 13px;"
+
+    @classmethod
+    def get_batch_checkbox_style(cls):
+        return "margin-left:2px;margin-right:2px;"
+
+    @classmethod
+    def get_alias_line_edit_style(cls):
+        return "font-size: 14px; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0e0e0;"
+
+    @classmethod
+    def get_menu_style(cls):
+        return "QMenu { background: #fff; border-radius: 8px; border: 1px solid #e0e0e0; } QMenu::item { padding: 8px 24px; } QMenu::item:selected { background: #f1f5f9; color: #1976d2; }"
+
+    @classmethod
+    def get_base_widget_style(cls):
+        return "border-radius: 12px; background: #fff; border: 1px solid #e0e0e0;"
+    @classmethod
+    def get_scroll_area_style(cls):
+        """Estilo para QScrollArea y barras de scroll"""
+        return f"""
+        QScrollArea {{
+            border: none;
+            background-color: {cls.COLORS['background']};
+            border-radius: 8px;
+        }}
+        QScrollBar:vertical {{
+            background-color: {cls.COLORS['surface_hover']};
+            width: 12px;
+            border-radius: 6px;
+        }}
+        QScrollBar::handle:vertical {{
+            background-color: #bdc3c7;
+            border-radius: 6px;
+            margin: 2px;
+        }}
+        QScrollBar::handle:vertical:hover {{
+            background-color: #95a5a6;
+        }}
+        """
+
+    @classmethod
+    def get_mesas_container_style(cls):
+        """Estilo para el contenedor de mesas"""
+        return f"""
+        QWidget {{
+            background-color: {cls.COLORS['background']};
+            border-radius: 8px;
+        }}
+        """
+
+    @classmethod
+    def get_empty_message_frame_style(cls):
+        """Estilo para el mensaje de 'no mesas encontradas'"""
+        return f"""
+        QFrame {{
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #f8f9fa, stop:1 #e9ecef);
+            border: 2px dashed #dee2e6;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px;
+        }}
+        """
+
+    @classmethod
+    def get_icon_label_style(cls):
+        return "font-size: 48px; color: #6c757d; margin: 10px;"
+
+    @classmethod
+    def get_title_label_style(cls):
+        return "font-size: 20px; font-weight: bold; color: #495057; margin: 8px;"
+
+    @classmethod
+    def get_subtitle_label_style(cls):
+        return "font-size: 14px; color: #6c757d; margin: 4px;"
     """Contenedor para todos los estilos modernos de la aplicación"""
 
     # Paleta de colores moderna

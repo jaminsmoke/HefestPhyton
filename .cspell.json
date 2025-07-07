@@ -1,11 +1,26 @@
 {
   "words": [
-    "hefest",
-    "telefono",
-    "duracion",
+    "bezier",
     "btns",
     "cancelacion",
-    "exito"
+    "codigo",
+    "dinámicamente",
+    "duracion",
+    "estandar",
+    "exito",
+    "gridline",
+    "hefest",
+    "modularizada",
+    "modularizado",
+    "qlineargradient",
+    "REDUCCION",
+    "Refactorizar",
+    "renderizado",
+    "Responsividad",
+    "scrollbars",
+    "Segoe",
+    "subcomponentes",
+    "telefono"
   ],
   "version": "0.2",
   "language": "en,es",
@@ -19,6 +34,12 @@
     "**/backups/**",
     "**/version-backups/**"
   ],
-  "enableFiletypes": ["python", "md", "json", "yml", "yaml"]
+  "enableFiletypes": [
+    "python",
+    "md",
+    "json",
+    "yml",
+    "yaml"
+  ]
   // "import" eliminado: los diccionarios se gestionan por la extensión de VS Code
 }
