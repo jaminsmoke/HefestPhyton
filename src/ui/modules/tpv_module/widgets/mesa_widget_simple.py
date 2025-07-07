@@ -590,8 +590,15 @@ class MesaWidget(QFrame):
         self.iniciar_tpv_requested.emit(self.mesa)
 
     def _on_abrir_dialogo_mesa(self):
-        # Lógica original para abrir el diálogo de mesa
-        self._handle_single_click()
+        # Abre el diálogo de detalles/configuración de la mesa
+        try:
+            from src.ui.modules.tpv_module.dialogs.mesa_dialog import MesaDialog
+            parent = self.window() if hasattr(self, 'window') else self.parent()
+            dialog = MesaDialog(self.mesa, parent)
+            dialog.exec()
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error abriendo MesaDialog: {e}")
 
     def eventFilter(self, obj, event):
         # Mostrar tooltip claro con el alias completo al hacer hover sobre el alias_label

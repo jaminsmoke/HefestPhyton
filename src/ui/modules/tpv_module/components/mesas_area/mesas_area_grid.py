@@ -90,7 +90,22 @@ def add_mesa_grid_callbacks_to_instance(instance):
             logging.getLogger(__name__).error(f"Error abriendo ReservaDialog: {e}")
 
     def _on_iniciar_tpv(mesa):
-        print(f"[DEBUG] Iniciar TPV para mesa: {mesa}")
+        try:
+            from src.ui.modules.tpv_module.components.tpv_avanzado.tpv_avanzado_main import TPVAvanzado
+            from PyQt6.QtWidgets import QDialog, QVBoxLayout
+            class TPVDialog(QDialog):
+                def __init__(self, mesa, parent=None):
+                    super().__init__(parent)
+                    self.setWindowTitle(f"TPV Avanzado - Mesa {mesa.numero}")
+                    self.setMinimumSize(900, 600)
+                    layout = QVBoxLayout(self)
+                    self.tpv_widget = TPVAvanzado(mesa, parent=self)
+                    layout.addWidget(self.tpv_widget)
+            dialog = TPVDialog(mesa, instance)
+            dialog.exec()
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error abriendo TPV Avanzado: {e}")
 
     instance._on_reservar_mesa = _on_reservar_mesa
     instance._on_iniciar_tpv = _on_iniciar_tpv

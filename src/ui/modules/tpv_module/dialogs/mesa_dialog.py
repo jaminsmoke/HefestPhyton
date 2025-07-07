@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QFrame, QGridLayout, QMessageBox, QLineEdit, QSpinBox, QTextEdit,
     QListWidget, QListWidgetItem
 )
+from PyQt6.QtWidgets import QScrollArea
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont
 
@@ -70,7 +71,7 @@ class MesaDialog(TabbedDialog):
 
     def create_info_page(self) -> QWidget:
         """Crea la página de información"""
-        from PyQt6.QtWidgets import QScrollArea
+        # Usar solo la importación global de QVBoxLayout y QScrollArea
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(30, 30, 30, 30)
@@ -140,8 +141,8 @@ class MesaDialog(TabbedDialog):
         return scroll
 
     def create_actions_page(self) -> QWidget:
-        """Crea la página de acciones"""
-        from PyQt6.QtWidgets import QScrollArea
+        """Crea la página de acciones (botones en columna para mejor visualización)"""
+        # QVBoxLayout y QScrollArea ya están importados globalmente
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(30, 30, 30, 30)
@@ -152,22 +153,21 @@ class MesaDialog(TabbedDialog):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setWordWrap(True)
         layout.addWidget(title)
-        # Botones en fila horizontal con scroll si es necesario
-        from PyQt6.QtWidgets import QHBoxLayout
-        buttons_layout = QHBoxLayout()
+        # Botones en columna (vertical)
+        buttons_layout = QVBoxLayout()
         buttons_layout.setSpacing(18)
         self.tpv_btn = self.create_action_button("🍽️ Iniciar TPV", "#28a745", "Abrir punto de venta")
         self.reserva_btn = self.create_action_button("📅 Nueva Reserva", "#ffc107", "Crear reserva")
         self.estado_btn = self.create_action_button("🔄 Cambiar Estado", "#17a2b8", "Modificar estado")
         self.liberar_btn = self.create_action_button("🔓 Liberar Mesa", "#dc3545", "Liberar mesa")
         for btn in [self.tpv_btn, self.reserva_btn, self.estado_btn, self.liberar_btn]:
-            btn.setMinimumWidth(160)
-            btn.setMaximumWidth(220)
-            # QPushButton no tiene setWordWrap, solo QLabel. Se omite.
+            btn.setMinimumWidth(180)
+            btn.setMaximumWidth(320)
+            btn.setMinimumHeight(38)
             buttons_layout.addWidget(btn)
         layout.addLayout(buttons_layout)
         layout.addStretch()
-        # Envolver en scroll si el contenido crece
+        # Envolver en scroll si el contenido crece (pero normalmente no será necesario)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(page)
