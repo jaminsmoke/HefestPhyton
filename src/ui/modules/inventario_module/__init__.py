@@ -13,7 +13,7 @@ Características principales:
 - Integración con TPV y sistema de reservas
 - Generación de informes de inventario y costos
 
-Versión: v0.0.12
+Versión: v0.0.14
 Autor: Hefest Development Team
 """
 
@@ -23,7 +23,7 @@ from .inventario_module import InventarioModule
 InventarioTab = InventarioModule
 InventarioModulePro = InventarioModule  # Mantener compatibilidad
 
-__version__ = "0.0.12"
+__version__ = "0.0.14"
 __all__ = ["InventarioModule", "InventarioTab", "InventarioModulePro"]
 
 # Metadatos del módulo

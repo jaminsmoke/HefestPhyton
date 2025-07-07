@@ -43,4 +43,4 @@ reservas_agenda/
 
 ## Estado
 
-- [v0.0.13] Estructura y servicios implementados. Pendiente UI visual y conexión con widgets de mesa.
+- [v0.0.14] Estructura y servicios implementados. Pendiente UI visual y conexión con widgets de mesa. (Desarrollo activo)

@@ -27,7 +27,7 @@ scripts/analysis/
 ```
 
 - Explica brevemente la función de los principales archivos y subcarpetas.
-- Los scripts `debug_creacion_tarjetas.py` y `debug_profundo_tarjetas.py` fueron movidos desde la raíz en la limpieza v0.0.13 para cumplir la política de organización.
+- Los scripts `debug_creacion_tarjetas.py` y `debug_profundo_tarjetas.py` fueron movidos desde la raíz en la limpieza v0.0.13 (histórico). A partir de la versión 0.0.14, toda reubicación o limpieza se documenta bajo la nueva versión activa.
 
 ---
 

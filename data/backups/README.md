@@ -22,4 +22,4 @@ backup_[modulo]_YYYYMMDD_HHMMSS.json
 - `backup_mesas_20250623_022713.json` - Backup de mesas del 23/06/2025
 
 ---
-**Estado**: Organizado en v0.0.13
+**Estado**: Organizado en v0.0.14

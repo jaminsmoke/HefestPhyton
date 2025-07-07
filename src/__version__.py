@@ -6,8 +6,8 @@ Archivo central que define la versión del proyecto.
 Se utiliza por setup.py, main.py y scripts de build.
 """
 
-__version__ = "0.0.13"
-__version_info__ = (0, 0, 13)
+__version__ = "0.0.14"
+__version_info__ = (0, 0, 14)
 
 # Información adicional
 __author__ = "Hefest Development Team"

@@ -25,4 +25,4 @@ Esta carpeta contiene scripts para mantenimiento del sistema, limpieza y tareas 
 - Confirmación antes de acciones destructivas
 
 ---
-**Estado**: Organizado en v0.0.13
+**Estado**: Organizado en v0.0.14

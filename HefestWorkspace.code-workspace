@@ -7,5 +7,7 @@
 			"path": "../Hefest_Backups/Hefest0.0.13RediseñodeGestiondeMesas/Hefest_allbackup3July"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"powershell.cwd": "Hefest"
+	}
 }

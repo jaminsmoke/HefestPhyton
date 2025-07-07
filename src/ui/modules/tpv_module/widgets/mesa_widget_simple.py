@@ -2,7 +2,7 @@
 Widget MesaWidget - Versión compacta y profesional con nombre editable
 Diseño ultra-compacto con máxima legibilidad y organización profesional
 NUEVA FEATURE: Nombre editable con doble-click (ID fijo)
-Versión: v0.0.13 - FIXED RESPONSIVE ALIAS
+Versión: v0.0.14 - FIXED RESPONSIVE ALIAS
 """
 
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit, QMenu
@@ -299,7 +299,7 @@ class MesaWidget(QFrame):
         """)
 
         # Alias de mesa - Solo color y peso, sin tamaño de fuente ni altura/margen (cumpliendo política)
-        # TODO v0.0.13: Cumplimiento estricto - Eliminar duplicidad de estilos, solo CSS para elipsis
+        # TODO v0.0.14: Cumplimiento estricto - Eliminar duplicidad de estilos, solo CSS para elipsis
         self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
 
         # Estado - Badge ultra-compacto centrado perfectamente

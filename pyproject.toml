@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hefest"
-version = "0.0.11"
+version = "0.0.14"
 description = "Sistema Integral de Hostelería y Hospedería - Gestión moderna para restaurantes y hoteles"
 readme = "README.md"
 license = "MIT"
@@ -36,7 +36,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
-    "pytest-qt>=4.0.0", 
+    "pytest-qt>=4.0.0",
     "pytest-cov>=4.0.0",
     "black>=23.0.0",
     "flake8>=6.0.0",
@@ -72,7 +72,7 @@ exclude = ["tests*", "docs*", "scripts*", "logs*", "backups*", "assets*"]
 
 [tool.setuptools.package-data]
 "*" = [
-    "*.json", "*.sql", "*.md", "*.txt", "*.png", "*.jpg", "*.ico", 
+    "*.json", "*.sql", "*.md", "*.txt", "*.png", "*.jpg", "*.ico",
     "*.css", "*.qss", "*.ui", "*.db"
 ]
 
@@ -111,7 +111,7 @@ markers = [
 source = ["src"]
 omit = [
     "tests/*",
-    "scripts/*", 
+    "scripts/*",
     "docs/*"
 ]
 

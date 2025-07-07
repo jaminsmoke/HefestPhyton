@@ -75,11 +75,12 @@ docs/
 3. Consulta el README de la subcarpeta para detalles.
 
 
-## [v0.0.13] Versión en desarrollo (desde 01/07/2025)
+## [v0.0.14] Versión en desarrollo (desde 07/07/2025)
 
 - **Contexto:**
-  - Se están implementando mejoras y fixes sobre la base de la versión 0.0.12 (publicada el 28/06/2025).
-  - Todos los cambios y fixes nuevos deben documentarse como parte de la versión 0.0.13.
+  - Se inicia la fase de desarrollo 0.0.14 tras el cierre de la versión 0.0.13.
+  - Todos los cambios y fixes nuevos deben documentarse como parte de la versión 0.0.14.
+  - Para información histórica de la v0.0.13, consultar el changelog y fixes de esa versión.
 
 ---
 Para información histórica de la v0.0.12, consultar el changelog y fixes de esa versión.

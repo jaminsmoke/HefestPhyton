@@ -1,6 +1,6 @@
 """
 Controlador MesaController - Lógica de negocio para gestión de mesas
-Versión: v0.0.13
+Versión: v0.0.14
 """
 
 import logging

@@ -1,6 +1,6 @@
 """
 Componente TPVDashboard - Dashboard de métricas del TPV
-Versión: v0.0.13
+Versión: v0.0.14
 """
 
 import logging

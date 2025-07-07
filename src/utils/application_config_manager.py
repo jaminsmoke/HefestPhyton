@@ -16,7 +16,7 @@ from typing import Dict, Any, Optional, List
 
 # EXCEPCIÓN FUNCIONAL: No configurar logging global aquí para evitar duplicidad de handlers.
 # El logging global se configura únicamente en el entrypoint principal (hefest_application.py).
-# TODO(v0.0.12): Si se requiere logging específico, usar solo loggers de módulo sin basicConfig ni handlers globales.
+## TODO(v0.0.14): Si se requiere logging específico, usar solo loggers de módulo sin basicConfig ni handlers globales.
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +27,7 @@ class ConfigManager:
     """
 
     DEFAULT_CONFIG = {
-        "app": {"name": "Hefest", "version": "0.0.12", "theme": "light"},
+        "app": {"name": "Hefest", "version": "0.0.14", "theme": "light"},
         "database": {"type": "sqlite", "path": "hefest.db"},
         "ui": {"language": "es", "font_size": 10, "show_toolbar": True},
         "tpv": {

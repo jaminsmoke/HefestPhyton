@@ -1,6 +1,6 @@
 """
 Módulo TPV - Terminal Punto de Venta Profesional (Refactorizado)
-Versión: v0.0.13
+Versión: v0.0.14
 """
 
 import logging
@@ -475,7 +475,7 @@ class TPVModule(BaseModule):
 
     # MÉTODO OBSOLETO: La creación de mesas debe hacerse siempre vía nueva_mesa_con_zona
     # Se mantiene solo para compatibilidad, pero no debe usarse. Será eliminado en futuras versiones.
-    # TODO v0.0.13: Eliminar este método y actualizar todos los llamados a nueva_mesa_con_zona
+    # TODO v0.0.14: Eliminar este método y actualizar todos los llamados a nueva_mesa_con_zona
     def nueva_mesa(self):
         """[OBSOLETO] Crea una nueva mesa usando el controlador. Usar nueva_mesa_con_zona en su lugar."""
         from PyQt6.QtWidgets import QMessageBox

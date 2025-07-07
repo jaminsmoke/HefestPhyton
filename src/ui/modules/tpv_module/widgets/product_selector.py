@@ -1,6 +1,6 @@
 """
 Product Selector Widget - Selector profesional de productos para TPV
-Versión: v0.0.13
+Versión: v0.0.14
 """
 
 import logging

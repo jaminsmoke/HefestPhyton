@@ -1,6 +1,6 @@
 """
 Widget FiltersPanel - Panel de filtros para gestión de mesas
-Versión: v0.0.13
+Versión: v0.0.14
 """
 
 import logging

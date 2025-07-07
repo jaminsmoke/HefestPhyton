@@ -21,17 +21,14 @@ Registro oficial de cambios, versiones y releases del proyecto Hefest con trazab
 
 | Versión | Fecha | Estado | Descripción |
 |---------|-------|--------|-------------|
-| **v0.0.13** | Jun 2025 | 🚀 **ACTUAL** | Limpieza, organización, responsividad alias mesa TPV |
+| **v0.0.14** | Jul 2025 | � **EN DESARROLLO** | Nueva fase de desarrollo, mejoras y fixes |
 | **v0.0.12** | Dic 2024 | ✅ Completado | Sistema completo, UI moderna, datos reales |
 | [v0.0.11](v0.0.11.md) | Jun 2024 | ✅ Completado | Dashboard Admin V3 Enhanced |
 | [v0.0.10](v0.0.10.md) | Jun 2024 | ✅ Completado | Optimización del Sistema de Backup |
 | [v0.0.9](v0.0.9.md) | Jun 2024 | ✅ Completado | Mejoras en el Sistema de Autenticación |
 | [v0.0.8](v0.0.8.md) | Jun 2024 | ✅ Completado | Implementación de Módulo TPV |
 
-### 🔗 Enlaces Rápidos
-
-- **📄 Changelog v0.0.13**: `[v0.0.13]_CHANGELOG.md`
-- **📄 Changelog v0.0.12**: `[v0.0.12]_CHANGELOG.md`
+- **📄 Changelog v0.0.14**: `[v0.0.14]_CHANGELOG.md`
 - **📄 Changelog v0.0.11**: [`docs/changelog/v0.0.11.md`](v0.0.11.md)
 - **📄 Changelog v0.0.10**: [`docs/changelog/v0.0.10.md`](v0.0.10.md)
 - **� Documentación técnica**: [`docs/development/`](../development/)
@@ -41,21 +38,12 @@ Registro oficial de cambios, versiones y releases del proyecto Hefest con trazab
 
 ## 🚀 Estado Actual del Proyecto
 
-### 📈 Versión v0.0.13 - Sistema Completo ✅ **PRODUCCIÓN**
+### 📈 Versión v0.0.14 - EN DESARROLLO
 
-#### ✅ Funcionalidades Principales
-- **🎨 UI Moderna**: Sistema completo de animaciones y efectos visuales
-- **📊 Dashboard Avanzado**: Métricas en tiempo real, widgets interactivos
-- **🔐 Autenticación Completa**: Sistema de roles y permisos granulares
-- **📦 Inventario**: Gestión completa de productos y categorías
-- **💰 TPV**: Punto de venta funcional con facturación
-- **🏨 Hospedería**: Gestión de habitaciones y reservas
-
-#### 📊 Métricas Técnicas
-- **Tests**: 129/129 pasando (100% success rate)
-- **Cobertura**: 95%+ en módulos críticos
-- **Performance**: Tiempo de carga <2s
-- **Base de datos**: SQLite optimizada con datos reales
+#### Estado
+- Desarrollo activo sobre rama `develop`.
+- Todos los cambios, fixes y mejoras a partir del 07/07/2025 se documentan en la versión 0.0.14.
+- Para información de la versión anterior, consultar `[v0.0.13]_CHANGELOG.md`.
 
 ---
 
@@ -76,9 +64,17 @@ Registro oficial de cambios, versiones y releases del proyecto Hefest con trazab
 
 ---
 
+
 # Changelog de versiones
 
 Esta carpeta contiene el historial de cambios del proyecto **Hefest**. Todos los archivos siguen la nomenclatura y estructura definida en las políticas de documentación del proyecto.
+
+## Estado de desarrollo actual
+
+- **Versión activa/desarrollo:** v0.0.14 (desde 07/07/2025, rama `develop`)
+- **Última versión finalizada:** v0.0.13 (etiquetada en main)
+
+Para cambios en curso, consultar `[v0.0.14]_CHANGELOG.md`. Para releases previos, consultar el changelog correspondiente.
 
 ## Archivos de changelog presentes
 
@@ -114,4 +110,4 @@ Esta carpeta contiene el historial de cambios del proyecto **Hefest**. Todos los
 
 ---
 
-**Última actualización:** v0.0.13
+**Última actualización:** v0.0.14

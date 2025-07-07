@@ -68,6 +68,6 @@ components/
 
 ---
 
-> Última actualización: 2025-06-29  
-> Versión: v0.0.13  
+> Última actualización: 2025-07-07  
+> Versión: v0.0.14 (EN DESARROLLO)  
 > Responsable: GitHub Copilot

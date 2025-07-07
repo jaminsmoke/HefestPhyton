@@ -74,9 +74,9 @@ Estas advertencias son inevitables y no pueden resolverse sin romper la funciona
 
 ## 📖 Información relevante (opcional)
 
-- Refactorización en progreso (v0.0.13)
-- Mejoras UI v0.0.13: chips rápidos, breadcrumb, toggle grid/lista, KPIs compactos con barra de progreso visual.
-- Consulta el plan de refactorización: `docs/development/planning/[v0.0.13]_PLAN_REFACTORIZACION_MESAS_AREA_COMPONENTS_EN_PROGRESO.md`
+- Refactorización en progreso (v0.0.14)
+- Mejoras UI v0.0.14: chips rápidos, breadcrumb, toggle grid/lista, KPIs compactos con barra de progreso visual.
+- Consulta el plan de refactorización: `docs/development/planning/[v0.0.14]_PLAN_REFACTORIZACION_MESAS_AREA_COMPONENTS_EN_PROGRESO.md`
 - Para políticas generales, ver README raíz del proyecto.
 
 ---

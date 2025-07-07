@@ -5,7 +5,7 @@ Esta carpeta almacena logs temporales de depuración generados por el sistema He
 
 ## Política de uso
 - Solo debe contener archivos de log temporales, nunca información sensible ni de usuarios finales.
-- El archivo principal es `[v0.0.13]_mesa_widget_debug.log`, que se sobrescribe en cada ejecución relevante.
+- El archivo principal es `[v0.0.14]_mesa_widget_debug.log`, que se sobrescribe en cada ejecución relevante.
 - No almacenar históricos ni duplicados.
 - No usar para auditoría ni para logs de producción.
 
