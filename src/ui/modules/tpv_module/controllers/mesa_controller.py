@@ -22,14 +22,18 @@ class MesaController(QObject):
                 return False
             nueva_mesa = None
             if hasattr(self.tpv_service, "crear_mesa_con_numero"):
-                nueva_mesa = self.tpv_service.crear_mesa_con_numero(numero, capacidad, zona)
+                nueva_mesa = self.tpv_service.crear_mesa_con_numero(
+                    numero, capacidad, zona
+                )
             else:
                 # Fallback: usar crear_mesa normal (sin número específico)
                 nueva_mesa = self.tpv_service.crear_mesa(capacidad, zona)
             if nueva_mesa:
                 self.mesas.append(nueva_mesa)
                 self.load_mesas()  # Recargar desde servicio tras crear
-                logger.info(f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}")
+                logger.info(
+                    f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}"
+                )
                 return True
             else:
                 self.error_occurred.emit("Error creando la mesa")
@@ -39,6 +43,7 @@ class MesaController(QObject):
             logger.error(error_msg)
             self.error_occurred.emit(error_msg)
             return False
+
     """Controlador para la lógica de negocio de las mesas"""
 
     # Señales
@@ -83,15 +88,14 @@ class MesaController(QObject):
                 return False
 
             # Crear mesa con numeración automática
-            nueva_mesa = self.tpv_service.crear_mesa(
-                capacidad=capacidad,
-                zona=zona
-            )
+            nueva_mesa = self.tpv_service.crear_mesa(capacidad=capacidad, zona=zona)
 
             if nueva_mesa:
                 self.mesas.append(nueva_mesa)
                 self.load_mesas()  # Recargar desde servicio tras crear
-                logger.info(f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}")
+                logger.info(
+                    f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}"
+                )
                 return True
             else:
                 self.error_occurred.emit("Error creando la mesa")
@@ -103,7 +107,9 @@ class MesaController(QObject):
             self.error_occurred.emit(error_msg)
             return False
 
-    def editar_mesa(self, numero: str, nuevo_numero: str, capacidad: int, zona: str) -> bool:
+    def editar_mesa(
+        self, numero: str, nuevo_numero: str, capacidad: int, zona: str
+    ) -> bool:
         """Edita una mesa existente usando el identificador string 'numero'"""
         try:
             if not self.tpv_service:
@@ -122,8 +128,13 @@ class MesaController(QObject):
                 return False
 
             # Validar que no exista otra mesa con el mismo nuevo_numero
-            if any(mesa.numero == nuevo_numero and mesa.numero != numero for mesa in self.mesas):
-                self.error_occurred.emit(f"Ya existe otra mesa con el número {nuevo_numero}")
+            if any(
+                mesa.numero == nuevo_numero and mesa.numero != numero
+                for mesa in self.mesas
+            ):
+                self.error_occurred.emit(
+                    f"Ya existe otra mesa con el número {nuevo_numero}"
+                )
                 return False
 
             # Actualizar datos
@@ -142,6 +153,7 @@ class MesaController(QObject):
             logger.error(error_msg)
             self.error_occurred.emit(error_msg)
             return False
+
     def eliminar_mesa(self, numero: str) -> bool:
         """Elimina una mesa usando el identificador string 'numero'"""
         try:
@@ -215,7 +227,9 @@ class MesaController(QObject):
             MesaController.mesa_event_bus.mesa_actualizada.emit(mesa_actual)
             self.load_mesas()  # Recargar desde servicio tras cambiar estado
 
-            logger.info(f"Estado de mesa {mesa_actual.numero} cambiado a {nuevo_estado}")
+            logger.info(
+                f"Estado de mesa {mesa_actual.numero} cambiado a {nuevo_estado}"
+            )
             return True
 
         except Exception as e:

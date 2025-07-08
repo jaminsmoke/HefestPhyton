@@ -260,8 +260,11 @@ class ModernSidebar(QFrame):
         def log_and_emit():
             logger.info(f"[SIDEBAR] Botón pulsado: {module_id}")
             if module_id == "tpv":
-                logger.info("[SIDEBAR] Entrando al módulo TPV desde sidebar (log explícito)")
+                logger.info(
+                    "[SIDEBAR] Entrando al módulo TPV desde sidebar (log explícito)"
+                )
             self.module_selected.emit(module_id)
+
         btn.clicked.connect(log_and_emit)
 
         # Tooltip

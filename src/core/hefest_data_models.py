@@ -114,11 +114,14 @@ class Producto:
         return self.precio * self.stock_actual
 
     def __str__(self):
-        return f"Producto(id={self.id}, nombre='{self.nombre}', stock={self.stock_actual})"
+        return (
+            f"Producto(id={self.id}, nombre='{self.nombre}', stock={self.stock_actual})"
+        )
 
 
 class EstadoMesa(Enum):
     """Estados posibles de una mesa"""
+
     LIBRE = "libre"
     OCUPADA = "ocupada"
     RESERVADA = "reservada"
@@ -128,9 +131,10 @@ class EstadoMesa(Enum):
 @dataclass
 class Mesa:
     """Modelo de mesa del TPV"""
+
     numero: str  # Identificador único de negocio (ej: 'T01', 'I04')
     capacidad: int
-    estado: str = 'libre'  # libre, ocupada, reservada, fuera_servicio
+    estado: str = "libre"  # libre, ocupada, reservada, fuera_servicio
     zona: Optional[str] = None
     ubicacion: Optional[str] = None  # Compatibilidad con tests (zona)
     id: Optional[int] = None  # Solo referencia interna (autoincremental BD)
@@ -147,7 +151,7 @@ class Mesa:
 
     def is_available(self) -> bool:
         """Indica si la mesa está disponible"""
-        return self.estado == 'libre'
+        return self.estado == "libre"
 
     def __str__(self):
         return f"Mesa(numero={self.numero}, capacidad={self.capacidad}, estado='{self.estado}')"
@@ -155,6 +159,7 @@ class Mesa:
 
 class EstadoReserva(Enum):
     """Estados posibles de una reserva"""
+
     PENDIENTE = "pendiente"
     CONFIRMADA = "confirmada"
     CANCELADA = "cancelada"
@@ -166,13 +171,15 @@ class Reserva:
     """Modelo de reserva de hospedería"""
 
     id: Optional[int]
-    mesa_id: Optional[str] = None  # Para compatibilidad con tests de TPV y soporte a identificadores string
+    mesa_id: Optional[str] = (
+        None  # Para compatibilidad con tests de TPV y soporte a identificadores string
+    )
     cliente_nombre: str = ""
     cliente_telefono: Optional[str] = None
     fecha_reserva: Optional[date] = None
     hora_reserva: Optional[str] = None
     numero_personas: int = 1
-    estado: str = 'pendiente'  # pendiente, confirmada, cancelada, completada
+    estado: str = "pendiente"  # pendiente, confirmada, cancelada, completada
     notas: Optional[str] = None
     # Campos originales para hospedería
     fecha_entrada: Optional[date] = None
@@ -191,11 +198,11 @@ class Reserva:
 
     def is_confirmed(self) -> bool:
         """Indica si la reserva está confirmada"""
-        return self.estado == 'confirmada'
+        return self.estado == "confirmada"
 
     def is_cancelled(self) -> bool:
         """Indica si la reserva está cancelada"""
-        return self.estado == 'cancelada'
+        return self.estado == "cancelada"
 
     def __str__(self):
         if self.mesa_id:

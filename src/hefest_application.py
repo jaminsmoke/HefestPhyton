@@ -15,15 +15,17 @@ from PyQt6.QtGui import QFont
 import os
 from logging.handlers import RotatingFileHandler
 
-LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
-LOG_FILE = os.path.join(LOG_DIR, 'hefest_app.log')
+LOG_FILE = os.path.join(LOG_DIR, "hefest_app.log")
 
 # Formato detallado para consola y archivo
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 
 # Handler de archivo rotativo (5MB, 3 backups)
-file_handler = RotatingFileHandler(LOG_FILE, maxBytes=5*1024*1024, backupCount=3, encoding='utf-8')
+file_handler = RotatingFileHandler(
+    LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
+)
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
 
@@ -146,7 +148,8 @@ class Hefest:
             return False
 
     from core.hefest_data_models import User
-    def authenticate_user(self, user: 'User') -> bool:
+
+    def authenticate_user(self, user: "User") -> bool:
         """Autentica al usuario seleccionado solicitando su PIN"""
         # Solicitar PIN
         pin, ok = QInputDialog.getText(

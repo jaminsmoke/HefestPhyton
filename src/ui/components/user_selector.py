@@ -9,7 +9,9 @@ from core.hefest_data_models import User
 
 
 class UserSelector(QDialog):
-    user_selected = pyqtSignal(object)  # Cambiado de User a object para compatibilidad con PyQt y tests
+    user_selected = pyqtSignal(
+        object
+    )  # Cambiado de User a object para compatibilidad con PyQt y tests
 
     def __init__(self, auth_service, parent=None):
         super().__init__(parent)

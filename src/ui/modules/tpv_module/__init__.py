@@ -15,9 +15,11 @@ Estructura:
 from .tpv_module import TPVModule
 
 # Importación diferida para evitar problemas de dependencias circulares
-__all__ = ['TPVModule']
+__all__ = ["TPVModule"]
+
 
 def get_tpv_module():
     """Obtiene la clase TPVModule de forma diferida"""
     from .tpv_module import TPVModule
+
     return TPVModule

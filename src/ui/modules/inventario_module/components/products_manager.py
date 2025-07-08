@@ -470,7 +470,8 @@ class ProductsManagerWidget(QWidget):
             row = next(iter(selected_rows))
             if row < len(self.productos_cache):
                 producto = self.productos_cache[row]
-                self.producto_seleccionado.emit(                    {
+                self.producto_seleccionado.emit(
+                    {
                         "id": producto.id,
                         "nombre": producto.nombre,
                         "categoria": producto.categoria,
@@ -489,7 +490,7 @@ class ProductsManagerWidget(QWidget):
                 categories=self.categorias_cache,
                 inventario_service=self.inventario_service,
             )
-            
+
             if dialog.exec() == QDialog.DialogCode.Accepted:
                 # El diálogo ya maneja la creación del producto internamente
                 logger.info("Producto creado exitosamente desde diálogo")
@@ -514,17 +515,19 @@ class ProductsManagerWidget(QWidget):
             row = next(iter(selected_rows))
             if row < len(self.productos_cache):
                 producto = self.productos_cache[row]
-                  # Usar el diálogo profesional de edición
+                # Usar el diálogo profesional de edición
                 dialog = EditProductDialog(
                     parent=self,
                     producto=producto,
                     categories=self.categorias_cache,
                     inventario_service=self.inventario_service,
                 )
-                
+
                 if dialog.exec() == QDialog.DialogCode.Accepted:
                     # El diálogo ya maneja la actualización del producto internamente
-                    logger.info(f"Producto '{producto.nombre}' actualizado exitosamente desde diálogo")
+                    logger.info(
+                        f"Producto '{producto.nombre}' actualizado exitosamente desde diálogo"
+                    )
                     self.load_products()  # Recargar la tabla
                     self.producto_actualizado.emit()
 

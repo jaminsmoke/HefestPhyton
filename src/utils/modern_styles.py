@@ -15,14 +15,17 @@ class ModernStyles:
     @classmethod
     def get_reserva_badge_style(cls, estado):
         colores = {
-            'confirmada': '#4caf50',
-            'pendiente': '#ff9800',
-            'cancelada': '#f44336',
-            'ocupada': '#1976d2',
-            'libre': '#9e9e9e',
+            "confirmada": "#4caf50",
+            "pendiente": "#ff9800",
+            "cancelada": "#f44336",
+            "ocupada": "#1976d2",
+            "libre": "#9e9e9e",
         }
-        color = colores.get(estado, '#bdbdbd')
-        return f"background: {color}; color: #fff; border-radius: 6px; padding: 4px 8px;"
+        color = colores.get(estado, "#bdbdbd")
+        return (
+            f"background: {color}; color: #fff; border-radius: 6px; padding: 4px 8px;"
+        )
+
     @classmethod
     def get_stats_section_style(cls):
         return """
@@ -84,6 +87,7 @@ class ModernStyles:
     @classmethod
     def get_stats_separator_style(cls):
         return "color: #d1d5db; font-size: 14px; margin: 0px 8px;"
+
     @classmethod
     def get_kpi_widget_style(cls, color, bg_color):
         return f"""
@@ -114,6 +118,7 @@ class ModernStyles:
             return "font-size: 10px; color: #6b21a8; margin-top: 1px; padding: 0 2px; max-width: 170px; min-width: 60px; min-height: 14px; max-height: 22px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
         else:
             return "font-size: 12px; color: #6b21a8; margin-top: 2px; padding: 0 4px; max-width: 170px; min-width: 60px; min-height: 18px; max-height: 28px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
+
     @classmethod
     def get_alias_label_style(cls):
         return "text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding: 0px; margin: 0px; background: transparent;"
@@ -161,6 +166,7 @@ class ModernStyles:
     @classmethod
     def get_base_widget_style(cls):
         return "border-radius: 12px; background: #fff; border: 1px solid #e0e0e0;"
+
     @classmethod
     def get_scroll_area_style(cls):
         """Estilo para QScrollArea y barras de scroll"""
@@ -220,6 +226,7 @@ class ModernStyles:
     @classmethod
     def get_subtitle_label_style(cls):
         return "font-size: 14px; color: #6c757d; margin: 4px;"
+
     """Contenedor para todos los estilos modernos de la aplicación"""
 
     # Paleta de colores moderna

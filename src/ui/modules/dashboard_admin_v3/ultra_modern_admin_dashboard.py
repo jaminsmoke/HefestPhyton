@@ -8,7 +8,9 @@ Cumple la política de tolerancia cero: se debe restaurar la funcionalidad real 
 - Documentado en el FIX y README correspondiente.
 - TODO: Reimplementar dashboard funcional y eliminar este stub.
 """
+
 from PyQt6.QtWidgets import QWidget
+
 
 class UltraModernAdminDashboard(QWidget):
     def __init__(self, *args, **kwargs):

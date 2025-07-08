@@ -24,7 +24,9 @@ class StatisticsPanel(QFrame):
     def setup_ui(self):
         """Configura la interfaz del panel de estadísticas"""
         import logging
-        self.setStyleSheet("""
+
+        self.setStyleSheet(
+            """
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #4a90e2, stop:1 #357abd);
@@ -33,7 +35,8 @@ class StatisticsPanel(QFrame):
                 margin: 4px;
                 min-height: 100px;
             }
-        """)
+        """
+        )
 
         # Refuerzo: limpiar layout anterior
         old_layout = self.layout()
@@ -71,22 +74,26 @@ class StatisticsPanel(QFrame):
         title_layout.setContentsMargins(0, 0, 0, 0)
 
         title_label = QLabel("📊 Estado del Restaurante")
-        title_label.setStyleSheet("""
+        title_label.setStyleSheet(
+            """
             QLabel {
                 font-size: 16px;
                 font-weight: bold;
                 color: white;
                 margin-bottom: 4px;
             }
-        """)
+        """
+        )
 
         subtitle_label = QLabel("Información en tiempo real")
-        subtitle_label.setStyleSheet("""
+        subtitle_label.setStyleSheet(
+            """
             QLabel {
                 font-size: 11px;
                 color: rgba(255, 255, 255, 0.8);
             }
-        """)
+        """
+        )
 
         title_layout.addWidget(title_label)
         title_layout.addWidget(subtitle_label)
@@ -124,22 +131,25 @@ class StatisticsPanel(QFrame):
             ("Total", str(total_mesas), "mesas", "🏢", "#ffffff"),
             ("Libres", str(mesas_libres), "disponibles", "✅", "#4CAF50"),
             ("Ocupadas", str(mesas_ocupadas), "en uso", "🔴", "#F44336"),
-            ("Reservadas", str(mesas_reservadas), "próximas", "📅", "#FF9800")
+            ("Reservadas", str(mesas_reservadas), "próximas", "📅", "#FF9800"),
         ]
 
-    def create_stat_card(self, title: str, value: str, subtitle: str,
-                        icon: str, color: str) -> QFrame:
+    def create_stat_card(
+        self, title: str, value: str, subtitle: str, icon: str, color: str
+    ) -> QFrame:
         """Crea una tarjeta de estadística limpia y profesional"""
         card = QFrame()
         card.setFixedSize(120, 70)
-        card.setStyleSheet("""
+        card.setStyleSheet(
+            """
             QFrame {
                 background-color: rgba(255, 255, 255, 0.15);
                 border: 1px solid rgba(255, 255, 255, 0.2);
                 border-radius: 10px;
                 padding: 6px;
             }
-        """)
+        """
+        )
 
         layout = QVBoxLayout(card)
         layout.setSpacing(2)
@@ -154,13 +164,15 @@ class StatisticsPanel(QFrame):
         icon_label.setFixedSize(16, 16)
 
         value_label = QLabel(value)
-        value_label.setStyleSheet(f"""
+        value_label.setStyleSheet(
+            f"""
             QLabel {{
                 font-size: 18px;
                 font-weight: bold;
                 color: {color};
             }}
-        """)
+        """
+        )
         value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         top_layout.addWidget(icon_label)
@@ -169,22 +181,26 @@ class StatisticsPanel(QFrame):
 
         # Línea inferior: título
         title_label = QLabel(title)
-        title_label.setStyleSheet("""
+        title_label.setStyleSheet(
+            """
             QLabel {
                 font-size: 12px;
                 color: white;
                 font-weight: 600;
             }
-        """)
+        """
+        )
 
         # Subtítulo
         subtitle_label = QLabel(subtitle)
-        subtitle_label.setStyleSheet("""
+        subtitle_label.setStyleSheet(
+            """
             QLabel {
                 font-size: 9px;
                 color: rgba(255, 255, 255, 0.7);
             }
-        """)
+        """
+        )
         layout.addLayout(top_layout)
         layout.addWidget(title_label)
         layout.addWidget(subtitle_label)
@@ -236,7 +252,7 @@ class StatisticsPanel(QFrame):
 
             # Recalcular estadísticas
             stats_data = self.calculate_statistics(mesas)
-              # Limpiar y recrear las tarjetas
+            # Limpiar y recrear las tarjetas
             # TODO: En lugar de limpiar todo, actualizar valores existentes
             # Por ahora, simplemente recreamos
             self.create_statistics_cards(self.stats_layout)

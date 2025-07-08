@@ -2,8 +2,17 @@
 TPV Avanzado - Panel de productos modularizado
 """
 
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
-                            QTabWidget, QGridLayout, QPushButton, QLabel, QFrame)
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QTabWidget,
+    QGridLayout,
+    QPushButton,
+    QLabel,
+    QFrame,
+)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
@@ -17,32 +26,37 @@ def create_productos_panel(parent, splitter):
 
     # Barra de búsqueda
     search_frame = QFrame()
-    search_frame.setStyleSheet("""
+    search_frame.setStyleSheet(
+        """
         QFrame {
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             padding: 5px;
         }
-    """)
+    """
+    )
     search_layout = QHBoxLayout(search_frame)
 
     search_input = QLineEdit()
     search_input.setPlaceholderText("🔍 Buscar productos...")
-    search_input.setStyleSheet("""
+    search_input.setStyleSheet(
+        """
         QLineEdit {
             border: none;
             padding: 8px;
             font-size: 14px;
             background: transparent;
         }
-    """)
+    """
+    )
     search_layout.addWidget(search_input)
     layout.addWidget(search_frame)
 
     # Pestañas de categorías
     tabs = QTabWidget()
-    tabs.setStyleSheet("""
+    tabs.setStyleSheet(
+        """
         QTabWidget::pane {
             border: 1px solid #e5e7eb;
             background: white;
@@ -60,7 +74,8 @@ def create_productos_panel(parent, splitter):
             background: white;
             border-bottom: 1px solid white;
         }
-    """)
+    """
+    )
 
     # Crear pestañas de categorías
     categorias = ["Bebidas", "Entrantes", "Principales", "Postres"]
@@ -82,47 +97,50 @@ def create_categoria_tab(parent, categoria):
     grid_layout = QGridLayout()
     grid_layout.setSpacing(10)
 
-
     # Obtener productos de la categoría (con stock)
     productos_data = []
     if parent.tpv_service:
         productos = parent.tpv_service.get_productos_por_categoria(categoria)
         for p in productos:
-            productos_data.append({
-                'nombre': p.nombre,
-                'precio': p.precio,
-                'stock_actual': getattr(p, 'stock_actual', None)
-            })
+            productos_data.append(
+                {
+                    "nombre": p.nombre,
+                    "precio": p.precio,
+                    "stock_actual": getattr(p, "stock_actual", None),
+                }
+            )
     if not productos_data:
         productos_ejemplo = {
             "Bebidas": [
                 {"nombre": "Coca Cola", "precio": 2.50, "stock_actual": 10},
                 {"nombre": "Agua", "precio": 1.50, "stock_actual": 10},
                 {"nombre": "Cerveza", "precio": 2.80, "stock_actual": 10},
-                {"nombre": "Café", "precio": 1.30, "stock_actual": 10}
+                {"nombre": "Café", "precio": 1.30, "stock_actual": 10},
             ],
             "Entrantes": [
                 {"nombre": "Patatas Bravas", "precio": 5.50, "stock_actual": 10},
                 {"nombre": "Croquetas", "precio": 7.00, "stock_actual": 10},
-                {"nombre": "Nachos", "precio": 6.50, "stock_actual": 10}
+                {"nombre": "Nachos", "precio": 6.50, "stock_actual": 10},
             ],
             "Principales": [
                 {"nombre": "Paella", "precio": 12.00, "stock_actual": 10},
                 {"nombre": "Entrecot", "precio": 18.50, "stock_actual": 10},
-                {"nombre": "Pasta", "precio": 9.50, "stock_actual": 10}
+                {"nombre": "Pasta", "precio": 9.50, "stock_actual": 10},
             ],
             "Postres": [
                 {"nombre": "Tarta", "precio": 4.50, "stock_actual": 10},
                 {"nombre": "Helado", "precio": 3.80, "stock_actual": 10},
-                {"nombre": "Flan", "precio": 3.20, "stock_actual": 10}
-            ]
+                {"nombre": "Flan", "precio": 3.20, "stock_actual": 10},
+            ],
         }
         productos_data = productos_ejemplo.get(categoria, [])
 
     # Crear botones de productos con stock
     row, col = 0, 0
     for prod in productos_data:
-        btn = create_producto_button(parent, prod['nombre'], prod['precio'], prod.get('stock_actual'))
+        btn = create_producto_button(
+            parent, prod["nombre"], prod["precio"], prod.get("stock_actual")
+        )
         grid_layout.addWidget(btn, row, col)
         col += 1
         if col >= 3:
@@ -133,7 +151,6 @@ def create_categoria_tab(parent, categoria):
     layout.addStretch()
 
     return tab
-
 
 
 def create_producto_button(parent, nombre, precio, stock_actual=None):
@@ -187,5 +204,5 @@ def create_producto_button(parent, nombre, precio, stock_actual=None):
 
 def agregar_producto(parent, nombre, precio):
     """Agrega un producto al pedido actual"""
-    if hasattr(parent, 'agregar_producto_pedido'):
+    if hasattr(parent, "agregar_producto_pedido"):
         parent.agregar_producto_pedido(nombre, precio)

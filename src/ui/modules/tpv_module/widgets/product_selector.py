@@ -6,9 +6,21 @@ Versión: v0.0.14
 import logging
 from typing import List, Optional, Dict, Any
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QPushButton,
-    QLineEdit, QComboBox, QScrollArea, QFrame, QSizePolicy, QToolButton,
-    QButtonGroup, QSpacerItem, QApplication
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGridLayout,
+    QLabel,
+    QPushButton,
+    QLineEdit,
+    QComboBox,
+    QScrollArea,
+    QFrame,
+    QSizePolicy,
+    QToolButton,
+    QButtonGroup,
+    QSpacerItem,
+    QApplication,
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QSize
 from PyQt6.QtGui import QFont, QPalette, QColor, QIcon, QPixmap
@@ -43,7 +55,8 @@ class ProductCard(QFrame):
         self.image_label = QLabel()
         self.image_label.setFixedSize(120, 80)
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setStyleSheet("""
+        self.image_label.setStyleSheet(
+            """
             QLabel {
                 background-color: #f0f0f0;
                 border: 1px solid #ddd;
@@ -51,7 +64,8 @@ class ProductCard(QFrame):
                 color: #666;
                 font-size: 11px;
             }
-        """)
+        """
+        )
         self.image_label.setText("📦\nImagen")
         layout.addWidget(self.image_label, alignment=Qt.AlignmentFlag.AlignCenter)
 
@@ -76,7 +90,10 @@ class ProductCard(QFrame):
         layout.addWidget(self.price_label)
 
         # Stock disponible
-        if hasattr(self.producto, 'stock_actual') and self.producto.stock_actual is not None:
+        if (
+            hasattr(self.producto, "stock_actual")
+            and self.producto.stock_actual is not None
+        ):
             stock_text = f"Stock: {self.producto.stock_actual}"
             stock_color = "#d32f2f" if self.producto.stock_actual < 5 else "#1976d2"
         else:
@@ -96,7 +113,8 @@ class ProductCard(QFrame):
 
     def setup_styles(self):
         """Configura los estilos de la tarjeta"""
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             ProductCard {
                 background-color: white;
                 border: 2px solid #e0e0e0;
@@ -120,7 +138,8 @@ class ProductCard(QFrame):
             QPushButton:pressed {
                 background-color: #0d47a1;
             }
-        """)
+        """
+        )
 
     def on_add_clicked(self):
         """Maneja el clic en el botón añadir"""
@@ -132,6 +151,7 @@ class ProductCard(QFrame):
 
         # Restaurar texto después de un momento
         from PyQt6.QtCore import QTimer
+
         QTimer.singleShot(1000, lambda: self.add_button.setText("Añadir"))
 
 
@@ -155,6 +175,7 @@ class ProductSelectorWidget(QWidget):
     def setup_ui(self):
         """Configura la interfaz principal"""
         import logging
+
         old_layout = self.layout()
         if old_layout is not None:
             while old_layout.count():
@@ -198,7 +219,8 @@ class ProductSelectorWidget(QWidget):
         self.search_input.setPlaceholderText("Buscar productos...")
         self.search_input.setFixedHeight(36)
         self.search_input.textChanged.connect(self.on_search_changed)
-        self.search_input.setStyleSheet("""
+        self.search_input.setStyleSheet(
+            """
             QLineEdit {
                 border: 2px solid #e0e0e0;
                 border-radius: 8px;
@@ -208,7 +230,8 @@ class ProductSelectorWidget(QWidget):
             QLineEdit:focus {
                 border-color: #2196f3;
             }
-        """)
+        """
+        )
         filters_layout.addWidget(self.search_input)
 
         filters_layout.addSpacing(20)
@@ -221,7 +244,8 @@ class ProductSelectorWidget(QWidget):
         self.category_combo = QComboBox()
         self.category_combo.setFixedHeight(36)
         self.category_combo.currentTextChanged.connect(self.on_category_changed)
-        self.category_combo.setStyleSheet("""
+        self.category_combo.setStyleSheet(
+            """
             QComboBox {
                 border: 2px solid #e0e0e0;
                 border-radius: 8px;
@@ -242,7 +266,8 @@ class ProductSelectorWidget(QWidget):
                 border-top: 6px solid #666;
                 margin-right: 8px;
             }
-        """)
+        """
+        )
         filters_layout.addWidget(self.category_combo)
 
         filters_layout.addStretch()
@@ -257,15 +282,21 @@ class ProductSelectorWidget(QWidget):
         # Área de productos con scroll
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scroll_area.setStyleSheet("""
+        self.scroll_area.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        self.scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.scroll_area.setStyleSheet(
+            """
             QScrollArea {
                 border: none;
                 background-color: #fafafa;
                 border-radius: 8px;
             }
-        """)
+        """
+        )
 
         # Widget contenedor de productos
         self.products_widget = QWidget()
@@ -279,7 +310,9 @@ class ProductSelectorWidget(QWidget):
         # Información de estado
         self.status_label = QLabel("Cargando productos...")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status_label.setStyleSheet("color: #666; font-style: italic; padding: 20px;")
+        self.status_label.setStyleSheet(
+            "color: #666; font-style: italic; padding: 20px;"
+        )
         layout.addWidget(self.status_label)
 
     def load_sample_data(self):
@@ -291,18 +324,15 @@ class ProductSelectorWidget(QWidget):
             Producto(4, "Té Verde", 2.00, "Bebidas", 15),
             Producto(5, "Agua Mineral", 1.50, "Bebidas", 50),
             Producto(6, "Refresco Cola", 2.20, "Bebidas", 35),
-
             Producto(7, "Sandwich Mixto", 4.50, "Comida", 18),
             Producto(8, "Tostada con Jamón", 3.80, "Comida", 12),
             Producto(9, "Croissant", 2.80, "Comida", 8),
             Producto(10, "Ensalada César", 8.50, "Comida", 6),
             Producto(11, "Pasta Carbonara", 12.00, "Comida", 4),
             Producto(12, "Pizza Margarita", 10.50, "Comida", 3),
-
             Producto(13, "Tarta de Chocolate", 4.20, "Postres", 7),
             Producto(14, "Helado Vainilla", 3.50, "Postres", 10),
             Producto(15, "Flan Casero", 3.80, "Postres", 5),
-
             Producto(16, "Cerveza", 2.80, "Alcohol", 40),
             Producto(17, "Vino Tinto Copa", 4.50, "Alcohol", 25),
             Producto(18, "Gin Tonic", 8.00, "Alcohol", 15),
@@ -327,7 +357,9 @@ class ProductSelectorWidget(QWidget):
         self.filtered_productos = self.filter_products()
 
         if not self.filtered_productos:
-            self.status_label.setText("No se encontraron productos con los filtros aplicados")
+            self.status_label.setText(
+                "No se encontraron productos con los filtros aplicados"
+            )
             self.status_label.show()
             return
 
@@ -345,7 +377,9 @@ class ProductSelectorWidget(QWidget):
             self.product_cards.append(card)
 
         # Añadir espaciador para mantener las tarjetas alineadas arriba
-        spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        spacer = QSpacerItem(
+            20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding
+        )
         final_row = (len(self.filtered_productos) - 1) // columns + 1
         self.products_layout.addItem(spacer, final_row, 0, 1, columns)
 

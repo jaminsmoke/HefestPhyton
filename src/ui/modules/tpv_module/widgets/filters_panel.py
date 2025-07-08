@@ -5,8 +5,14 @@ Versión: v0.0.14
 
 import logging
 from typing import Callable, Optional
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
-                            QPushButton, QFrame)
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QFrame,
+)
 from PyQt6.QtCore import Qt, pyqtSignal
 
 logger = logging.getLogger(__name__)
@@ -38,7 +44,9 @@ class FiltersPanel(QFrame):
     def setup_ui(self):
         """Configura la interfaz del panel de filtros"""
         import logging
-        self.setStyleSheet("""
+
+        self.setStyleSheet(
+            """
             QFrame {
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #ffffff, stop:1 #f8f9fa);
@@ -47,7 +55,8 @@ class FiltersPanel(QFrame):
                 padding: 20px;
                 margin: 4px;
             }
-        """)
+        """
+        )
         # Refuerzo: limpiar layout anterior y crear layout sin padre
         old_layout = self.layout()
         if old_layout is not None:
@@ -77,14 +86,16 @@ class FiltersPanel(QFrame):
         title_icon.setStyleSheet("font-size: 18px;")
 
         title_label = QLabel("Filtros y Control")
-        title_label.setStyleSheet("""
+        title_label.setStyleSheet(
+            """
             QLabel {
                 font-size: 16px;
                 font-weight: bold;
                 color: #2c3e50;
                 margin-left: 8px;
             }
-        """)
+        """
+        )
 
         title_layout.addWidget(title_icon)
         title_layout.addWidget(title_label)
@@ -134,14 +145,16 @@ class FiltersPanel(QFrame):
 
         # Título
         zone_title = QLabel("🏢 Zonas")
-        zone_title.setStyleSheet("""
+        zone_title.setStyleSheet(
+            """
             QLabel {
                 font-size: 12px;
                 font-weight: bold;
                 color: #495057;
                 margin-bottom: 4px;
             }
-        """)
+        """
+        )
         zone_layout.addWidget(zone_title)
 
         # Botones
@@ -170,14 +183,16 @@ class FiltersPanel(QFrame):
 
         # Título
         status_title = QLabel("📊 Estados")
-        status_title.setStyleSheet("""
+        status_title.setStyleSheet(
+            """
             QLabel {
                 font-size: 12px;
                 font-weight: bold;
                 color: #495057;
                 margin-bottom: 4px;
             }
-        """)
+        """
+        )
         status_layout.addWidget(status_title)
 
         # Botones
@@ -188,7 +203,7 @@ class FiltersPanel(QFrame):
             ("Todos", "#6c757d"),
             ("Libre", "#28a745"),
             ("Ocupada", "#dc3545"),
-            ("Reservada", "#ffc107")
+            ("Reservada", "#ffc107"),
         ]
 
         for status, color in status_info:
@@ -211,14 +226,16 @@ class FiltersPanel(QFrame):
 
         # Título
         view_title = QLabel("👁️ Vista")
-        view_title.setStyleSheet("""
+        view_title.setStyleSheet(
+            """
             QLabel {
                 font-size: 12px;
                 font-weight: bold;
                 color: #495057;
                 margin-bottom: 4px;
             }
-        """)
+        """
+        )
         view_layout.addWidget(view_title)
 
         # Botones de vista
@@ -269,7 +286,8 @@ class FiltersPanel(QFrame):
         btn = QPushButton(text)
         btn.setFixedSize(70, 28)
         btn.setCheckable(True)
-        btn.setStyleSheet(f"""
+        btn.setStyleSheet(
+            f"""
             QPushButton {{
                 background-color: rgba(108, 117, 125, 0.1);
                 border: 2px solid {color};
@@ -285,14 +303,16 @@ class FiltersPanel(QFrame):
             QPushButton:hover {{
                 background-color: rgba(108, 117, 125, 0.1);
             }}
-        """)
+        """
+        )
         return btn
 
     def create_refresh_button(self, layout: QHBoxLayout):
         """Crea el botón de actualización"""
         refresh_btn = QPushButton("🔄 Actualizar")
         refresh_btn.setFixedSize(120, 36)
-        refresh_btn.setStyleSheet("""
+        refresh_btn.setStyleSheet(
+            """
             QPushButton {
                 background-color: #17a2b8;
                 border: none;
@@ -303,7 +323,8 @@ class FiltersPanel(QFrame):
             }
             QPushButton:hover {
                 background-color: #138496;
-            }        """)
+            }        """
+        )
         refresh_btn.clicked.connect(self.refresh_requested.emit)
         layout.addWidget(refresh_btn)
 
@@ -360,7 +381,7 @@ class FiltersPanel(QFrame):
     def get_current_filters(self) -> dict:
         """Obtiene los filtros actuales"""
         return {
-            'zone': self.selected_zone,
-            'status': self.selected_status,
-            'view_mode': self.view_mode
+            "zone": self.selected_zone,
+            "status": self.selected_status,
+            "view_mode": self.view_mode,
         }

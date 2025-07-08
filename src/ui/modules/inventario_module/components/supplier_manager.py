@@ -137,7 +137,7 @@ class SupplierManagerWidget(QWidget):
     def create_suppliers_table(self) -> QTableWidget:
         """Crear la tabla de proveedores"""
         table = QTableWidget()
-        table.setObjectName("SuppliersTable")        # Configurar columnas
+        table.setObjectName("SuppliersTable")  # Configurar columnas
         headers = [
             "ID",
             "Nombre",
@@ -241,7 +241,7 @@ class SupplierManagerWidget(QWidget):
                 # Email
                 self.suppliers_table.setItem(
                     row, 4, QTableWidgetItem(proveedor.get("email", ""))
-                )                # Dirección
+                )  # Dirección
                 self.suppliers_table.setItem(
                     row, 5, QTableWidgetItem(proveedor.get("direccion", ""))
                 )
@@ -684,7 +684,9 @@ class SupplierDialog(QDialog):
         self.address_input = QTextEdit()
         self.address_input.setPlaceholderText("Dirección completa del proveedor")
         self.address_input.setMaximumHeight(100)
-        form_layout.addWidget(self.address_input, row, 1)        # Contador de caracteres para dirección
+        form_layout.addWidget(
+            self.address_input, row, 1
+        )  # Contador de caracteres para dirección
         row += 1
         self.address_char_counter = QLabel("0/300 caracteres")
         self.address_char_counter.setStyleSheet("color: #6c757d; font-size: 11px;")
@@ -762,24 +764,38 @@ class SupplierDialog(QDialog):
     def load_categories(self):
         """Cargar categorías de proveedores en el combo box"""
         try:
-            if hasattr(self.inventario_service, 'get_categorias_proveedores'):
+            if hasattr(self.inventario_service, "get_categorias_proveedores"):
                 categorias = self.inventario_service.get_categorias_proveedores()
             else:
                 # Fallback si el método no existe
-                categorias = ['General', 'Bebidas', 'Comida', 'Limpieza', 'Papelería', 'Servicios']
-            
+                categorias = [
+                    "General",
+                    "Bebidas",
+                    "Comida",
+                    "Limpieza",
+                    "Papelería",
+                    "Servicios",
+                ]
+
             self.category_combo.clear()
             for categoria in categorias:
                 self.category_combo.addItem(categoria)
-            
+
             # Establecer valor por defecto
             if not self.is_edit_mode:
                 self.category_combo.setCurrentText("General")
-                
+
         except Exception as e:
             logger.error(f"Error cargando categorías: {e}")
             # Categorías por defecto en caso de error
-            default_categories = ['General', 'Bebidas', 'Comida', 'Limpieza', 'Papelería', 'Servicios']
+            default_categories = [
+                "General",
+                "Bebidas",
+                "Comida",
+                "Limpieza",
+                "Papelería",
+                "Servicios",
+            ]
             self.category_combo.clear()
             for categoria in default_categories:
                 self.category_combo.addItem(categoria)
@@ -792,7 +808,7 @@ class SupplierDialog(QDialog):
             self.phone_input.setText(self.proveedor.get("telefono", ""))
             self.email_input.setText(self.proveedor.get("email", ""))
             self.address_input.setPlainText(self.proveedor.get("direccion", ""))
-            
+
             # Cargar categoría
             categoria = self.proveedor.get("categoria", "General")
             if categoria:
@@ -823,7 +839,7 @@ class SupplierDialog(QDialog):
             self.update_address_counter()
 
     def save_supplier(self):
-        """Guardar el proveedor con validaciones completas"""        # Validar formulario completo
+        """Guardar el proveedor con validaciones completas"""  # Validar formulario completo
         if not self.validate_form():
             return
 
@@ -834,7 +850,7 @@ class SupplierDialog(QDialog):
             email = self.email_input.text().strip()
             direccion = self.address_input.toPlainText().strip()
             categoria = self.category_combo.currentText().strip() or "General"
-            
+
             if self.is_edit_mode and self.proveedor:
                 # Actualizar proveedor existente
                 success = self.inventario_service.actualizar_proveedor(

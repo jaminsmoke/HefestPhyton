@@ -16,17 +16,15 @@ from ..mesa_event_bus import mesa_event_bus
 from src.utils.modern_styles import ModernStyles
 
 
-
-
 class MesaWidget(QFrame):
     def _on_reserva_event_bus_creada(self, reserva):
         # Si la reserva es para esta mesa, actualizar estado y contador
-        mesa_numero = str(getattr(self.mesa, 'numero', None))
-        reserva_mesa_id = str(getattr(reserva, 'mesa_id', None))
+        mesa_numero = str(getattr(self.mesa, "numero", None))
+        reserva_mesa_id = str(getattr(reserva, "mesa_id", None))
         # Ahora la comparación debe ser por numero, no por id
         if mesa_numero == reserva_mesa_id:
             # Actualizar estado y proxima_reserva
-            self.mesa.estado = 'reservada'
+            self.mesa.estado = "reservada"
             self.proxima_reserva = reserva
             self._ultima_reserva_activa = reserva
             self.estado_label.setText(self.get_estado_texto())
@@ -38,34 +36,42 @@ class MesaWidget(QFrame):
             else:
                 self._contador_timer.stop()
             self.repaint()
+
     # Señales para acciones principales
     reservar_mesa_requested = pyqtSignal(object)  # Emite la mesa
-    iniciar_tpv_requested = pyqtSignal(object)     # Emite la mesa
+    iniciar_tpv_requested = pyqtSignal(object)  # Emite la mesa
+
     # --- Selección múltiple para acciones por lotes ---
     def set_batch_mode(self, enabled: bool):
         self.batch_mode = enabled
         if enabled:
-            if not hasattr(self, 'batch_checkbox'):
+            if not hasattr(self, "batch_checkbox"):
                 from PyQt6.QtWidgets import QCheckBox
+
                 self.batch_checkbox = QCheckBox()
                 self.batch_checkbox.setChecked(False)
-                self.batch_checkbox.setStyleSheet(ModernStyles.get_batch_checkbox_style())
+                self.batch_checkbox.setStyleSheet(
+                    ModernStyles.get_batch_checkbox_style()
+                )
                 self.layout_principal.insertWidget(0, self.batch_checkbox)
-                self.batch_checkbox.stateChanged.connect(self._on_batch_checkbox_changed)
+                self.batch_checkbox.stateChanged.connect(
+                    self._on_batch_checkbox_changed
+                )
             self.batch_checkbox.show()
         else:
-            if hasattr(self, 'batch_checkbox'):
+            if hasattr(self, "batch_checkbox"):
                 self.batch_checkbox.hide()
 
     def _on_batch_checkbox_changed(self, state):
         # Buscar el ancestro que tenga el método toggle_mesa_selection
         parent = self.parent()
         while parent is not None:
-            toggle = getattr(parent, 'toggle_mesa_selection', None)
+            toggle = getattr(parent, "toggle_mesa_selection", None)
             if callable(toggle):
                 toggle(self.mesa.numero)
                 break
-            parent = getattr(parent, 'parent', lambda: None)()
+            parent = getattr(parent, "parent", lambda: None)()
+
     """
     Widget compacto y profesional para mostrar una mesa con diseño optimizado y nombre editable.
 
@@ -99,30 +105,40 @@ class MesaWidget(QFrame):
         # --- SINCRONIZACIÓN Y PERSISTENCIA REAL AL INICIALIZAR ---
         # Refrescar estado real de la mesa desde el servicio si está disponible
         mesa_real = None
-        if self.tpv_service and hasattr(self.tpv_service, 'get_mesa_by_numero'):
+        if self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_numero"):
             try:
                 mesa_real = self.tpv_service.get_mesa_by_numero(self.mesa.numero)
                 if mesa_real:
                     self.mesa = mesa_real
             except Exception as e:
-                print(f"[MesaWidget][WARN] No se pudo refrescar mesa desde servicio al inicializar: {e}")
+                print(
+                    f"[MesaWidget][WARN] No se pudo refrescar mesa desde servicio al inicializar: {e}"
+                )
         # Refrescar reservas activas de la mesa desde el servicio si existe
         self._reservas_activas_inicial = []
         reserva_activada = False
-        if self.tpv_service and hasattr(self.tpv_service, 'reserva_service'):
-            reserva_service = getattr(self.tpv_service, 'reserva_service', None)
-            if reserva_service and hasattr(reserva_service, 'obtener_reservas_activas_por_mesa'):
+        if self.tpv_service and hasattr(self.tpv_service, "reserva_service"):
+            reserva_service = getattr(self.tpv_service, "reserva_service", None)
+            if reserva_service and hasattr(
+                reserva_service, "obtener_reservas_activas_por_mesa"
+            ):
                 try:
-                    reservas_por_mesa = reserva_service.obtener_reservas_activas_por_mesa()
-                    self._reservas_activas_inicial = reservas_por_mesa.get(self.mesa.numero, [])
+                    reservas_por_mesa = (
+                        reserva_service.obtener_reservas_activas_por_mesa()
+                    )
+                    self._reservas_activas_inicial = reservas_por_mesa.get(
+                        self.mesa.numero, []
+                    )
                     # Si hay reservas activas, forzar estado y proxima_reserva
                     if self._reservas_activas_inicial:
-                        self.mesa.estado = 'reservada'
+                        self.mesa.estado = "reservada"
                         self.proxima_reserva = self._reservas_activas_inicial[0]
                         self._ultima_reserva_activa = self.proxima_reserva
                         reserva_activada = True
                 except Exception as e:
-                    print(f"[MesaWidget][WARN] No se pudo refrescar reservas activas desde servicio al inicializar: {e}")
+                    print(
+                        f"[MesaWidget][WARN] No se pudo refrescar reservas activas desde servicio al inicializar: {e}"
+                    )
 
         self.setup_ui()
         self.apply_styles()
@@ -135,6 +151,7 @@ class MesaWidget(QFrame):
         # Suscribirse al event bus de reservas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+
             reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
         except Exception as e:
             print(f"[MesaWidget][ERROR] No se pudo conectar a reserva_event_bus: {e}")
@@ -147,12 +164,15 @@ class MesaWidget(QFrame):
 
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
         # Si la actualización es para esta mesa, refrescar datos y UI
-        if str(getattr(mesa_actualizada, 'id', None)) == str(getattr(self.mesa, 'id', None)):
+        if str(getattr(mesa_actualizada, "id", None)) == str(
+            getattr(self.mesa, "id", None)
+        ):
             self.update_mesa(mesa_actualizada)
 
     def setup_ui(self):
         from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
         from PyQt6.QtGui import QIcon
+
         # Protección: limpiar layout anterior si existe
         old_layout = self.layout()
         if old_layout is not None:
@@ -173,7 +193,9 @@ class MesaWidget(QFrame):
 
         # --- ALIAS DE MESA + BOTONES ---
         alias_layout = QHBoxLayout()
-        is_reservada = getattr(self.mesa, 'estado', None) == 'reservada' or getattr(self.mesa, 'reservada', False)
+        is_reservada = getattr(self.mesa, "estado", None) == "reservada" or getattr(
+            self.mesa, "reservada", False
+        )
         if is_reservada:
             alias_layout.setContentsMargins(0, 0, 0, 0)
             alias_layout.setSpacing(0)
@@ -183,17 +205,31 @@ class MesaWidget(QFrame):
             alias_layout.setSpacing(4)
         self.alias_label = QLabel(self.mesa.nombre_display)
         self.alias_label.setWordWrap(False)
-        self.alias_label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
-        self.alias_label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        self.alias_label.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
+        self.alias_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.NoTextInteraction
+        )
         self.alias_label.setToolTip("")
         if is_reservada:
             self.alias_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
         else:
-            self.alias_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+            self.alias_label.setAlignment(
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+            )
             self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
         self.alias_label.installEventFilter(self)
-        alias_layout.addWidget(self.alias_label, 10, Qt.AlignmentFlag.AlignVCenter if not is_reservada else Qt.AlignmentFlag.AlignCenter)
+        alias_layout.addWidget(
+            self.alias_label,
+            10,
+            (
+                Qt.AlignmentFlag.AlignVCenter
+                if not is_reservada
+                else Qt.AlignmentFlag.AlignCenter
+            ),
+        )
         self.edit_btn = QPushButton()
         self.edit_btn.setFixedSize(22, 22)
         self.edit_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -210,7 +246,9 @@ class MesaWidget(QFrame):
         self.restore_btn.setStyleSheet(ModernStyles.get_restore_btn_style())
         self.restore_btn.setVisible(self._tiene_datos_temporales())
         self.restore_btn.clicked.connect(self._emitir_restaurar)
-        self.restore_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.restore_btn.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
         alias_layout.addWidget(self.restore_btn, 0)
         layout.addLayout(alias_layout)
 
@@ -247,7 +285,11 @@ class MesaWidget(QFrame):
         layout.addLayout(capacidad_layout)
 
         # ZONA + IDENTIFICADOR - Información contextual en una línea
-        zona_texto = self.mesa.zona if hasattr(self.mesa, 'zona') and self.mesa.zona else "Principal"
+        zona_texto = (
+            self.mesa.zona
+            if hasattr(self.mesa, "zona") and self.mesa.zona
+            else "Principal"
+        )
 
         # El número de mesa ya incluye el identificador correcto (T03, I04, etc.)
         identificador = self.mesa.numero
@@ -279,42 +321,42 @@ class MesaWidget(QFrame):
     def get_estado_texto(self):
         """Obtiene el texto del estado de forma compacta"""
         estados = {
-            'libre': '✓ LIBRE',
-            'ocupada': '● OCUPADA',
-            'reservada': '◐ RESERVADA',
-            'pendiente': '◯ PENDIENTE'
+            "libre": "✓ LIBRE",
+            "ocupada": "● OCUPADA",
+            "reservada": "◐ RESERVADA",
+            "pendiente": "◯ PENDIENTE",
         }
-        return estados.get(self.mesa.estado, '? DESCONOCIDO')
+        return estados.get(self.mesa.estado, "? DESCONOCIDO")
 
     def get_colores(self):
         """Obtiene los colores según el estado"""
         colores = {
-            'libre': {
-                'fondo': '#f1f8e9',
-                'borde': '#4caf50',
-                'texto': '#2e7d32',
-                'badge': '#4caf50'
+            "libre": {
+                "fondo": "#f1f8e9",
+                "borde": "#4caf50",
+                "texto": "#2e7d32",
+                "badge": "#4caf50",
             },
-            'ocupada': {
-                'fondo': '#ffebee',
-                'borde': '#f44336',
-                'texto': '#c62828',
-                'badge': '#f44336'
+            "ocupada": {
+                "fondo": "#ffebee",
+                "borde": "#f44336",
+                "texto": "#c62828",
+                "badge": "#f44336",
             },
-            'reservada': {
-                'fondo': '#fff8e1',
-                'borde': '#ff9800',
-                'texto': '#ef6c00',
-                'badge': '#ff9800'
+            "reservada": {
+                "fondo": "#fff8e1",
+                "borde": "#ff9800",
+                "texto": "#ef6c00",
+                "badge": "#ff9800",
             },
-            'pendiente': {
-                'fondo': '#f3e5f5',
-                'borde': '#9c27b0',
-                'texto': '#7b1fa2',
-                'badge': '#9c27b0'
-            }
+            "pendiente": {
+                "fondo": "#f3e5f5",
+                "borde": "#9c27b0",
+                "texto": "#7b1fa2",
+                "badge": "#9c27b0",
+            },
         }
-        return colores.get(self.mesa.estado, colores['libre'])
+        return colores.get(self.mesa.estado, colores["libre"])
 
     def apply_styles(self):
         """Aplica estilos visuales según el estado de la mesa"""
@@ -325,7 +367,7 @@ class MesaWidget(QFrame):
                 border-radius: 12px;
             }
         """
-        if getattr(self.mesa, 'reservada', False):
+        if getattr(self.mesa, "reservada", False):
             # Color y borde especial para mesas reservadas
             base_style += """
                 QFrame#mesa_widget {
@@ -352,7 +394,8 @@ class MesaWidget(QFrame):
         colores = self.get_colores()
 
         # Estilo principal del widget - Compacto y ajustado
-        self.setStyleSheet(f"""
+        self.setStyleSheet(
+            f"""
             QFrame#mesa_widget {{
                 background-color: {colores['fondo']};
                 border: 4px solid {colores['borde']};
@@ -366,14 +409,16 @@ class MesaWidget(QFrame):
                 background-color: #e3f2fd;
                 margin: 3px;
             }}
-        """)
+        """
+        )
 
         # Alias de mesa - Solo color y peso, sin tamaño de fuente ni altura/margen (cumpliendo política)
         # TODO v0.0.14: Cumplimiento estricto - Eliminar duplicidad de estilos, solo CSS para elipsis
         self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
 
         # Estado - Badge ultra-compacto centrado perfectamente
-        self.estado_label.setStyleSheet(f"""
+        self.estado_label.setStyleSheet(
+            f"""
             QLabel#estado_label {{
                 color: white;
                 background-color: {colores['badge']};
@@ -385,7 +430,8 @@ class MesaWidget(QFrame):
                 min-height: 14px;
                 max-width: 100px;
             }}
-        """)
+        """
+        )
 
         # Capacidad - Información ajustada
         self.capacidad_label.setStyleSheet(ModernStyles.get_capacidad_label_style())
@@ -399,10 +445,10 @@ class MesaWidget(QFrame):
     def _darken_color(self, color_hex):
         """Oscurece un color hex para efectos"""
         color_map = {
-            '#4caf50': '#388e3c',
-            '#f44336': '#d32f2f',
-            '#ff9800': '#f57c00',
-            '#9c27b0': '#7b1fa2',
+            "#4caf50": "#388e3c",
+            "#f44336": "#d32f2f",
+            "#ff9800": "#f57c00",
+            "#9c27b0": "#7b1fa2",
         }
         return color_map.get(color_hex, color_hex)
 
@@ -412,9 +458,9 @@ class MesaWidget(QFrame):
 
     def _ajustar_fuente_nombre(self):
         """Responsividad: una sola línea, elipsis si no cabe, tooltip si hay elipsis. Ajuste fino con reducción de 16px a la derecha."""
-        label = getattr(self, 'alias_label', None)
+        label = getattr(self, "alias_label", None)
         try:
-            if label is None or not hasattr(label, 'width') or not label.isVisible():
+            if label is None or not hasattr(label, "width") or not label.isVisible():
                 return  # Evita crash si el QLabel ya fue destruido o no es visible
         except RuntimeError:
             return  # El objeto C++ ya fue destruido
@@ -426,16 +472,18 @@ class MesaWidget(QFrame):
         if label_width <= 1:
             parent_width = self.width()
             btns_width = 0
-            if hasattr(self, 'edit_btn') and self.edit_btn.isVisible():
+            if hasattr(self, "edit_btn") and self.edit_btn.isVisible():
                 btns_width += self.edit_btn.width() + 6
-            if hasattr(self, 'restore_btn') and self.restore_btn.isVisible():
+            if hasattr(self, "restore_btn") and self.restore_btn.isVisible():
                 btns_width += self.restore_btn.width() + 6
             label_width = max(parent_width - btns_width - 24, 80)
         available_width = max(label_width - REDUCCION_DERECHA, 40)
 
         # Buscar el tamaño de fuente óptimo para una sola línea
         # Si la mesa está reservada, forzar un mínimo mayor para mejor visibilidad
-        if getattr(self.mesa, 'estado', None) == 'reservada' or getattr(self.mesa, 'reservada', False):
+        if getattr(self.mesa, "estado", None) == "reservada" or getattr(
+            self.mesa, "reservada", False
+        ):
             min_font_size = 10  # Antes: 6
             max_font_size = 16  # Antes: 15
         else:
@@ -476,13 +524,16 @@ class MesaWidget(QFrame):
     def update_mesa(self, mesa: Mesa):
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario"""
         self.mesa = mesa
-        nueva_reserva = getattr(mesa, 'proxima_reserva', None)
+        nueva_reserva = getattr(mesa, "proxima_reserva", None)
         # print(f"[MesaWidget] update_mesa: mesa.numero={getattr(mesa, 'numero', None)} estado={getattr(mesa, 'estado', None)} proxima_reserva={nueva_reserva}")
         # Excepción funcional: Si la mesa está reservada/ocupada y no hay proxima_reserva, conservar la última reserva activa localmente
         if nueva_reserva is not None:
             self.proxima_reserva = nueva_reserva
             self._ultima_reserva_activa = nueva_reserva
-        elif self.mesa.estado in ("reservada", "ocupada") and self._ultima_reserva_activa is not None:
+        elif (
+            self.mesa.estado in ("reservada", "ocupada")
+            and self._ultima_reserva_activa is not None
+        ):
             # TODO: Refactorizar cuando el backend permita enviar la reserva activa aunque esté en curso
             # Excepción documentada: ver README y política de cumplimiento
             self.proxima_reserva = self._ultima_reserva_activa
@@ -492,7 +543,7 @@ class MesaWidget(QFrame):
         self.alias_label.setText(mesa.nombre_display)
         self.capacidad_label.setText(f"👥 {mesa.personas_display} personas")
         self.estado_label.setText(self.get_estado_texto())
-        zona_texto = mesa.zona if hasattr(mesa, 'zona') and mesa.zona else "Principal"
+        zona_texto = mesa.zona if hasattr(mesa, "zona") and mesa.zona else "Principal"
         identificador = mesa.numero
         self.zona_label.setText(f"🏢 {zona_texto} • {identificador}")
         self.restore_btn.setVisible(self._tiene_datos_temporales())
@@ -507,6 +558,7 @@ class MesaWidget(QFrame):
 
     def _actualizar_contador_reserva(self):
         from datetime import datetime, time
+
         reserva = self.proxima_reserva
         if reserva is None:
             self.contador_label.hide()
@@ -517,12 +569,12 @@ class MesaWidget(QFrame):
             return
         ahora = datetime.now()
         # Unificar fecha y hora
-        fecha = getattr(reserva, 'fecha_reserva', None)
-        hora = getattr(reserva, 'hora_reserva', None)
+        fecha = getattr(reserva, "fecha_reserva", None)
+        hora = getattr(reserva, "hora_reserva", None)
         if fecha and hora:
             if isinstance(hora, str):
                 try:
-                    hora_obj = datetime.strptime(hora, '%H:%M').time()
+                    hora_obj = datetime.strptime(hora, "%H:%M").time()
                 except Exception:
                     hora_obj = time(0, 0)
             else:
@@ -535,8 +587,8 @@ class MesaWidget(QFrame):
         delta = fecha_hora - ahora
         minutos = int(delta.total_seconds() // 60)
         if minutos < 0:
-            if self.mesa.estado == 'reservada':
-                self.mesa.estado = 'ocupada'
+            if self.mesa.estado == "reservada":
+                self.mesa.estado = "ocupada"
                 self.estado_label.setText(self.get_estado_texto())
                 self.apply_styles()
             self.contador_label.hide()
@@ -549,17 +601,23 @@ class MesaWidget(QFrame):
             return
         texto = f"⏳ {minutos} min"
         self.contador_label.setText(texto)
-        cliente = getattr(reserva, 'cliente_nombre', getattr(reserva, 'cliente', ''))
-        self.contador_label.setToolTip(f"Próxima reserva: {hora if hora else ''} - {cliente}")
+        cliente = getattr(reserva, "cliente_nombre", getattr(reserva, "cliente", ""))
+        self.contador_label.setToolTip(
+            f"Próxima reserva: {hora if hora else ''} - {cliente}"
+        )
         self.contador_label.show()
         self._resaltar_contador(minutos < 10)
 
     def _resaltar_contador(self, resaltar: bool):
         base_style = "border-radius: 5px; padding: 3px 10px; font-weight: 600; font-size: 13px; min-width: 48px; min-height: 20px; border: 1px solid #ffe082; margin-top: 1px; margin-bottom: 1px;"
         if resaltar:
-            self.contador_label.setStyleSheet(f"color: #fff; background: #e53935; {base_style}")
+            self.contador_label.setStyleSheet(
+                f"color: #fff; background: #e53935; {base_style}"
+            )
         else:
-            self.contador_label.setStyleSheet(f"color: #b26a00; background: #fff3cd; {base_style}")
+            self.contador_label.setStyleSheet(
+                f"color: #b26a00; background: #fff3cd; {base_style}"
+            )
 
     def _emitir_restaurar(self):
         """Emite una señal para restaurar la mesa a su estado original"""
@@ -614,12 +672,14 @@ class MesaWidget(QFrame):
         self.repaint()
         # Esperar a que el layout se actualice y luego ajustar fuente
         from PyQt6.QtCore import QTimer
+
         QTimer.singleShot(0, self._ajustar_fuente_nombre)
 
     def mousePressEvent(self, event):
         """Muestra menú emergente moderno con acciones principales al hacer click izquierdo"""
         from PyQt6.QtWidgets import QMenu
         from PyQt6.QtGui import QAction
+
         if event.button() == Qt.MouseButton.LeftButton:
             if self.editing_mode:
                 self._finish_edit_mode()
@@ -643,7 +703,9 @@ class MesaWidget(QFrame):
 
     def _on_reservar_mesa(self):
         # Siempre delega la acción al contenedor (grid) emitiendo la señal
-        print(f"[MesaWidget] Emitiendo señal reservar_mesa_requested para mesa_id={getattr(self.mesa, 'id', None)}")
+        print(
+            f"[MesaWidget] Emitiendo señal reservar_mesa_requested para mesa_id={getattr(self.mesa, 'id', None)}"
+        )
         self.reservar_mesa_requested.emit(self.mesa)
 
     def _on_iniciar_tpv(self):
@@ -654,11 +716,13 @@ class MesaWidget(QFrame):
         # Abre el diálogo de detalles/configuración de la mesa
         try:
             from src.ui.modules.tpv_module.dialogs.mesa_dialog import MesaDialog
-            parent = self.window() if hasattr(self, 'window') else self.parent()
+
+            parent = self.window() if hasattr(self, "window") else self.parent()
             dialog = MesaDialog(self.mesa, parent)
             dialog.exec()
         except Exception as e:
             import logging
+
             logging.getLogger(__name__).error(f"Error abriendo MesaDialog: {e}")
 
     def eventFilter(self, obj, event):
@@ -683,21 +747,34 @@ class MesaWidget(QFrame):
 
     def _editar_personas(self):
         """Permite editar temporalmente el número de personas de la mesa con UX moderna y visual profesional"""
-        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QSpinBox, QSpacerItem, QSizePolicy
+        from PyQt6.QtWidgets import (
+            QDialog,
+            QVBoxLayout,
+            QHBoxLayout,
+            QLabel,
+            QPushButton,
+            QSpinBox,
+            QSpacerItem,
+            QSizePolicy,
+        )
         from PyQt6.QtCore import Qt
         from PyQt6.QtGui import QFont, QIcon
+
         valor_actual = self.mesa.personas_display
         valor_original = self.mesa.capacidad
         min_val, max_val = 1, 500
         nombre_display = self.mesa.nombre_display
 
         class PersonasDialog(QDialog):
-            def __init__(self, nombre_display, valor_actual, valor_original, parent=None):
+            def __init__(
+                self, nombre_display, valor_actual, valor_original, parent=None
+            ):
                 super().__init__(parent)
                 self.setWindowTitle("Editar número de personas")
                 self.setModal(True)
                 self.setMinimumWidth(360)
-                self.setStyleSheet("""
+                self.setStyleSheet(
+                    """
                     QDialog {
                         background: #f8fafc;
                         border-radius: 12px;
@@ -739,7 +816,8 @@ class MesaWidget(QFrame):
                         background: #eeeeee;
                         color: #333;
                     }
-                """)
+                """
+                )
                 # Solución: evitar warning de Qt creando el layout sin padre y usando setLayout
                 old_layout = self.layout()
                 if old_layout is not None:
@@ -779,7 +857,11 @@ class MesaWidget(QFrame):
                 self.spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 layout.addWidget(self.spin, alignment=Qt.AlignmentFlag.AlignCenter)
                 # Espaciador
-                layout.addItem(QSpacerItem(10, 8, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+                layout.addItem(
+                    QSpacerItem(
+                        10, 8, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding
+                    )
+                )
                 # Botones
                 btns = QHBoxLayout()
                 self.reset_btn = QPushButton("Restablecer valor original")
@@ -797,6 +879,7 @@ class MesaWidget(QFrame):
                 self.ok_btn.clicked.connect(self.accept)
                 self.cancel_btn.clicked.connect(self.reject)
                 self.valor_original = valor_original
+
             def _reset(self):
                 self.spin.setValue(self.valor_original)
 
@@ -824,6 +907,7 @@ class MesaWidget(QFrame):
         """
         """Animación simple de parpadeo para feedback visual"""
         from PyQt6.QtCore import QPropertyAnimation
+
         anim = QPropertyAnimation(label, b"windowOpacity")
         anim.setDuration(300)
         anim.setStartValue(1.0)

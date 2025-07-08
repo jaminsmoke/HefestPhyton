@@ -6,9 +6,19 @@ Diálogo moderno y organizado para gestión completa de mesas
 import logging
 from typing import Optional
 from PyQt6.QtWidgets import (
-    QVBoxLayout, QHBoxLayout, QWidget, QLabel, QPushButton,
-    QFrame, QGridLayout, QMessageBox, QLineEdit, QSpinBox, QTextEdit,
-    QListWidget, QListWidgetItem
+    QVBoxLayout,
+    QHBoxLayout,
+    QWidget,
+    QLabel,
+    QPushButton,
+    QFrame,
+    QGridLayout,
+    QMessageBox,
+    QLineEdit,
+    QSpinBox,
+    QTextEdit,
+    QListWidget,
+    QListWidgetItem,
 )
 from PyQt6.QtWidgets import QScrollArea
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -26,30 +36,45 @@ logger = logging.getLogger(__name__)
 class MesaDialog(TabbedDialog):
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
         # Si la actualización es para esta mesa, refrescar datos y UI
-        if str(getattr(mesa_actualizada, 'numero', None)) == str(getattr(self.mesa, 'numero', None)):
+        if str(getattr(mesa_actualizada, "numero", None)) == str(
+            getattr(self.mesa, "numero", None)
+        ):
             # Actualizar todos los campos relevantes de la mesa local
-            for attr in ['estado', 'capacidad', 'alias', 'nombre_display', 'personas_display', 'notas']:
+            for attr in [
+                "estado",
+                "capacidad",
+                "alias",
+                "nombre_display",
+                "personas_display",
+                "notas",
+            ]:
                 if hasattr(mesa_actualizada, attr):
                     setattr(self.mesa, attr, getattr(mesa_actualizada, attr))
-            if hasattr(self, 'cargar_reservas_en_lista'):
+            if hasattr(self, "cargar_reservas_en_lista"):
                 self.cargar_reservas_en_lista()
             self.update_ui()
+
     def _on_reserva_event_bus_creada(self, reserva):
         # Si la reserva es para esta mesa, refrescar UI y recargar reservas
-        mesa_numero = str(getattr(self.mesa, 'numero', None))
-        reserva_mesa_numero = str(getattr(reserva, 'mesa_id', None))
+        mesa_numero = str(getattr(self.mesa, "numero", None))
+        reserva_mesa_numero = str(getattr(reserva, "mesa_id", None))
         if mesa_numero == reserva_mesa_numero:
-            self.mesa.estado = 'reservada'
+            self.mesa.estado = "reservada"
             # Recargar reservas activas en la lista
-            if hasattr(self, 'cargar_reservas_en_lista'):
+            if hasattr(self, "cargar_reservas_en_lista"):
                 self.cargar_reservas_en_lista()
             # Si existe un método para refrescar la mesa desde el servicio, usarlo (mejor consistencia)
-            if self.reserva_service and hasattr(self.reserva_service, 'actualizar_estado_mesa'):
+            if self.reserva_service and hasattr(
+                self.reserva_service, "actualizar_estado_mesa"
+            ):
                 try:
                     self.reserva_service.actualizar_estado_mesa(self.mesa.numero)
                 except Exception as e:
-                    print(f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}")
+                    print(
+                        f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}"
+                    )
             self.update_ui()
+
     """Diálogo de mesa con pestañas horizontales modernas"""
 
     mesa_updated = pyqtSignal(Mesa)
@@ -70,26 +95,47 @@ class MesaDialog(TabbedDialog):
         # --- SINCRONIZACIÓN Y PERSISTENCIA REAL AL INICIALIZAR ---
         # Refrescar estado real de la mesa desde el servicio si existe
         mesa_actualizada = None
-        if self.reserva_service and hasattr(self.reserva_service, 'refrescar_mesa_desde_bd'):
+        if self.reserva_service and hasattr(
+            self.reserva_service, "refrescar_mesa_desde_bd"
+        ):
             try:
-                mesa_actualizada = self.reserva_service.refrescar_mesa_desde_bd(self.mesa.numero)
+                mesa_actualizada = self.reserva_service.refrescar_mesa_desde_bd(
+                    self.mesa.numero
+                )
                 if mesa_actualizada:
-                    for attr in ['estado', 'capacidad', 'alias', 'nombre_display', 'personas_display', 'notas']:
+                    for attr in [
+                        "estado",
+                        "capacidad",
+                        "alias",
+                        "nombre_display",
+                        "personas_display",
+                        "notas",
+                    ]:
                         if hasattr(mesa_actualizada, attr):
                             setattr(self.mesa, attr, getattr(mesa_actualizada, attr))
             except Exception as e:
-                print(f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}")
+                print(
+                    f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}"
+                )
         # Refrescar reservas activas de la mesa desde el servicio si existe
-        if self.reserva_service and hasattr(self.reserva_service, 'obtener_reservas_activas_por_mesa'):
+        if self.reserva_service and hasattr(
+            self.reserva_service, "obtener_reservas_activas_por_mesa"
+        ):
             try:
-                reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-                self._reservas_activas_inicial = reservas_por_mesa.get(self.mesa.numero, [])
+                reservas_por_mesa = (
+                    self.reserva_service.obtener_reservas_activas_por_mesa()
+                )
+                self._reservas_activas_inicial = reservas_por_mesa.get(
+                    self.mesa.numero, []
+                )
             except Exception as e:
-                print(f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}")
+                print(
+                    f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}"
+                )
         # Configurar header específico
         self.set_header_title(
             f"Mesa {self.mesa.numero} - {self.mesa.zona}",
-            f"Capacidad: {self.mesa.capacidad} personas • Estado: {self.mesa.estado.title()}"
+            f"Capacidad: {self.mesa.capacidad} personas • Estado: {self.mesa.estado.title()}",
         )
         # Crear pestañas
         self.setup_tabs()
@@ -105,6 +151,7 @@ class MesaDialog(TabbedDialog):
         # Suscribirse al event bus de reservas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+
             reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
         except Exception as e:
             print(f"[MesaDialog][ERROR] No se pudo conectar a reserva_event_bus: {e}")
@@ -136,21 +183,25 @@ class MesaDialog(TabbedDialog):
         layout.setSpacing(20)
         # Panel de estado actual
         info_frame = QFrame()
-        info_frame.setStyleSheet("""
+        info_frame.setStyleSheet(
+            """
             QFrame {
                 background: white;
                 border: 1px solid #e9ecef;
                 border-radius: 12px;
                 padding: 20px;
             }
-        """)
+        """
+        )
         info_layout = QGridLayout(info_frame)
         info_layout.setSpacing(15)
         # Estado
         estado_color = {
-            'libre': '#28a745', 'ocupada': '#dc3545',
-            'reservada': '#ffc107', 'mantenimiento': '#6c757d'
-        }.get(self.mesa.estado, '#6c757d')
+            "libre": "#28a745",
+            "ocupada": "#dc3545",
+            "reservada": "#ffc107",
+            "mantenimiento": "#6c757d",
+        }.get(self.mesa.estado, "#6c757d")
         info_layout.addWidget(QLabel("Estado:"), 0, 0)
         self.estado_value = QLabel(self.mesa.estado.title())
         self.estado_value.setStyleSheet(f"color: {estado_color}; font-weight: bold;")
@@ -159,7 +210,9 @@ class MesaDialog(TabbedDialog):
         info_layout.addWidget(self.estado_value, 0, 1)
         # Personas
         info_layout.addWidget(QLabel("Ocupación:"), 1, 0)
-        self.personas_value = QLabel(f"{self.mesa.personas_display}/{self.mesa.capacidad}")
+        self.personas_value = QLabel(
+            f"{self.mesa.personas_display}/{self.mesa.capacidad}"
+        )
         self.personas_value.setMinimumWidth(80)
         self.personas_value.setWordWrap(True)
         info_layout.addWidget(self.personas_value, 1, 1)
@@ -174,14 +227,16 @@ class MesaDialog(TabbedDialog):
         # Lista de reservas activas
         if self.reserva_service:
             reservas_frame = QFrame()
-            reservas_frame.setStyleSheet("""
+            reservas_frame.setStyleSheet(
+                """
                 QFrame {
                     background: #fff3cd;
                     border: 1px solid #ffeaa7;
                     border-radius: 8px;
                     padding: 15px;
                 }
-            """)
+            """
+            )
             reservas_layout = QVBoxLayout(reservas_frame)
             reservas_label = QLabel("Reservas Activas:")
             reservas_label.setWordWrap(True)
@@ -214,10 +269,18 @@ class MesaDialog(TabbedDialog):
         # Botones en columna (vertical)
         buttons_layout = QVBoxLayout()
         buttons_layout.setSpacing(18)
-        self.tpv_btn = self.create_action_button("🍽️ Iniciar TPV", "#28a745", "Abrir punto de venta")
-        self.reserva_btn = self.create_action_button("📅 Nueva Reserva", "#ffc107", "Crear reserva")
-        self.estado_btn = self.create_action_button("🔄 Cambiar Estado", "#17a2b8", "Modificar estado")
-        self.liberar_btn = self.create_action_button("🔓 Liberar Mesa", "#dc3545", "Liberar mesa")
+        self.tpv_btn = self.create_action_button(
+            "🍽️ Iniciar TPV", "#28a745", "Abrir punto de venta"
+        )
+        self.reserva_btn = self.create_action_button(
+            "📅 Nueva Reserva", "#ffc107", "Crear reserva"
+        )
+        self.estado_btn = self.create_action_button(
+            "🔄 Cambiar Estado", "#17a2b8", "Modificar estado"
+        )
+        self.liberar_btn = self.create_action_button(
+            "🔓 Liberar Mesa", "#dc3545", "Liberar mesa"
+        )
         for btn in [self.tpv_btn, self.reserva_btn, self.estado_btn, self.liberar_btn]:
             btn.setMinimumWidth(180)
             btn.setMaximumWidth(320)
@@ -240,14 +303,16 @@ class MesaDialog(TabbedDialog):
 
         # Formulario de configuración
         form_frame = QFrame()
-        form_frame.setStyleSheet("""
+        form_frame.setStyleSheet(
+            """
             QFrame {
                 background: white;
                 border: 1px solid #e9ecef;
                 border-radius: 12px;
                 padding: 20px;
             }
-        """)
+        """
+        )
 
         form_layout = QVBoxLayout(form_frame)
         form_layout.setSpacing(15)
@@ -289,12 +354,13 @@ class MesaDialog(TabbedDialog):
             "🕐 14:30 - Mesa liberada",
             "🍽️ 12:00 - Pedido completado (€45.50)",
             "👥 11:30 - Mesa ocupada (3 personas)",
-            "📅 Ayer - Reserva cancelada"
+            "📅 Ayer - Reserva cancelada",
         ]
 
         for item in history_items:
             item_frame = QFrame()
-            item_frame.setStyleSheet("""
+            item_frame.setStyleSheet(
+                """
                 QFrame {
                     background: white;
                     border-left: 4px solid #667eea;
@@ -302,7 +368,8 @@ class MesaDialog(TabbedDialog):
                     padding: 12px;
                     margin: 4px 0;
                 }
-            """)
+            """
+            )
             item_layout = QHBoxLayout(item_frame)
             item_layout.addWidget(QLabel(item))
             layout.addWidget(item_frame)
@@ -316,7 +383,8 @@ class MesaDialog(TabbedDialog):
         btn.setMinimumHeight(60)
         btn.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         btn.setToolTip(tooltip)
-        btn.setStyleSheet(f"""
+        btn.setStyleSheet(
+            f"""
             QPushButton {{
                 background: {color};
                 color: white;
@@ -331,7 +399,8 @@ class MesaDialog(TabbedDialog):
             QPushButton:pressed {{
                 background: {color}bb;
             }}
-        """)
+        """
+        )
         return btn
 
     def get_input_style(self) -> str:
@@ -352,7 +421,7 @@ class MesaDialog(TabbedDialog):
 
     def cargar_reservas_en_lista(self):
         """Carga las reservas en la lista y asegura consistencia de datos"""
-        if not hasattr(self, 'reservas_list') or not self.reserva_service:
+        if not hasattr(self, "reservas_list") or not self.reserva_service:
             return
         self.reservas_list.clear()
         reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
@@ -367,26 +436,32 @@ class MesaDialog(TabbedDialog):
 
     def connect_signals(self):
         """Conecta las señales"""
-        self.tpv_btn.clicked.connect(lambda: self.iniciar_tpv_requested.emit(self.mesa.numero))
+        self.tpv_btn.clicked.connect(
+            lambda: self.iniciar_tpv_requested.emit(self.mesa.numero)
+        )
         self.reserva_btn.clicked.connect(self.on_reserva_clicked)
-        self.estado_btn.clicked.connect(lambda: self.cambiar_estado_requested.emit(self.mesa.numero, "libre"))
+        self.estado_btn.clicked.connect(
+            lambda: self.cambiar_estado_requested.emit(self.mesa.numero, "libre")
+        )
         self.liberar_btn.clicked.connect(self.on_liberar_clicked)
 
-        if hasattr(self, 'reservas_list'):
+        if hasattr(self, "reservas_list"):
             self.reservas_list.itemClicked.connect(self.on_reserva_seleccionada)
 
     def on_reserva_clicked(self):
         """Maneja clic en botón de reserva"""
-        reserva_dialog = ReservaDialog(self, self.mesa, reserva_service=self.reserva_service)
+        reserva_dialog = ReservaDialog(
+            self, self.mesa, reserva_service=self.reserva_service
+        )
         reserva_dialog.reserva_creada.connect(self.procesar_reserva)
         reserva_dialog.exec()
         self.cargar_reservas_en_lista()
 
     def on_liberar_clicked(self):
         """Maneja liberación de mesa"""
-        self.mesa.estado = 'libre'
+        self.mesa.estado = "libre"
         self.mesa.personas_temporal = 0
-        self.mesa.alias = ''
+        self.mesa.alias = ""
         self.mesa_updated.emit(self.mesa)
         mesa_event_bus.mesa_actualizada.emit(self.mesa)
         self.update_ui()
@@ -394,7 +469,13 @@ class MesaDialog(TabbedDialog):
     def on_reserva_seleccionada(self, item):
         """Maneja selección de reserva"""
         reserva = item.data(32)
-        dialog = ReservaDialog(self, self.mesa, reserva_service=self.reserva_service, reserva=reserva, modo_edicion=True)
+        dialog = ReservaDialog(
+            self,
+            self.mesa,
+            reserva_service=self.reserva_service,
+            reserva=reserva,
+            modo_edicion=True,
+        )
         dialog.reserva_cancelada.connect(lambda r: self.cargar_reservas_en_lista())
         dialog.reserva_editada.connect(lambda r: self.cargar_reservas_en_lista())
         dialog.exec()
@@ -404,45 +485,55 @@ class MesaDialog(TabbedDialog):
         print(f"[MesaDialog] procesar_reserva llamado con reserva: {reserva}")
         if self.mesa and self.reserva_service and reserva:
             from datetime import datetime
+
             # Asegurar que la reserva se crea con estado 'activa' y todos los campos requeridos
-            fecha_hora = datetime.combine(reserva.fecha_reserva, datetime.strptime(reserva.hora_reserva, '%H:%M').time())
+            fecha_hora = datetime.combine(
+                reserva.fecha_reserva,
+                datetime.strptime(reserva.hora_reserva, "%H:%M").time(),
+            )
             # Refuerzo: SIEMPRE usar self.mesa.id como mesa_id
-        print(f"[MesaDialog] Llamando a crear_reserva forzando mesa_numero={self.mesa.numero} (ignorando reserva.mesa_id={reserva.mesa_id})")
+        print(
+            f"[MesaDialog] Llamando a crear_reserva forzando mesa_numero={self.mesa.numero} (ignorando reserva.mesa_id={reserva.mesa_id})"
+        )
         reserva_db = None
         if self.reserva_service is not None:
             reserva_db = self.reserva_service.crear_reserva(
-                mesa_id=str(self.mesa.numero) if self.mesa.numero is not None else '',
+                mesa_id=str(self.mesa.numero) if self.mesa.numero is not None else "",
                 cliente=reserva.cliente_nombre,
                 fecha_hora=fecha_hora,
-                duracion_min=getattr(reserva, 'duracion_min', 120),
-                telefono=getattr(reserva, 'cliente_telefono', None),
-                personas=getattr(reserva, 'numero_personas', None),
-                notas=getattr(reserva, 'notas', None)
+                duracion_min=getattr(reserva, "duracion_min", 120),
+                telefono=getattr(reserva, "cliente_telefono", None),
+                personas=getattr(reserva, "numero_personas", None),
+                notas=getattr(reserva, "notas", None),
             )
             print(f"[MesaDialog] Reserva creada: {reserva_db}")
             # Forzar estado 'activa' en la base de datos si el modelo lo requiere
-            if hasattr(reserva_db, 'estado'):
-                reserva_db.estado = 'activa'
-            self.mesa.estado = 'reservada'
-            print(f"[MesaDialog] Emitiendo mesa_actualizada y reserva_creada para mesa_numero={self.mesa.numero}")
+            if hasattr(reserva_db, "estado"):
+                reserva_db.estado = "activa"
+            self.mesa.estado = "reservada"
+            print(
+                f"[MesaDialog] Emitiendo mesa_actualizada y reserva_creada para mesa_numero={self.mesa.numero}"
+            )
             mesa_event_bus.mesa_actualizada.emit(self.mesa)
             self.reserva_creada.emit()
             reserva_event_bus.reserva_creada.emit(reserva_db)
             self.update_ui()
         else:
-            print("[MesaDialog][ERROR] reserva_service es None, no se puede crear la reserva.")
+            print(
+                "[MesaDialog][ERROR] reserva_service es None, no se puede crear la reserva."
+            )
 
     def collect_data(self) -> dict:
         """Recolecta datos del formulario"""
         return {
-            'alias': self.alias_input.text(),
-            'capacidad': self.capacidad_input.value(),
-            'notas': self.notas_input.toPlainText()
+            "alias": self.alias_input.text(),
+            "capacidad": self.capacidad_input.value(),
+            "notas": self.notas_input.toPlainText(),
         }
 
     def validate_data(self, data: dict) -> bool:
         """Valida los datos"""
-        if not data['alias'].strip():
+        if not data["alias"].strip():
             QMessageBox.warning(self, "Validación", "El alias no puede estar vacío")
             return False
         return True
@@ -452,9 +543,9 @@ class MesaDialog(TabbedDialog):
         data = self.collect_data()
         if self.validate_data(data):
             # Aplicar cambios temporales (alias, capacidad, notas)
-            self.mesa.alias = data['alias']
-            self.mesa.capacidad = data['capacidad']
-            self.mesa.notas = data['notas']
+            self.mesa.alias = data["alias"]
+            self.mesa.capacidad = data["capacidad"]
+            self.mesa.notas = data["notas"]
 
             # Persistencia y sincronización global: solo emitir evento global, sin dependencias directas
             mesa_event_bus.mesa_actualizada.emit(self.mesa)
@@ -467,17 +558,21 @@ class MesaDialog(TabbedDialog):
     def update_ui(self):
         """Actualiza la interfaz"""
         estado_color = {
-            'libre': '#28a745', 'ocupada': '#dc3545',
-            'reservada': '#ffc107', 'mantenimiento': '#6c757d'
-        }.get(self.mesa.estado, '#6c757d')
+            "libre": "#28a745",
+            "ocupada": "#dc3545",
+            "reservada": "#ffc107",
+            "mantenimiento": "#6c757d",
+        }.get(self.mesa.estado, "#6c757d")
 
         self.estado_value.setText(self.mesa.estado.title())
         self.estado_value.setStyleSheet(f"color: {estado_color}; font-weight: bold;")
-        self.personas_value.setText(f"{self.mesa.personas_display}/{self.mesa.capacidad}")
+        self.personas_value.setText(
+            f"{self.mesa.personas_display}/{self.mesa.capacidad}"
+        )
         self.alias_value.setText(self.mesa.nombre_display)
 
         # Actualizar subtítulo del header
         self.set_header_title(
             f"Mesa {self.mesa.numero} - {self.mesa.zona}",
-            f"Capacidad: {self.mesa.capacidad} personas • Estado: {self.mesa.estado.title()}"
+            f"Capacidad: {self.mesa.capacidad} personas • Estado: {self.mesa.estado.title()}",
         )

@@ -85,7 +85,7 @@ class ProductDialog(QDialog):
         self.setFixedSize(750, 850)
         self.setModal(True)
         self.setWindowFlag(Qt.WindowType.WindowContextHelpButtonHint, False)
-        
+
         layout = QVBoxLayout(self)
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -99,7 +99,7 @@ class ProductDialog(QDialog):
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        
+
         # Widget contenedor del contenido
         content_widget = QWidget()
         content_layout = QVBoxLayout(content_widget)
@@ -121,10 +121,10 @@ class ProductDialog(QDialog):
         # Información adicional
         additional_group = self.create_additional_info_group()
         content_layout.addWidget(additional_group)
-        
+
         # Stretch al final
         content_layout.addStretch()
-        
+
         scroll_area.setWidget(content_widget)
         layout.addWidget(scroll_area)
 
@@ -169,7 +169,8 @@ class ProductDialog(QDialog):
         """Crear grupo de información básica usando QFrame simple"""
         frame = QFrame()
         frame.setObjectName("BasicInfoFrame")
-        frame.setStyleSheet("""
+        frame.setStyleSheet(
+            """
             #BasicInfoFrame {
                 background: white;
                 border: 2px solid #e2e8f0;
@@ -177,30 +178,33 @@ class ProductDialog(QDialog):
                 padding: 20px;
                 margin: 10px 0px;
             }
-        """)
-        
+        """
+        )
+
         layout = QVBoxLayout(frame)
         layout.setSpacing(15)
         layout.setContentsMargins(20, 20, 20, 20)
-        
+
         # Título del grupo
         title_label = QLabel("📋 Información Básica")
         title_label.setObjectName("GroupTitle")
-        title_label.setStyleSheet("""
+        title_label.setStyleSheet(
+            """
             #GroupTitle {
                 font-size: 16px;
                 font-weight: bold;
                 color: #1e293b;
                 padding: 10px 0px;
             }
-        """)
+        """
+        )
         layout.addWidget(title_label)
-        
+
         # Grid para los campos
         grid_layout = QGridLayout()
         grid_layout.setSpacing(15)
         grid_layout.setColumnStretch(1, 1)
-        
+
         # Nombre del producto
         nombre_label = QLabel("* Nombre del producto:")
         nombre_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -238,10 +242,12 @@ class ProductDialog(QDialog):
         descripcion_label.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.descripcion_input = QTextEdit()
         self.descripcion_input.setMaximumHeight(80)
-        self.descripcion_input.setPlaceholderText("Descripción detallada del producto...")
+        self.descripcion_input.setPlaceholderText(
+            "Descripción detallada del producto..."
+        )
         grid_layout.addWidget(descripcion_label, 3, 0)
         grid_layout.addWidget(self.descripcion_input, 3, 1)
-        
+
         layout.addLayout(grid_layout)
         return frame
 
@@ -249,7 +255,8 @@ class ProductDialog(QDialog):
         """Crear sección de información comercial"""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
-        frame.setStyleSheet("""
+        frame.setStyleSheet(
+            """
             QFrame {
                 background: white;
                 border: 2px solid #e2e8f0;
@@ -257,15 +264,17 @@ class ProductDialog(QDialog):
                 margin: 10px 0px;
                 padding: 10px;
             }
-        """)
-        
+        """
+        )
+
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(10)
-        
+
         # Título de la sección
         title_label = QLabel("💰 Información Comercial")
-        title_label.setStyleSheet("""
+        title_label.setStyleSheet(
+            """
             font-size: 16px;
             font-weight: bold;
             color: #1e293b;
@@ -274,15 +283,16 @@ class ProductDialog(QDialog):
             border: 1px solid #e2e8f0;
             border-radius: 4px;
             margin-bottom: 10px;
-        """)
+        """
+        )
         layout.addWidget(title_label)
-        
+
         # Grid layout para los campos
         grid_layout = QGridLayout()
         grid_layout.setSpacing(15)
         grid_layout.setColumnStretch(1, 1)
         grid_layout.setColumnStretch(3, 1)
-        
+
         # Precio de compra
         precio_compra_label = QLabel("Precio de compra:")
         precio_compra_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -294,7 +304,7 @@ class ProductDialog(QDialog):
         self.precio_compra_input.valueChanged.connect(self.calculate_margin)
         grid_layout.addWidget(precio_compra_label, 0, 0)
         grid_layout.addWidget(self.precio_compra_input, 0, 1)
-        
+
         # Precio de venta
         precio_venta_label = QLabel("* Precio de venta:")
         precio_venta_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -307,7 +317,7 @@ class ProductDialog(QDialog):
         self.precio_input.valueChanged.connect(self.validate_form)
         grid_layout.addWidget(precio_venta_label, 0, 2)
         grid_layout.addWidget(self.precio_input, 0, 3)
-        
+
         # Margen de beneficio
         margen_label = QLabel("Margen de beneficio:")
         margen_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -317,7 +327,7 @@ class ProductDialog(QDialog):
         self.margen_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         grid_layout.addWidget(margen_label, 1, 0)
         grid_layout.addWidget(self.margen_label, 1, 1)
-        
+
         # IVA
         iva_label = QLabel("IVA (%):")
         iva_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -329,7 +339,7 @@ class ProductDialog(QDialog):
         self.iva_input.setSuffix("%")
         grid_layout.addWidget(iva_label, 1, 2)
         grid_layout.addWidget(self.iva_input, 1, 3)
-        
+
         # Proveedor
         proveedor_label = QLabel("Proveedor:")
         proveedor_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -339,7 +349,7 @@ class ProductDialog(QDialog):
         self.proveedor_combo.setPlaceholderText("Seleccionar proveedor")
         grid_layout.addWidget(proveedor_label, 2, 0)
         grid_layout.addWidget(self.proveedor_combo, 2, 1, 1, 3)
-        
+
         layout.addLayout(grid_layout)
         return frame
 
@@ -347,7 +357,8 @@ class ProductDialog(QDialog):
         """Crear sección de gestión de inventario"""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
-        frame.setStyleSheet("""
+        frame.setStyleSheet(
+            """
             QFrame {
                 background: white;
                 border: 2px solid #e2e8f0;
@@ -355,15 +366,17 @@ class ProductDialog(QDialog):
                 margin: 10px 0px;
                 padding: 10px;
             }
-        """)
-        
+        """
+        )
+
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(10)
-        
+
         # Título de la sección
         title_label = QLabel("📊 Gestión de Inventario")
-        title_label.setStyleSheet("""
+        title_label.setStyleSheet(
+            """
             font-size: 16px;
             font-weight: bold;
             color: #1e293b;
@@ -372,15 +385,16 @@ class ProductDialog(QDialog):
             border: 1px solid #e2e8f0;
             border-radius: 4px;
             margin-bottom: 10px;
-        """)
+        """
+        )
         layout.addWidget(title_label)
-        
+
         # Grid layout para los campos
         grid_layout = QGridLayout()
         grid_layout.setSpacing(15)
         grid_layout.setColumnStretch(1, 1)
         grid_layout.setColumnStretch(3, 1)
-        
+
         # Stock actual
         stock_actual_label = QLabel("Stock actual:")
         stock_actual_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -390,7 +404,7 @@ class ProductDialog(QDialog):
         self.stock_input.setSuffix(" unidades")
         grid_layout.addWidget(stock_actual_label, 0, 0)
         grid_layout.addWidget(self.stock_input, 0, 1)
-        
+
         # Stock mínimo
         stock_min_label = QLabel("Stock mínimo:")
         stock_min_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -401,7 +415,7 @@ class ProductDialog(QDialog):
         self.stock_min_input.setSuffix(" unidades")
         grid_layout.addWidget(stock_min_label, 0, 2)
         grid_layout.addWidget(self.stock_min_input, 0, 3)
-        
+
         # Stock máximo
         stock_max_label = QLabel("Stock máximo:")
         stock_max_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -412,7 +426,7 @@ class ProductDialog(QDialog):
         self.stock_max_input.setSuffix(" unidades")
         grid_layout.addWidget(stock_max_label, 1, 0)
         grid_layout.addWidget(self.stock_max_input, 1, 1)
-        
+
         # Ubicación
         ubicacion_label = QLabel("Ubicación:")
         ubicacion_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -421,19 +435,28 @@ class ProductDialog(QDialog):
         self.ubicacion_input.setPlaceholderText("Ej: Estante A-1, Nevera 2...")
         grid_layout.addWidget(ubicacion_label, 1, 2)
         grid_layout.addWidget(self.ubicacion_input, 1, 3)
-        
+
         # Unidad de medida
         unidad_label = QLabel("Unidad de medida:")
         unidad_label.setStyleSheet("font-weight: 500; color: #374151;")
         unidad_label.setMinimumWidth(120)
         self.unidad_combo = QComboBox()
-        self.unidad_combo.addItems([
-            "Unidades", "Kg", "Gramos", "Litros", "Ml", 
-            "Cajas", "Paquetes", "Botellas", "Latas"
-        ])
+        self.unidad_combo.addItems(
+            [
+                "Unidades",
+                "Kg",
+                "Gramos",
+                "Litros",
+                "Ml",
+                "Cajas",
+                "Paquetes",
+                "Botellas",
+                "Latas",
+            ]
+        )
         grid_layout.addWidget(unidad_label, 2, 0)
         grid_layout.addWidget(self.unidad_combo, 2, 1)
-        
+
         # Estado
         estado_label = QLabel("Estado:")
         estado_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -442,7 +465,7 @@ class ProductDialog(QDialog):
         self.estado_combo.addItems(["Activo", "Inactivo", "Descontinuado", "Agotado"])
         grid_layout.addWidget(estado_label, 2, 2)
         grid_layout.addWidget(self.estado_combo, 2, 3)
-        
+
         layout.addLayout(grid_layout)
         return frame
 
@@ -450,7 +473,8 @@ class ProductDialog(QDialog):
         """Crear sección de información adicional"""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
-        frame.setStyleSheet("""
+        frame.setStyleSheet(
+            """
             QFrame {
                 background: white;
                 border: 2px solid #e2e8f0;
@@ -458,15 +482,17 @@ class ProductDialog(QDialog):
                 margin: 10px 0px;
                 padding: 10px;
             }
-        """)
-        
+        """
+        )
+
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(10)
-        
+
         # Título de la sección
         title_label = QLabel("📝 Información Adicional")
-        title_label.setStyleSheet("""
+        title_label.setStyleSheet(
+            """
             font-size: 16px;
             font-weight: bold;
             color: #1e293b;
@@ -475,19 +501,20 @@ class ProductDialog(QDialog):
             border: 1px solid #e2e8f0;
             border-radius: 4px;
             margin-bottom: 10px;
-        """)
+        """
+        )
         layout.addWidget(title_label)
-        
+
         # Grid layout para los campos
         grid_layout = QGridLayout()
         grid_layout.setSpacing(15)
         grid_layout.setColumnStretch(1, 1)
         grid_layout.setColumnStretch(3, 1)
-        
+
         # Fecha de caducidad
         from PyQt6.QtWidgets import QDateEdit
         from PyQt6.QtCore import QDate
-        
+
         fecha_label = QLabel("Fecha de caducidad:")
         fecha_label.setStyleSheet("font-weight: 500; color: #374151;")
         fecha_label.setMinimumWidth(120)
@@ -496,7 +523,7 @@ class ProductDialog(QDialog):
         self.caducidad_input.setCalendarPopup(True)
         grid_layout.addWidget(fecha_label, 0, 0)
         grid_layout.addWidget(self.caducidad_input, 0, 1)
-        
+
         # Es perecedero
         perecedero_label = QLabel("Producto perecedero:")
         perecedero_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -505,7 +532,7 @@ class ProductDialog(QDialog):
         self.perecedero_checkbox.stateChanged.connect(self.on_perecedero_changed)
         grid_layout.addWidget(perecedero_label, 0, 2)
         grid_layout.addWidget(self.perecedero_checkbox, 0, 3)
-        
+
         # Notas
         notas_label = QLabel("Notas:")
         notas_label.setStyleSheet("font-weight: 500; color: #374151;")
@@ -518,7 +545,7 @@ class ProductDialog(QDialog):
         )
         grid_layout.addWidget(notas_label, 1, 0)
         grid_layout.addWidget(self.notas_input, 1, 1, 1, 3)
-        
+
         layout.addLayout(grid_layout)
         return frame
 
@@ -788,7 +815,7 @@ class ProductDialog(QDialog):
         """Manejar cambio en checkbox de producto perecedero"""
         is_perecedero = state == Qt.CheckState.Checked.value
         self.caducidad_input.setEnabled(is_perecedero)
-        
+
         if not is_perecedero:
             # Si no es perecedero, poner fecha muy lejana
             self.caducidad_input.setDate(QDate.currentDate().addYears(10))
@@ -858,18 +885,18 @@ class NewProductDialog(ProductDialog):
         super().__init__(parent, "Nuevo Producto", inventario_service)
 
         if categories:
-            self.set_categories(categories)        # Enfocar el primer campo
+            self.set_categories(categories)  # Enfocar el primer campo
         self.nombre_input.setFocus()
 
     def accept_product(self):
         """Validar y guardar el nuevo producto"""
         if not self.validate_form():
             return
-            
+
         try:
             # Obtener datos del formulario
             product_data = self.get_product_data()
-            
+
             # Guardar producto usando el servicio de inventario
             if self.inventario_service:
                 # Crear producto usando los parámetros correctos del servicio
@@ -878,59 +905,65 @@ class NewProductDialog(ProductDialog):
                     categoria=product_data["categoria"],
                     precio=product_data["precio"],
                     stock_inicial=product_data["stock_actual"],
-                    stock_minimo=product_data["stock_minimo"]
+                    stock_minimo=product_data["stock_minimo"],
                 )
-                
+
                 if nuevo_producto:
-                    logger.info(f"Producto '{product_data['nombre']}' creado exitosamente con ID: {nuevo_producto.id}")
-                    
+                    logger.info(
+                        f"Producto '{product_data['nombre']}' creado exitosamente con ID: {nuevo_producto.id}"
+                    )
+
                     # Mostrar mensaje de éxito
                     from PyQt6.QtWidgets import QMessageBox
+
                     QMessageBox.information(
-                        self, 
-                        "✅ Producto Creado", 
+                        self,
+                        "✅ Producto Creado",
                         f"El producto '{product_data['nombre']}' ha sido creado exitosamente.\n\n"
                         f"ID: {nuevo_producto.id}\n"
                         f"Categoría: {nuevo_producto.categoria}\n"
                         f"Precio: €{nuevo_producto.precio:.2f}\n"
-                        f"Stock inicial: {nuevo_producto.stock_actual} unidades"
+                        f"Stock inicial: {nuevo_producto.stock_actual} unidades",
                     )
-                    
+
                     # Cerrar diálogo
                     self.accept()
                 else:
                     logger.error("Error al crear producto en la base de datos")
                     from PyQt6.QtWidgets import QMessageBox
+
                     QMessageBox.warning(
-                        self, 
-                        "❌ Error al Guardar", 
+                        self,
+                        "❌ Error al Guardar",
                         "No se pudo guardar el producto en la base de datos.\n\n"
                         "Posibles causas:\n"
                         "• Problema de conexión con la base de datos\n"
                         "• Datos inválidos\n"
                         "• Producto duplicado\n\n"
-                        "Verifique los datos e intente nuevamente."
+                        "Verifique los datos e intente nuevamente.",
                     )
             else:
                 logger.error("No hay servicio de inventario disponible")
                 from PyQt6.QtWidgets import QMessageBox
+
                 QMessageBox.warning(
-                    self, 
-                    "❌ Error de Configuración", 
+                    self,
+                    "❌ Error de Configuración",
                     "No hay servicio de inventario disponible.\n\n"
                     "El sistema no puede guardar productos en este momento.\n"
-                    "Contacte al administrador del sistema."
+                    "Contacte al administrador del sistema.",
                 )
-                
+
         except Exception as e:
             logger.error(f"Error al guardar producto: {e}")
             from PyQt6.QtWidgets import QMessageBox
+
             QMessageBox.critical(
-                self, 
-                "❌ Error Inesperado", 
+                self,
+                "❌ Error Inesperado",
                 f"Ocurrió un error inesperado al guardar el producto:\n\n"
                 f"{str(e)}\n\n"
-                f"Por favor, intente nuevamente o contacte al soporte técnico."
+                f"Por favor, intente nuevamente o contacte al soporte técnico.",
             )
 
 
@@ -959,7 +992,7 @@ class EditProductDialog(ProductDialog):
         """Cargar datos del producto en el formulario"""
         # Guardar referencia al producto original para el método accept_product
         self._original_producto = producto
-        
+
         self.nombre_input.setText(producto.nombre)
 
         # Buscar la categoría en el combo o agregarla si no existe
@@ -978,57 +1011,64 @@ class EditProductDialog(ProductDialog):
         """Validar y guardar cambios en el producto existente"""
         if not self.validate_form():
             return
-            
+
         try:
             # Obtener datos del formulario
             product_data = self.get_product_data()
-              # Actualizar producto usando el servicio de inventario
-            if self.inventario_service and hasattr(self, '_original_producto'):                # Usar el método actualizar_producto del servicio
+            # Actualizar producto usando el servicio de inventario
+            if self.inventario_service and hasattr(
+                self, "_original_producto"
+            ):  # Usar el método actualizar_producto del servicio
                 success = self.inventario_service.actualizar_producto(
                     producto_id=self._original_producto.id,
                     nombre=product_data["nombre"],
-                    categoria=product_data["categoria"], 
+                    categoria=product_data["categoria"],
                     precio=product_data["precio"],
                     stock=product_data["stock_actual"],
-                    stock_minimo=product_data["stock_minimo"]
+                    stock_minimo=product_data["stock_minimo"],
                 )
-                
+
                 if success:
-                    logger.info(f"Producto '{product_data['nombre']}' actualizado exitosamente")
-                    
+                    logger.info(
+                        f"Producto '{product_data['nombre']}' actualizado exitosamente"
+                    )
+
                     # Mostrar mensaje de éxito
                     from PyQt6.QtWidgets import QMessageBox
+
                     QMessageBox.information(
-                        self, 
-                        "✅ Producto Actualizado", 
-                        f"El producto '{product_data['nombre']}' ha sido actualizado correctamente."
+                        self,
+                        "✅ Producto Actualizado",
+                        f"El producto '{product_data['nombre']}' ha sido actualizado correctamente.",
                     )
-                    
+
                     # Cerrar diálogo con código de aceptación
                     self.accept()
                 else:
                     from PyQt6.QtWidgets import QMessageBox
+
                     QMessageBox.warning(
-                        self, 
-                        "❌ Error", 
-                        "No se pudo actualizar el producto. Por favor, inténtelo de nuevo."
+                        self,
+                        "❌ Error",
+                        "No se pudo actualizar el producto. Por favor, inténtelo de nuevo.",
                     )
             else:
                 from PyQt6.QtWidgets import QMessageBox
+
                 QMessageBox.warning(
-                    self, 
-                    "❌ Error", 
-                    "Servicio de inventario no disponible."
+                    self, "❌ Error", "Servicio de inventario no disponible."
                 )
-                
+
         except Exception as e:
             logger.error(f"Error actualizando producto: {e}")
             from PyQt6.QtWidgets import QMessageBox
+
             QMessageBox.critical(
-                self, 
-                "❌ Error Crítico", 
-                f"Error inesperado al actualizar el producto:\n{str(e)}"
+                self,
+                "❌ Error Crítico",
+                f"Error inesperado al actualizar el producto:\n{str(e)}",
             )
+
 
 class StockAdjustmentDialog(QDialog):
     """Diálogo para ajustar el stock de un producto"""

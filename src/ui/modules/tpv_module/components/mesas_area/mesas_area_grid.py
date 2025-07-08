@@ -6,14 +6,17 @@ Lógica y helpers para el grid de mesas y renderizado de widgets
 from PyQt6.QtWidgets import QGridLayout, QWidget, QLabel, QFrame, QVBoxLayout
 from PyQt6.QtCore import Qt
 
+
 def create_scroll_area(instance, layout):
     from PyQt6.QtWidgets import QScrollArea, QWidget, QGridLayout
     from PyQt6.QtCore import Qt
+
     scroll_area = QScrollArea()
     scroll_area.setWidgetResizable(True)
     scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
     scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
     from src.utils.modern_styles import ModernStyles
+
     scroll_area.setStyleSheet(ModernStyles.get_scroll_area_style())
     mesas_container = QWidget()
     mesas_container.setStyleSheet(ModernStyles.get_mesas_container_style())
@@ -21,16 +24,20 @@ def create_scroll_area(instance, layout):
     instance.mesas_layout.setSpacing(20)
     instance.mesas_layout.setContentsMargins(20, 20, 20, 20)
     # Centrar el grid de mesas horizontalmente y mantener alineado arriba
-    instance.mesas_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+    instance.mesas_layout.setAlignment(
+        Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter
+    )
     scroll_area.setWidget(mesas_container)
     layout.addWidget(scroll_area, 1)
     instance.scroll_area = scroll_area
     return scroll_area
 
+
 def populate_grid(instance):
     from ...widgets.mesa_widget_simple import MesaWidget
     from .mesas_area_utils import restaurar_datos_temporales, calcular_columnas_optimas
     from PyQt6.QtCore import QTimer
+
     restaurar_datos_temporales(instance, instance.filtered_mesas)
     clear_mesa_widgets(instance)
     instance.mesa_widgets = []
@@ -41,6 +48,7 @@ def populate_grid(instance):
     instance._lazy_loaded_rows = set()
     instance._total_rows = (len(instance.filtered_mesas) + cols - 1) // cols
     instance._cols = cols
+
     # Crear widgets solo para las filas visibles inicialmente
     def get_visible_rows():
         scroll = instance.scroll_area.verticalScrollBar()
@@ -49,11 +57,14 @@ def populate_grid(instance):
         viewport_height = instance.scroll_area.viewport().height()
         row_height = 180  # Aproximado, depende del widget
         first_row = max(0, scroll.value() // row_height - 1)
-        last_row = min(instance._total_rows, (scroll.value() + viewport_height) // row_height + 2)
+        last_row = min(
+            instance._total_rows, (scroll.value() + viewport_height) // row_height + 2
+        )
         return set(range(first_row, last_row))
+
     def lazy_load_rows():
         visible_rows = get_visible_rows()
-        tpv_service = getattr(instance, 'tpv_service', None)
+        tpv_service = getattr(instance, "tpv_service", None)
         for row in visible_rows:
             if row in instance._lazy_loaded_rows:
                 continue
@@ -62,22 +73,32 @@ def populate_grid(instance):
                 if idx >= len(instance.filtered_mesas):
                     break
                 mesa = instance.filtered_mesas[idx]
-                mesa_widget = MesaWidget(mesa, proxima_reserva=getattr(mesa, 'proxima_reserva', None), tpv_service=tpv_service)
+                mesa_widget = MesaWidget(
+                    mesa,
+                    proxima_reserva=getattr(mesa, "proxima_reserva", None),
+                    tpv_service=tpv_service,
+                )
                 mesa_widget.personas_changed.connect(instance._on_personas_mesa_changed)
-                mesa_widget.restaurar_original.connect(instance.restaurar_estado_original_mesa)
+                mesa_widget.restaurar_original.connect(
+                    instance.restaurar_estado_original_mesa
+                )
                 mesa_widget.reservar_mesa_requested.connect(instance._on_reservar_mesa)
                 mesa_widget.iniciar_tpv_requested.connect(instance._on_iniciar_tpv)
                 instance.mesa_widgets.append(mesa_widget)
                 instance.mesas_layout.addWidget(mesa_widget, row, col)
             instance._lazy_loaded_rows.add(row)
+
     # Conectar el evento de scroll para lazy loading
     from PyQt6.QtCore import QTimer
+
     def on_scroll():
         QTimer.singleShot(10, lazy_load_rows)
+
     scroll = instance.scroll_area.verticalScrollBar()
     if scroll:
         scroll.valueChanged.connect(on_scroll)
     lazy_load_rows()
+
 
 # Métodos para conectar en la instancia (por ejemplo, en la clase del área de mesas)
 def add_mesa_grid_callbacks_to_instance(instance):
@@ -85,119 +106,174 @@ def add_mesa_grid_callbacks_to_instance(instance):
         try:
             from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
-            print(f"[mesas_area_grid] _on_reservar_mesa: Abriendo ReservaDialog para mesa_id={getattr(mesa, 'id', None)}")
+
+            print(
+                f"[mesas_area_grid] _on_reservar_mesa: Abriendo ReservaDialog para mesa_id={getattr(mesa, 'id', None)}"
+            )
             # Mantener referencia al dialog para evitar recolección de basura
-            if not hasattr(instance, '_active_dialogs'):
+            if not hasattr(instance, "_active_dialogs"):
                 instance._active_dialogs = []
-            print(f"[mesas_area_grid][DEBUG] Creando ReservaDialog: id(dialog)={{id(dialog)}}")
-            dialog = ReservaDialog(instance, mesa, reserva_service=getattr(instance, 'reserva_service', None))
-            print(f"[mesas_area_grid][DEBUG] ReservaDialog creado: id(dialog)={{id(dialog)}}")
+            print(
+                f"[mesas_area_grid][DEBUG] Creando ReservaDialog: id(dialog)={{id(dialog)}}"
+            )
+            dialog = ReservaDialog(
+                instance,
+                mesa,
+                reserva_service=getattr(instance, "reserva_service", None),
+            )
+            print(
+                f"[mesas_area_grid][DEBUG] ReservaDialog creado: id(dialog)={{id(dialog)}}"
+            )
             instance._active_dialogs.append(dialog)
+
             def on_reserva_creada(reserva):
-                print(f"[mesas_area_grid][DEBUG] Callback on_reserva_creada ejecutado. id(dialog)={{id(dialog)}} reserva={{reserva}}")
-                reserva_service = getattr(instance, 'reserva_service', None)
+                print(
+                    f"[mesas_area_grid][DEBUG] Callback on_reserva_creada ejecutado. id(dialog)={{id(dialog)}} reserva={{reserva}}"
+                )
+                reserva_service = getattr(instance, "reserva_service", None)
                 if reserva_service is None:
-                    print("[mesas_area_grid][ERROR] No se encontró reserva_service en la instancia. No se puede guardar la reserva.")
+                    print(
+                        "[mesas_area_grid][ERROR] No se encontró reserva_service en la instancia. No se puede guardar la reserva."
+                    )
                     return
                 from datetime import datetime
+
                 # Compatibilidad: aceptar tanto reserva.fecha como reserva.fecha_reserva
-                fecha = getattr(reserva, 'fecha', None) or getattr(reserva, 'fecha_reserva', None)
-                hora = getattr(reserva, 'hora', None) or getattr(reserva, 'hora_reserva', None)
+                fecha = getattr(reserva, "fecha", None) or getattr(
+                    reserva, "fecha_reserva", None
+                )
+                hora = getattr(reserva, "hora", None) or getattr(
+                    reserva, "hora_reserva", None
+                )
                 if fecha is None or hora is None:
-                    print("[mesas_area_grid][ERROR] No se pudo obtener fecha u hora de la reserva. No se creará la reserva.")
+                    print(
+                        "[mesas_area_grid][ERROR] No se pudo obtener fecha u hora de la reserva. No se creará la reserva."
+                    )
                     return
                 if isinstance(hora, str):
                     try:
-                        hora_obj = datetime.strptime(hora, '%H:%M').time()
+                        hora_obj = datetime.strptime(hora, "%H:%M").time()
                     except Exception:
-                        print(f"[mesas_area_grid][ERROR] Formato de hora inválido: {hora}")
+                        print(
+                            f"[mesas_area_grid][ERROR] Formato de hora inválido: {hora}"
+                        )
                         return
                 else:
                     hora_obj = hora
                 try:
                     fecha_hora = datetime.combine(fecha, hora_obj)
                 except Exception as e:
-                    print(f"[mesas_area_grid][ERROR] Error combinando fecha y hora: {e}")
+                    print(
+                        f"[mesas_area_grid][ERROR] Error combinando fecha y hora: {e}"
+                    )
                     return
                 # Refuerzo: Usar SIEMPRE mesa.numero como identificador único de negocio
                 # TODO: Eliminar referencias a mesa.id cuando se elimine compatibilidad legacy
-                print(f"[mesas_area_grid] Llamando a crear_reserva forzando mesa_numero={getattr(mesa, 'numero', None)} (ignorando reserva.mesa_id={getattr(reserva, 'mesa_id', None)})")
+                print(
+                    f"[mesas_area_grid] Llamando a crear_reserva forzando mesa_numero={getattr(mesa, 'numero', None)} (ignorando reserva.mesa_id={getattr(reserva, 'mesa_id', None)})"
+                )
                 reserva_db = reserva_service.crear_reserva(
-                    mesa_id=str(getattr(mesa, 'numero', '')),
-                    cliente=getattr(reserva, 'cliente', None) or getattr(reserva, 'cliente_nombre', None),
+                    mesa_id=str(getattr(mesa, "numero", "")),
+                    cliente=getattr(reserva, "cliente", None)
+                    or getattr(reserva, "cliente_nombre", None),
                     fecha_hora=fecha_hora,
-                    duracion_min=getattr(reserva, 'duracion_min', 120),
-                    telefono=getattr(reserva, 'telefono', None) or getattr(reserva, 'cliente_telefono', None),
-                    personas=getattr(reserva, 'personas', None) or getattr(reserva, 'numero_personas', None),
-                    notas=getattr(reserva, 'notas', None)
+                    duracion_min=getattr(reserva, "duracion_min", 120),
+                    telefono=getattr(reserva, "telefono", None)
+                    or getattr(reserva, "cliente_telefono", None),
+                    personas=getattr(reserva, "personas", None)
+                    or getattr(reserva, "numero_personas", None),
+                    notas=getattr(reserva, "notas", None),
                 )
                 print(f"[mesas_area_grid] Reserva creada en BD: {reserva_db}")
                 # Emitir eventos globales para refrescar UI
-                if hasattr(mesa, 'estado'):
-                    mesa.estado = 'reservada'
+                if hasattr(mesa, "estado"):
+                    mesa.estado = "reservada"
                 # Refrescar visualmente el widget de la mesa
-                mesa_id = str(getattr(mesa, 'id', None))
-                for widget in getattr(instance, 'mesa_widgets', []):
-                    if str(getattr(widget.mesa, 'id', None)) == mesa_id:
-                        if hasattr(widget, 'update_mesa'):
+                mesa_id = str(getattr(mesa, "id", None))
+                for widget in getattr(instance, "mesa_widgets", []):
+                    if str(getattr(widget.mesa, "id", None)) == mesa_id:
+                        if hasattr(widget, "update_mesa"):
                             widget.update_mesa(mesa)
-                        if hasattr(widget, 'estado_label'):
+                        if hasattr(widget, "estado_label"):
                             widget.estado_label.setText(widget.get_estado_texto())
-                        if hasattr(widget, 'apply_styles'):
+                        if hasattr(widget, "apply_styles"):
                             widget.apply_styles()
                         widget.repaint()
-                print(f"[mesas_area_grid] Emitiendo reserva_creada y actualizando UI para mesa_id={getattr(mesa, 'id', None)}")
+                print(
+                    f"[mesas_area_grid] Emitiendo reserva_creada y actualizando UI para mesa_id={getattr(mesa, 'id', None)}"
+                )
                 reserva_event_bus.reserva_creada.emit(reserva_db)
-                if hasattr(instance, 'sincronizar_reservas_en_mesas'):
+                if hasattr(instance, "sincronizar_reservas_en_mesas"):
                     instance.sincronizar_reservas_en_mesas()
-                if hasattr(instance, 'load_reservas'):
+                if hasattr(instance, "load_reservas"):
                     instance.load_reservas()
                 # Limpiar referencia al dialog
-                if hasattr(instance, '_active_dialogs'):
+                if hasattr(instance, "_active_dialogs"):
                     try:
                         instance._active_dialogs.remove(dialog)
                     except Exception:
                         pass
-            print(f"[mesas_area_grid][DEBUG] Conectando señal reserva_creada de dialog id={{id(dialog)}} a on_reserva_creada")
+
+            print(
+                f"[mesas_area_grid][DEBUG] Conectando señal reserva_creada de dialog id={{id(dialog)}} a on_reserva_creada"
+            )
             dialog.reserva_creada.connect(on_reserva_creada)
-            print(f"[mesas_area_grid][DEBUG] Ejecutando dialog.exec() para dialog id={{id(dialog)}}")
+            print(
+                f"[mesas_area_grid][DEBUG] Ejecutando dialog.exec() para dialog id={{id(dialog)}}"
+            )
             dialog.exec()
-            print(f"[mesas_area_grid][DEBUG] dialog.exec() finalizado para dialog id={{id(dialog)}}")
+            print(
+                f"[mesas_area_grid][DEBUG] dialog.exec() finalizado para dialog id={{id(dialog)}}"
+            )
             # Si el usuario cierra el diálogo sin crear reserva, limpiar referencia
-            if hasattr(instance, '_active_dialogs'):
+            if hasattr(instance, "_active_dialogs"):
                 try:
                     instance._active_dialogs.remove(dialog)
                 except Exception:
                     pass
         except Exception as e:
             import logging
+
             logging.getLogger(__name__).error(f"Error abriendo ReservaDialog: {e}")
 
     def _on_iniciar_tpv(mesa):
         try:
-            from src.ui.modules.tpv_module.components.tpv_avanzado.tpv_avanzado_main import TPVAvanzado
+            from src.ui.modules.tpv_module.components.tpv_avanzado.tpv_avanzado_main import (
+                TPVAvanzado,
+            )
             from PyQt6.QtWidgets import QDialog, QVBoxLayout
-            db_manager = getattr(instance, 'db_manager', None)
+
+            db_manager = getattr(instance, "db_manager", None)
             if db_manager is None:
-                raise ValueError("db_manager es obligatorio y debe ser inyectado explícitamente en el área de mesas")
+                raise ValueError(
+                    "db_manager es obligatorio y debe ser inyectado explícitamente en el área de mesas"
+                )
+
             class TPVDialog(QDialog):
                 def __init__(self, mesa, parent=None):
                     super().__init__(parent)
                     self.setWindowTitle(f"TPV Avanzado - Mesa {mesa.numero}")
                     self.setMinimumSize(900, 600)
                     layout = QVBoxLayout(self)
-                    tpv_service = getattr(instance, 'tpv_service', None)
+                    tpv_service = getattr(instance, "tpv_service", None)
                     comanda = None
-                    if tpv_service and hasattr(tpv_service, 'get_comanda_activa'):
+                    if tpv_service and hasattr(tpv_service, "get_comanda_activa"):
                         comanda = tpv_service.get_comanda_activa(mesa.numero)
-                    self.tpv_widget = TPVAvanzado(mesa, tpv_service=tpv_service, db_manager=db_manager, parent=self)
+                    self.tpv_widget = TPVAvanzado(
+                        mesa,
+                        tpv_service=tpv_service,
+                        db_manager=db_manager,
+                        parent=self,
+                    )
                     if comanda:
                         self.tpv_widget.set_pedido_actual(comanda)
                     layout.addWidget(self.tpv_widget)
+
             dialog = TPVDialog(mesa, instance)
             dialog.exec()
         except Exception as e:
             import logging
+
             logging.getLogger(__name__).error(f"Error abriendo TPV Avanzado: {e}")
 
     instance._on_reservar_mesa = _on_reservar_mesa
@@ -208,6 +284,7 @@ def add_mesa_grid_callbacks_to_instance(instance):
     # Esto garantiza que todos los labels se vean correctamente desde el inicio
     # sin necesidad de interacción previa (click, cerrar diálogo, etc.)
     from PyQt6.QtCore import QTimer
+
     def aplicar_refresco_global():
         refresh_all_mesa_widgets_styles(instance)
 
@@ -216,16 +293,17 @@ def add_mesa_grid_callbacks_to_instance(instance):
 
     total_filtered = len(instance.filtered_mesas)
     total_all = len(instance.mesas)
-    if hasattr(instance, 'status_info'):
+    if hasattr(instance, "status_info"):
         if total_filtered == total_all:
             status_text = f"Mostrando {total_all} mesa(s)"
         else:
             status_text = f"Mostrando {total_filtered} de {total_all} mesa(s)"
         instance.status_info.setText(status_text)
 
+
 def clear_mesa_widgets(instance):
     try:
-        if not hasattr(instance, 'mesas_layout') or instance.mesas_layout is None:
+        if not hasattr(instance, "mesas_layout") or instance.mesas_layout is None:
             return
         instance.mesa_widgets.clear()
         while instance.mesas_layout.count():
@@ -236,15 +314,19 @@ def clear_mesa_widgets(instance):
                     widget.deleteLater()
     except Exception as e:
         import logging
+
         logging.getLogger(__name__).error(f"Error limpiando widgets de mesa: {e}")
+
 
 def show_no_mesas_message(instance):
     from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
+
     try:
-        if not hasattr(instance, 'mesas_layout') or instance.mesas_layout is None:
+        if not hasattr(instance, "mesas_layout") or instance.mesas_layout is None:
             return
         message_container = QFrame()
         from src.utils.modern_styles import ModernStyles
+
         message_container.setStyleSheet(ModernStyles.get_empty_message_frame_style())
         container_layout = QVBoxLayout(message_container)
         container_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -264,7 +346,9 @@ def show_no_mesas_message(instance):
         instance.mesas_layout.addWidget(message_container, 0, 0, 1, 4)
     except Exception as e:
         import logging
+
         logging.getLogger(__name__).error(f"Error mostrando mensaje de no mesas: {e}")
+
 
 def create_mesas_grid(parent, mesas):
     # Lógica migrada para crear el grid de mesas
@@ -276,6 +360,7 @@ def create_mesas_grid(parent, mesas):
     # ...agregar widgets de mesa aquí...
     return grid_widget
 
+
 def refresh_all_mesa_widgets_styles(instance):
     """
     Refresca los estilos de todos los widgets de mesa existentes.
@@ -283,9 +368,12 @@ def refresh_all_mesa_widgets_styles(instance):
     todos los labels tengan el estilo correcto desde el inicio.
     """
     for mesa_widget in instance.mesa_widgets:
-        if hasattr(mesa_widget, '_ajustar_fuente_nombre'):
+        if hasattr(mesa_widget, "_ajustar_fuente_nombre"):
             try:
                 mesa_widget._ajustar_fuente_nombre()
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).error(f"Error refrescando estilo de mesa widget: {e}")
+
+                logging.getLogger(__name__).error(
+                    f"Error refrescando estilo de mesa widget: {e}"
+                )

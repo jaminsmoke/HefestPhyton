@@ -170,19 +170,25 @@ class UserManagementModule(BaseModule):
 
         except Exception as e:
             logger.error(f"Error al cargar usuarios: {e}")
-            QMessageBox.warning(
-                self, "Error", "Error al cargar los usuarios"
-            )
+            QMessageBox.warning(self, "Error", "Error al cargar los usuarios")
 
     def add_user(self):
         """Muestra el diálogo para agregar un nuevo usuario"""
         from ui.dialogs.user_management_dialog import UserDialog
+
         dialog = UserDialog(self)
         if dialog.exec() == dialog.DialogCode.Accepted:
             new_user = dialog.get_user_data()
             try:
                 # Validar campos requeridos
-                required_fields = {"name", "role", "email", "phone", "username", "password"}
+                required_fields = {
+                    "name",
+                    "role",
+                    "email",
+                    "phone",
+                    "username",
+                    "password",
+                }
                 if not required_fields.issubset(new_user):
                     raise ValueError("Faltan campos requeridos para agregar usuario")
                 new_user_obj = User(
@@ -193,10 +199,12 @@ class UserManagementModule(BaseModule):
                     password=new_user["password"],
                     email=new_user.get("email", ""),
                     phone=new_user.get("phone", ""),
-                    is_active=True
+                    is_active=True,
                 )
                 if new_user_obj.id is not None:
-                    self.auth_service._users_cache[new_user_obj.id] = new_user_obj  # Añadir a cache
+                    self.auth_service._users_cache[new_user_obj.id] = (
+                        new_user_obj  # Añadir a cache
+                    )
                 self.load_users()
                 QMessageBox.information(self, "Éxito", "Usuario agregado correctamente")
             except Exception as e:
@@ -207,13 +215,16 @@ class UserManagementModule(BaseModule):
         """Edita el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
-            QMessageBox.warning(self, "Advertencia", "Por favor, selecciona un usuario para editar")
+            QMessageBox.warning(
+                self, "Advertencia", "Por favor, selecciona un usuario para editar"
+            )
             return
         item = self.users_table.item(current_row, 0)
         if item is not None and item.text():
             user_id = int(item.text())
             user = self.auth_service.get_user_by_id(user_id)
             from ui.dialogs.user_management_dialog import UserDialog
+
             dialog = UserDialog(self, user)
             if dialog.exec() == dialog.DialogCode.Accepted:
                 updated_user_data = dialog.get_user_data()
@@ -222,18 +233,26 @@ class UserManagementModule(BaseModule):
                     if updated_user.id is not None:
                         self.auth_service._users_cache[updated_user.id] = updated_user
                     self.load_users()
-                    QMessageBox.information(self, "Éxito", "Usuario actualizado correctamente")
+                    QMessageBox.information(
+                        self, "Éxito", "Usuario actualizado correctamente"
+                    )
                 except Exception as e:
                     logger.error(f"Error al actualizar usuario: {e}")
-                    QMessageBox.warning(self, "Error", "No se pudo actualizar el usuario")
+                    QMessageBox.warning(
+                        self, "Error", "No se pudo actualizar el usuario"
+                    )
         else:
-            QMessageBox.warning(self, "Error", "No se pudo obtener el ID del usuario seleccionado")
+            QMessageBox.warning(
+                self, "Error", "No se pudo obtener el ID del usuario seleccionado"
+            )
 
     def delete_user(self):
         """Elimina el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
-            QMessageBox.warning(self, "Advertencia", "Por favor, selecciona un usuario para eliminar")
+            QMessageBox.warning(
+                self, "Advertencia", "Por favor, selecciona un usuario para eliminar"
+            )
             return
         item = self.users_table.item(current_row, 0)
         if item is not None and item.text():
@@ -249,12 +268,16 @@ class UserManagementModule(BaseModule):
                     if user_id in self.auth_service._users_cache:
                         del self.auth_service._users_cache[user_id]
                     self.load_users()
-                    QMessageBox.information(self, "Éxito", "Usuario eliminado correctamente")
+                    QMessageBox.information(
+                        self, "Éxito", "Usuario eliminado correctamente"
+                    )
                 except Exception as e:
                     logger.error(f"Error al eliminar usuario: {e}")
                     QMessageBox.warning(self, "Error", "No se pudo eliminar el usuario")
         else:
-            QMessageBox.warning(self, "Error", "No se pudo obtener el ID del usuario seleccionado")
+            QMessageBox.warning(
+                self, "Error", "No se pudo obtener el ID del usuario seleccionado"
+            )
 
     def refresh(self):
         """Actualiza los datos del módulo"""

@@ -71,12 +71,13 @@ class AuthService(BaseService):
     """
 
     from typing import Any, Optional
+
     try:
         from data.db_manager import DatabaseManager
     except ImportError:
         DatabaseManager = Any  # fallback para tipado
 
-    def __init__(self, db_manager: Optional['DatabaseManager'] = None):
+    def __init__(self, db_manager: Optional["DatabaseManager"] = None):
         """
         Inicializa el servicio de autenticacion
 

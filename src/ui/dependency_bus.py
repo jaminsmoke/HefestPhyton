@@ -11,11 +11,14 @@ Revisar todos los puntos de entrada de TPVAvanzado y asegurar que usan el bus o 
 
 _dependency_bus = {}
 
+
 def set_dependency(key, value):
     _dependency_bus[key] = value
 
+
 def get_dependency(key, default=None):
     return _dependency_bus.get(key, default)
+
 
 def clear_dependencies():
     _dependency_bus.clear()

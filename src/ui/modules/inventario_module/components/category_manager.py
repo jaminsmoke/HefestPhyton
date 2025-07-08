@@ -209,43 +209,52 @@ class CategoryManagerWidget(QWidget):
 
             for row, categoria in enumerate(self.categorias_cache):
                 # ID
-                self.categories_table.setItem(row, 0, QTableWidgetItem(str(categoria.get('id', 'N/A'))))
+                self.categories_table.setItem(
+                    row, 0, QTableWidgetItem(str(categoria.get("id", "N/A")))
+                )
 
                 # Nombre
                 self.categories_table.setItem(
-                    row, 1, QTableWidgetItem(categoria.get('nombre', ''))
+                    row, 1, QTableWidgetItem(categoria.get("nombre", ""))
                 )
 
                 # Descripción
-                descripcion = categoria.get('descripcion', '') or f"Categoría: {categoria.get('nombre', '')}"
+                descripcion = (
+                    categoria.get("descripcion", "")
+                    or f"Categoría: {categoria.get('nombre', '')}"
+                )
                 self.categories_table.setItem(row, 2, QTableWidgetItem(descripcion))
 
                 # Número de productos
-                productos_count = self.get_products_count_for_category(categoria.get('nombre', ''))
+                productos_count = self.get_products_count_for_category(
+                    categoria.get("nombre", "")
+                )
                 self.categories_table.setItem(
                     row, 3, QTableWidgetItem(str(productos_count))
                 )
 
                 # Fecha creada
-                fecha_creada = categoria.get('fecha_creacion', 'N/A')
-                if fecha_creada and fecha_creada != 'N/A':
+                fecha_creada = categoria.get("fecha_creacion", "N/A")
+                if fecha_creada and fecha_creada != "N/A":
                     try:
                         # Formatear fecha si es necesario
                         if len(str(fecha_creada)) > 16:
                             fecha_creada = str(fecha_creada)[:16]
                     except:
-                        fecha_creada = 'N/A'
-                self.categories_table.setItem(row, 4, QTableWidgetItem(str(fecha_creada)))
+                        fecha_creada = "N/A"
+                self.categories_table.setItem(
+                    row, 4, QTableWidgetItem(str(fecha_creada))
+                )
 
                 # Fecha modificada
-                fecha_modificada = categoria.get('fecha_modificacion', 'N/A') or 'N/A'
-                if fecha_modificada and fecha_modificada != 'N/A':
+                fecha_modificada = categoria.get("fecha_modificacion", "N/A") or "N/A"
+                if fecha_modificada and fecha_modificada != "N/A":
                     try:
                         # Formatear fecha si es necesario
                         if len(str(fecha_modificada)) > 16:
                             fecha_modificada = str(fecha_modificada)[:16]
                     except:
-                        fecha_modificada = 'N/A'
+                        fecha_modificada = "N/A"
                 self.categories_table.setItem(
                     row, 5, QTableWidgetItem(str(fecha_modificada))
                 )
@@ -272,7 +281,7 @@ class CategoryManagerWidget(QWidget):
 
             # Las categorías ahora son objetos completos
             for categoria in self.categorias_cache:
-                categoria_nombre = categoria.get('nombre', '')
+                categoria_nombre = categoria.get("nombre", "")
                 count = self.get_products_count_for_category(categoria_nombre)
                 if count > 0:
                     used += 1
@@ -316,17 +325,19 @@ class CategoryManagerWidget(QWidget):
         if has_selection:
             row = next(iter(selected_rows))
             if row < len(self.categorias_cache):
-                categoria = self.categorias_cache[row]  # Ya es un objeto completo                # Emitir la categoría completa
+                categoria = self.categorias_cache[
+                    row
+                ]  # Ya es un objeto completo                # Emitir la categoría completa
                 self.categoria_seleccionada.emit(categoria)
 
     def add_category(self):
         """Agregar nueva categoría"""
         # Limpiar selección de la tabla para evitar conflictos
         self.categories_table.clearSelection()
-        
+
         # Crear diálogo sin pasar categoría (modo creación)
         dialog = CategoryDialog(self.inventario_service, self, categoria=None)
-        
+
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.load_categories()
             self.categoria_actualizada.emit()
@@ -370,11 +381,13 @@ class CategoryManagerWidget(QWidget):
             row = next(iter(selected_rows))
             if row < len(self.categorias_cache):
                 categoria = self.categorias_cache[row]  # Ya es un objeto completo
-                categoria_nombre = categoria.get('nombre', '')
-                categoria_id = categoria.get('id', None)
+                categoria_nombre = categoria.get("nombre", "")
+                categoria_id = categoria.get("id", None)
 
                 if not categoria_nombre:
-                    QMessageBox.warning(self, "Error", "No se puede identificar la categoría")
+                    QMessageBox.warning(
+                        self, "Error", "No se puede identificar la categoría"
+                    )
                     return
 
                 # Verificar si tiene productos
@@ -402,12 +415,16 @@ class CategoryManagerWidget(QWidget):
                     success = False
                     if categoria_id:
                         # Intentar eliminar por ID primero
-                        success = self.inventario_service.eliminar_categoria_por_id(categoria_id)
-                    
+                        success = self.inventario_service.eliminar_categoria_por_id(
+                            categoria_id
+                        )
+
                     if not success:
                         # Fallback: eliminar por nombre
-                        success = self.inventario_service.eliminar_categoria(categoria_nombre)
-                    
+                        success = self.inventario_service.eliminar_categoria(
+                            categoria_nombre
+                        )
+
                     if success:
                         self.load_categories()
                         self.categoria_actualizada.emit()
@@ -546,11 +563,15 @@ class CategoryDialog(QDialog):
         self.inventario_service = inventario_service
         self.categoria = categoria
         self.is_edit_mode = categoria is not None
-        
+
         # Log para debugging
-        logger.info(f"CategoryDialog iniciado - Modo: {'Edición' if self.is_edit_mode else 'Creación'}")
+        logger.info(
+            f"CategoryDialog iniciado - Modo: {'Edición' if self.is_edit_mode else 'Creación'}"
+        )
         if self.is_edit_mode and self.categoria:
-            logger.info(f"Editando categoría ID: {self.categoria.get('id', 'N/A')} - Nombre: {self.categoria.get('nombre', 'N/A')}")
+            logger.info(
+                f"Editando categoría ID: {self.categoria.get('id', 'N/A')} - Nombre: {self.categoria.get('nombre', 'N/A')}"
+            )
         else:
             logger.info("Creando nueva categoría")
 
@@ -805,7 +826,7 @@ class CategoryDialog(QDialog):
                         pass
                 self.created_label.setText(str(created))
             # Actualizar contador de caracteres
-            self.update_char_counter()            # Validar nombre cargado
+            self.update_char_counter()  # Validar nombre cargado
             self.validate_name()
 
     def save_category(self):
@@ -817,16 +838,20 @@ class CategoryDialog(QDialog):
         try:
             nombre = self.name_input.text().strip()
             descripcion = self.description_input.toPlainText().strip()
-            
+
             # Log detallado para debugging
-            logger.info(f"Guardando categoría - Modo: {'Edición' if self.is_edit_mode else 'Creación'}")
-            logger.info(f"Datos: nombre='{nombre}', descripción='{descripcion[:50]}...'")
+            logger.info(
+                f"Guardando categoría - Modo: {'Edición' if self.is_edit_mode else 'Creación'}"
+            )
+            logger.info(
+                f"Datos: nombre='{nombre}', descripción='{descripcion[:50]}...'"
+            )
 
             if self.is_edit_mode and self.categoria:
                 # Actualizar categoría existente
                 categoria_id = self.categoria.get("id")
                 logger.info(f"Actualizando categoría existente ID: {categoria_id}")
-                
+
                 success = self.inventario_service.actualizar_categoria(
                     categoria_id, nombre, descripcion
                 )

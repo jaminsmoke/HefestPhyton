@@ -16,9 +16,10 @@ from .mesas_area.kpi_widget import KPIWidget
 
 logger = logging.getLogger(__name__)
 
+
 def clear_layout(widget):
     """Elimina el layout existente de un widget, si lo tiene, para evitar warnings de layouts duplicados."""
-    old_layout = widget.layout() if hasattr(widget, 'layout') else None
+    old_layout = widget.layout() if hasattr(widget, "layout") else None
     if old_layout is not None:
         while old_layout.count():
             item = old_layout.takeAt(0)
@@ -26,6 +27,7 @@ def clear_layout(widget):
             if w is not None:
                 w.setParent(None)
         old_layout.deleteLater()
+
 
 class TPVDashboard(QWidget):
     """Dashboard con métricas del TPV mejorado y dinámico"""
@@ -59,7 +61,7 @@ class TPVDashboard(QWidget):
                 "color": "#2196f3",
                 "bg_color": "#e0f2fe",
                 "tooltip": "Cantidad de mesas ocupadas respecto al total.",
-                "badge": {"text": "M", "color": "#2196f3"}
+                "badge": {"text": "M", "color": "#2196f3"},
             },
             {
                 "key": "ventas_dia",
@@ -69,7 +71,7 @@ class TPVDashboard(QWidget):
                 "color": "#4caf50",
                 "bg_color": "#e8f5e9",
                 "tooltip": "Total de ventas del día en curso.",
-                "badge": {"text": "$", "color": "#4caf50"}
+                "badge": {"text": "$", "color": "#4caf50"},
             },
             {
                 "key": "comandas_activas",
@@ -79,7 +81,7 @@ class TPVDashboard(QWidget):
                 "color": "#ff9800",
                 "bg_color": "#fff3e0",
                 "tooltip": "Número de comandas abiertas actualmente.",
-                "badge": {"text": "C", "color": "#ff9800"}
+                "badge": {"text": "C", "color": "#ff9800"},
             },
             {
                 "key": "tiempo_promedio",
@@ -89,8 +91,8 @@ class TPVDashboard(QWidget):
                 "color": "#9c27b0",
                 "bg_color": "#f3e8ff",
                 "tooltip": "Tiempo promedio de ocupación de mesa.",
-                "badge": {"text": "T", "color": "#9c27b0"}
-            }
+                "badge": {"text": "T", "color": "#9c27b0"},
+            },
         ]
 
         for metric in metrics_config:
@@ -101,7 +103,7 @@ class TPVDashboard(QWidget):
                 color=str(metric["color"]),
                 bg_color=str(metric["bg_color"]),
                 tooltip=str(metric["tooltip"]),
-                badge=metric["badge"]
+                badge=metric["badge"],
             )
             self.metric_cards[metric["key"]] = metric_widget
             layout.addWidget(metric_widget)
@@ -129,7 +131,9 @@ class TPVDashboard(QWidget):
 
                     # Calcular métricas de mesas
                     if mesas:
-                        mesas_ocupadas = len([m for m in mesas if m.estado == "ocupada"])
+                        mesas_ocupadas = len(
+                            [m for m in mesas if m.estado == "ocupada"]
+                        )
                         total_mesas = len(mesas)
 
                     # Calcular comandas activas
@@ -140,10 +144,14 @@ class TPVDashboard(QWidget):
                         for comanda in comandas_activas:
                             try:
                                 # Usar la propiedad total de la comanda
-                                comanda_total = comanda.total if hasattr(comanda, 'total') else 0.0
+                                comanda_total = (
+                                    comanda.total if hasattr(comanda, "total") else 0.0
+                                )
                                 ventas_dia += comanda_total if comanda_total else 0.0
                             except (AttributeError, TypeError) as e:
-                                logger.warning(f"Error calculando total de comanda {comanda.id}: {e}")
+                                logger.warning(
+                                    f"Error calculando total de comanda {comanda.id}: {e}"
+                                )
                                 continue
 
                         # Calcular tiempo promedio (placeholder - sería más complejo en implementación real)

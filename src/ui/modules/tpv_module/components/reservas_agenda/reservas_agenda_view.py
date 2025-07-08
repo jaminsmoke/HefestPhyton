@@ -2,7 +2,22 @@
 reservas_agenda_view.py
 Widget visual para la agenda/listado de reservas activas.
 """
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, QPushButton, QHBoxLayout, QDialog, QFormLayout, QLineEdit, QDateTimeEdit, QSpinBox, QMessageBox
+
+from PyQt6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
+    QPushButton,
+    QHBoxLayout,
+    QDialog,
+    QFormLayout,
+    QLineEdit,
+    QDateTimeEdit,
+    QSpinBox,
+    QMessageBox,
+)
 from PyQt6.QtCore import Qt, QDateTime, pyqtSignal, QTimer, QSize
 from typing import Any, Optional
 from .reserva_service import ReservaService
@@ -11,16 +26,20 @@ from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
 from datetime import datetime, timedelta
 from services.tpv_service import Mesa
 
+
 class CrearReservaDialog(QDialog):
-    def __init__(self, parent: Optional[QWidget] = None, tpv_service: Optional[Any] = None) -> None:
+    def __init__(
+        self, parent: Optional[QWidget] = None, tpv_service: Optional[Any] = None
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Crear nueva reserva")
         layout = QFormLayout(self)
         from PyQt6.QtWidgets import QComboBox
+
         self.mesa_id_input = QComboBox()
         # Obtener ids string reales de las mesas
         mesas_ids = []
-        if tpv_service and hasattr(tpv_service, 'get_mesas'):
+        if tpv_service and hasattr(tpv_service, "get_mesas"):
             try:
                 mesas = tpv_service.get_mesas()
                 mesas_ids = [str(m.id) for m in mesas]
@@ -52,19 +71,25 @@ class CrearReservaDialog(QDialog):
 
     def get_data(self) -> dict[str, Any]:
         return {
-            'mesa_id': self.mesa_id_input.currentText().strip(),
-            'cliente': self.cliente_input.text(),
-            'telefono': self.telefono_input.text(),
-            'fecha_hora': self.fecha_hora_input.dateTime().toPyDateTime(),
-            'duracion_min': self.duracion_input.value(),
-            'notas': self.notas_input.text()
+            "mesa_id": self.mesa_id_input.currentText().strip(),
+            "cliente": self.cliente_input.text(),
+            "telefono": self.telefono_input.text(),
+            "fecha_hora": self.fecha_hora_input.dateTime().toPyDateTime(),
+            "duracion_min": self.duracion_input.value(),
+            "notas": self.notas_input.text(),
         }
+
 
 class ReservasAgendaView(QWidget):
     reserva_creada = pyqtSignal()
     reserva_cancelada = pyqtSignal()
 
-    def __init__(self, reserva_service: ReservaService, tpv_service: Any = None, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self,
+        reserva_service: ReservaService,
+        tpv_service: Any = None,
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(parent)
         self.reserva_service = reserva_service
         self.tpv_service = tpv_service  # type: ignore[reportUnknownMemberType]
@@ -73,13 +98,22 @@ class ReservasAgendaView(QWidget):
         # Suscribirse a eventos globales de reservas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+
             def log_and_load_reservas(event_name):
                 def inner(reserva):
-                    print(f"[ReservasAgendaView] Señal recibida: {event_name} para reserva: {getattr(reserva, 'id', None)} mesa_id={getattr(reserva, 'mesa_id', None)}")
+                    print(
+                        f"[ReservasAgendaView] Señal recibida: {event_name} para reserva: {getattr(reserva, 'id', None)} mesa_id={getattr(reserva, 'mesa_id', None)}"
+                    )
                     self.load_reservas()
+
                 return inner
-            reserva_event_bus.reserva_cancelada.connect(log_and_load_reservas('reserva_cancelada'))
-            reserva_event_bus.reserva_creada.connect(log_and_load_reservas('reserva_creada'))
+
+            reserva_event_bus.reserva_cancelada.connect(
+                log_and_load_reservas("reserva_cancelada")
+            )
+            reserva_event_bus.reserva_creada.connect(
+                log_and_load_reservas("reserva_creada")
+            )
         except ImportError:
             print("[ReservasAgendaView] No se pudo importar reserva_event_bus")
         layout = QVBoxLayout(self)
@@ -111,13 +145,13 @@ class ReservasAgendaView(QWidget):
             data = dialog.get_data()
             try:
                 reserva = self.reserva_service.crear_reserva(
-                    mesa_id=data['mesa_id'],
-                    cliente=data['cliente'],
-                    fecha_hora=data['fecha_hora'],
-                    duracion_min=data['duracion_min'],
-                    telefono=data['telefono'],
+                    mesa_id=data["mesa_id"],
+                    cliente=data["cliente"],
+                    fecha_hora=data["fecha_hora"],
+                    duracion_min=data["duracion_min"],
+                    telefono=data["telefono"],
                     personas=None,  # O adaptar si se añade campo en dialog
-                    notas=data['notas']
+                    notas=data["notas"],
                 )
                 print(f"[ReservasAgendaView] Reserva creada desde agenda: {reserva}")
                 self.load_reservas()
@@ -127,6 +161,7 @@ class ReservasAgendaView(QWidget):
 
     def load_reservas(self) -> None:
         from .reserva_list_item_widget import ReservaListItemWidget
+
         self.list_widget.clear()
         reservas = self.reserva_service.obtener_reservas_activas()
         for reserva in reservas:
@@ -135,7 +170,7 @@ class ReservasAgendaView(QWidget):
             widget = ReservaListItemWidget(reserva)
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, widget)
-            item.setData(Qt.ItemDataRole.UserRole, getattr(reserva, 'id', None))  # type: ignore
+            item.setData(Qt.ItemDataRole.UserRole, getattr(reserva, "id", None))  # type: ignore
 
     def confirmar_cancelacion_reserva(self, item: QListWidgetItem) -> None:
         reserva_id = item.data(Qt.ItemDataRole.UserRole)
@@ -143,33 +178,55 @@ class ReservasAgendaView(QWidget):
             self,
             "Cancelar reserva",
             "¿Seguro que deseas cancelar esta reserva?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
         if reply == QMessageBox.StandardButton.Yes:
             try:
                 exito = self.reserva_service.cancelar_reserva(reserva_id)
                 if exito:
-                    QMessageBox.information(self, "Reserva cancelada", "La reserva ha sido cancelada.")
+                    QMessageBox.information(
+                        self, "Reserva cancelada", "La reserva ha sido cancelada."
+                    )
                     self.load_reservas()
-                    QTimer.singleShot(0, self.reserva_cancelada.emit)  # Emite la señal tras actualizar la UI
+                    QTimer.singleShot(
+                        0, self.reserva_cancelada.emit
+                    )  # Emite la señal tras actualizar la UI
                 else:
-                    QMessageBox.warning(self, "Error", "No se pudo cancelar la reserva.")
+                    QMessageBox.warning(
+                        self, "Error", "No se pudo cancelar la reserva."
+                    )
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"No se pudo cancelar la reserva: {e}")
+                QMessageBox.critical(
+                    self, "Error", f"No se pudo cancelar la reserva: {e}"
+                )
 
     def format_reserva(self, reserva: Any) -> str:
-        alias_str = f" ({getattr(reserva, 'alias', '')})" if getattr(reserva, 'alias', None) else ""
-        telefono_str = f" | Tel: {reserva.cliente_telefono}" if getattr(reserva, 'cliente_telefono', None) else ""
-        personas_str = f" | Personas: {reserva.numero_personas}" if getattr(reserva, 'numero_personas', None) else ""
+        alias_str = (
+            f" ({getattr(reserva, 'alias', '')})"
+            if getattr(reserva, "alias", None)
+            else ""
+        )
+        telefono_str = (
+            f" | Tel: {reserva.cliente_telefono}"
+            if getattr(reserva, "cliente_telefono", None)
+            else ""
+        )
+        personas_str = (
+            f" | Personas: {reserva.numero_personas}"
+            if getattr(reserva, "numero_personas", None)
+            else ""
+        )
         # Unificar fecha y hora
         fecha_hora_str = ""
-        if getattr(reserva, 'fecha_reserva', None) and getattr(reserva, 'hora_reserva', None):
+        if getattr(reserva, "fecha_reserva", None) and getattr(
+            reserva, "hora_reserva", None
+        ):
             if reserva.fecha_reserva is not None:
                 fecha_hora_str = f"{reserva.fecha_reserva.strftime('%d/%m/%Y')} {reserva.hora_reserva}"
             else:
                 fecha_hora_str = f"{reserva.hora_reserva}"
-        elif getattr(reserva, 'fecha_reserva', None):
+        elif getattr(reserva, "fecha_reserva", None):
             if reserva.fecha_reserva is not None:
-                fecha_hora_str = reserva.fecha_reserva.strftime('%d/%m/%Y')
+                fecha_hora_str = reserva.fecha_reserva.strftime("%d/%m/%Y")
         # No hay duracion_min en el modelo unificado, así que lo omitimos o lo calculamos si es necesario
         return f"Mesa {reserva.mesa_id}{alias_str} | {reserva.cliente_nombre} | {fecha_hora_str}{personas_str}{telefono_str} | {reserva.estado}"

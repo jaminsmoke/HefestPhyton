@@ -13,6 +13,7 @@ Recolecta y reporta métricas del sistema:
 
 try:
     import psutil
+
     HAS_PSUTIL = True
 except ImportError:
     HAS_PSUTIL = False
@@ -128,7 +129,9 @@ class MetricsCollector:
         if HAS_PSUTIL:
             memory = psutil.virtual_memory()
             self.add_metric("system.memory.usage_percent", memory.percent, now)
-            self.add_metric("system.memory.available_gb", memory.available / 1024**3, now)
+            self.add_metric(
+                "system.memory.available_gb", memory.available / 1024**3, now
+            )
 
         # Disco
         if HAS_PSUTIL:
@@ -207,7 +210,9 @@ class MetricsCollector:
         except Exception as e:
             logger.error(f"Error guardando métricas: {e}")
 
-    def get_metrics(self, name: Optional[str] = None, hours: int = 24) -> List[Dict[str, Any]]:
+    def get_metrics(
+        self, name: Optional[str] = None, hours: int = 24
+    ) -> List[Dict[str, Any]]:
         """Obtiene métricas de la base de datos."""
         since = datetime.now() - timedelta(hours=hours)
 

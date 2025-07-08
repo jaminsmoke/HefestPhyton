@@ -176,13 +176,16 @@ class MainWindow(QMainWindow):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setWidget(self.module_container)
-        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scroll_area.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
         main_layout.addWidget(self.scroll_area, stretch=1)
         # Botón flotante 'Volver al inicio'
         self.scroll_to_top_btn = QPushButton("↑", self)
         self.scroll_to_top_btn.setToolTip("Volver al inicio")
         self.scroll_to_top_btn.setFixedSize(36, 36)
-        self.scroll_to_top_btn.setStyleSheet("""
+        self.scroll_to_top_btn.setStyleSheet(
+            """
             QPushButton {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #38bdf8, stop:1 #a7f3d0);
                 color: #222;
@@ -196,7 +199,8 @@ class MainWindow(QMainWindow):
                 background: #a7f3d0;
                 color: #0ea5e9;
             }
-        """)
+        """
+        )
         self.scroll_to_top_btn.hide()
         self.scroll_to_top_btn.clicked.connect(self.animate_scroll_to_top)
         vbar = self.scroll_area.verticalScrollBar()
@@ -209,10 +213,16 @@ class MainWindow(QMainWindow):
 
         # Aplicar estilo visual moderno al scroll a toda la ventana principal
         try:
-            with open(os.path.join(os.path.dirname(__file__), "qt_scrollarea_custom.qss"), "r", encoding="utf-8") as f:
+            with open(
+                os.path.join(os.path.dirname(__file__), "qt_scrollarea_custom.qss"),
+                "r",
+                encoding="utf-8",
+            ) as f:
                 self.setStyleSheet(f.read())
         except Exception as e:
-            logger.warning(f"No se pudo aplicar el estilo QSS personalizado al scroll: {e}")
+            logger.warning(
+                f"No se pudo aplicar el estilo QSS personalizado al scroll: {e}"
+            )
 
     def setup_status_bar(self):
         """Configura la barra de estado moderna con información del usuario"""
@@ -373,6 +383,7 @@ class MainWindow(QMainWindow):
     def get_module_class(self, module_id):
         """Obtiene la clase del módulo correspondiente al module_id"""
         from ui.modules.tpv_module.tpv_module import TPVModule
+
         module_classes = {
             # === SISTEMA VISUAL V3 ULTRA-MODERNO ===
             "dashboard": UltraModernAdminDashboard,  # NUEVO: Dashboard V3 Ultra-Moderno
@@ -522,7 +533,7 @@ class MainWindow(QMainWindow):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         # Posicionar el botón flotante en la esquina inferior derecha de la QScrollArea
-        if hasattr(self, 'scroll_to_top_btn'):
+        if hasattr(self, "scroll_to_top_btn"):
             area = self.scroll_area.geometry()
             x = area.x() + area.width() - self.scroll_to_top_btn.width() - 18
             y = area.y() + area.height() - self.scroll_to_top_btn.height() - 18

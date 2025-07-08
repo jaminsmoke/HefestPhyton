@@ -94,8 +94,9 @@ class AlertasService:
 
     from services.inventario_service_real import Producto
     from typing import Any
+
     def registrar_alertas_inventario(
-        self, alertas_inventario: list['Producto']
+        self, alertas_inventario: list["Producto"]
     ) -> list[AlertaCentralizada]:
         """Convierte alertas de inventario a alertas centralizadas"""
         alertas_centralizadas = []
@@ -105,16 +106,20 @@ class AlertasService:
                 alerta_central: AlertaCentralizada = AlertaCentralizada(
                     id=f"inv_{getattr(alerta, 'id', 'unknown')}_{getattr(alerta, 'categoria', 'unknown')}",
                     departamento=TipoDepartamento.INVENTARIO,
-                    tipo=getattr(alerta, 'categoria', 'desconocido'),
+                    tipo=getattr(alerta, "categoria", "desconocido"),
                     prioridad="media",  # Ajustar si hay lógica de prioridad
-                    titulo=getattr(alerta, 'nombre', 'Producto sin nombre'),
+                    titulo=getattr(alerta, "nombre", "Producto sin nombre"),
                     mensaje=f"Stock actual: {getattr(alerta, 'stock_actual', '?')} / Mínimo: {getattr(alerta, 'stock_minimo', '?')}",
                     fecha_creacion=datetime.now(),
                     datos_contexto={
-                        "producto_id": getattr(alerta, 'id', None),
-                        "producto_nombre": getattr(alerta, 'nombre', None),
+                        "producto_id": getattr(alerta, "id", None),
+                        "producto_nombre": getattr(alerta, "nombre", None),
                     },
-                    acciones_disponibles=["Ajustar Stock", "Ver Producto", "Generar Pedido"],
+                    acciones_disponibles=[
+                        "Ajustar Stock",
+                        "Ver Producto",
+                        "Generar Pedido",
+                    ],
                 )
                 alertas_centralizadas.append(alerta_central)
 
@@ -140,7 +145,9 @@ class AlertasService:
                 inventario_service = InventarioService(db_manager)
                 # Cambiado: obtener productos con stock bajo como alertas activas
                 alertas_inventario = inventario_service.get_productos_stock_bajo()
-                alertas_centralizadas = self.registrar_alertas_inventario(alertas_inventario)
+                alertas_centralizadas = self.registrar_alertas_inventario(
+                    alertas_inventario
+                )
             except Exception as e:
                 self.logger.error(f"Error obteniendo alertas de inventario: {e}")
                 alertas_centralizadas = []

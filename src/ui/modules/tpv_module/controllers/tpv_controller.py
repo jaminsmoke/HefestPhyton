@@ -57,9 +57,13 @@ class TPVController(QObject):
             if not comanda:
                 # Crear nueva comanda
                 comanda = self.tpv_service.crear_comanda(mesa_id)
-                self.status_changed.emit(f"Nueva comanda creada para Mesa {mesa.numero}")
+                self.status_changed.emit(
+                    f"Nueva comanda creada para Mesa {mesa.numero}"
+                )
             else:
-                self.status_changed.emit(f"Comanda existente cargada para Mesa {mesa.numero}")
+                self.status_changed.emit(
+                    f"Comanda existente cargada para Mesa {mesa.numero}"
+                )
 
             # Almacenar en caché
             if comanda:
@@ -73,7 +77,9 @@ class TPVController(QObject):
             self.error_occurred.emit(f"Error al abrir mesa: {str(e)}")
             return None
 
-    def add_product_to_order(self, mesa_id: int, producto_id: int, cantidad: int = 1) -> bool:
+    def add_product_to_order(
+        self, mesa_id: int, producto_id: int, cantidad: int = 1
+    ) -> bool:
         """Añade un producto a la comanda de una mesa"""
         try:
             comanda = self._active_orders.get(mesa_id)
@@ -83,7 +89,7 @@ class TPVController(QObject):
                     return False
 
             # Verificar que la comanda tiene ID válido
-            if not hasattr(comanda, 'id') or comanda.id is None:
+            if not hasattr(comanda, "id") or comanda.id is None:
                 self.error_occurred.emit("Comanda inválida")
                 return False
 
@@ -104,12 +110,16 @@ class TPVController(QObject):
                 self._active_orders[mesa_id] = updated_comanda
                 self.comanda_updated.emit(updated_comanda)
                 self.producto_added.emit(comanda.id, producto_id, cantidad)
-                self.status_changed.emit(f"Producto '{producto.nombre}' añadido a la comanda")
+                self.status_changed.emit(
+                    f"Producto '{producto.nombre}' añadido a la comanda"
+                )
 
             return True
 
         except Exception as e:
-            logger.error(f"Error al añadir producto {producto_id} a mesa {mesa_id}: {e}")
+            logger.error(
+                f"Error al añadir producto {producto_id} a mesa {mesa_id}: {e}"
+            )
             self.error_occurred.emit(f"Error al añadir producto: {str(e)}")
             return False
 
@@ -117,7 +127,7 @@ class TPVController(QObject):
         """Elimina un producto de la comanda"""
         try:
             comanda = self._active_orders.get(mesa_id)
-            if not comanda or not hasattr(comanda, 'id') or comanda.id is None:
+            if not comanda or not hasattr(comanda, "id") or comanda.id is None:
                 return False
 
             self.tpv_service.eliminar_producto_de_comanda(comanda.id, producto_id)
@@ -132,18 +142,24 @@ class TPVController(QObject):
             return True
 
         except Exception as e:
-            logger.error(f"Error al eliminar producto {producto_id} de mesa {mesa_id}: {e}")
+            logger.error(
+                f"Error al eliminar producto {producto_id} de mesa {mesa_id}: {e}"
+            )
             self.error_occurred.emit(f"Error al eliminar producto: {str(e)}")
             return False
 
-    def update_product_quantity(self, mesa_id: int, producto_id: int, nueva_cantidad: int) -> bool:
+    def update_product_quantity(
+        self, mesa_id: int, producto_id: int, nueva_cantidad: int
+    ) -> bool:
         """Actualiza la cantidad de un producto en la comanda"""
         try:
             comanda = self._active_orders.get(mesa_id)
-            if not comanda or not hasattr(comanda, 'id') or comanda.id is None:
+            if not comanda or not hasattr(comanda, "id") or comanda.id is None:
                 return False
 
-            self.tpv_service.cambiar_cantidad_producto(comanda.id, producto_id, nueva_cantidad)
+            self.tpv_service.cambiar_cantidad_producto(
+                comanda.id, producto_id, nueva_cantidad
+            )
 
             # Actualizar comanda en caché
             updated_comanda = self.tpv_service.get_comanda_por_id(comanda.id)
@@ -163,7 +179,7 @@ class TPVController(QObject):
         """Guarda la comanda actual"""
         try:
             comanda = self._active_orders.get(mesa_id)
-            if not comanda or not hasattr(comanda, 'id') or comanda.id is None:
+            if not comanda or not hasattr(comanda, "id") or comanda.id is None:
                 return False
 
             self.tpv_service.guardar_comanda(comanda.id)
@@ -179,7 +195,7 @@ class TPVController(QObject):
         """Procesa el pago de una comanda"""
         try:
             comanda = self._active_orders.get(mesa_id)
-            if not comanda or not hasattr(comanda, 'id') or comanda.id is None:
+            if not comanda or not hasattr(comanda, "id") or comanda.id is None:
                 return False
 
             # Procesar pago (aquí se puede implementar diferentes métodos)
