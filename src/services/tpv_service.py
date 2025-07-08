@@ -257,9 +257,9 @@ class TPVService(BaseService):
                     (comanda.id,),
                 )
                 lineas_db = cursor.fetchall()
-                print(
-                    f"[AUDITORÍA] persistir_comanda: comanda_id={comanda.id} líneas en DB tras commit: {lineas_db}"
-                )
+                import logging
+                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                    print(f"[AUDITORÍA] persistir_comanda: comanda_id={comanda.id} líneas en DB tras commit: {lineas_db}")
             # Emitir señal global de comanda actualizada
             try:
                 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
@@ -302,20 +302,16 @@ class TPVService(BaseService):
                 if mesa.id == mesa_actualizada.id:
                     self._mesas_cache[idx] = mesa_actualizada
                     break
-            print(
-                f"[DEBUG TPVService] _mesas_cache al emitir: {[m.id for m in self._mesas_cache]}"
-            )
-            import traceback
-
-            print(
-                f"[DEBUG TPVService] update_mesa: stack trace before emit:\n{''.join(traceback.format_stack(limit=5))}"
-            )
+            import logging
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                print(f"[DEBUG TPVService] _mesas_cache al emitir: {[m.id for m in self._mesas_cache]}")
+                import traceback
+                print(f"[DEBUG TPVService] update_mesa: stack trace before emit:\n{''.join(traceback.format_stack(limit=5))}")
             # Emisión global: mesa individual y lista completa
             mesa_event_bus.mesa_actualizada.emit(mesa_actualizada)
             mesa_event_bus.mesas_actualizadas.emit(self._mesas_cache.copy())
-            print(
-                f"[DEBUG TPVService] update_mesa: emitido mesas_actualizadas con {len(self._mesas_cache)} mesas"
-            )
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                print(f"[DEBUG TPVService] update_mesa: emitido mesas_actualizadas con {len(self._mesas_cache)} mesas")
             return True
         except Exception as e:
             logger.error(f"Error actualizando mesa: {e}")
@@ -507,9 +503,9 @@ class TPVService(BaseService):
                     lineas.append(linea)
 
                 # Log de auditoría de líneas recuperadas
-                print(
-                    f"[AUDITORÍA] Mesa {mesa_id} - Comanda {comanda_id} - Líneas recuperadas: {[vars(l) for l in lineas]}"
-                )
+                import logging
+                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                    print(f"[AUDITORÍA] Mesa {mesa_id} - Comanda {comanda_id} - Líneas recuperadas: {[vars(l) for l in lineas]}")
 
                 comanda = Comanda(
                     id=comanda_id,
@@ -523,9 +519,9 @@ class TPVService(BaseService):
                 )
                 self._comandas_cache[mesa_id] = comanda
             # Log de auditoría de caché final
-            print(
-                f"[AUDITORÍA] Estado final de _comandas_cache: {{k: v.lineas for k, v in self._comandas_cache.items()}}"
-            )
+            import logging
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                print(f"[AUDITORÍA] Estado final de _comandas_cache: {{k: v.lineas for k, v in self._comandas_cache.items()}}")
             self.logger.info(
                 f"Cargadas {len(self._comandas_cache)} comandas activas desde la base de datos"
             )
