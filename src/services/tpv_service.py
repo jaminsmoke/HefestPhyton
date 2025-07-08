@@ -257,9 +257,7 @@ class TPVService(BaseService):
                     (comanda.id,),
                 )
                 lineas_db = cursor.fetchall()
-                import logging
-                if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    print(f"[AUDITORÍA] persistir_comanda: comanda_id={comanda.id} líneas en DB tras commit: {lineas_db}")
+                # Log de auditoría eliminado por redundante
             # Emitir señal global de comanda actualizada
             try:
                 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
@@ -302,16 +300,9 @@ class TPVService(BaseService):
                 if mesa.id == mesa_actualizada.id:
                     self._mesas_cache[idx] = mesa_actualizada
                     break
-            import logging
-            if logging.getLogger().isEnabledFor(logging.DEBUG):
-                print(f"[DEBUG TPVService] _mesas_cache al emitir: {[m.id for m in self._mesas_cache]}")
-                import traceback
-                print(f"[DEBUG TPVService] update_mesa: stack trace before emit:\n{''.join(traceback.format_stack(limit=5))}")
             # Emisión global: mesa individual y lista completa
             mesa_event_bus.mesa_actualizada.emit(mesa_actualizada)
             mesa_event_bus.mesas_actualizadas.emit(self._mesas_cache.copy())
-            if logging.getLogger().isEnabledFor(logging.DEBUG):
-                print(f"[DEBUG TPVService] update_mesa: emitido mesas_actualizadas con {len(self._mesas_cache)} mesas")
             return True
         except Exception as e:
             logger.error(f"Error actualizando mesa: {e}")
@@ -503,9 +494,7 @@ class TPVService(BaseService):
                     lineas.append(linea)
 
                 # Log de auditoría de líneas recuperadas
-                import logging
-                if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    print(f"[AUDITORÍA] Mesa {mesa_id} - Comanda {comanda_id} - Líneas recuperadas: {[vars(l) for l in lineas]}")
+                # Log de auditoría eliminado por redundante
 
                 comanda = Comanda(
                     id=comanda_id,
@@ -519,9 +508,7 @@ class TPVService(BaseService):
                 )
                 self._comandas_cache[mesa_id] = comanda
             # Log de auditoría de caché final
-            import logging
-            if logging.getLogger().isEnabledFor(logging.DEBUG):
-                print(f"[AUDITORÍA] Estado final de _comandas_cache: {{k: v.lineas for k, v in self._comandas_cache.items()}}")
+            # Log de auditoría eliminado por redundante
             self.logger.info(
                 f"Cargadas {len(self._comandas_cache)} comandas activas desde la base de datos"
             )
@@ -1089,7 +1076,7 @@ class TPVService(BaseService):
         comanda = self.get_comanda_por_id(comanda_id)
         if not comanda:
             return False  # En una implementación real, persistiríamos en la BD
-        logger.info(f"Guardando comanda {comanda_id} con {len(comanda.lineas)} líneas")
+        # Log eliminado por redundante
         return True
 
     def pagar_comanda(self, comanda_id: int, usuario_id: int = -1) -> bool:
@@ -1163,7 +1150,7 @@ class TPVService(BaseService):
         except Exception:
             pass
 
-        logger.info(f"Comanda {comanda_id} pagada y mesa {comanda.mesa_id} liberada")
+        # Log eliminado por redundante
         return True
 
     def liberar_mesa(self, mesa_id: str) -> bool:
@@ -1184,7 +1171,7 @@ class TPVService(BaseService):
         if mesa_id in self._comandas_cache:
             del self._comandas_cache[mesa_id]
 
-        logger.info(f"Mesa {mesa.numero} liberada y nombre temporal reseteado")
+        # Log eliminado por redundante
         return True
 
     def generar_siguiente_numero_mesa(self, zona: str) -> str:
@@ -1356,7 +1343,7 @@ class TPVService(BaseService):
             )
 
             self._mesas_cache.append(nueva_mesa)
-            logger.info(f"Mesa {numero} creada correctamente con ID {mesa_id}")
+            # Log eliminado por redundante
 
             return nueva_mesa
 

@@ -6,6 +6,7 @@ Este módulo inicializa los componentes principales y lanza la interfaz gráfica
 """
 
 import sys
+import re
 import logging
 from PyQt6.QtWidgets import QApplication, QDialog, QInputDialog, QLineEdit, QMessageBox
 from PyQt6.QtCore import Qt
@@ -59,6 +60,38 @@ class Hefest:
 
         # Inicializar la aplicación Qt
         self.app = QApplication(sys.argv)
+        # Filtro para warnings de CSS backdrop-filter (stdout y stderr)
+        import io
+        import sys as _sys
+        class CSSWarningFilter(io.StringIO):
+            def __init__(self, original):
+                super().__init__()
+                self._original = original
+                self._buffer = ""
+            def write(self, txt):
+                self._buffer += txt
+                while "\n" in self._buffer:
+                    line, self._buffer = self._buffer.split("\n", 1)
+                    if not re.search(r"Unknown property backdrop-filter", line):
+                        if self._original is not None and hasattr(self._original, "write"):
+                            self._original.write(line + "\n")
+            def flush(self):
+                if self._buffer:
+                    if not re.search(r"Unknown property backdrop-filter", self._buffer):
+                        if self._original is not None and hasattr(self._original, "write"):
+                            self._original.write(self._buffer)
+                    self._buffer = ""
+            def writelines(self, lines):
+                for line in lines:
+                    self.write(line)
+        _sys.stderr = CSSWarningFilter(_sys.__stderr__)
+        _sys.stdout = CSSWarningFilter(_sys.__stdout__)
+        # Intentar filtrar también mensajes de Qt (si es posible)
+        try:
+            from PyQt6.QtCore import QLoggingCategory
+            QLoggingCategory.setFilterRules("*.debug=false;qt.qpa.*=false")
+        except Exception:
+            pass
         self.app.setApplicationName("Hefest")
         self.app.setApplicationVersion("1.0.0")
         # Configurar el estilo

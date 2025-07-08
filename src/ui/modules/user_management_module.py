@@ -31,14 +31,10 @@ class UserManagementModule(BaseModule):
     """Módulo de gestión de usuarios"""
 
     def __init__(self, parent=None):
-        logger.info("Inicializando UserManagementModule...")
         super().__init__(parent)
         self.auth_service = get_auth_service()
-        logger.info("AuthService inicializado correctamente.")
         self.setup_ui()
-        logger.info("Interfaz de usuario configurada.")
         self.load_users()
-        logger.info("Usuarios cargados en la tabla.")
 
     def setup_ui(self):
         """Configura la interfaz de usuario"""
@@ -165,9 +161,9 @@ class UserManagementModule(BaseModule):
                         else "N/A"
                     ),
                 )
-
-            logger.info(f"Cargados {len(users)} usuarios en la tabla")
-
+            # Log solo en modo DEBUG
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                logger.debug(f"Cargados {len(users)} usuarios en la tabla")
         except Exception as e:
             logger.error(f"Error al cargar usuarios: {e}")
             QMessageBox.warning(self, "Error", "Error al cargar los usuarios")
@@ -281,6 +277,7 @@ class UserManagementModule(BaseModule):
 
     def refresh(self):
         """Actualiza los datos del módulo"""
-        logger.info("Actualizando módulo de gestión de usuarios...")
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logger.debug("Actualizando módulo de gestión de usuarios...")
         self.load_users()
         self.status_changed.emit("Usuarios actualizados")

@@ -39,9 +39,6 @@ class ReservaDialog(QDialog):
         reserva: Optional[Reserva] = None,
         modo_edicion: bool = False,
     ):
-        print(
-            f"[ReservaDialog] __init__ llamado. mesa={getattr(mesa, 'id', None)}, modo_edicion={modo_edicion}"
-        )
         super().__init__(parent)
         self.setWindowTitle("🍽️ Editar Reserva" if modo_edicion else "🍽️ Crear Reserva")
         self.setModal(True)
@@ -53,12 +50,13 @@ class ReservaDialog(QDialog):
         self.setup_ui()
         self.setup_styles()
         self.connect_signals()
-        print(
-            f"[ReservaDialog] connect_signals ejecutado. self.mesa={getattr(self.mesa, 'id', None)}"
-        )
         if self.modo_edicion and self.reserva:
             self.cargar_datos_reserva(self.reserva)
-        print("[ReservaDialog] Inicialización completa")
+        # Log de inicialización solo en modo DEBUG
+        import logging
+        logger = logging.getLogger(__name__)
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logger.debug(f"[ReservaDialog] Inicialización completa para mesa={getattr(self.mesa, 'id', None)} modo_edicion={self.modo_edicion}")
 
     def setup_ui(self):
         main_layout = QVBoxLayout(self)
@@ -685,7 +683,10 @@ class ReservaDialog(QDialog):
 
                     QTimer.singleShot(1200, reset_feedback_style)
                 except Exception as e:
-                    print(f"[ReservaDialog] Error al sugerir próxima hora libre: {e}")
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    if logging.getLogger().isEnabledFor(logging.DEBUG):
+                        logger.debug(f"[ReservaDialog] Error al sugerir próxima hora libre: {e}")
                     icono = "⚠️"
                     texto = f"{icono} Error al ajustar la próxima hora libre."
                     self.hora_feedback_label.setText(texto)
@@ -693,7 +694,10 @@ class ReservaDialog(QDialog):
                         "color: #b71c1c; font-size: 13px; font-weight: bold;"
                     )
         else:
-            print("[ReservaDialog] self._proxima_hora_libre es None al sugerir hora.")
+            import logging
+            logger = logging.getLogger(__name__)
+            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                logger.debug("[ReservaDialog] self._proxima_hora_libre es None al sugerir hora.")
             icono = "⚠️"
             texto = f"{icono} No se encontró una próxima hora libre para esta mesa."
             self.hora_feedback_label.setText(texto)
@@ -705,7 +709,10 @@ class ReservaDialog(QDialog):
             scroll_bar.setValue(scroll_pos)
 
     def validar_y_aceptar(self):
-        print("[ReservaDialog] validar_y_aceptar llamado")
+        import logging
+        logger = logging.getLogger(__name__)
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logger.debug("[ReservaDialog] validar_y_aceptar llamado")
         if not self.cliente_input.text().strip():
             QMessageBox.warning(
                 self, "Campo requerido", "El nombre del cliente es obligatorio."
@@ -746,7 +753,10 @@ class ReservaDialog(QDialog):
                     return
 
         datos_reserva = self.get_data()
-        print(f"[ReservaDialog] Datos recogidos para crear reserva: {datos_reserva}")
+        import logging
+        logger = logging.getLogger(__name__)
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logger.debug(f"[ReservaDialog] Datos recogidos para crear reserva: {datos_reserva}")
         # Crear objeto Reserva unificado
         reserva = Reserva(
             id=None,
@@ -759,7 +769,10 @@ class ReservaDialog(QDialog):
             estado="confirmada",  # o datos_reserva["estado"] si se requiere
             notas=datos_reserva["notas"],
         )
-        print(f"[ReservaDialog] Emitiendo señal reserva_creada con reserva: {reserva}")
+        import logging
+        logger = logging.getLogger(__name__)
+        if logging.getLogger().isEnabledFor(logging.DEBUG):
+            logger.debug(f"[ReservaDialog] Emitiendo señal reserva_creada con reserva: {reserva}")
         self.reserva_creada.emit(reserva)
         self.accept()
 

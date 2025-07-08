@@ -70,9 +70,10 @@ class MesaDialog(TabbedDialog):
                 try:
                     self.reserva_service.actualizar_estado_mesa(self.mesa.numero)
                 except Exception as e:
-                    print(
-                        f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}"
-                    )
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    if logging.getLogger().isEnabledFor(logging.DEBUG):
+                        logger.debug(f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}")
             self.update_ui()
 
     """Diálogo de mesa con pestañas horizontales modernas"""
@@ -114,9 +115,10 @@ class MesaDialog(TabbedDialog):
                         if hasattr(mesa_actualizada, attr):
                             setattr(self.mesa, attr, getattr(mesa_actualizada, attr))
             except Exception as e:
-                print(
-                    f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}"
-                )
+                import logging
+                logger = logging.getLogger(__name__)
+                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                    logger.debug(f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}")
         # Refrescar reservas activas de la mesa desde el servicio si existe
         if self.reserva_service and hasattr(
             self.reserva_service, "obtener_reservas_activas_por_mesa"
@@ -129,9 +131,10 @@ class MesaDialog(TabbedDialog):
                     self.mesa.numero, []
                 )
             except Exception as e:
-                print(
-                    f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}"
-                )
+                import logging
+                logger = logging.getLogger(__name__)
+                if logging.getLogger().isEnabledFor(logging.DEBUG):
+                    logger.debug(f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}")
         # Configurar header específico
         self.set_header_title(
             f"Mesa {self.mesa.numero} - {self.mesa.zona}",
@@ -146,15 +149,18 @@ class MesaDialog(TabbedDialog):
         try:
             mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
         except Exception as e:
-            print(f"[MesaDialog][ERROR] No se pudo conectar a mesa_event_bus: {e}")
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"[MesaDialog][ERROR] No se pudo conectar a mesa_event_bus: {e}")
 
         # Suscribirse al event bus de reservas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
-
             reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
         except Exception as e:
-            print(f"[MesaDialog][ERROR] No se pudo conectar a reserva_event_bus: {e}")
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"[MesaDialog][ERROR] No se pudo conectar a reserva_event_bus: {e}")
 
     def setup_tabs(self):
         """Configura las pestañas del diálogo"""
