@@ -8,6 +8,16 @@
 		}
 	],
 	"settings": {
-		"powershell.cwd": "Hefest"
+		"powershell.cwd": "Hefest",
+		"sqltools.useNodeRuntime": true,
+		"sqltools.connections": [
+			{
+				"previewLimit": 50,
+				"driver": "SQLite",
+				"database": "${workspaceFolder:Hefest}/data/hefest.db",
+				"name": "HefestDatabase",
+				"group": "Admin"
+			}
+		]
 	}
 }

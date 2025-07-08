@@ -75,12 +75,33 @@ docs/
 3. Consulta el README de la subcarpeta para detalles.
 
 
+
 ## [v0.0.14] Versión en desarrollo (desde 07/07/2025)
 
 - **Contexto:**
   - Se inicia la fase de desarrollo 0.0.14 tras el cierre de la versión 0.0.13.
   - Todos los cambios y fixes nuevos deben documentarse como parte de la versión 0.0.14.
   - Para información histórica de la v0.0.13, consultar el changelog y fixes de esa versión.
+
+---
+### 🛡️ Gestión de usuarios y autenticación en TPV avanzado (v0.0.14)
+
+- **Cambio de usuario en TPV avanzado:**
+  - Al intentar cambiar de usuario desde el ComboBox del header, se solicita el PIN del usuario destino.
+  - Si el PIN es incorrecto o el usuario no tiene ID válido, se muestra un mensaje de error y se mantiene el usuario original.
+  - Todos los intentos fallidos de autenticación quedan registrados en los logs para auditoría y seguridad.
+  - El usuario activo se resalta visualmente en el selector.
+  - No se bloquean acciones adicionales: cada usuario solo puede realizar las operaciones permitidas por sus permisos.
+  - Lógica unificada: ahora todas las operaciones usan únicamente el modelo de usuario (`usuarios`).
+
+**EXCEPCIÓN FUNCIONAL ELIMINADA:**
+> Desde v0.0.14, la tabla `empleados` ha sido eliminada y todas las referencias a empleados/empleado_id han sido migradas a usuarios/usuario_id. El sistema de autenticación, permisos y registro de comandas es ahora completamente consistente y unificado.
+
+**Recomendaciones implementadas:**
+- Feedback visual claro del usuario activo.
+- Registro de intentos fallidos de cambio de usuario.
+
+Para detalles técnicos y flujo completo, ver el roadmap de progreso de v0.0.14.
 
 ---
 Para información histórica de la v0.0.12, consultar el changelog y fixes de esa versión.

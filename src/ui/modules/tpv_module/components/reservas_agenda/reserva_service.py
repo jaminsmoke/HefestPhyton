@@ -50,7 +50,7 @@ class ReservaService:
             c.execute('''
                 CREATE TABLE IF NOT EXISTS reservas (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    mesa_id INTEGER NOT NULL,
+                    mesa_id TEXT NOT NULL,
                     cliente TEXT NOT NULL,
                     fecha_hora TEXT NOT NULL,
                     duracion_min INTEGER NOT NULL,
@@ -62,25 +62,32 @@ class ReservaService:
             ''')
             conn.commit()
 
-    def crear_reserva(self, mesa_id: int, cliente: str, fecha_hora: datetime, duracion_min: int, telefono: Optional[str] = None, personas: Optional[int] = None, notas: Optional[str] = None) -> Reserva:
-        with sqlite3.connect(self.db_path) as conn:
-            c = conn.cursor()
-            c.execute('''
-                INSERT INTO reservas (mesa_id, cliente, fecha_hora, duracion_min, estado, notas, telefono, personas)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (mesa_id, cliente, fecha_hora.isoformat(), duracion_min, "activa", notas, telefono, personas))
-            reserva_id = c.lastrowid if c.lastrowid is not None else -1
-            conn.commit()
-        # Adaptar a modelo unificado
+    def crear_reserva(self, mesa_id: str, cliente: str, fecha_hora: datetime, duracion_min: int, telefono: Optional[str] = None, personas: Optional[int] = None, notas: Optional[str] = None) -> Reserva:
+        mesa_id_str = str(mesa_id) if mesa_id is not None else ""
+        print(f"[ReservaService] Creando reserva: mesa_id={mesa_id_str}, cliente={cliente}, fecha_hora={fecha_hora}, duracion_min={duracion_min}, telefono={telefono}, personas={personas}, notas={notas}")
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                c = conn.cursor()
+                c.execute('''
+                    INSERT INTO reservas (mesa_id, cliente, fecha_hora, duracion_min, estado, notas, telefono, personas)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (mesa_id_str, cliente, fecha_hora.isoformat(), duracion_min, "activa", notas, telefono, personas))
+                reserva_id = c.lastrowid if c.lastrowid is not None else -1
+                conn.commit()
+            print(f"[ReservaService] Reserva creada con id={reserva_id}")
+        except Exception as e:
+            import traceback
+            print(f"[ReservaService][ERROR] Error al crear reserva: {e}\n{traceback.format_exc()}")
+            raise
         return Reserva(
             id=int(reserva_id),
-            mesa_id=mesa_id,
+            mesa_id=mesa_id_str,
             cliente_nombre=cliente,
             cliente_telefono=telefono,
             fecha_reserva=fecha_hora.date(),
             hora_reserva=fecha_hora.strftime('%H:%M'),
             numero_personas=personas if personas is not None else 1,
-            estado="activa",  # CONSISTENCIA: siempre estado 'activa' para reservas nuevas
+            estado="activa",
             notas=notas
         )
 
@@ -100,7 +107,7 @@ class ReservaService:
         return [
             Reserva(
                 id=row[0],
-                mesa_id=row[1],
+                mesa_id=str(row[1]) if row[1] is not None else None,
                 cliente_nombre=row[2],
                 cliente_telefono=row[7],
                 fecha_reserva=datetime.fromisoformat(row[3]).date(),
@@ -120,7 +127,7 @@ class ReservaService:
         return [
             Reserva(
                 id=row[0],
-                mesa_id=row[1],
+                mesa_id=str(row[1]) if row[1] is not None else None,
                 cliente_nombre=row[2],
                 cliente_telefono=row[7],
                 fecha_reserva=datetime.fromisoformat(row[3]).date(),
@@ -139,7 +146,7 @@ class ReservaService:
         if row:
             return Reserva(
                 id=row[0],
-                mesa_id=row[1],
+                mesa_id=str(row[1]) if row[1] is not None else None,
                 cliente_nombre=row[2],
                 cliente_telefono=row[7],
                 fecha_reserva=datetime.fromisoformat(row[3]).date(),
@@ -160,7 +167,7 @@ class ReservaService:
         for row in rows:
             reserva = Reserva(
                 id=row[0],
-                mesa_id=row[1],
+                mesa_id=str(row[1]) if row[1] is not None else None,
                 cliente_nombre=row[2],
                 cliente_telefono=row[7],
                 fecha_reserva=datetime.fromisoformat(row[3]).date(),

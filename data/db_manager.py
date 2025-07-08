@@ -3,6 +3,31 @@ from contextlib import contextmanager
 import os
 
 class DatabaseManager:
+    def descontar_stock_y_registrar(self, producto_id, cantidad, usuario_id=None, observaciones=None):
+        """Descuenta stock de un producto y registra el movimiento en movimientos_stock."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            # Obtener stock actual
+            cursor.execute("SELECT stock FROM productos WHERE id = ?", (producto_id,))
+            row = cursor.fetchone()
+            if not row:
+                raise ValueError(f"Producto con id {producto_id} no encontrado")
+            stock_anterior = row[0] if row[0] is not None else 0
+            if stock_anterior < cantidad:
+                raise ValueError(f"Stock insuficiente para producto {producto_id}")
+            stock_nuevo = stock_anterior - cantidad
+            # Actualizar stock
+            cursor.execute("UPDATE productos SET stock = ? WHERE id = ?", (stock_nuevo, producto_id))
+            # Registrar movimiento
+            cursor.execute(
+                """
+                INSERT INTO movimientos_stock (producto_id, tipo, cantidad, stock_anterior, stock_nuevo, fecha, observaciones, usuario_id)
+                VALUES (?, ?, ?, ?, ?, datetime('now'), ?, ?)
+                """,
+                (producto_id, 'salida', cantidad, stock_anterior, stock_nuevo, observaciones, usuario_id)
+            )
+            conn.commit()
+            return stock_nuevo
     def update_zona_nombre(self, zona_id, nuevo_nombre):
         """Actualiza el nombre de una zona y todas las mesas asociadas a esa zona."""
         # Obtener el nombre actual de la zona
@@ -102,6 +127,7 @@ class DatabaseManager:
                 id INTEGER PRIMARY KEY,
                 cliente_id INTEGER,
                 habitacion_id INTEGER,
+                mesa_id TEXT,
                 fecha_entrada TEXT,
                 fecha_salida TEXT,
                 estado TEXT,
@@ -109,26 +135,16 @@ class DatabaseManager:
                 FOREIGN KEY (habitacion_id) REFERENCES habitaciones (id)
             )''')
 
-            conn.execute('''CREATE TABLE IF NOT EXISTS empleados (
-                id INTEGER PRIMARY KEY,
-                username TEXT UNIQUE,
-                nombre TEXT NOT NULL,
-                apellidos TEXT,
-                dni TEXT UNIQUE,
-                rol TEXT,
-                password TEXT,
-                active INTEGER DEFAULT 1
-            )''')
+
 
             conn.execute('''CREATE TABLE IF NOT EXISTS comandas (
                 id INTEGER PRIMARY KEY,
-                mesa_id INTEGER,
-                empleado_id INTEGER,
+                mesa_id TEXT,
+                usuario_id INTEGER,
                 fecha_hora TEXT,
                 estado TEXT,
                 total REAL,
-                FOREIGN KEY (mesa_id) REFERENCES mesas (id),
-                FOREIGN KEY (empleado_id) REFERENCES empleados (id)
+                FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
             )''')
 
             conn.execute('''CREATE TABLE IF NOT EXISTS comanda_detalles (

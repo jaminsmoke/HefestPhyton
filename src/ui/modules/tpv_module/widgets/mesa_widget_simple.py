@@ -19,6 +19,25 @@ from src.utils.modern_styles import ModernStyles
 
 
 class MesaWidget(QFrame):
+    def _on_reserva_event_bus_creada(self, reserva):
+        # Si la reserva es para esta mesa, actualizar estado y contador
+        mesa_numero = str(getattr(self.mesa, 'numero', None))
+        reserva_mesa_id = str(getattr(reserva, 'mesa_id', None))
+        # Ahora la comparación debe ser por numero, no por id
+        if mesa_numero == reserva_mesa_id:
+            # Actualizar estado y proxima_reserva
+            self.mesa.estado = 'reservada'
+            self.proxima_reserva = reserva
+            self._ultima_reserva_activa = reserva
+            self.estado_label.setText(self.get_estado_texto())
+            self.apply_styles()
+            self._ajustar_fuente_nombre()
+            self._actualizar_contador_reserva()
+            if self.proxima_reserva:
+                self._contador_timer.start()
+            else:
+                self._contador_timer.stop()
+            self.repaint()
     # Señales para acciones principales
     reservar_mesa_requested = pyqtSignal(object)  # Emite la mesa
     iniciar_tpv_requested = pyqtSignal(object)     # Emite la mesa
@@ -44,7 +63,7 @@ class MesaWidget(QFrame):
         while parent is not None:
             toggle = getattr(parent, 'toggle_mesa_selection', None)
             if callable(toggle):
-                toggle(self.mesa.id)
+                toggle(self.mesa.numero)
                 break
             parent = getattr(parent, 'parent', lambda: None)()
     """
@@ -59,7 +78,7 @@ class MesaWidget(QFrame):
     personas_changed = pyqtSignal(Mesa, int)  # Señal para cambio de personas
     restaurar_original = pyqtSignal(int)  # Señal para restaurar valores originales
 
-    def __init__(self, mesa: Mesa, parent=None, proxima_reserva=None):
+    def __init__(self, mesa: Mesa, parent=None, proxima_reserva=None, tpv_service=None):
         super().__init__(parent)
         self.mesa = mesa
         self.proxima_reserva = proxima_reserva
@@ -75,10 +94,61 @@ class MesaWidget(QFrame):
         self.click_timer.timeout.connect(self._handle_single_click)
         self.pending_click = False
 
+        self.tpv_service = tpv_service
+
+        # --- SINCRONIZACIÓN Y PERSISTENCIA REAL AL INICIALIZAR ---
+        # Refrescar estado real de la mesa desde el servicio si está disponible
+        mesa_real = None
+        if self.tpv_service and hasattr(self.tpv_service, 'get_mesa_by_numero'):
+            try:
+                mesa_real = self.tpv_service.get_mesa_by_numero(self.mesa.numero)
+                if mesa_real:
+                    self.mesa = mesa_real
+            except Exception as e:
+                print(f"[MesaWidget][WARN] No se pudo refrescar mesa desde servicio al inicializar: {e}")
+        # Refrescar reservas activas de la mesa desde el servicio si existe
+        self._reservas_activas_inicial = []
+        reserva_activada = False
+        if self.tpv_service and hasattr(self.tpv_service, 'reserva_service'):
+            reserva_service = getattr(self.tpv_service, 'reserva_service', None)
+            if reserva_service and hasattr(reserva_service, 'obtener_reservas_activas_por_mesa'):
+                try:
+                    reservas_por_mesa = reserva_service.obtener_reservas_activas_por_mesa()
+                    self._reservas_activas_inicial = reservas_por_mesa.get(self.mesa.numero, [])
+                    # Si hay reservas activas, forzar estado y proxima_reserva
+                    if self._reservas_activas_inicial:
+                        self.mesa.estado = 'reservada'
+                        self.proxima_reserva = self._reservas_activas_inicial[0]
+                        self._ultima_reserva_activa = self.proxima_reserva
+                        reserva_activada = True
+                except Exception as e:
+                    print(f"[MesaWidget][WARN] No se pudo refrescar reservas activas desde servicio al inicializar: {e}")
+
         self.setup_ui()
         self.apply_styles()
-        # --- Solución bug refresco: asegurar que siempre se ejecuta update_mesa al crear el widget ---
-        self.update_mesa(self.mesa)
+        # Si hay reserva activa, actualizar visualmente el widget con ese estado
+        if reserva_activada:
+            self.update_mesa(self.mesa)
+        else:
+            self.update_mesa(self.mesa)
+
+        # Suscribirse al event bus de reservas
+        try:
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
+        except Exception as e:
+            print(f"[MesaWidget][ERROR] No se pudo conectar a reserva_event_bus: {e}")
+
+        # Suscribirse al event bus de mesas para sincronización global
+        try:
+            mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
+        except Exception as e:
+            print(f"[MesaWidget][ERROR] No se pudo conectar a mesa_event_bus: {e}")
+
+    def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
+        # Si la actualización es para esta mesa, refrescar datos y UI
+        if str(getattr(mesa_actualizada, 'id', None)) == str(getattr(self.mesa, 'id', None)):
+            self.update_mesa(mesa_actualizada)
 
     def setup_ui(self):
         from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
@@ -407,11 +477,7 @@ class MesaWidget(QFrame):
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario"""
         self.mesa = mesa
         nueva_reserva = getattr(mesa, 'proxima_reserva', None)
-        # print(f"[MesaWidget] update_mesa: mesa.id={getattr(mesa, 'id', None)} estado={getattr(mesa, 'estado', None)} proxima_reserva={nueva_reserva}")
-        if nueva_reserva:
-            pass  # Aquí se pueden agregar acciones si es necesario
-        else:
-            pass  # Aquí se pueden agregar acciones si es necesario
+        # print(f"[MesaWidget] update_mesa: mesa.numero={getattr(mesa, 'numero', None)} estado={getattr(mesa, 'estado', None)} proxima_reserva={nueva_reserva}")
         # Excepción funcional: Si la mesa está reservada/ocupada y no hay proxima_reserva, conservar la última reserva activa localmente
         if nueva_reserva is not None:
             self.proxima_reserva = nueva_reserva
@@ -433,6 +499,7 @@ class MesaWidget(QFrame):
         self.apply_styles()
         self._ajustar_fuente_nombre()
         self._actualizar_contador_reserva()
+        # Forzar el timer según el estado de proxima_reserva
         if self.proxima_reserva:
             self._contador_timer.start()
         else:
@@ -496,7 +563,7 @@ class MesaWidget(QFrame):
 
     def _emitir_restaurar(self):
         """Emite una señal para restaurar la mesa a su estado original"""
-        self.restaurar_original.emit(self.mesa.id)
+        self.restaurar_original.emit(self.mesa.numero)
         self._ajustar_fuente_nombre()
 
     def _handle_single_click(self):
@@ -575,15 +642,9 @@ class MesaWidget(QFrame):
             super().mousePressEvent(event)
 
     def _on_reservar_mesa(self):
-        # Intenta abrir ReservaDialog si está disponible, si no emite señal
-        try:
-            from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
-            parent = self.window() if hasattr(self, 'window') else self.parent()
-            dialog = ReservaDialog(parent, self.mesa)
-            dialog.exec()
-        except Exception as e:
-            # Si no se puede abrir el diálogo directamente, emite señal para que el contenedor lo maneje
-            self.reservar_mesa_requested.emit(self.mesa)
+        # Siempre delega la acción al contenedor (grid) emitiendo la señal
+        print(f"[MesaWidget] Emitiendo señal reservar_mesa_requested para mesa_id={getattr(self.mesa, 'id', None)}")
+        self.reservar_mesa_requested.emit(self.mesa)
 
     def _on_iniciar_tpv(self):
         # Emite señal para que el contenedor maneje la acción de iniciar TPV

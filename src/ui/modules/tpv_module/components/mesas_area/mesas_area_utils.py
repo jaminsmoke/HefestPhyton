@@ -29,6 +29,7 @@ def restaurar_datos_temporales(instance, mesas):
             mesa.personas_temporal = datos.get('personas')
 
 def guardar_dato_temporal(instance, mesa_id, alias=None, personas=None):
+    mesa_id = str(mesa_id)
     if mesa_id is not None and mesa_id not in instance._datos_temporales:
         instance._datos_temporales[mesa_id] = {}
     if alias is not None:

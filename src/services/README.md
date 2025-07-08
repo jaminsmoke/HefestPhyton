@@ -43,6 +43,7 @@ services/
 
 ---
 
+
 ## 📖 Información relevante (opcional)
 
 - Para plantillas y políticas, consulta el README raíz del proyecto.
@@ -57,3 +58,10 @@ services/
 **Cumple con la política de estandarización y organización definida en el README raíz.**
 
 ---
+
+### ⚠️ Excepción funcional registrada (v0.0.14)
+
+- **Archivo:** `tpv_service.py`
+- **Motivo:** Acceso defensivo a `self.db_manager` en el método `cambiar_estado_comanda` para evitar crash si no está inicializado.
+- **Plan de cumplimiento:** Revisar la inicialización de TPVService y garantizar que `db_manager` nunca sea None en producción. Programar refactorización para cumplimiento estricto de la política.
+- **TODO en código:** Añadido comentario y registro de excepción según protocolo.

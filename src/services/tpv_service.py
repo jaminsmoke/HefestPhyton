@@ -1,7 +1,3 @@
-
-
-
-
 # Servicio de gestión del Terminal Punto de Venta (TPV).
 
 import logging
@@ -15,15 +11,15 @@ from core.hefest_data_models import Reserva
 logger = logging.getLogger(__name__)
 
 
+
 @dataclass
 class Mesa:
     """Clase de datos para una mesa"""
-
-    id: int
-    numero: str
-    zona: str  # Comedor, terraza, barra
-    estado: str  # libre, ocupada, reservada
+    numero: str  # Identificador único de negocio (ej: 'T01', 'I04')
     capacidad: int
+    estado: str  # libre, ocupada, reservada
+    zona: str  # Comedor, terraza, barra
+    id: Optional[int] = None  # Solo referencia interna (autoincremental BD)
     alias: Optional[str] = None  # Alias temporal de la mesa (no persistente)
     personas_temporal: Optional[int] = None  # Número de personas temporal (no persistente)
     notas: Optional[str] = None  # Notas temporales de la mesa (no persistente)
@@ -93,16 +89,19 @@ class LineaComanda:
         return self.precio_unidad * self.cantidad
 
 
+
+
+
 @dataclass
 class Comanda:
     """Clase de datos para una comanda"""
-
     id: Optional[int]
-    mesa_id: int
+    mesa_id: str  # Cambiado a str
     fecha_apertura: datetime
     fecha_cierre: Optional[datetime]
     estado: str  # abierta, cerrada, pagada, cancelada
     lineas: List[LineaComanda]
+    usuario_id: Optional[int] = None  # ID del usuario/camarero/cajero que crea la comanda
 
     @property
     def total(self) -> float:
@@ -164,6 +163,94 @@ class Factura:
 
 
 class TPVService(BaseService):
+    def eliminar_mesa_por_numero(self, numero: str) -> bool:
+        """Elimina una mesa de la base de datos usando el identificador string 'numero'"""
+        try:
+            if not self.db_manager:
+                logger.warning("No hay conexión a base de datos para eliminar mesa")
+                return False
+
+            # Buscar la mesa por numero
+            mesa_existente = None
+            for mesa in self._mesas_cache:
+                if mesa.numero == numero:
+                    mesa_existente = mesa
+                    break
+
+            if not mesa_existente:
+                logger.warning(f"No se encontró la mesa con numero {numero}")
+                return False
+
+            # Verificar que la mesa no esté ocupada
+            if mesa_existente.estado == "ocupada":
+                logger.warning(f"No se puede eliminar la mesa {mesa_existente.numero} porque está ocupada")
+                return False
+
+            # Eliminar de la base de datos
+            self.db_manager.execute("DELETE FROM mesas WHERE numero = ?", (numero,))
+
+            # Eliminar del cache
+            self._mesas_cache = [mesa for mesa in self._mesas_cache if mesa.numero != numero]
+
+            logger.info(f"Mesa {mesa_existente.numero} eliminada correctamente de la base de datos (por numero)")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error eliminando mesa por numero: {e}")
+            return False
+    def persistir_comanda(self, comanda: Comanda) -> bool:
+        """
+        Persiste la comanda y sus líneas en la base de datos.
+        Si la comanda existe, la actualiza; si no, la inserta.
+        Borra y vuelve a insertar las líneas para reflejar el estado actual.
+        """
+        if not self.db_manager:
+            self.logger.error("No hay conexión a base de datos para persistir comanda")
+            return False
+        try:
+            # Insertar o actualizar comanda
+            comanda_data = {
+                "id": comanda.id,
+                "mesa_id": comanda.mesa_id,
+                "usuario_id": comanda.usuario_id,
+                "fecha_hora": comanda.fecha_apertura.strftime("%Y-%m-%d %H:%M:%S"),
+                "estado": comanda.estado,
+                "total": comanda.total
+            }
+            # Intentar actualizar, si no existe, insertar
+            updated = self.db_manager.update("comandas", comanda.id, comanda_data)
+            if not updated:
+                self.db_manager.insert("comandas", comanda_data)
+
+            # Borrar líneas anteriores
+            with self.db_manager._get_connection() as conn:
+                conn.execute("DELETE FROM comanda_detalles WHERE comanda_id = ?", (comanda.id,))
+                # Insertar líneas actuales
+                for linea in comanda.lineas:
+                    detalle = {
+                        "comanda_id": comanda.id,
+                        "producto_id": linea.producto_id,
+                        "cantidad": linea.cantidad,
+                        "precio_unitario": linea.precio_unidad,
+                        "notas": getattr(linea, "notas", None)
+                    }
+                    self.db_manager.insert("comanda_detalles", detalle)
+                conn.commit()
+                # Auditoría: consultar líneas tras commit
+                cursor = conn.execute("SELECT producto_id, cantidad, precio_unitario FROM comanda_detalles WHERE comanda_id = ?", (comanda.id,))
+                lineas_db = cursor.fetchall()
+                print(f"[AUDITORÍA] persistir_comanda: comanda_id={comanda.id} líneas en DB tras commit: {lineas_db}")
+            # Emitir señal global de comanda actualizada
+            try:
+                from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+                mesa_event_bus.comanda_actualizada.emit(comanda)
+            except Exception:
+                pass
+            return True
+        except Exception as e:
+            self.logger.error(f"Error persistiendo comanda {comanda.id}: {e}")
+            return False
+
 
     def update_mesa(self, mesa_actualizada: 'Mesa') -> bool:
         """
@@ -202,6 +289,9 @@ class TPVService(BaseService):
 
     def __init__(self, db_manager=None):
         super().__init__(db_manager)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[TPVService] db_manager recibido en constructor: {type(db_manager)} - {db_manager}")
         self._mesas_cache = []
         self._categorias_cache = []
         self._productos_cache = []
@@ -240,7 +330,8 @@ class TPVService(BaseService):
             if self.db_manager:
                 self.logger.warning("Base de datos vacía, cargando datos de prueba")
             else:
-                self.logger.warning("TPVService inicializado SIN base de datos, usando datos de prueba")
+                # Eliminado log obsoleto: ya no se permite inicializar sin base de datos en producción
+                pass
             self._load_datos_prueba()
             # Emitir la señal global con la lista inicial de mesas de prueba
             from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
@@ -324,7 +415,7 @@ class TPVService(BaseService):
 
         try:
             result = self.db_manager.query("""
-                SELECT id, mesa_id, empleado_id, fecha_hora, estado, total
+                SELECT id, mesa_id, usuario_id, fecha_hora, estado, total
                 FROM comandas
                 WHERE estado IN ('abierta', 'en_proceso')
             """)
@@ -335,13 +426,12 @@ class TPVService(BaseService):
 
                 # Cargar detalles de la comanda
                 detalles = self.db_manager.query("""
-                    SELECT producto_id, cantidad, precio_unidad
+                    SELECT producto_id, cantidad, precio_unitario
                     FROM comanda_detalles
                     WHERE comanda_id = ?
                 """, (comanda_id,))
                 lineas = []
                 for detalle in detalles:
-                    # Buscar nombre del producto con type guard
                     producto = next((p for p in self._productos_cache if p.id == detalle[0]), None)
                     if producto and hasattr(producto, 'nombre'):
                         nombre_producto = producto.nombre
@@ -356,6 +446,9 @@ class TPVService(BaseService):
                     )
                     lineas.append(linea)
 
+                # Log de auditoría de líneas recuperadas
+                print(f"[AUDITORÍA] Mesa {mesa_id} - Comanda {comanda_id} - Líneas recuperadas: {[vars(l) for l in lineas]}")
+
                 comanda = Comanda(
                     id=comanda_id,
                     mesa_id=mesa_id,
@@ -365,6 +458,8 @@ class TPVService(BaseService):
                     lineas=lineas
                 )
                 self._comandas_cache[mesa_id] = comanda
+            # Log de auditoría de caché final
+            print(f"[AUDITORÍA] Estado final de _comandas_cache: {{k: v.lineas for k, v in self._comandas_cache.items()}}")
             self.logger.info(f"Cargadas {len(self._comandas_cache)} comandas activas desde la base de datos")
         except Exception as e:
             self.logger.error(f"Error cargando comandas: {e}")
@@ -374,16 +469,20 @@ class TPVService(BaseService):
         """Carga datos de prueba cuando no hay base de datos"""
         # Datos de prueba
         self._mesas_cache = [
-                Mesa(1, "Mesa 1", "Comedor", "libre", 4),
-                Mesa(2, "Mesa 2", "Comedor", "ocupada", 4),
-                Mesa(3, "Mesa 3", "Comedor", "libre", 2),
-                Mesa(4, "Mesa 4", "Comedor", "reservada", 6),
-                Mesa(5, "Mesa 5", "Terraza", "libre", 4),
-                Mesa(6, "Mesa 6", "Terraza", "libre", 4),
-                Mesa(7, "Mesa 7", "Terraza", "ocupada", 2),
-                Mesa(8, "Mesa 8", "Terraza", "libre", 2),
-                Mesa(9, "Barra 1", "Barra", "ocupada", 2),
-                Mesa(10, "Barra 2", "Barra", "libre", 2),            ]
+            Mesa("T01", 4, "libre", "Comedor"),
+            Mesa("T02", 4, "ocupada", "Comedor"),
+            Mesa("T03", 2, "libre", "Comedor"),
+            Mesa("T04", 6, "reservada", "Comedor"),
+            Mesa("T05", 4, "libre", "Terraza"),
+            Mesa("T06", 4, "libre", "Terraza"),
+            Mesa("T07", 2, "ocupada", "Terraza"),
+            Mesa("T08", 2, "libre", "Terraza"),
+            Mesa("B01", 2, "ocupada", "Barra"),
+            Mesa("B02", 2, "libre", "Barra"),
+        ]
+        mesa_ocupada_numeros = [mesa.numero for mesa in self._mesas_cache if mesa.estado == "ocupada"]
+        for mesa_numero in mesa_ocupada_numeros:
+            self._crear_comanda_prueba(mesa_numero)
 
         self._categorias_cache = [
                 {"id": 1, "nombre": "Bebidas"},
@@ -412,27 +511,27 @@ class TPVService(BaseService):
                 Producto(14, "Helado", 3.80, "Postres"),        ]
 
         # Comandas de prueba para mesas ocupadas
-        mesa_ocupada_ids = [
-            mesa.id for mesa in self._mesas_cache if mesa.estado == "ocupada"
+        mesa_ocupada_numeros = [
+            mesa.numero for mesa in self._mesas_cache if mesa.estado == "ocupada"
         ]
-        for mesa_id in mesa_ocupada_ids:
-            self._crear_comanda_prueba(mesa_id)
+        for mesa_numero in mesa_ocupada_numeros:
+            self._crear_comanda_prueba(mesa_numero)
 
-    def _crear_comanda_prueba(self, mesa_id: int):
+    def _crear_comanda_prueba(self, mesa_id: str):
         """Crea una comanda de prueba para una mesa"""
-        if mesa_id == 2:  # Mesa 2
+        if mesa_id == "T02":  # Mesa 2
             lineas = [
                 LineaComanda(1, "Coca Cola", 2.50, 2),
                 LineaComanda(3, "Cerveza", 2.80, 1),
                 LineaComanda(9, "Patatas bravas", 5.50, 1),
             ]
-        elif mesa_id == 7:  # Mesa 7
+        elif mesa_id == "T07":  # Mesa 7
             lineas = [
                 LineaComanda(4, "Vino tinto", 3.50, 1),
                 LineaComanda(10, "Croquetas", 7.00, 1),
                 LineaComanda(11, "Paella", 12.00, 2),
             ]
-        elif mesa_id == 9:  # Barra 1
+        elif mesa_id == "B01":  # Barra 1
             lineas = [
                 LineaComanda(5, "Café", 1.30, 2),
                 LineaComanda(13, "Tarta", 4.50, 1),
@@ -457,7 +556,7 @@ class TPVService(BaseService):
         """Retorna lista de todas las mesas"""
         return self._mesas_cache.copy()
 
-    def get_mesa_by_id(self, mesa_id: int) -> Optional[Mesa]:
+    def get_mesa_by_id(self, mesa_id: str) -> Optional[Mesa]:
         """Retorna una mesa por su ID"""
         for mesa in self._mesas_cache:
             if mesa.id == mesa_id:
@@ -491,15 +590,67 @@ class TPVService(BaseService):
         texto_busqueda = texto_busqueda.lower()
         return [p for p in self._productos_cache if texto_busqueda in p.nombre.lower()]
 
-    def get_comanda_activa(self, mesa_id: int) -> Optional[Comanda]:
-        """Retorna la comanda activa para una mesa, si existe"""
-        return self._comandas_cache.get(mesa_id)
+    def get_comanda_activa(self, mesa_id: str) -> Optional[Comanda]:
+        """Retorna la comanda activa para una mesa, si existe. Si no está en caché, la recarga desde la base de datos."""
+        comanda = self._comandas_cache.get(mesa_id)
+        if comanda is not None:
+            return comanda
+        # Si no está en caché, intentar cargar solo la comanda de esa mesa desde la base de datos
+        if not self.db_manager:
+            return None
+        try:
+            rows = self.db_manager.query(
+                """
+                SELECT id, mesa_id, usuario_id, fecha_hora, estado, total
+                FROM comandas
+                WHERE mesa_id = ? AND estado IN ('abierta', 'en_proceso')
+                ORDER BY fecha_hora DESC LIMIT 1
+                """, (mesa_id,)
+            )
+            if not rows or len(rows) == 0:
+                return None
+            row = rows[0]
+            comanda_id = row[0]
+            # Cargar detalles de la comanda
+            detalles = self.db_manager.query(
+                """
+                SELECT producto_id, cantidad, precio_unitario
+                FROM comanda_detalles
+                WHERE comanda_id = ?
+                """, (comanda_id,)
+            )
+            lineas = []
+            for detalle in detalles:
+                producto = next((p for p in self._productos_cache if p.id == detalle[0]), None)
+                if producto and hasattr(producto, 'nombre'):
+                    nombre_producto = producto.nombre
+                else:
+                    nombre_producto = f"Producto {detalle[0]}"
+                linea = LineaComanda(
+                    producto_id=detalle[0],
+                    producto_nombre=nombre_producto,
+                    precio_unidad=detalle[2],
+                    cantidad=detalle[1]
+                )
+                lineas.append(linea)
+            comanda = Comanda(
+                id=row[0],
+                mesa_id=str(row[1]),
+                fecha_apertura=datetime.fromisoformat(row[3]) if row[3] else datetime.now(),
+                fecha_cierre=None,
+                estado=row[4] or "abierta",
+                lineas=lineas
+            )
+            comanda.usuario_id = row[2] if len(row) > 2 else None
+            self._comandas_cache[mesa_id] = comanda
+            return comanda
+        except Exception as e:
+            self.logger.error(f"Error recargando comanda activa desde BD para mesa {mesa_id}: {e}")
+            return None
 
     # === MÉTODOS DE NEGOCIO ===
 
-    def add_producto_comanda(
-        self, mesa_id: int, producto_id: int, cantidad: int = 1
-    ) -> Comanda:
+    def add_producto_comanda(self, mesa_id: str, producto_id: int, cantidad: int = 1) -> Comanda:
         """Añade un producto a una comanda"""
         # Obtener comanda o crear una nueva
         comanda = self.get_comanda_activa(mesa_id)
@@ -528,7 +679,7 @@ class TPVService(BaseService):
         comanda.lineas.append(linea)
         return comanda
 
-    def cerrar_comanda(self, mesa_id: int, estado: str = "pagada") -> Optional[Comanda]:
+    def cerrar_comanda(self, mesa_id: str, estado: str = "pagada") -> Optional[Comanda]:
         """Cierra una comanda con el estado especificado (pagada o cancelada)"""
         if estado not in ["pagada", "cancelada"]:
             raise ValueError(
@@ -557,7 +708,7 @@ class TPVService(BaseService):
 
         return comanda
 
-    def cambiar_estado_mesa(self, mesa_id: int, nuevo_estado: str) -> bool:
+    def cambiar_estado_mesa(self, mesa_id: str, nuevo_estado: str) -> bool:
         """Cambia el estado de una mesa"""
         if nuevo_estado not in ["libre", "ocupada", "reservada"]:
             raise ValueError("Estado de mesa no válido")
@@ -582,13 +733,60 @@ class TPVService(BaseService):
 
         return False
 
+    def cambiar_estado_comanda(self, comanda_id: int, nuevo_estado: str, callback: Optional[Any] = None) -> bool:
+        """
+        Cambia el estado de una comanda (pedido) validando la transición y actualizando en BD y memoria.
+        Permite callback/señal para acciones adicionales (notificaciones, impresión, etc).
+        """
+        TRANSICIONES_VALIDAS = {
+            "abierta": ["en_proceso", "cancelada"],
+            "en_proceso": ["pagada", "cancelada"],
+            "pagada": ["cerrada"],
+            # "cerrada": []
+        }
+        # Buscar comanda en caché
+        comanda = None
+        for c in self._comandas_cache.values():
+            if c.id == comanda_id:
+                comanda = c
+                break
+        if not comanda:
+            self.logger.error(f"Comanda {comanda_id} no encontrada")
+            return False
+        estado_actual = comanda.estado
+        if nuevo_estado not in TRANSICIONES_VALIDAS.get(estado_actual, []):
+            self.logger.warning(f"Transición inválida: {estado_actual} → {nuevo_estado}")
+            return False
+        # Actualizar en memoria
+        comanda.estado = nuevo_estado
+        # Persistir toda la comanda (cabecera y líneas) para asegurar consistencia
+        if self.db_manager is None:
+            self.logger.error(f"No se puede actualizar la base de datos: db_manager es None (comanda {comanda_id})")
+            return False
+        try:
+            self.persistir_comanda(comanda)
+            self.logger.info(f"Comanda {comanda_id} actualizada: {estado_actual} → {nuevo_estado}")
+            # Emitir evento o callback si aplica
+            if callback:
+                callback(comanda)
+            # Emitir señal global de comanda actualizada
+            try:
+                from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+                mesa_event_bus.comanda_actualizada.emit(comanda)
+            except Exception:
+                pass
+            return True
+        except Exception as e:
+            self.logger.error(f"Error actualizando estado de comanda {comanda_id} en BD: {e}")
+            return False
+
     # === MÉTODOS ADICIONALES PARA EL MÓDULO TPV ===
 
     def get_todas_mesas(self) -> List[Mesa]:
         """Retorna todas las mesas disponibles"""
         return self._mesas_cache.copy()
 
-    def get_mesa_por_id(self, mesa_id: int) -> Optional[Mesa]:
+    def get_mesa_por_id(self, mesa_id: str) -> Optional[Mesa]:
         """Retorna una mesa por su id"""
         for mesa in self._mesas_cache:
             if mesa.id == mesa_id:
@@ -619,11 +817,61 @@ class TPVService(BaseService):
         return list(self._comandas_cache.values())
 
     def get_comanda_por_id(self, comanda_id: int) -> Optional[Comanda]:
-        """Retorna una comanda por su ID"""
+        """Retorna una comanda por su ID, primero en caché, si no la busca en la base de datos."""
         for comanda in self._comandas_cache.values():
             if comanda.id == comanda_id:
                 return comanda
-        return None
+        # Si no está en caché, buscar en la base de datos
+        if not self.db_manager:
+            return None
+        try:
+            rows = self.db_manager.query(
+                """
+                SELECT id, mesa_id, usuario_id, fecha_hora, estado, total
+                FROM comandas
+                WHERE id = ?
+                LIMIT 1
+                """, (comanda_id,)
+            )
+            if not rows or len(rows) == 0:
+                return None
+            row = rows[0]
+            detalles = self.db_manager.query(
+                """
+                SELECT producto_id, cantidad, precio_unitario
+                FROM comanda_detalles
+                WHERE comanda_id = ?
+                """, (comanda_id,)
+            )
+            lineas = []
+            for detalle in detalles:
+                producto = next((p for p in self._productos_cache if p.id == detalle[0]), None)
+                if producto and hasattr(producto, 'nombre'):
+                    nombre_producto = producto.nombre
+                else:
+                    nombre_producto = f"Producto {detalle[0]}"
+                linea = LineaComanda(
+                    producto_id=detalle[0],
+                    producto_nombre=nombre_producto,
+                    precio_unidad=detalle[2],
+                    cantidad=detalle[1]
+                )
+                lineas.append(linea)
+            comanda = Comanda(
+                id=row[0],
+                mesa_id=row[1],
+                fecha_apertura=datetime.fromisoformat(row[3]) if row[3] else datetime.now(),
+                fecha_cierre=None,
+                estado=row[4] or "abierta",
+                lineas=lineas
+            )
+            comanda.usuario_id = row[2] if len(row) > 2 else None
+            # Guardar en caché para futuras búsquedas
+            self._comandas_cache[row[1]] = comanda
+            return comanda
+        except Exception as e:
+            self.logger.error(f"Error recargando comanda por id desde BD para comanda {comanda_id}: {e}")
+            return None
 
     def agregar_producto_a_comanda(
         self,
@@ -642,6 +890,7 @@ class TPVService(BaseService):
         for linea in comanda.lineas:
             if linea.producto_id == producto_id:
                 linea.cantidad += cantidad
+                self.persistir_comanda(comanda)
                 return True
 
         # Si no existe, añadir una nueva línea
@@ -653,6 +902,7 @@ class TPVService(BaseService):
         )
 
         comanda.lineas.append(nueva_linea)
+        self.persistir_comanda(comanda)
         return True
 
     def eliminar_producto_de_comanda(self, comanda_id: int, producto_id: int) -> bool:
@@ -672,6 +922,7 @@ class TPVService(BaseService):
 
         if eliminado:
             comanda.lineas = nueva_lineas
+            self.persistir_comanda(comanda)
             return True
         return False
 
@@ -689,12 +940,15 @@ class TPVService(BaseService):
         for linea in comanda.lineas:
             if linea.producto_id == producto_id:
                 linea.cantidad = nueva_cantidad
+                self.persistir_comanda(comanda)
                 return True
 
         return False
 
-    def crear_comanda(self, mesa_id: int) -> Comanda:
-        """Crea una nueva comanda para una mesa"""
+    def crear_comanda(self, mesa_id: str, usuario_id: int = -1) -> Comanda:
+        """
+        Crea una nueva comanda para una mesa, registrando el usuario_id (usuario/camarero/cajero).
+        """
         # Verificar que la mesa existe
         mesa = self.get_mesa_por_id(mesa_id)
         if not mesa:
@@ -705,25 +959,32 @@ class TPVService(BaseService):
             return self._comandas_cache[mesa_id]
 
         # Crear nueva comanda
-        comanda_id = self._next_comanda_id
-        self._next_comanda_id += 1
-
         comanda = Comanda(
-            id=comanda_id,
+            id=None,
             mesa_id=mesa_id,
             fecha_apertura=datetime.now(),
             fecha_cierre=None,
             estado="abierta",
             lineas=[],
+            usuario_id=usuario_id
         )
-
-        # Marcar mesa como ocupada y guardar comanda
-        for m in self._mesas_cache:
-            if m.id == mesa_id:
-                m.estado = "ocupada"
-                break
-
         self._comandas_cache[mesa_id] = comanda
+
+        # Persistir en base de datos si es posible
+        if self.db_manager:
+            try:
+                comanda_id = self.db_manager.execute(
+                    """
+                    INSERT INTO comandas (mesa_id, usuario_id, fecha_hora, estado, total)
+                    VALUES (?, ?, datetime('now'), ?, 0)
+                    """,
+                    (mesa_id, usuario_id, "abierta")
+                )
+                comanda.id = comanda_id  # Asignar el ID generado a la comanda
+            except Exception as e:
+                self.logger.error(f"Error insertando comanda en BD: {e}")
+                # TODO: Manejar rollback si es necesario
+
         return comanda
 
     def guardar_comanda(self, comanda_id: int) -> bool:
@@ -734,23 +995,71 @@ class TPVService(BaseService):
         logger.info(f"Guardando comanda {comanda_id} con {len(comanda.lineas)} líneas")
         return True
 
-    def pagar_comanda(self, comanda_id: int) -> bool:
-        """Procesa el pago de una comanda"""
+    def pagar_comanda(self, comanda_id: int, usuario_id: int = -1) -> bool:
+        """Procesa el pago de una comanda, descuenta stock, registra movimientos, marca como pagada en BD y libera la mesa."""
         comanda = self.get_comanda_por_id(comanda_id)
         if not comanda:
             return False
 
-        # Marcar como pagada
+        # Descontar stock y registrar movimientos
+        if self.db_manager:
+            for linea in comanda.lineas:
+                try:
+                    self.db_manager.descontar_stock_y_registrar(
+                        producto_id=linea.producto_id,
+                        cantidad=linea.cantidad,
+                        usuario_id=usuario_id,
+                        observaciones=f"Venta comanda {comanda_id}"
+                    )
+                except Exception as e:
+                    self.logger.error(f"Error descontando stock producto {linea.producto_id}: {e}")
+                    return False
+
+        # Marcar como pagada y persistir en BD
         comanda.estado = "pagada"
         comanda.fecha_cierre = datetime.now()
+        if self.db_manager:
+            try:
+                self.db_manager.execute(
+                    "UPDATE comandas SET estado = ?, fecha_cierre = ? WHERE id = ?",
+                    ("pagada", comanda.fecha_cierre.strftime("%Y-%m-%d %H:%M:%S"), comanda_id)
+                )
+            except Exception as e:
+                self.logger.error(f"Error actualizando estado de comanda {comanda_id} en BD: {e}")
+                return False
 
-        # En una implementación real, persistiríamos en la BD y procesaríamos el pago
-        logger.info(f"Comanda {comanda_id} pagada por un total de {comanda.total}€")
+        # Liberar la mesa asociada
+        mesa = self.get_mesa_por_id(comanda.mesa_id)
+        if mesa:
+            mesa.estado = "libre"
+            mesa.alias = None
+            mesa.personas_temporal = None
+            if self.db_manager:
+                try:
+                    self.db_manager.execute(
+                        "UPDATE mesas SET estado = ?, alias = NULL WHERE id = ?",
+                        ("libre", mesa.id)
+                    )
+                except Exception as e:
+                    self.logger.error(f"Error liberando mesa {mesa.id} en BD: {e}")
+            # Emitir señal de mesa actualizada
+            try:
+                from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+                mesa_event_bus.mesa_actualizada.emit(mesa)
+            except Exception:
+                pass
 
-        # Mantener la comanda en memoria hasta que se libere la mesa
+        # Emitir señal global de comanda actualizada
+        try:
+            from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+            mesa_event_bus.comanda_actualizada.emit(comanda)
+        except Exception:
+            pass
+
+        logger.info(f"Comanda {comanda_id} pagada y mesa {comanda.mesa_id} liberada")
         return True
 
-    def liberar_mesa(self, mesa_id: int) -> bool:
+    def liberar_mesa(self, mesa_id: str) -> bool:
         """Libera una mesa y elimina su comanda"""
         # Verificar que existe la mesa
         mesa = self.get_mesa_por_id(mesa_id)
@@ -971,7 +1280,7 @@ class TPVService(BaseService):
             logger.error(f"Error eliminando mesa: {e}")
             return False
 
-    def cambiar_personas_temporal_mesa(self, mesa_id: int, nuevo_numero: int) -> bool:
+    def cambiar_personas_temporal_mesa(self, mesa_id: str, nuevo_numero: int) -> bool:
         """Cambia el número de personas temporal de una mesa (no persistente)"""
         mesa = self.get_mesa_por_id(mesa_id)
         if mesa:
@@ -979,7 +1288,7 @@ class TPVService(BaseService):
             return True
         return False
 
-    def resetear_personas_mesa(self, mesa_id: int) -> bool:
+    def resetear_personas_mesa(self, mesa_id: str) -> bool:
         """Resetea el número de personas temporal de una mesa"""
         mesa = self.get_mesa_por_id(mesa_id)
         if mesa:
@@ -987,7 +1296,7 @@ class TPVService(BaseService):
             return True
         return False
 
-    def cambiar_alias_mesa(self, mesa_id: int, nuevo_alias: Optional[str]) -> bool:
+    def cambiar_alias_mesa(self, mesa_id: str, nuevo_alias: Optional[str]) -> bool:
         """Cambia el alias temporal de una mesa (solo en memoria)"""
         try:
             # Validar alias
@@ -1006,7 +1315,7 @@ class TPVService(BaseService):
             self.logger.error(f"Error cambiando alias de mesa {mesa_id}: {e}")
             return False
 
-    def resetear_alias_mesa(self, mesa_id: int) -> bool:
+    def resetear_alias_mesa(self, mesa_id: str) -> bool:
         """Resetea el alias de una mesa al nombre por defecto"""
         try:
             for mesa in self._mesas_cache:
@@ -1019,7 +1328,7 @@ class TPVService(BaseService):
             self.logger.error(f"Error reseteando alias de mesa {mesa_id}: {e}")
             return False
 
-    def crear_reserva(self, mesa_id: int, cliente: str, fecha_hora: datetime, duracion_min: int = 120, telefono: str = "", personas: int = 1, notas: str = "") -> Optional[Reserva]:
+    def crear_reserva(self, mesa_id: str, cliente: str, fecha_hora: datetime, duracion_min: int = 120, telefono: str = "", personas: int = 1, notas: str = "") -> Optional[Reserva]:
         """Crea una reserva persistente para una mesa (modelo unificado)"""
         if not self.db_manager:
             self.logger.warning("No hay conexión a base de datos para crear reserva")
@@ -1051,7 +1360,7 @@ class TPVService(BaseService):
             self.logger.error(f"Error creando reserva: {e}")
             return None
 
-    def get_reservas_mesa(self, mesa_id: int, fecha: Optional[date] = None) -> list:
+    def get_reservas_mesa(self, mesa_id: str, fecha: Optional[date] = None) -> list:
         """Obtiene reservas activas de una mesa, opcionalmente filtradas por fecha (modelo unificado)"""
         if not self.db_manager:
             return []
@@ -1094,7 +1403,7 @@ class TPVService(BaseService):
             self.logger.error(f"Error cancelando reserva: {e}")
             return False
 
-    def reserva_solapada(self, mesa_id: int, fecha: date, hora: time, duracion_min: int = 120) -> bool:
+    def reserva_solapada(self, mesa_id: str, fecha: date, hora: time, duracion_min: int = 120) -> bool:
         """Comprueba si existe una reserva activa para la mesa en la fecha y rango horario dados (solapamiento real)"""
         if not self.db_manager:
             return False

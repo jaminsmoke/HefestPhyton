@@ -103,17 +103,17 @@ class MesaController(QObject):
             self.error_occurred.emit(error_msg)
             return False
 
-    def editar_mesa(self, mesa_id: int, numero: int, capacidad: int, zona: str) -> bool:
-        """Edita una mesa existente"""
+    def editar_mesa(self, numero: str, nuevo_numero: str, capacidad: int, zona: str) -> bool:
+        """Edita una mesa existente usando el identificador string 'numero'"""
         try:
             if not self.tpv_service:
                 self.error_occurred.emit("No hay servicio TPV disponible")
                 return False
 
-            # Encontrar la mesa
+            # Encontrar la mesa por numero
             mesa_actual = None
             for mesa in self.mesas:
-                if mesa.id == mesa_id:
+                if mesa.numero == numero:
                     mesa_actual = mesa
                     break
 
@@ -121,20 +121,20 @@ class MesaController(QObject):
                 self.error_occurred.emit("Mesa no encontrada")
                 return False
 
-            # Validar que no exista otra mesa con el mismo número
-            if any(mesa.numero == numero and mesa.id != mesa_id for mesa in self.mesas):
-                self.error_occurred.emit(f"Ya existe otra mesa con el número {numero}")
+            # Validar que no exista otra mesa con el mismo nuevo_numero
+            if any(mesa.numero == nuevo_numero and mesa.numero != numero for mesa in self.mesas):
+                self.error_occurred.emit(f"Ya existe otra mesa con el número {nuevo_numero}")
                 return False
 
-            # Por ahora, solo actualizamos localmente hasta implementar en TPVService
-            mesa_actual.numero = str(numero)
+            # Actualizar datos
+            mesa_actual.numero = str(nuevo_numero)
             mesa_actual.capacidad = capacidad
             mesa_actual.zona = zona
 
             MesaController.mesa_event_bus.mesa_actualizada.emit(mesa_actual)
             self.load_mesas()  # Recargar desde servicio tras editar
 
-            logger.info(f"Mesa {numero} actualizada correctamente")
+            logger.info(f"Mesa {nuevo_numero} actualizada correctamente")
             return True
 
         except Exception as e:
@@ -142,8 +142,8 @@ class MesaController(QObject):
             logger.error(error_msg)
             self.error_occurred.emit(error_msg)
             return False
-    def eliminar_mesa(self, mesa_id: int) -> bool:
-        """Elimina una mesa"""
+    def eliminar_mesa(self, numero: str) -> bool:
+        """Elimina una mesa usando el identificador string 'numero'"""
         try:
             if not self.tpv_service:
                 self.error_occurred.emit("No hay servicio TPV disponible")
@@ -152,7 +152,7 @@ class MesaController(QObject):
             # Encontrar la mesa
             mesa_actual = None
             for mesa in self.mesas:
-                if mesa.id == mesa_id:
+                if mesa.numero == numero:
                     mesa_actual = mesa
                     break
 
@@ -166,11 +166,11 @@ class MesaController(QObject):
                 return False
 
             # Eliminar usando el servicio TPV (incluye base de datos)
-            if self.tpv_service.eliminar_mesa(mesa_id):
+            if self.tpv_service.eliminar_mesa_por_numero(numero):
                 # Actualizar cache local
-                self.mesas = [mesa for mesa in self.mesas if mesa.id != mesa_id]
+                self.mesas = [mesa for mesa in self.mesas if mesa.numero != numero]
 
-                MesaController.mesa_event_bus.mesa_eliminada.emit(mesa_id)
+                MesaController.mesa_event_bus.mesa_eliminada.emit(numero)
                 self.load_mesas()  # Recargar desde servicio tras eliminar
 
                 logger.info(f"Mesa {mesa_actual.numero} eliminada correctamente")
@@ -185,8 +185,8 @@ class MesaController(QObject):
             self.error_occurred.emit(error_msg)
             return False
 
-    def cambiar_estado_mesa(self, mesa_id: int, nuevo_estado: str) -> bool:
-        """Cambia el estado de una mesa"""
+    def cambiar_estado_mesa(self, numero: str, nuevo_estado: str) -> bool:
+        """Cambia el estado de una mesa usando el identificador string 'numero'"""
         try:
             if not self.tpv_service:
                 self.error_occurred.emit("No hay servicio TPV disponible")
@@ -201,7 +201,7 @@ class MesaController(QObject):
             # Encontrar la mesa
             mesa_actual = None
             for mesa in self.mesas:
-                if mesa.id == mesa_id:
+                if mesa.numero == numero:
                     mesa_actual = mesa
                     break
 
@@ -224,31 +224,24 @@ class MesaController(QObject):
             self.error_occurred.emit(error_msg)
             return False
 
-    def ocupar_mesa(self, mesa_id: int) -> bool:
+    def ocupar_mesa(self, numero: str) -> bool:
         """Ocupa una mesa (cambia estado a ocupada)"""
-        return self.cambiar_estado_mesa(mesa_id, "ocupada")
+        return self.cambiar_estado_mesa(numero, "ocupada")
 
-    def liberar_mesa(self, mesa_id: int) -> bool:
+    def liberar_mesa(self, numero: str) -> bool:
         """Libera una mesa (cambia estado a libre)"""
-        return self.cambiar_estado_mesa(mesa_id, "libre")
+        return self.cambiar_estado_mesa(numero, "libre")
 
-    def reservar_mesa(self, mesa_id: int) -> bool:
+    def reservar_mesa(self, numero: str) -> bool:
         """Reserva una mesa (cambia estado a reservada)"""
-        return self.cambiar_estado_mesa(mesa_id, "reservada")
+        return self.cambiar_estado_mesa(numero, "reservada")
 
-    def poner_en_mantenimiento(self, mesa_id: int) -> bool:
+    def poner_en_mantenimiento(self, numero: str) -> bool:
         """Pone una mesa en mantenimiento"""
-        return self.cambiar_estado_mesa(mesa_id, "mantenimiento")
+        return self.cambiar_estado_mesa(numero, "mantenimiento")
 
-    def get_mesa_by_id(self, mesa_id: int) -> Optional[Mesa]:
-        """Obtiene una mesa por su ID"""
-        for mesa in self.mesas:
-            if mesa.id == mesa_id:
-                return mesa
-        return None
-
-    def get_mesa_by_numero(self, numero: int) -> Optional[Mesa]:
-        """Obtiene una mesa por su número"""
+    def get_mesa_by_numero(self, numero: str) -> Optional[Mesa]:
+        """Obtiene una mesa por su número (string)"""
         for mesa in self.mesas:
             if mesa.numero == numero:
                 return mesa

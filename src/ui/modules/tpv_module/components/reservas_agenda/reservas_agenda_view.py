@@ -12,11 +12,21 @@ from datetime import datetime, timedelta
 from services.tpv_service import Mesa
 
 class CrearReservaDialog(QDialog):
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None, tpv_service: Optional[Any] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Crear nueva reserva")
         layout = QFormLayout(self)
-        self.mesa_id_input = QLineEdit()
+        from PyQt6.QtWidgets import QComboBox
+        self.mesa_id_input = QComboBox()
+        # Obtener ids string reales de las mesas
+        mesas_ids = []
+        if tpv_service and hasattr(tpv_service, 'get_mesas'):
+            try:
+                mesas = tpv_service.get_mesas()
+                mesas_ids = [str(m.id) for m in mesas]
+            except Exception as e:
+                print(f"[CrearReservaDialog] Error obteniendo mesas: {e}")
+        self.mesa_id_input.addItems(mesas_ids)
         self.cliente_input = QLineEdit()
         self.telefono_input = QLineEdit()
         self.fecha_hora_input = QDateTimeEdit(QDateTime.currentDateTime())
@@ -42,7 +52,7 @@ class CrearReservaDialog(QDialog):
 
     def get_data(self) -> dict[str, Any]:
         return {
-            'mesa_id': self.mesa_id_input.text(),
+            'mesa_id': self.mesa_id_input.currentText().strip(),
             'cliente': self.cliente_input.text(),
             'telefono': self.telefono_input.text(),
             'fecha_hora': self.fecha_hora_input.dateTime().toPyDateTime(),
@@ -63,10 +73,15 @@ class ReservasAgendaView(QWidget):
         # Suscribirse a eventos globales de reservas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
-            reserva_event_bus.reserva_cancelada.connect(lambda reserva: self.load_reservas())
-            reserva_event_bus.reserva_creada.connect(lambda reserva: self.load_reservas())
+            def log_and_load_reservas(event_name):
+                def inner(reserva):
+                    print(f"[ReservasAgendaView] Señal recibida: {event_name} para reserva: {getattr(reserva, 'id', None)} mesa_id={getattr(reserva, 'mesa_id', None)}")
+                    self.load_reservas()
+                return inner
+            reserva_event_bus.reserva_cancelada.connect(log_and_load_reservas('reserva_cancelada'))
+            reserva_event_bus.reserva_creada.connect(log_and_load_reservas('reserva_creada'))
         except ImportError:
-            pass  # Si no existe el event_bus, ignorar
+            print("[ReservasAgendaView] No se pudo importar reserva_event_bus")
         layout = QVBoxLayout(self)
         self.label = QLabel("Reservas activas:")
         layout.addWidget(self.label)
@@ -76,66 +91,37 @@ class ReservasAgendaView(QWidget):
         self.refresh_button.clicked.connect(self.load_reservas)
         layout.addWidget(self.refresh_button)
         self.list_widget.itemDoubleClicked.connect(self.confirmar_cancelacion_reserva)
+
+        # --- INICIO EXCEPCIÓN FUNCIONAL: Mantener lógica de creación de reservas desde agenda, pero deshabilitada en UI ---
+        # TODO [v0.0.13][EXCEPCIÓN FUNCIONAL]: Por política, la creación de reservas desde la agenda está deshabilitada en la UI,
+        # pero la lógica y el botón se mantienen ocultos para facilitar futura reactivación si se requiere.
+        # Plan de cumplimiento: Documentar en README y reactivar solo si la política cambia.
+        self.btn_crear_reserva = QPushButton("Crear reserva")
+        self.btn_crear_reserva.clicked.connect(self.crear_reserva_desde_agenda)
+        self.btn_crear_reserva.setVisible(False)  # Mantener oculto por política
+        layout.addWidget(self.btn_crear_reserva)
+        # --- FIN EXCEPCIÓN FUNCIONAL ---
+
         self.load_reservas()
 
-    def abrir_dialogo_crear(self) -> None:
-        dialog = ReservaDialog(self, None)  # No mesa concreta
-        dialog.setWindowTitle("Crear nueva reserva (selecciona mesa)")
-        # Campo para mesa_id
-        mesa_id_input = QLineEdit()
-        mesa_id_input.setPlaceholderText("ID de mesa a reservar")
-        mesa_id_input.setMinimumHeight(36)
-        # Insertar el campo en el layout del formulario
-        form_layout = None
-        for child in dialog.findChildren(QFormLayout):
-            form_layout = child
-            break
-        if form_layout:
-            form_layout.insertRow(0, "ID de Mesa:", mesa_id_input)
-        dialog.aceptar_btn.clicked.disconnect()
-        def aceptar():
-            if not mesa_id_input.text().strip().isdigit():
-                QMessageBox.warning(dialog, "Campo requerido", "Debes indicar un ID de mesa válido.")
-                mesa_id_input.setFocus()
-                return
-            mesa_id = int(mesa_id_input.text())
-            # Crear un objeto Mesa temporal solo con id y capacidad
-            mesa_temp = Mesa(id=mesa_id, numero=str(mesa_id), zona="", estado="reservada", capacidad=dialog.personas_input.value())
-            dialog.mesa = mesa_temp
-            dialog.validar_y_aceptar()
-        dialog.aceptar_btn.clicked.connect(aceptar)
+    def crear_reserva_desde_agenda(self):
+        # TODO [v0.0.13][EXCEPCIÓN FUNCIONAL]: Método mantenido por compatibilidad, no accesible desde la UI por política actual.
+        dialog = CrearReservaDialog(self, tpv_service=self.tpv_service)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             data = dialog.get_data()
             try:
-                mesa_id = int(mesa_id_input.text())
-                fecha_hora = datetime.combine(data['fecha'], data['hora'])
-                duracion_min = int(data['duracion_horas'] * 60)
-                # Validación de solapamiento frontend
-                reservas_activas = self.reserva_service.obtener_reservas_activas_por_mesa().get(mesa_id, [])
-                nueva_inicio = fecha_hora
-                nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
-                solapada = False
-                for r in reservas_activas:
-                    existente_inicio = r.fecha_hora
-                    existente_fin = existente_inicio + timedelta(minutes=r.duracion_min)
-                    if (nueva_inicio < existente_fin) and (nueva_fin > existente_inicio):
-                        solapada = True
-                        break
-                if solapada:
-                    QMessageBox.warning(self, "Solapamiento de reserva", "Ya existe una reserva para esa mesa en el rango horario seleccionado.")
-                    return
-                self.reserva_service.crear_reserva(
-                    mesa_id=mesa_id,
+                reserva = self.reserva_service.crear_reserva(
+                    mesa_id=data['mesa_id'],
                     cliente=data['cliente'],
-                    fecha_hora=fecha_hora,
-                    duracion_min=duracion_min,
-                    telefono=data.get('telefono'),
-                    personas=data.get('personas'),
-                    notas=data['notas'] or None
+                    fecha_hora=data['fecha_hora'],
+                    duracion_min=data['duracion_min'],
+                    telefono=data['telefono'],
+                    personas=None,  # O adaptar si se añade campo en dialog
+                    notas=data['notas']
                 )
-                QMessageBox.information(self, "Reserva creada", "La reserva se ha creado correctamente.")
+                print(f"[ReservasAgendaView] Reserva creada desde agenda: {reserva}")
                 self.load_reservas()
-                self.reserva_creada.emit()
+                QTimer.singleShot(0, self.reserva_creada.emit)
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"No se pudo crear la reserva: {e}")
 

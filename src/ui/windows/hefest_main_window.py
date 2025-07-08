@@ -64,6 +64,7 @@ class MainWindow(QMainWindow):
 
         # Inicializar el gestor de base de datos
         self.db_manager = DatabaseManager()
+        # Eliminado DependencyBus: la inyección de db_manager es ahora explícita y obligatoria
 
         # Variables de estado
         self.current_module = None
@@ -346,11 +347,19 @@ class MainWindow(QMainWindow):
             module_class = self.get_module_class(module_id)
 
             if module_class:
-                # Pasar auth_service y db_manager específicamente al dashboard
+                # Pasar auth_service y db_manager específicamente al dashboard y advanced_tpv
                 if module_id == "dashboard":
                     widget = module_class(
                         auth_service=self.auth_service, db_manager=self.db_manager
                     )
+                    return widget
+                elif module_id == "advanced_tpv":
+                    # TPVAvanzado espera db_manager como argumento
+                    widget = module_class(db_manager=self.db_manager)
+                    return widget
+                elif module_id == "tpv":
+                    # TPVModule ahora acepta db_manager por inyección
+                    widget = module_class(db_manager=self.db_manager)
                     return widget
                 else:
                     return module_class()
@@ -363,11 +372,12 @@ class MainWindow(QMainWindow):
 
     def get_module_class(self, module_id):
         """Obtiene la clase del módulo correspondiente al module_id"""
+        from ui.modules.tpv_module.tpv_module import TPVModule
         module_classes = {
             # === SISTEMA VISUAL V3 ULTRA-MODERNO ===
             "dashboard": UltraModernAdminDashboard,  # NUEVO: Dashboard V3 Ultra-Moderno
             # Otros módulos (usar sistema antiguo temporalmente)
-            "tpv": "ui.modules.tpv_module.tpv_module.TPVModule",
+            "tpv": TPVModule,
             "advanced_tpv": "ui.modules.tpv_module.components.tpv_avanzado.TPVAvanzado",
             "hospederia": "ui.modules.hospederia_module.HospederiaModule",
             "inventario": "ui.modules.inventario_module.InventarioModulePro",

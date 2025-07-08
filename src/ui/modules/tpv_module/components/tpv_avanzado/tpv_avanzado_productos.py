@@ -82,32 +82,50 @@ def create_categoria_tab(parent, categoria):
     grid_layout = QGridLayout()
     grid_layout.setSpacing(10)
 
-    # Obtener productos de la categoría
+
+    # Obtener productos de la categoría (con stock)
+    productos_data = []
     if parent.tpv_service:
         productos = parent.tpv_service.get_productos_por_categoria(categoria)
-    else:
-        productos = []
-
-    # Si no hay productos, mostrar algunos de ejemplo
-    if not productos:
+        for p in productos:
+            productos_data.append({
+                'nombre': p.nombre,
+                'precio': p.precio,
+                'stock_actual': getattr(p, 'stock_actual', None)
+            })
+    if not productos_data:
         productos_ejemplo = {
-            "Bebidas": [("Coca Cola", 2.50), ("Agua", 1.50), ("Cerveza", 2.80), ("Café", 1.30)],
-            "Entrantes": [("Patatas Bravas", 5.50), ("Croquetas", 7.00), ("Nachos", 6.50)],
-            "Principales": [("Paella", 12.00), ("Entrecot", 18.50), ("Pasta", 9.50)],
-            "Postres": [("Tarta", 4.50), ("Helado", 3.80), ("Flan", 3.20)]
+            "Bebidas": [
+                {"nombre": "Coca Cola", "precio": 2.50, "stock_actual": 10},
+                {"nombre": "Agua", "precio": 1.50, "stock_actual": 10},
+                {"nombre": "Cerveza", "precio": 2.80, "stock_actual": 10},
+                {"nombre": "Café", "precio": 1.30, "stock_actual": 10}
+            ],
+            "Entrantes": [
+                {"nombre": "Patatas Bravas", "precio": 5.50, "stock_actual": 10},
+                {"nombre": "Croquetas", "precio": 7.00, "stock_actual": 10},
+                {"nombre": "Nachos", "precio": 6.50, "stock_actual": 10}
+            ],
+            "Principales": [
+                {"nombre": "Paella", "precio": 12.00, "stock_actual": 10},
+                {"nombre": "Entrecot", "precio": 18.50, "stock_actual": 10},
+                {"nombre": "Pasta", "precio": 9.50, "stock_actual": 10}
+            ],
+            "Postres": [
+                {"nombre": "Tarta", "precio": 4.50, "stock_actual": 10},
+                {"nombre": "Helado", "precio": 3.80, "stock_actual": 10},
+                {"nombre": "Flan", "precio": 3.20, "stock_actual": 10}
+            ]
         }
         productos_data = productos_ejemplo.get(categoria, [])
-    else:
-        productos_data = [(p.nombre, p.precio) for p in productos]
 
-    # Crear botones de productos
+    # Crear botones de productos con stock
     row, col = 0, 0
-    for nombre, precio in productos_data:
-        btn = create_producto_button(parent, nombre, precio)
+    for prod in productos_data:
+        btn = create_producto_button(parent, prod['nombre'], prod['precio'], prod.get('stock_actual'))
         grid_layout.addWidget(btn, row, col)
-
         col += 1
-        if col >= 3:  # 3 columnas
+        if col >= 3:
             col = 0
             row += 1
 
@@ -117,8 +135,9 @@ def create_categoria_tab(parent, categoria):
     return tab
 
 
-def create_producto_button(parent, nombre, precio):
-    """Crea un botón para un producto"""
+
+def create_producto_button(parent, nombre, precio, stock_actual=None):
+    """Crea un botón para un producto, mostrando stock y bloqueando si no hay stock"""
     btn = QPushButton()
     btn.setFixedSize(120, 80)
 
@@ -135,29 +154,33 @@ def create_producto_button(parent, nombre, precio):
     precio_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     precio_label.setStyleSheet("color: #059669;")
 
-    btn.setStyleSheet("""
-        QPushButton {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #ffffff, stop:1 #f8f9fa);
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            text-align: center;
-        }
-        QPushButton:hover {
-            border-color: #3b82f6;
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #eff6ff, stop:1 #dbeafe);
-        }
-        QPushButton:pressed {
-            background: #bfdbfe;
-        }
-    """)
+    # Mostrar stock
+    stock_text = ""
+    if stock_actual is not None:
+        if stock_actual <= 0:
+            stock_text = "Sin stock"
+        else:
+            stock_text = f"Stock: {stock_actual}"
+    stock_label = QLabel(stock_text)
+    stock_label.setFont(QFont("Segoe UI", 9))
+    stock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    if stock_actual is not None and stock_actual <= 0:
+        stock_label.setStyleSheet("color: #dc2626;")
+    else:
+        stock_label.setStyleSheet("color: #64748b;")
 
-    # Conectar click del botón
-    btn.clicked.connect(lambda: agregar_producto(parent, nombre, precio))
+    # Layout visual
+    btn_layout.addWidget(nombre_label)
+    btn_layout.addWidget(precio_label)
+    btn_layout.addWidget(stock_label)
+    btn.setLayout(btn_layout)
 
-    # Texto del botón
-    btn.setText(f"{nombre}\n€{precio:.2f}")
+    # Deshabilitar si no hay stock
+    if stock_actual is not None and stock_actual <= 0:
+        btn.setEnabled(False)
+        btn.setToolTip("Sin stock disponible")
+    else:
+        btn.clicked.connect(lambda: agregar_producto(parent, nombre, precio))
 
     return btn
 

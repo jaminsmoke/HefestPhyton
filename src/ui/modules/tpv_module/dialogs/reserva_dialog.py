@@ -18,6 +18,7 @@ class ReservaDialog(QDialog):
     reserva_creada = pyqtSignal(object)
 
     def __init__(self, parent=None, mesa: Optional[Mesa] = None, reserva_service=None, reserva: Optional[Reserva] = None, modo_edicion: bool = False):
+        print(f"[ReservaDialog] __init__ llamado. mesa={getattr(mesa, 'id', None)}, modo_edicion={modo_edicion}")
         super().__init__(parent)
         self.setWindowTitle("🍽️ Editar Reserva" if modo_edicion else "🍽️ Crear Reserva")
         self.setModal(True)
@@ -29,8 +30,10 @@ class ReservaDialog(QDialog):
         self.setup_ui()
         self.setup_styles()
         self.connect_signals()
+        print(f"[ReservaDialog] connect_signals ejecutado. self.mesa={getattr(self.mesa, 'id', None)}")
         if self.modo_edicion and self.reserva:
             self.cargar_datos_reserva(self.reserva)
+        print("[ReservaDialog] Inicialización completa")
 
     def setup_ui(self):
         main_layout = QVBoxLayout(self)
@@ -405,8 +408,8 @@ class ReservaDialog(QDialog):
             self.sugerir_hora_btn.setVisible(False)
             return
         from datetime import datetime, timedelta
-        mesa_id = getattr(self.mesa, 'id', None)
-        if mesa_id is None:
+        mesa_id = str(getattr(self.mesa, 'id', '')) if self.mesa else ''
+        if not mesa_id:
             self.hora_feedback_label.setText("")
             self.sugerir_hora_btn.setVisible(False)
             return
@@ -607,6 +610,7 @@ class ReservaDialog(QDialog):
             scroll_bar.setValue(scroll_pos)
 
     def validar_y_aceptar(self):
+        print("[ReservaDialog] validar_y_aceptar llamado")
         if not self.cliente_input.text().strip():
             QMessageBox.warning(self, "Campo requerido", "El nombre del cliente es obligatorio.")
             self.cliente_input.setFocus()
@@ -637,10 +641,11 @@ class ReservaDialog(QDialog):
                     return
 
         datos_reserva = self.get_data()
+        print(f"[ReservaDialog] Datos recogidos para crear reserva: {datos_reserva}")
         # Crear objeto Reserva unificado
         reserva = Reserva(
             id=None,
-            mesa_id=datos_reserva["mesa_id"],
+            mesa_id=str(datos_reserva["mesa_id"]),
             cliente_nombre=datos_reserva["cliente"],
             cliente_telefono=datos_reserva["telefono"],
             fecha_reserva=datos_reserva["fecha"],
@@ -649,6 +654,7 @@ class ReservaDialog(QDialog):
             estado="confirmada",  # o datos_reserva["estado"] si se requiere
             notas=datos_reserva["notas"]
         )
+        print(f"[ReservaDialog] Emitiendo señal reserva_creada con reserva: {reserva}")
         self.reserva_creada.emit(reserva)
         self.accept()
 
@@ -656,7 +662,7 @@ class ReservaDialog(QDialog):
         duracion_text = self.duracion_combo.currentText()
         duracion_horas = float(duracion_text.split()[0]) if duracion_text != "Más de 3 horas" else 3.5
 
-        mesa_id = getattr(self.mesa, 'id', None) if self.mesa else None
+        mesa_id = str(getattr(self.mesa, 'id', '')) if self.mesa else ''
         mesa_numero = getattr(self.mesa, 'numero', None) if self.mesa else None
 
         return {

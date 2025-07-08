@@ -128,13 +128,12 @@ class EstadoMesa(Enum):
 @dataclass
 class Mesa:
     """Modelo de mesa del TPV"""
-
-    id: Optional[int]
-    numero: int
+    numero: str  # Identificador único de negocio (ej: 'T01', 'I04')
     capacidad: int
     estado: str = 'libre'  # libre, ocupada, reservada, fuera_servicio
-    ubicacion: Optional[str] = None  # Compatibilidad con tests (zona)
     zona: Optional[str] = None
+    ubicacion: Optional[str] = None  # Compatibilidad con tests (zona)
+    id: Optional[int] = None  # Solo referencia interna (autoincremental BD)
     comanda_id: Optional[int] = None
     cliente_nombre: Optional[str] = None
     tiempo_ocupacion: Optional[datetime] = None
@@ -167,7 +166,7 @@ class Reserva:
     """Modelo de reserva de hospedería"""
 
     id: Optional[int]
-    mesa_id: Optional[int] = None  # Para compatibilidad con tests de TPV
+    mesa_id: Optional[str] = None  # Para compatibilidad con tests de TPV y soporte a identificadores string
     cliente_nombre: str = ""
     cliente_telefono: Optional[str] = None
     fecha_reserva: Optional[date] = None

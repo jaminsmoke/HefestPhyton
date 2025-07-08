@@ -53,6 +53,7 @@ def populate_grid(instance):
         return set(range(first_row, last_row))
     def lazy_load_rows():
         visible_rows = get_visible_rows()
+        tpv_service = getattr(instance, 'tpv_service', None)
         for row in visible_rows:
             if row in instance._lazy_loaded_rows:
                 continue
@@ -61,7 +62,7 @@ def populate_grid(instance):
                 if idx >= len(instance.filtered_mesas):
                     break
                 mesa = instance.filtered_mesas[idx]
-                mesa_widget = MesaWidget(mesa, proxima_reserva=getattr(mesa, 'proxima_reserva', None))
+                mesa_widget = MesaWidget(mesa, proxima_reserva=getattr(mesa, 'proxima_reserva', None), tpv_service=tpv_service)
                 mesa_widget.personas_changed.connect(instance._on_personas_mesa_changed)
                 mesa_widget.restaurar_original.connect(instance.restaurar_estado_original_mesa)
                 mesa_widget.reservar_mesa_requested.connect(instance._on_reservar_mesa)
@@ -83,8 +84,91 @@ def add_mesa_grid_callbacks_to_instance(instance):
     def _on_reservar_mesa(mesa):
         try:
             from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
-            dialog = ReservaDialog(instance, mesa)
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            print(f"[mesas_area_grid] _on_reservar_mesa: Abriendo ReservaDialog para mesa_id={getattr(mesa, 'id', None)}")
+            # Mantener referencia al dialog para evitar recolección de basura
+            if not hasattr(instance, '_active_dialogs'):
+                instance._active_dialogs = []
+            print(f"[mesas_area_grid][DEBUG] Creando ReservaDialog: id(dialog)={{id(dialog)}}")
+            dialog = ReservaDialog(instance, mesa, reserva_service=getattr(instance, 'reserva_service', None))
+            print(f"[mesas_area_grid][DEBUG] ReservaDialog creado: id(dialog)={{id(dialog)}}")
+            instance._active_dialogs.append(dialog)
+            def on_reserva_creada(reserva):
+                print(f"[mesas_area_grid][DEBUG] Callback on_reserva_creada ejecutado. id(dialog)={{id(dialog)}} reserva={{reserva}}")
+                reserva_service = getattr(instance, 'reserva_service', None)
+                if reserva_service is None:
+                    print("[mesas_area_grid][ERROR] No se encontró reserva_service en la instancia. No se puede guardar la reserva.")
+                    return
+                from datetime import datetime
+                # Compatibilidad: aceptar tanto reserva.fecha como reserva.fecha_reserva
+                fecha = getattr(reserva, 'fecha', None) or getattr(reserva, 'fecha_reserva', None)
+                hora = getattr(reserva, 'hora', None) or getattr(reserva, 'hora_reserva', None)
+                if fecha is None or hora is None:
+                    print("[mesas_area_grid][ERROR] No se pudo obtener fecha u hora de la reserva. No se creará la reserva.")
+                    return
+                if isinstance(hora, str):
+                    try:
+                        hora_obj = datetime.strptime(hora, '%H:%M').time()
+                    except Exception:
+                        print(f"[mesas_area_grid][ERROR] Formato de hora inválido: {hora}")
+                        return
+                else:
+                    hora_obj = hora
+                try:
+                    fecha_hora = datetime.combine(fecha, hora_obj)
+                except Exception as e:
+                    print(f"[mesas_area_grid][ERROR] Error combinando fecha y hora: {e}")
+                    return
+                # Refuerzo: Usar SIEMPRE mesa.numero como identificador único de negocio
+                # TODO: Eliminar referencias a mesa.id cuando se elimine compatibilidad legacy
+                print(f"[mesas_area_grid] Llamando a crear_reserva forzando mesa_numero={getattr(mesa, 'numero', None)} (ignorando reserva.mesa_id={getattr(reserva, 'mesa_id', None)})")
+                reserva_db = reserva_service.crear_reserva(
+                    mesa_id=str(getattr(mesa, 'numero', '')),
+                    cliente=getattr(reserva, 'cliente', None) or getattr(reserva, 'cliente_nombre', None),
+                    fecha_hora=fecha_hora,
+                    duracion_min=getattr(reserva, 'duracion_min', 120),
+                    telefono=getattr(reserva, 'telefono', None) or getattr(reserva, 'cliente_telefono', None),
+                    personas=getattr(reserva, 'personas', None) or getattr(reserva, 'numero_personas', None),
+                    notas=getattr(reserva, 'notas', None)
+                )
+                print(f"[mesas_area_grid] Reserva creada en BD: {reserva_db}")
+                # Emitir eventos globales para refrescar UI
+                if hasattr(mesa, 'estado'):
+                    mesa.estado = 'reservada'
+                # Refrescar visualmente el widget de la mesa
+                mesa_id = str(getattr(mesa, 'id', None))
+                for widget in getattr(instance, 'mesa_widgets', []):
+                    if str(getattr(widget.mesa, 'id', None)) == mesa_id:
+                        if hasattr(widget, 'update_mesa'):
+                            widget.update_mesa(mesa)
+                        if hasattr(widget, 'estado_label'):
+                            widget.estado_label.setText(widget.get_estado_texto())
+                        if hasattr(widget, 'apply_styles'):
+                            widget.apply_styles()
+                        widget.repaint()
+                print(f"[mesas_area_grid] Emitiendo reserva_creada y actualizando UI para mesa_id={getattr(mesa, 'id', None)}")
+                reserva_event_bus.reserva_creada.emit(reserva_db)
+                if hasattr(instance, 'sincronizar_reservas_en_mesas'):
+                    instance.sincronizar_reservas_en_mesas()
+                if hasattr(instance, 'load_reservas'):
+                    instance.load_reservas()
+                # Limpiar referencia al dialog
+                if hasattr(instance, '_active_dialogs'):
+                    try:
+                        instance._active_dialogs.remove(dialog)
+                    except Exception:
+                        pass
+            print(f"[mesas_area_grid][DEBUG] Conectando señal reserva_creada de dialog id={{id(dialog)}} a on_reserva_creada")
+            dialog.reserva_creada.connect(on_reserva_creada)
+            print(f"[mesas_area_grid][DEBUG] Ejecutando dialog.exec() para dialog id={{id(dialog)}}")
             dialog.exec()
+            print(f"[mesas_area_grid][DEBUG] dialog.exec() finalizado para dialog id={{id(dialog)}}")
+            # Si el usuario cierra el diálogo sin crear reserva, limpiar referencia
+            if hasattr(instance, '_active_dialogs'):
+                try:
+                    instance._active_dialogs.remove(dialog)
+                except Exception:
+                    pass
         except Exception as e:
             import logging
             logging.getLogger(__name__).error(f"Error abriendo ReservaDialog: {e}")
@@ -93,13 +177,22 @@ def add_mesa_grid_callbacks_to_instance(instance):
         try:
             from src.ui.modules.tpv_module.components.tpv_avanzado.tpv_avanzado_main import TPVAvanzado
             from PyQt6.QtWidgets import QDialog, QVBoxLayout
+            db_manager = getattr(instance, 'db_manager', None)
+            if db_manager is None:
+                raise ValueError("db_manager es obligatorio y debe ser inyectado explícitamente en el área de mesas")
             class TPVDialog(QDialog):
                 def __init__(self, mesa, parent=None):
                     super().__init__(parent)
                     self.setWindowTitle(f"TPV Avanzado - Mesa {mesa.numero}")
                     self.setMinimumSize(900, 600)
                     layout = QVBoxLayout(self)
-                    self.tpv_widget = TPVAvanzado(mesa, parent=self)
+                    tpv_service = getattr(instance, 'tpv_service', None)
+                    comanda = None
+                    if tpv_service and hasattr(tpv_service, 'get_comanda_activa'):
+                        comanda = tpv_service.get_comanda_activa(mesa.numero)
+                    self.tpv_widget = TPVAvanzado(mesa, tpv_service=tpv_service, db_manager=db_manager, parent=self)
+                    if comanda:
+                        self.tpv_widget.set_pedido_actual(comanda)
                     layout.addWidget(self.tpv_widget)
             dialog = TPVDialog(mesa, instance)
             dialog.exec()

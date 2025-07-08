@@ -46,12 +46,12 @@ def clear_layout(widget):
 class TPVModule(BaseModule):
     """Módulo TPV principal con interfaz moderna y profesional (Refactorizado)"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, db_manager=None):
         # ...existing code...
         super().__init__(parent)
 
-        # Inicializar servicios
-        self._init_services()
+        # Inicializar servicios, pasando db_manager si se recibe
+        self._init_services(db_manager=db_manager)
 
         # Inicializar controladores
         self._init_controllers()
@@ -77,13 +77,16 @@ class TPVModule(BaseModule):
         except Exception:
             pass
 
-    def _init_services(self):
+    def _init_services(self, db_manager=None):
         """Inicializa los servicios necesarios"""
         try:
             from data.db_manager import DatabaseManager
-
-            self.db_manager = DatabaseManager()
-            logger.info("TPVModule: DatabaseManager creado correctamente")
+            if db_manager is not None:
+                self.db_manager = db_manager
+                logger.info("TPVModule: DatabaseManager recibido por inyección")
+            else:
+                self.db_manager = DatabaseManager()
+                logger.info("TPVModule: DatabaseManager creado internamente")
         except Exception as e:
             logger.error(f"TPVModule: Error creando DatabaseManager: {e}")
             self.db_manager = None
@@ -199,7 +202,7 @@ class TPVModule(BaseModule):
         self.mesas_widget.setLayout(self.mesas_layout)
 
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
-        self.mesas_area = MesasArea()
+        self.mesas_area = MesasArea(db_manager=self.db_manager)
         self.mesas_area.eliminar_mesa_requested.connect(self.eliminar_mesa)
         self.mesas_area.eliminar_mesas_requested.connect(self.eliminar_mesas)
         self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)

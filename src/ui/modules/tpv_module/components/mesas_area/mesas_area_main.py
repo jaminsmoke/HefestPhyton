@@ -31,13 +31,15 @@ class MesasArea(QFrame):
         self.selected_mesas = set()
         self.update_batch_action_btn()
 
-    def toggle_mesa_selection(self, mesa_id):
+    def toggle_mesa_selection(self, mesa_numero):
+        """Selecciona/deselecciona una mesa usando su identificador string 'numero'"""
+        mesa_numero = str(mesa_numero)
         if not hasattr(self, 'selected_mesas'):
             self.selected_mesas = set()
-        if mesa_id in self.selected_mesas:
-            self.selected_mesas.remove(mesa_id)
+        if mesa_numero in self.selected_mesas:
+            self.selected_mesas.remove(mesa_numero)
         else:
-            self.selected_mesas.add(mesa_id)
+            self.selected_mesas.add(mesa_numero)
         self.update_batch_action_btn()
 
     def update_batch_action_btn(self):
@@ -76,9 +78,12 @@ class MesasArea(QFrame):
     eliminar_mesa_requested = pyqtSignal(int)
     eliminar_mesas_requested = pyqtSignal(list)
 
-    def __init__(self, tpv_service: Optional[TPVService] = None, parent=None):
+    def __init__(self, tpv_service: Optional[TPVService] = None, db_manager=None, parent=None):
         super().__init__(parent)
-        self.tpv_service = tpv_service
+        if db_manager is None:
+            raise ValueError("db_manager es obligatorio y debe ser inyectado explícitamente en MesasArea")
+        self.db_manager = db_manager
+        self.tpv_service = tpv_service if tpv_service is not None else TPVService(db_manager=db_manager)
         self.mesas: List[Mesa] = []
         self.filtered_mesas: List[Mesa] = []
         self.mesa_widgets: List[MesaWidget] = []
@@ -93,9 +98,35 @@ class MesasArea(QFrame):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.setup_ui()
         add_mesa_grid_callbacks_to_instance(self)
+        # --- NUEVO: Marcar mesas ocupadas según comandas activas ---
+        self._marcar_mesas_ocupadas_por_comanda()
+        # --- Sincronización en tiempo real: escuchar cambios de comandas ---
+        try:
+            from ...mesa_event_bus import mesa_event_bus
+            mesa_event_bus.comanda_actualizada.connect(self._on_comanda_actualizada)
+        except Exception:
+            pass
 
+    def _on_comanda_actualizada(self, comanda):
+        """Callback: refresca el estado de las mesas cuando cambia una comanda"""
+        self._marcar_mesas_ocupadas_por_comanda()
 
-
+    def _marcar_mesas_ocupadas_por_comanda(self):
+        """Marca las mesas como ocupadas si tienen comanda activa al cargar el área (usando numero como identificador)"""
+        if not self.tpv_service:
+            return
+        comandas_activas = self.tpv_service.get_comandas_activas() if hasattr(self.tpv_service, 'get_comandas_activas') else []
+        mesas_ocupadas = set(str(c.mesa_id) for c in comandas_activas)
+        for mesa in self.mesas:
+            if str(mesa.numero) in mesas_ocupadas:
+                mesa.estado = "ocupada"
+            elif mesa.estado == "ocupada":
+                # Si no tiene comanda activa, pero estaba ocupada, liberarla
+                mesa.estado = "libre"
+        # Refrescar grid visual si ya está renderizado
+        if hasattr(self, 'mesas_layout') and self.mesas_layout is not None:
+            from .mesas_area_grid import populate_grid
+            populate_grid(self)
 
     def setup_ui(self):
         from PyQt6.QtWidgets import QSizePolicy
@@ -172,14 +203,14 @@ class MesasArea(QFrame):
         populate_grid(self)
 
     def sincronizar_reservas_en_mesas(self):
-        """Sincroniza reservas activas y calcula próxima reserva para cada mesa. SOLO modelo unificado."""
+        """Sincroniza reservas activas y calcula próxima reserva para cada mesa. SOLO modelo unificado. Usa numero como identificador."""
         if hasattr(self, 'reserva_service') and self.reserva_service:
             reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
             from datetime import datetime, time
             ahora = datetime.now()
             for mesa in self.mesas:
-                tiene_reservas = mesa.id in reservas_por_mesa
-                reservas = reservas_por_mesa.get(mesa.id, [])
+                tiene_reservas = mesa.numero in reservas_por_mesa
+                reservas = reservas_por_mesa.get(mesa.numero, [])
                 # Determinar si hay una reserva en curso
                 reserva_en_curso = None
                 for r in reservas:
@@ -330,20 +361,21 @@ class MesasArea(QFrame):
 
     def _on_alias_mesa_changed(self, mesa, nuevo_alias: str):
         from .mesas_area_utils import guardar_dato_temporal
+        mesa_numero = str(mesa.numero)
         if not nuevo_alias:
-            if mesa.id in self._datos_temporales and 'alias' in self._datos_temporales[mesa.id]:
-                del self._datos_temporales[mesa.id]['alias']
-                if not self._datos_temporales[mesa.id]:
-                    del self._datos_temporales[mesa.id]
+            if mesa_numero in self._datos_temporales and 'alias' in self._datos_temporales[mesa_numero]:
+                del self._datos_temporales[mesa_numero]['alias']
+                if not self._datos_temporales[mesa_numero]:
+                    del self._datos_temporales[mesa_numero]
         else:
-            guardar_dato_temporal(self, mesa.id, alias=nuevo_alias)
+            guardar_dato_temporal(self, mesa_numero, alias=nuevo_alias)
         if self.tpv_service:
-            self.tpv_service.cambiar_alias_mesa(mesa.id, nuevo_alias)
+            self.tpv_service.cambiar_alias_mesa(mesa_numero, nuevo_alias)
             for m in self.mesas:
-                if m.id == mesa.id:
+                if str(m.numero) == mesa_numero:
                     m.alias = nuevo_alias if nuevo_alias else None
             for w in self.mesa_widgets:
-                if w.mesa.id == mesa.id:
+                if str(w.mesa.numero) == mesa_numero:
                     w.update_mesa(m)
         self.update_filtered_mesas()
         from .mesas_area_grid import populate_grid
@@ -351,26 +383,27 @@ class MesasArea(QFrame):
 
     def _on_personas_mesa_changed(self, mesa, nuevas_personas: int):
         from .mesas_area_utils import guardar_dato_temporal
-        guardar_dato_temporal(self, mesa.id, personas=nuevas_personas)
+        guardar_dato_temporal(self, mesa.numero, personas=nuevas_personas)
         for m in self.mesas:
-            if m.id == mesa.id:
+            if m.numero == mesa.numero:
                 m.personas_temporal = nuevas_personas if nuevas_personas != m.capacidad else None
         for w in self.mesa_widgets:
-            if w.mesa.id == mesa.id:
+            if w.mesa.numero == mesa.numero:
                 w.update_mesa(m)
         self.update_filtered_mesas()
         from .mesas_area_grid import populate_grid
         populate_grid(self)
 
-    def restaurar_estado_original_mesa(self, mesa_id: int):
-        if mesa_id in self._datos_temporales:
-            del self._datos_temporales[mesa_id]
+    def restaurar_estado_original_mesa(self, mesa_numero):
+        mesa_numero = str(mesa_numero)
+        if mesa_numero in self._datos_temporales:
+            del self._datos_temporales[mesa_numero]
         for m in self.mesas:
-            if m.id == mesa_id:
+            if str(m.numero) == mesa_numero:
                 m.alias = None
                 m.personas_temporal = None
         for w in self.mesa_widgets:
-            if w.mesa.id == mesa_id:
+            if str(w.mesa.numero) == mesa_numero:
                 w.update_mesa(m)
         self.update_filtered_mesas()
         from .mesas_area_grid import populate_grid
@@ -455,7 +488,7 @@ class MesasArea(QFrame):
             list_widget.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
             for mesa in mesas_libres:
                 item = QListWidgetItem(f"Mesa {mesa.numero} - {mesa.zona}")
-                item.setData(32, mesa.id)
+                item.setData(32, mesa.numero)
                 list_widget.addItem(item)
             layout.addWidget(list_widget)
             btn_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)

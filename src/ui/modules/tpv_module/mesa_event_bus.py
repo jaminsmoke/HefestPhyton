@@ -11,6 +11,7 @@ class MesaEventBus(QObject):
     zonas_actualizadas = pyqtSignal(list)      # Lista de zonas actualizada
     mesa_actualizada = pyqtSignal(object)      # Mesa individual actualizada
     mesas_actualizadas = pyqtSignal(list)      # Lista de mesas actualizada
+    comanda_actualizada = pyqtSignal(object)   # Comanda actualizada (alta, cambio de estado, cierre, etc.)
     mesa_creada = pyqtSignal(object)           # Nueva mesa creada
     mesa_eliminada = pyqtSignal(int)           # Mesa eliminada (ID)
     alias_cambiado = pyqtSignal(object, str)   # Mesa y nuevo alias

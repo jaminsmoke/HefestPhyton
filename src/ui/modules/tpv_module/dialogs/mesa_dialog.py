@@ -24,6 +24,32 @@ logger = logging.getLogger(__name__)
 
 
 class MesaDialog(TabbedDialog):
+    def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
+        # Si la actualización es para esta mesa, refrescar datos y UI
+        if str(getattr(mesa_actualizada, 'numero', None)) == str(getattr(self.mesa, 'numero', None)):
+            # Actualizar todos los campos relevantes de la mesa local
+            for attr in ['estado', 'capacidad', 'alias', 'nombre_display', 'personas_display', 'notas']:
+                if hasattr(mesa_actualizada, attr):
+                    setattr(self.mesa, attr, getattr(mesa_actualizada, attr))
+            if hasattr(self, 'cargar_reservas_en_lista'):
+                self.cargar_reservas_en_lista()
+            self.update_ui()
+    def _on_reserva_event_bus_creada(self, reserva):
+        # Si la reserva es para esta mesa, refrescar UI y recargar reservas
+        mesa_numero = str(getattr(self.mesa, 'numero', None))
+        reserva_mesa_numero = str(getattr(reserva, 'mesa_id', None))
+        if mesa_numero == reserva_mesa_numero:
+            self.mesa.estado = 'reservada'
+            # Recargar reservas activas en la lista
+            if hasattr(self, 'cargar_reservas_en_lista'):
+                self.cargar_reservas_en_lista()
+            # Si existe un método para refrescar la mesa desde el servicio, usarlo (mejor consistencia)
+            if self.reserva_service and hasattr(self.reserva_service, 'actualizar_estado_mesa'):
+                try:
+                    self.reserva_service.actualizar_estado_mesa(self.mesa.numero)
+                except Exception as e:
+                    print(f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}")
+            self.update_ui()
     """Diálogo de mesa con pestañas horizontales modernas"""
 
     mesa_updated = pyqtSignal(Mesa)
@@ -41,15 +67,47 @@ class MesaDialog(TabbedDialog):
         # Mejor visualización: tamaño mínimo recomendado
         self.setMinimumSize(600, 520)
         self.setMaximumWidth(800)
+        # --- SINCRONIZACIÓN Y PERSISTENCIA REAL AL INICIALIZAR ---
+        # Refrescar estado real de la mesa desde el servicio si existe
+        mesa_actualizada = None
+        if self.reserva_service and hasattr(self.reserva_service, 'refrescar_mesa_desde_bd'):
+            try:
+                mesa_actualizada = self.reserva_service.refrescar_mesa_desde_bd(self.mesa.numero)
+                if mesa_actualizada:
+                    for attr in ['estado', 'capacidad', 'alias', 'nombre_display', 'personas_display', 'notas']:
+                        if hasattr(mesa_actualizada, attr):
+                            setattr(self.mesa, attr, getattr(mesa_actualizada, attr))
+            except Exception as e:
+                print(f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}")
+        # Refrescar reservas activas de la mesa desde el servicio si existe
+        if self.reserva_service and hasattr(self.reserva_service, 'obtener_reservas_activas_por_mesa'):
+            try:
+                reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+                self._reservas_activas_inicial = reservas_por_mesa.get(self.mesa.numero, [])
+            except Exception as e:
+                print(f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}")
         # Configurar header específico
         self.set_header_title(
-            f"Mesa {mesa.numero} - {mesa.zona}",
-            f"Capacidad: {mesa.capacidad} personas • Estado: {mesa.estado.title()}"
+            f"Mesa {self.mesa.numero} - {self.mesa.zona}",
+            f"Capacidad: {self.mesa.capacidad} personas • Estado: {self.mesa.estado.title()}"
         )
         # Crear pestañas
         self.setup_tabs()
         # Conectar señales
         self.connect_signals()
+
+        # Suscribirse al event bus de mesas para sincronización global
+        try:
+            mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
+        except Exception as e:
+            print(f"[MesaDialog][ERROR] No se pudo conectar a mesa_event_bus: {e}")
+
+        # Suscribirse al event bus de reservas
+        try:
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
+        except Exception as e:
+            print(f"[MesaDialog][ERROR] No se pudo conectar a reserva_event_bus: {e}")
 
     def setup_tabs(self):
         """Configura las pestañas del diálogo"""
@@ -298,7 +356,7 @@ class MesaDialog(TabbedDialog):
             return
         self.reservas_list.clear()
         reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-        reservas = reservas_por_mesa.get(self.mesa.id, [])
+        reservas = reservas_por_mesa.get(self.mesa.numero, [])
         for r in reservas:
             texto = f"{r.fecha_reserva.strftime('%d/%m/%Y')} {r.hora_reserva} - {r.cliente_nombre} ({r.numero_personas}p)"
             item = QListWidgetItem(texto)
@@ -309,9 +367,9 @@ class MesaDialog(TabbedDialog):
 
     def connect_signals(self):
         """Conecta las señales"""
-        self.tpv_btn.clicked.connect(lambda: self.iniciar_tpv_requested.emit(self.mesa.id))
+        self.tpv_btn.clicked.connect(lambda: self.iniciar_tpv_requested.emit(self.mesa.numero))
         self.reserva_btn.clicked.connect(self.on_reserva_clicked)
-        self.estado_btn.clicked.connect(lambda: self.cambiar_estado_requested.emit(self.mesa.id, "libre"))
+        self.estado_btn.clicked.connect(lambda: self.cambiar_estado_requested.emit(self.mesa.numero, "libre"))
         self.liberar_btn.clicked.connect(self.on_liberar_clicked)
 
         if hasattr(self, 'reservas_list'):
@@ -343,13 +401,17 @@ class MesaDialog(TabbedDialog):
         self.cargar_reservas_en_lista()
 
     def procesar_reserva(self, reserva):
-        """Procesa nueva reserva, la guarda y emite eventos globales"""
+        print(f"[MesaDialog] procesar_reserva llamado con reserva: {reserva}")
         if self.mesa and self.reserva_service and reserva:
             from datetime import datetime
             # Asegurar que la reserva se crea con estado 'activa' y todos los campos requeridos
             fecha_hora = datetime.combine(reserva.fecha_reserva, datetime.strptime(reserva.hora_reserva, '%H:%M').time())
+            # Refuerzo: SIEMPRE usar self.mesa.id como mesa_id
+        print(f"[MesaDialog] Llamando a crear_reserva forzando mesa_numero={self.mesa.numero} (ignorando reserva.mesa_id={reserva.mesa_id})")
+        reserva_db = None
+        if self.reserva_service is not None:
             reserva_db = self.reserva_service.crear_reserva(
-                mesa_id=reserva.mesa_id,
+                mesa_id=str(self.mesa.numero) if self.mesa.numero is not None else '',
                 cliente=reserva.cliente_nombre,
                 fecha_hora=fecha_hora,
                 duracion_min=getattr(reserva, 'duracion_min', 120),
@@ -357,14 +419,18 @@ class MesaDialog(TabbedDialog):
                 personas=getattr(reserva, 'numero_personas', None),
                 notas=getattr(reserva, 'notas', None)
             )
+            print(f"[MesaDialog] Reserva creada: {reserva_db}")
             # Forzar estado 'activa' en la base de datos si el modelo lo requiere
             if hasattr(reserva_db, 'estado'):
                 reserva_db.estado = 'activa'
             self.mesa.estado = 'reservada'
+            print(f"[MesaDialog] Emitiendo mesa_actualizada y reserva_creada para mesa_numero={self.mesa.numero}")
             mesa_event_bus.mesa_actualizada.emit(self.mesa)
             self.reserva_creada.emit()
             reserva_event_bus.reserva_creada.emit(reserva_db)
             self.update_ui()
+        else:
+            print("[MesaDialog][ERROR] reserva_service es None, no se puede crear la reserva.")
 
     def collect_data(self) -> dict:
         """Recolecta datos del formulario"""
