@@ -83,7 +83,7 @@ class TPVAvanzado(QWidget):
         self.setup_ui()
         # --- Sincronización en tiempo real: escuchar cambios de comanda ---
         try:
-            from ...mesa_event_bus import mesa_event_bus
+            from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
             mesa_event_bus.comanda_actualizada.connect(self._on_comanda_actualizada)
         except Exception:

@@ -16,6 +16,12 @@ class MesaEventBus(QObject):
     comanda_actualizada = pyqtSignal(
         object
     )  # Comanda actualizada (alta, cambio de estado, cierre, etc.)
+
+    def emit_comanda_actualizada(self, comanda):
+        import logging
+        logger = logging.getLogger("mesa_event_bus")
+        logger.debug(f"[EMIT] mesa_event_bus.comanda_actualizada.emit para comanda id={getattr(comanda, 'id', comanda)} mesa_id={getattr(comanda, 'mesa_id', None)}. (No introspección de listeners disponible)")
+        self.comanda_actualizada.emit(comanda)
     mesa_creada = pyqtSignal(object)  # Nueva mesa creada
     mesa_eliminada = pyqtSignal(int)  # Mesa eliminada (ID)
     alias_cambiado = pyqtSignal(object, str)  # Mesa y nuevo alias

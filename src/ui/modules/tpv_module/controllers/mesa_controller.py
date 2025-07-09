@@ -49,7 +49,7 @@ class MesaController(QObject):
     # Señales
     error_occurred = pyqtSignal(str)  # Error ocurrido
     # Importar el EventBus global de mesas
-    from ..mesa_event_bus import mesa_event_bus
+    from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
     def __init__(self, tpv_service: Optional[TPVService] = None, parent=None):
         super().__init__(parent)

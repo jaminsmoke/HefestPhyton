@@ -38,10 +38,7 @@ class BaseService(ABC):
             self.logger.debug(
                 f"{self.__class__.__name__} inicializado con base de datos"
             )
-        else:
-            self.logger.warning(
-                f"{self.__class__.__name__} inicializado SIN base de datos"
-            )
+        # Eliminado warning obsoleto: todos los servicios relevantes usan ya la base de datos de Hefest
 
     @property
     def has_database(self) -> bool:

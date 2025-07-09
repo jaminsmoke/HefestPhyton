@@ -59,9 +59,10 @@ services/
 
 ---
 
-### ⚠️ Excepción funcional registrada (v0.0.14)
+### ⚠️ Excepción funcional registrada (v0.0.12)
 
 - **Archivo:** `tpv_service.py`
-- **Motivo:** Acceso defensivo a `self.db_manager` en el método `cambiar_estado_comanda` para evitar crash si no está inicializado.
-- **Plan de cumplimiento:** Revisar la inicialización de TPVService y garantizar que `db_manager` nunca sea None en producción. Programar refactorización para cumplimiento estricto de la política.
+- **Motivo:** Se eliminó la emisión redundante de `comanda_actualizada` en `persistir_comanda` para evitar dobles recargas y efectos visuales en la UI. Ahora solo los métodos de alto nivel emiten el evento.
+- **Plan de cumplimiento:** Refactorizar para que ningún método de persistencia emita señales globales, solo devuelvan estado. Programar refactorización para versión >= v0.0.13.
 - **TODO en código:** Añadido comentario y registro de excepción según protocolo.
+- **Documentación:** Ver `docs/development/fixes/[v0.0.12]_FIX_SERVICES_DobleEmisionComandaActualizada_RESUELTO.md`

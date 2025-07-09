@@ -33,7 +33,7 @@ from PyQt6.QtGui import QFont, QPalette, QColor
 from ui.modules.module_base_interface import BaseModule
 from services.tpv_service import TPVService, Mesa, Producto, Comanda, LineaComanda
 from .components.reservas_agenda.reserva_service import ReservaService
-from .mesa_event_bus import mesa_event_bus
+from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
 # Importar componentes refactorizados
 # TPVDashboard eliminado para evitar métricas duplicadas
@@ -277,7 +277,7 @@ class TPVModule(BaseModule):
         if exitos:
             self.mesas = [m for m in self.mesas if m.numero not in exitos]
             if hasattr(self, "tpv_service") and self.tpv_service:
-                from .mesa_event_bus import mesa_event_bus
+                from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
                 mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.information(

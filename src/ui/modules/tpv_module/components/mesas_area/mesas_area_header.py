@@ -2,7 +2,7 @@ from .mesas_area_stats import create_subcontenedor_metric_cards
 from typing import Any
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, QTimer, Qt
 from data.db_manager import DatabaseManager
-from ...mesa_event_bus import mesa_event_bus
+from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
 """
 mesas_area_header.py

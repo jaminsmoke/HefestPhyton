@@ -306,26 +306,32 @@ def add_mesa_grid_callbacks_to_instance(instance):
 
 
 def clear_mesa_widgets(instance):
+
     try:
         import logging
         logger = logging.getLogger("mesas_area_grid")
         if not hasattr(instance, "mesas_layout") or instance.mesas_layout is None:
             return
         instance.mesa_widgets.clear()
-        # Eliminar TODOS los widgets del layout, no solo los que tienen .mesa
-        while instance.mesas_layout.count():
-            child = instance.mesas_layout.takeAt(0)
+        layout = instance.mesas_layout
+        # Eliminar TODOS los widgets del layout
+        while layout.count():
+            child = layout.takeAt(0)
             if child and child.widget():
                 widget = child.widget()
-                # Loggear si es widget de mesa o mensaje
-                mesa_num = getattr(widget, 'mesa', None)
-                if mesa_num is not None:
-                    # logger.debug(f"[CICLO][GRID] removeWidget: mesa={getattr(widget.mesa, 'numero', None)} estado={getattr(widget.mesa, 'estado', None)}")
-                    pass
-                else:
-                    # logger.debug(f"[CICLO][GRID] removeWidget: widget auxiliar tipo={type(widget).__name__}")
-                    pass
+                widget.setParent(None)
                 widget.deleteLater()
+        # Extra: limpiar widgets huérfanos del contenedor (mesas_container)
+        parent_widget = layout.parentWidget() if hasattr(layout, 'parentWidget') else None
+        if parent_widget:
+            for w in parent_widget.findChildren(QWidget):
+                if w.parent() == parent_widget and w not in instance.mesa_widgets:
+                    w.setParent(None)
+                    w.deleteLater()
+            parent_widget.update()
+            parent_widget.repaint()
+        # Forzar update/repaint del layout
+        layout.update()
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error limpiando widgets de mesa: {e}")

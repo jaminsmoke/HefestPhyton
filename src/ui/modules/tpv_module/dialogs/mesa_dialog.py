@@ -26,7 +26,7 @@ from PyQt6.QtGui import QFont
 
 from services.tpv_service import Mesa
 from .reserva_dialog import ReservaDialog
-from ..mesa_event_bus import mesa_event_bus
+from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 from ....components.TabbedDialog import TabbedDialog
 from src.ui.modules.tpv_module.event_bus import reserva_event_bus
 
@@ -482,10 +482,21 @@ class MesaDialog(TabbedDialog):
             reserva=reserva,
             modo_edicion=True,
         )
-        dialog.reserva_cancelada.connect(lambda r: self.cargar_reservas_en_lista())
+        dialog.reserva_cancelada.connect(self._on_reserva_cancelada)
         dialog.reserva_editada.connect(lambda r: self.cargar_reservas_en_lista())
         dialog.exec()
         self.cargar_reservas_en_lista()
+
+    def _on_reserva_cancelada(self, reserva):
+        """Callback reforzado: tras cancelar una reserva, refresca reservas y fuerza refresco global de mesas."""
+        self.cargar_reservas_en_lista()
+        # Refuerzo: emitir señal global para refresco visual de mesas
+        try:
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            reserva_event_bus.reserva_cancelada.emit(reserva)
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.error(f"[MesaDialog][ERROR] No se pudo emitir reserva_cancelada global: {e}")
 
     def procesar_reserva(self, reserva):
         print(f"[MesaDialog] procesar_reserva llamado con reserva: {reserva}")

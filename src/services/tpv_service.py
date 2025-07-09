@@ -291,12 +291,11 @@ class TPVService(BaseService):
             except Exception as e:
                 self.logger.error(f"[persistir_comanda] Error actualizando estado de mesa en BD: {e}")
 
-            # Emitir señal global de comanda actualizada
-            try:
-                from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
-                mesa_event_bus.comanda_actualizada.emit(comanda)
-            except Exception:
-                pass
+
+            # EXCEPCIÓN FUNCIONAL: Para evitar dobles recargas en UI, se elimina la emisión redundante de comanda_actualizada aquí.
+            # La emisión debe hacerse solo en el método de alto nivel (crear_comanda, pagar_comanda, etc.).
+            # TODO v0.0.13: Refactorizar persistir_comanda para que nunca emita señales globales, solo devuelva estado.
+            # Documentado en README de src/services y en docs/development/fixes/.
 
             # Actualizar la caché de comandas del servicio para reflejar los cambios
             if hasattr(comanda, 'mesa_id') and comanda.mesa_id:
@@ -1055,7 +1054,7 @@ class TPVService(BaseService):
     def crear_comanda(self, mesa_id: str, usuario_id: int = -1) -> Comanda:
         """
         Crea una nueva comanda para una mesa, registrando el usuario_id (usuario/camarero/cajero).
-        Además, marca la mesa como 'ocupada' y emite el evento de actualización.
+        Además, marca la mesa como 'ocupada' y emite el evento de actualización y de comanda_actualizada para refresco UI inmediato.
         """
         # Verificar que la mesa existe
         mesa = self.get_mesa_por_id(mesa_id)
@@ -1076,16 +1075,23 @@ class TPVService(BaseService):
             lineas=[],
             usuario_id=usuario_id,
         )
+        import logging
+        logger = logging.getLogger("TPVService")
+        logger.debug(f"[crear_comanda] Persistiendo comanda para mesa {mesa_id}")
         # Persistir usando la lógica centralizada
         self.persistir_comanda(comanda)
+        logger.debug(f"[crear_comanda] Comanda persistida y añadida a cache para mesa {mesa_id}")
         self._comandas_cache[mesa_id] = comanda
         # --- FIX: Marcar la mesa como ocupada y emitir evento ---
         mesa.estado = "ocupada"
         try:
             from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+            logger.debug(f"[crear_comanda] Emite mesa_actualizada para mesa {mesa_id}")
             mesa_event_bus.mesa_actualizada.emit(mesa)
-        except Exception:
-            pass
+            logger.debug(f"[crear_comanda] Emite comanda_actualizada para comanda {getattr(comanda, 'id', None)} mesa {mesa_id}")
+            mesa_event_bus.emit_comanda_actualizada(comanda)
+        except Exception as e:
+            logger.error(f"[crear_comanda] Error emitiendo eventos: {e}")
         return comanda
 
 

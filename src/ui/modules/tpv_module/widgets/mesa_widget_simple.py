@@ -12,27 +12,18 @@ from PyQt6.QtGui import QAction
 import sys
 
 from services.tpv_service import Mesa
-from ..mesa_event_bus import mesa_event_bus
+from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 from src.utils.modern_styles import ModernStyles
 
 
 class MesaWidget(QFrame):
     def showEvent(self, event):
-        import logging
-        logger = logging.getLogger("mesa_widget_simple")
-        # logger.debug(f"[CICLO][MESA_WIDGET] showEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
         super().showEvent(event)
 
     def hideEvent(self, event):
-        import logging
-        logger = logging.getLogger("mesa_widget_simple")
-        # logger.debug(f"[CICLO][MESA_WIDGET] hideEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
         super().hideEvent(event)
 
     def paintEvent(self, event):
-        import logging
-        logger = logging.getLogger("mesa_widget_simple")
-        # logger.debug(f"[CICLO][MESA_WIDGET] paintEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
         super().paintEvent(event)
 
     def _on_reserva_event_bus_creada(self, reserva):
@@ -176,15 +167,10 @@ class MesaWidget(QFrame):
             pass  # Excepción suprimida por limpieza de logs
 
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
-        import logging
-        logger = logging.getLogger("mesa_widget_simple")
-        # logger.debug(f"[EVENTBUS][MESA_WIDGET] Recibido mesa_actualizada: id={getattr(mesa_actualizada, 'id', None)} numero={getattr(mesa_actualizada, 'numero', None)} estado={getattr(mesa_actualizada, 'estado', None)} | Widget actual: id={getattr(self.mesa, 'id', None)} numero={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
-        # Forzar actualización SIEMPRE que el id o el numero coincidan (más robusto)
         if (
             str(getattr(mesa_actualizada, "numero", None)) == str(getattr(self.mesa, "numero", None))
             or str(getattr(mesa_actualizada, "id", None)) == str(getattr(self.mesa, "id", None))
         ):
-            # logger.debug(f"[EVENTBUS][MESA_WIDGET] update_mesa ejecutado para mesa numero={getattr(mesa_actualizada, 'numero', None)} id={getattr(mesa_actualizada, 'id', None)}")
             self.update_mesa(mesa_actualizada)
 
     def setup_ui(self):
@@ -504,8 +490,8 @@ class MesaWidget(QFrame):
         return color_map.get(color_hex, color_hex)
 
     def resizeEvent(self, event):
-        import logging
-        logger = logging.getLogger("mesa_widget_simple")
+        # import logging
+        # logger = logging.getLogger("mesa_widget_simple")
         # logger.debug(f"[CICLO][MESA_WIDGET] resizeEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
         super().resizeEvent(event)
         self._ajustar_fuente_nombre()
@@ -576,7 +562,6 @@ class MesaWidget(QFrame):
         return bool(self.mesa.alias) or (self.mesa.personas_temporal is not None)
 
     def update_mesa(self, mesa: Mesa):
-        # ...existing code...
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario. Usa la instancia real de la mesa por 'numero'."""
         mesa_real = None
         if hasattr(self, "tpv_service") and self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_id"):
@@ -595,16 +580,11 @@ class MesaWidget(QFrame):
             self.proxima_reserva = None
             self._ultima_reserva_activa = None
         else:
-            # Si hay una reserva activa, mantenerla
+            # Si hay una reserva activa, mantenerla SOLO si el estado es reservada y hay proxima_reserva
             nueva_reserva = getattr(self.mesa, "proxima_reserva", None)
-            if nueva_reserva is not None:
+            if self.mesa.estado == "reservada" and nueva_reserva is not None:
                 self.proxima_reserva = nueva_reserva
                 self._ultima_reserva_activa = nueva_reserva
-            elif (
-                self.mesa.estado == "reservada"
-                and self._ultima_reserva_activa is not None
-            ):
-                self.proxima_reserva = self._ultima_reserva_activa
             else:
                 self.proxima_reserva = None
                 self._ultima_reserva_activa = None

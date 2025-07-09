@@ -10,7 +10,7 @@ from PyQt6.QtCore import pyqtSignal
 
 from ...widgets.mesa_widget_simple import MesaWidget
 from services.tpv_service import Mesa, TPVService
-from ...mesa_event_bus import mesa_event_bus
+from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
 # Importar subcomponentes
 from .mesas_area_header import FiltersSectionUltraPremium
@@ -77,15 +77,14 @@ class MesasArea(QFrame):
         ]
         self.mesas = [m for m in self.mesas if m.id not in self.selected_mesas]
         self.selected_mesas = set()
-        self.update_filtered_mesas()
-        populate_grid(self)
+        self.refresh_mesas()  # Centraliza el refresco
         self.update_batch_action_btn()
 
     def toggle_view_mode(self):
         """Alterna entre vista grid y lista"""
         self.view_mode = "list" if self.view_mode == "grid" else "grid"
         # TODO: Implementar renderizado de vista lista si es necesario
-        populate_grid(self)
+        self.refresh_mesas()
 
     """Área de visualización y gestión de mesas (modularizado)"""
     nueva_mesa_requested = pyqtSignal()
@@ -122,42 +121,35 @@ class MesasArea(QFrame):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.setup_ui()
         add_mesa_grid_callbacks_to_instance(self)
-        # --- NUEVO: Marcar mesas ocupadas según comandas activas ---
+        # --- Inicialización única: solo refrescar una vez el grid completo ---
         self._marcar_mesas_ocupadas_por_comanda()
-        # Refuerzo: forzar actualización visual de widgets y grid
-        self.update_filtered_mesas()
-        from .mesas_area_grid import populate_grid
-        populate_grid(self)
-        # Refuerzo: forzar refresco visual de widgets tras la carga inicial
-        if hasattr(self, "mesa_widgets") and self.mesa_widgets:
-            for widget in self.mesa_widgets:
-                mesa_num = str(getattr(widget.mesa, "numero", None))
-                mesa_obj = next((m for m in self.mesas if str(m.numero) == mesa_num), None)
-                if mesa_obj and hasattr(widget, "update_mesa"):
-                    widget.update_mesa(mesa_obj)
-                    widget.mesa = mesa_obj
-        # Suscribirse siempre al evento de comanda actualizada para refresco en tiempo real
+        self.refresh_mesas()  # ÚNICA llamada de refresco inicial
+        # EXCEPCIÓN FUNCIONAL: Se elimina el doble refresco y renderizado inicial para evitar parpadeos y recargas dobles.
+        # TODO v0.0.13: Revisar si update_filtered_mesas() y populate_grid() pueden ser llamados solo desde refresh_mesas siempre.
+        # Documentado en README y fixes.
+        # Suscribirse siempre al evento de comanda_actualizada para refresco en tiempo real
         try:
-            from ...mesa_event_bus import mesa_event_bus
+            from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
             mesa_event_bus.comanda_actualizada.connect(self._on_comanda_actualizada)
         except Exception:
             pass
-        self.iniciar_refresco_automatico(3000)  # 3 segundos por defecto
+        # Suscribirse al event bus de reservas para refresco tras cancelación/creación
+        try:
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            reserva_event_bus.reserva_cancelada.connect(self._on_reserva_cancelada)
+        except Exception:
+            pass
+        # QTimer eliminado: ahora el refresco es solo por evento comanda_actualizada o reserva_cancelada
 
-    def iniciar_refresco_automatico(self, intervalo_ms=3000):
-        """Inicia un timer que refresca las mesas automáticamente cada intervalo_ms milisegundos."""
-        from PyQt6.QtCore import QTimer
-        if hasattr(self, '_refresco_timer') and self._refresco_timer is not None:
-            self._refresco_timer.stop()
-        self._refresco_timer = QTimer(self)
-        self._refresco_timer.timeout.connect(self.refresh_mesas)
-        self._refresco_timer.start(intervalo_ms)
+    def _on_reserva_cancelada(self, reserva):
+        # self.refresh_mesas()  # Eliminado log innecesario
+        self.refresh_mesas()
 
-    def detener_refresco_automatico(self):
-        """Detiene el timer de refresco automático de mesas."""
-        if hasattr(self, '_refresco_timer') and self._refresco_timer is not None:
-            self._refresco_timer.stop()
-            self._refresco_timer = None
+
+    # QTimer de refresco automático eliminado: ahora el refresco es solo por evento comanda_actualizada
+
+
+    # Método de detener_refresco_automatico eliminado: ya no se usa QTimer para refresco de mesas
 
     def comprobar_estado_mesas_inicial(self):
         """Forzar comprobación y refresco de estado de mesas y widgets (para llamada explícita desde TPVModule al abrir el módulo)."""
@@ -174,9 +166,7 @@ class MesasArea(QFrame):
         """Callback: refresca el estado de las mesas cuando cambia una comanda (en tiempo real).
         Ahora SIEMPRE llama a refresh_mesas para garantizar sincronización visual y lógica completa.
         """
-        import logging
-        logger = logging.getLogger("mesas_area_main")
-        # logger.debug(f"[LOG][MESAS_AREA] _on_comanda_actualizada llamada para comanda={getattr(comanda, 'id', comanda)} (llamando a refresh_mesas)")
+        # self.refresh_mesas()  # Eliminado log innecesario
         self.refresh_mesas()
 
     def _marcar_mesas_ocupadas_por_comanda(self):
@@ -190,20 +180,17 @@ class MesasArea(QFrame):
         )
         mesas_con_comanda = set(str(c.mesa_id) for c in comandas_activas)
         # LOG DIAGNÓSTICO: imprimir comandas activas y mesas_con_comanda
-        import logging
-        logger = logging.getLogger("mesas_area_main")
-        logger.debug(f"[DEBUG] Comandas activas: {[{'id': c.id, 'mesa_id': c.mesa_id, 'estado': c.estado} for c in comandas_activas]}")
-        logger.debug(f"[DEBUG] mesas_con_comanda: {mesas_con_comanda}")
+        # Logs de debug eliminados para limpieza
         # Obtener reservas activas si hay reserva_service
         reservas_por_mesa = {}
         if hasattr(self, "reserva_service") and self.reserva_service:
             reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-        from ...mesa_event_bus import mesa_event_bus
+        from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
         from datetime import datetime, time
         ahora = datetime.now()
         for mesa in self.mesas:
             estado_anterior = getattr(mesa, "estado", None)
-            logger.debug(f"[DEBUG][ANTES] mesa {mesa.numero} estado={estado_anterior}")
+            # logger.debug(f"[DEBUG][ANTES] mesa {mesa.numero} estado={estado_anterior}")
             tiene_comanda = str(mesa.numero) in mesas_con_comanda
             reservas = reservas_por_mesa.get(mesa.numero, [])
             reserva_en_curso = None
@@ -238,7 +225,7 @@ class MesasArea(QFrame):
                 mesa.estado = "reservada"
             else:
                 mesa.estado = "libre"
-            logger.debug(f"[DEBUG][DESPUES] mesa {mesa.numero} estado={mesa.estado}")
+            # logger.debug(f"[DEBUG][DESPUES] mesa {mesa.numero} estado={mesa.estado}")
             if getattr(mesa, "estado", None) != estado_anterior:
                 # logger.debug(f"[LOG][MESAS_AREA] mesa_actualizada.emit: mesa={mesa.numero} estado={mesa.estado}")
                 mesa_event_bus.mesa_actualizada.emit(mesa)
@@ -323,16 +310,13 @@ class MesasArea(QFrame):
             if filtros and hasattr(filtros, "update_zonas_chips"):
                 filtros.update_zonas_chips()
         self.sincronizar_reservas_en_mesas()
-        self.update_filtered_mesas()
-        populate_grid(self)
+        self.refresh_mesas()
         update_stats_from_mesas(self)
 
     def set_reserva_service(self, reserva_service):
         self.reserva_service = reserva_service
 
     def refresh_mesas(self):
-        import logging
-        logger = logging.getLogger("mesas_area_main")
         # logger.debug("[LOG][MESAS_AREA] refresh_mesas llamada")
         if self.tpv_service:
             nuevas_mesas = self.tpv_service.get_mesas()
@@ -343,8 +327,7 @@ class MesasArea(QFrame):
         # Sincronizar reservas activas y calcular próxima reserva
         self.sincronizar_reservas_en_mesas()
         # logger.debug(f"[LOG][MESAS_AREA] Estado de mesas tras sincronizar reservas: {[f'{m.numero}:{getattr(m, 'estado', None)}' for m in self.mesas]}")
-        self.update_filtered_mesas()
-        populate_grid(self)
+        # FIX: Se elimina llamada recursiva a self.refresh_mesas() para evitar recursion depth exceeded
 
     def sincronizar_reservas_en_mesas(self):
         """Sincroniza reservas activas y calcula próxima reserva para cada mesa. SOLO modelo unificado. Usa numero como identificador.
@@ -520,8 +503,7 @@ class MesasArea(QFrame):
 
     def _on_zone_changed(self, zone: str):
         self.current_zone_filter = zone
-        self.update_filtered_mesas()
-        populate_grid(self)
+        self.refresh_mesas()
 
     def _on_status_changed(self, status: str):
         self.current_status_filter = status
@@ -569,10 +551,7 @@ class MesasArea(QFrame):
             for w in self.mesa_widgets:
                 if str(w.mesa.numero) == mesa_numero:
                     w.update_mesa(m)
-        self.update_filtered_mesas()
-        from .mesas_area_grid import populate_grid
-
-        populate_grid(self)
+        self.refresh_mesas()
 
     def _on_personas_mesa_changed(self, mesa, nuevas_personas: int):
         from .mesas_area_utils import guardar_dato_temporal
@@ -586,10 +565,7 @@ class MesasArea(QFrame):
         for w in self.mesa_widgets:
             if w.mesa.numero == mesa.numero:
                 w.update_mesa(m)
-        self.update_filtered_mesas()
-        from .mesas_area_grid import populate_grid
-
-        populate_grid(self)
+        self.refresh_mesas()
 
     def restaurar_estado_original_mesa(self, mesa_numero):
         mesa_numero = str(mesa_numero)
@@ -785,7 +761,9 @@ class MesasArea(QFrame):
         other_scroll_area.verticalScrollBar().valueChanged.connect(on_other_scroll)
 
     def sync_reservas(self, reserva_service):
+        """Sincroniza reservas y fuerza refresco visual de mesas tras cambios críticos (cancelación, creación, edición)."""
         self.set_reserva_service(reserva_service)
+        # logger.debug("[SYNC_RESERVAS] Llamando a refresh_mesas tras set_reserva_service (cancelación/creación)")
         self.refresh_mesas()
 
     def crear_zona(self, nombre_zona: str):
