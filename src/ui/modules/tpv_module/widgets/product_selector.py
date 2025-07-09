@@ -186,8 +186,8 @@ class ProductSelectorWidget(QWidget):
                         widget.setParent(None)
             try:
                 old_layout.deleteLater()
-            except Exception:
-                pass
+            except RuntimeError as e:
+                logging.warning(f"No se pudo eliminar el layout anterior: {e}")
         layout = QVBoxLayout()
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(16)

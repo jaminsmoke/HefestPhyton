@@ -1,6 +1,6 @@
 # Script para recrear la tabla comanda_detalles con la foreign key correcta (comandas)
 # ¡ADVERTENCIA! Esto eliminará todos los datos de comanda_detalles.
-import sqlite3
+from sqlite3 import connect
 
 DB_PATH = 'data/hefest.db'
 
@@ -21,7 +21,7 @@ PRAGMA foreign_keys=on;
 '''
 
 def main():
-    conn = sqlite3.connect(DB_PATH)
+    conn = connect(DB_PATH)
     try:
         conn.executescript(SQL_RECREATE)
         print("Tabla comanda_detalles recreada con foreign key a comandas. Todos los datos anteriores se han eliminado.")

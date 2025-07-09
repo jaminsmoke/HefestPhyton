@@ -131,14 +131,18 @@ class MesasArea(QFrame):
         try:
             from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
             mesa_event_bus.comanda_actualizada.connect(self._on_comanda_actualizada)
-        except Exception:
-            pass
+        except ImportError as e:
+            logger.error(f"Error importando mesa_event_bus: {e}")
+        except AttributeError as e:
+            logger.error(f"Error conectando señal comanda_actualizada: {e}")
         # Suscribirse al event bus de reservas para refresco tras cancelación/creación
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
             reserva_event_bus.reserva_cancelada.connect(self._on_reserva_cancelada)
-        except Exception:
-            pass
+        except ImportError as e:
+            logger.error(f"Error importando reserva_event_bus: {e}")
+        except AttributeError as e:
+            logger.error(f"Error conectando señal reserva_cancelada: {e}")
         # QTimer eliminado: ahora el refresco es solo por evento comanda_actualizada o reserva_cancelada
 
     def _on_reserva_cancelada(self, reserva):
@@ -203,7 +207,8 @@ class MesasArea(QFrame):
                             hora_obj = datetime.strptime(hora, "%H:%M").time()
                         else:
                             hora_obj = hora
-                    except Exception:
+                    except (ValueError, TypeError) as e:
+                        logger.warning(f"Error interpretando hora de reserva: {e}")
                         hora_obj = time(0, 0)
                     fecha_hora = datetime.combine(fecha, hora_obj)
                 elif fecha:
@@ -267,8 +272,8 @@ class MesasArea(QFrame):
                         widget.setParent(None)
             try:
                 old_layout.deleteLater()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Error eliminando layout anterior: {e}")
         container_layout = QVBoxLayout()
         container_layout.setContentsMargins(16, 16, 16, 16)
         container_layout.setSpacing(16)
@@ -352,7 +357,8 @@ class MesasArea(QFrame):
                                 hora_obj = datetime.strptime(hora, "%H:%M").time()
                             else:
                                 hora_obj = hora
-                        except Exception:
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Error interpretando hora de reserva: {e}")
                             hora_obj = time(0, 0)
                         fecha_hora = datetime.combine(fecha, hora_obj)
                     elif fecha:
@@ -389,7 +395,8 @@ class MesasArea(QFrame):
                                 hora_obj = datetime.strptime(hora, "%H:%M").time()
                             else:
                                 hora_obj = hora
-                        except Exception:
+                        except (ValueError, TypeError) as e:
+                            logger.warning(f"Error interpretando hora de reserva: {e}")
                             hora_obj = time(0, 0)
                         fecha_hora = datetime.combine(fecha, hora_obj)
                     elif fecha:
@@ -656,7 +663,7 @@ class MesasArea(QFrame):
                     )
         except Exception as e:
             from PyQt6.QtWidgets import QMessageBox
-
+            logger.error(f"Error al procesar la creación de mesa: {e}")
             QMessageBox.critical(
                 self, "Error", f"Error al procesar la creación de mesa: {str(e)}"
             )
@@ -729,7 +736,7 @@ class MesasArea(QFrame):
                         self.eliminar_mesas_requested.emit(numeros)
         except Exception as e:
             from PyQt6.QtWidgets import QMessageBox
-
+            logger.error(f"Error al procesar la eliminación de mesa: {e}")
             QMessageBox.critical(
                 self, "Error", f"Error al procesar la eliminación de mesa: {str(e)}"
             )
@@ -785,5 +792,5 @@ class MesasArea(QFrame):
             QMessageBox.information(
                 self, "Zona creada", f"Zona '{nombre_zona}' creada correctamente."
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Error mostrando mensaje de zona creada: {e}")

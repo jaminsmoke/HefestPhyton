@@ -12,21 +12,21 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .[build]
-          
+
       - name: Build executable
         run: |
           python scripts/build_exe.py --clean --onefile --windowed
-          
+
       - name: Upload Windows executable
         uses: actions/upload-artifact@v3
         with:
@@ -37,21 +37,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          
+
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip build twine
-          
+
       - name: Build package
         run: python -m build
-        
+
       - name: Upload to PyPI
         env:
           TWINE_USERNAME: __token__
+          # Uso seguro del token, debe estar definido como secret en GitHub
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: twine upload dist/*
+        run: |
+          set -e
+          if [ -z "${{ secrets.PYPI_TOKEN }}" ]; then
+            echo "ERROR: PYPI_TOKEN no está definido como secret en GitHub."
+            exit 1
+          fi
+          twine upload dist/*
+        continue-on-error: false
+      - name: Notificar error en publicación
+        if: failure()
+        run: echo "La publicación en PyPI ha fallado. Revisa el token y los logs."

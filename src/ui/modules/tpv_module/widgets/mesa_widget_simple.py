@@ -120,7 +120,8 @@ class MesaWidget(QFrame):
                 if mesa_real:
                     self.mesa = mesa_real
             except Exception as e:
-                pass  # Excepción suprimida por limpieza de logs
+                import logging
+                logging.getLogger(__name__).warning(f"Error actualizando referencia de mesa real: {e}")
         # Refrescar reservas activas de la mesa desde el servicio si existe
         self._reservas_activas_inicial = []
         reserva_activada = False
@@ -143,7 +144,8 @@ class MesaWidget(QFrame):
                         self._ultima_reserva_activa = self.proxima_reserva
                         reserva_activada = True
                 except Exception as e:
-                    pass  # Excepción suprimida por limpieza de logs
+                    import logging
+                    logging.getLogger(__name__).warning(f"Error obteniendo reservas activas por mesa: {e}")
 
         self.setup_ui()
         self.apply_styles()
@@ -158,13 +160,15 @@ class MesaWidget(QFrame):
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
             reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
         except Exception as e:
-            pass  # Excepción suprimida por limpieza de logs
+            import logging
+            logging.getLogger(__name__).warning(f"Error suscribiéndose a reserva_event_bus: {e}")
 
         # Suscribirse al event bus de mesas para sincronización global
         try:
             mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
         except Exception as e:
-            pass  # Excepción suprimida por limpieza de logs
+            import logging
+            logging.getLogger(__name__).warning(f"Error suscribiéndose a mesa_event_bus: {e}")
 
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
         if (
@@ -188,8 +192,9 @@ class MesaWidget(QFrame):
                         widget.setParent(None)
             try:
                 old_layout.deleteLater()
-            except Exception:
-                pass
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning(f"Error eliminando layout anterior: {e}")
         self.layout_principal = QVBoxLayout(self)
         layout = self.layout_principal
         layout.setContentsMargins(8, 6, 8, 6)
@@ -567,7 +572,9 @@ class MesaWidget(QFrame):
         if hasattr(self, "tpv_service") and self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_id"):
             try:
                 mesa_real = self.tpv_service.get_mesa_by_id(getattr(mesa, "numero", None))
-            except Exception:
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).warning(f"Error obteniendo mesa por id: {e}")
                 mesa_real = None
         if mesa_real:
             self.mesa = mesa_real
@@ -659,7 +666,9 @@ class MesaWidget(QFrame):
             if isinstance(hora, str):
                 try:
                     hora_obj = datetime.strptime(hora, "%H:%M").time()
-                except Exception:
+                except (ValueError, TypeError) as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Error interpretando hora de reserva: {e}")
                     hora_obj = time(0, 0)
             else:
                 hora_obj = hora

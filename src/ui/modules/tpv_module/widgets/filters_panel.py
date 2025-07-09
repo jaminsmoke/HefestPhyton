@@ -68,8 +68,8 @@ class FiltersPanel(QFrame):
                         widget.setParent(None)
             try:
                 old_layout.deleteLater()
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Error eliminando layout anterior: {e}")
         main_layout = QVBoxLayout()
         main_layout.setSpacing(16)
         self.setLayout(main_layout)

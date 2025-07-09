@@ -69,8 +69,9 @@ def create_title_section_ultra_premium():
                     widget.setParent(None)
         try:
             old_icon_layout.deleteLater()
-        except Exception:
-            pass
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error eliminando layout anterior de icon_container: {e}")
     icon_layout = QVBoxLayout()
     icon_layout.setContentsMargins(0, 0, 0, 0)
     icon_container.setLayout(icon_layout)
@@ -212,6 +213,8 @@ class FiltersSectionUltraPremium(QFrame):
                 f"Zona '{zona_a_editar}' renombrada a '{nuevo_nombre}' correctamente.",
             )
         except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"No se pudo editar la zona: {e}")
             QMessageBox.critical(self, "Error", f"No se pudo editar la zona: {e}")
 
     def eliminar_zona(self) -> None:
@@ -272,6 +275,8 @@ class FiltersSectionUltraPremium(QFrame):
                         f"Zona '{zona_a_eliminar}' eliminada correctamente.",
                     )
                 except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"No se pudo eliminar la zona: {e}")
                     QMessageBox.critical(
                         self, "Error", f"No se pudo eliminar la zona: {e}"
                     )
@@ -655,6 +660,8 @@ class FiltersSectionUltraPremium(QFrame):
                         f"Zona '{nueva_zona}' creada correctamente.",
                     )
                 except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"No se pudo crear la zona: {e}")
                     QMessageBox.critical(
                         self, "Error", f"No se pudo crear la zona: {e}"
                     )
@@ -666,14 +673,16 @@ class FiltersSectionUltraPremium(QFrame):
             if btn.text().endswith("Eliminar Zona"):
                 try:
                     btn.clicked.disconnect()
-                except Exception:
-                    pass
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Error desconectando señal de botón Eliminar Zona: {e}")
                 btn.clicked.connect(self.eliminar_zona)
             if btn.text().endswith("Editar Zona"):
                 try:
                     btn.clicked.disconnect()
-                except Exception:
-                    pass
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Error desconectando señal de botón Editar Zona: {e}")
                 btn.clicked.connect(self.editar_zona)
 
         # Fila 4: Barra de búsqueda avanzada
@@ -852,7 +861,9 @@ def update_ultra_premium_stats_ui(
         try:
             old = int(old_value)
             new = int(new_value)
-        except Exception:
+        except (ValueError, TypeError) as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error animando número: {e}")
             label.setText(str(new_value))
             return
         if old == new:
@@ -938,7 +949,9 @@ def update_ultra_premium_stats_ui(
                     int(old)
                     int(new_value)
                     animate_number(label, old, new_value)
-                except Exception:
+                except (ValueError, TypeError) as e:
+                    import logging
+                    logging.getLogger(__name__).warning(f"Error animando número en set_value_and_animate: {e}")
                     label.setText(str(new_value))
                 animate_pulse(widget)
             else:
@@ -956,8 +969,9 @@ def update_ultra_premium_stats_ui(
             )
             if total > 0 and val / total >= 0.8:
                 return ("!", "#ef4444", "Alerta: Más del 80% de mesas ocupadas", True)
-        except Exception:
-            pass
+        except (ValueError, TypeError) as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error calculando badge ocupadas: {e}")
         return ("", "#ef4444", "", False)
 
     # Badge lógica para reservadas: alerta si >0
@@ -966,8 +980,9 @@ def update_ultra_premium_stats_ui(
             val = int(val)
             if val > 0:
                 return ("!", "#f59e0b", "Alerta: Hay mesas reservadas", True)
-        except Exception:
-            pass
+        except (ValueError, TypeError) as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Error calculando badge reservadas: {e}")
         return ("", "#f59e0b", "", False)
 
     set_value_and_animate(getattr(instance, "zonas_widget", None), zonas)

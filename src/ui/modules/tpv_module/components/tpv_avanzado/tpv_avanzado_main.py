@@ -138,11 +138,26 @@ class TPVAvanzado(QWidget):
     # Eliminar duplicado: solo debe quedar el __init__ que acepta db_manager
 
     def _on_comanda_actualizada(self, comanda):
-        """Callback: refresca el pedido si la comanda corresponde a la mesa actual"""
+        """Callback: refresca el pedido si la comanda corresponde a la mesa actual.
+        Si la comanda fue cancelada, cierra la ventana automáticamente."""
         if not self.mesa or not comanda:
             return
         if hasattr(comanda, "mesa_id") and comanda.mesa_id == self.mesa.id:
             self.set_pedido_actual(comanda)
+            # Si la comanda está cancelada, cerrar la ventana de TPVAvanzado
+            estado = getattr(comanda, "estado", None)
+            if estado == "cancelada":
+                logger.info(f"[TPVAvanzado] Comanda cancelada detectada para mesa {self.mesa.numero}. Cerrando ventana TPVAvanzado.")
+                parent = self.parent()
+                # Si el parent es un QDialog, ciérralo; si no, cierra el widget
+                try:
+                    from PyQt6.QtWidgets import QDialog
+                    if parent and isinstance(parent, QDialog):
+                        parent.close()
+                    else:
+                        self.close()
+                except Exception as e:
+                    logger.error(f"Error cerrando ventana TPVAvanzado: {e}")
 
     def setup_ui(self):
         """Configura la interfaz principal"""
