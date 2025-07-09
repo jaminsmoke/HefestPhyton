@@ -106,40 +106,16 @@ def create_categoria_tab(parent, categoria):
                 {
                     "nombre": p.nombre,
                     "precio": p.precio,
-                    "stock_actual": getattr(p, "stock_actual", None),
+                    "stock": getattr(p, "stock", None),
                 }
             )
-    if not productos_data:
-        productos_ejemplo = {
-            "Bebidas": [
-                {"nombre": "Coca Cola", "precio": 2.50, "stock_actual": 10},
-                {"nombre": "Agua", "precio": 1.50, "stock_actual": 10},
-                {"nombre": "Cerveza", "precio": 2.80, "stock_actual": 10},
-                {"nombre": "Café", "precio": 1.30, "stock_actual": 10},
-            ],
-            "Entrantes": [
-                {"nombre": "Patatas Bravas", "precio": 5.50, "stock_actual": 10},
-                {"nombre": "Croquetas", "precio": 7.00, "stock_actual": 10},
-                {"nombre": "Nachos", "precio": 6.50, "stock_actual": 10},
-            ],
-            "Principales": [
-                {"nombre": "Paella", "precio": 12.00, "stock_actual": 10},
-                {"nombre": "Entrecot", "precio": 18.50, "stock_actual": 10},
-                {"nombre": "Pasta", "precio": 9.50, "stock_actual": 10},
-            ],
-            "Postres": [
-                {"nombre": "Tarta", "precio": 4.50, "stock_actual": 10},
-                {"nombre": "Helado", "precio": 3.80, "stock_actual": 10},
-                {"nombre": "Flan", "precio": 3.20, "stock_actual": 10},
-            ],
-        }
-        productos_data = productos_ejemplo.get(categoria, [])
+    # Eliminar productos de ejemplo: si no hay productos reales, no mostrar nada
 
     # Crear botones de productos con stock
     row, col = 0, 0
     for prod in productos_data:
         btn = create_producto_button(
-            parent, prod["nombre"], prod["precio"], prod.get("stock_actual")
+            parent, prod["nombre"], prod["precio"], prod.get("stock")
         )
         grid_layout.addWidget(btn, row, col)
         col += 1
@@ -153,7 +129,7 @@ def create_categoria_tab(parent, categoria):
     return tab
 
 
-def create_producto_button(parent, nombre, precio, stock_actual=None):
+def create_producto_button(parent, nombre, precio, stock=None):
     """Crea un botón para un producto, mostrando stock y bloqueando si no hay stock"""
     btn = QPushButton()
     btn.setFixedSize(120, 80)
@@ -173,15 +149,15 @@ def create_producto_button(parent, nombre, precio, stock_actual=None):
 
     # Mostrar stock
     stock_text = ""
-    if stock_actual is not None:
-        if stock_actual <= 0:
+    if stock is not None:
+        if stock <= 0:
             stock_text = "Sin stock"
         else:
-            stock_text = f"Stock: {stock_actual}"
+            stock_text = f"Stock: {stock}"
     stock_label = QLabel(stock_text)
     stock_label.setFont(QFont("Segoe UI", 9))
     stock_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    if stock_actual is not None and stock_actual <= 0:
+    if stock is not None and stock <= 0:
         stock_label.setStyleSheet("color: #dc2626;")
     else:
         stock_label.setStyleSheet("color: #64748b;")
@@ -193,7 +169,7 @@ def create_producto_button(parent, nombre, precio, stock_actual=None):
     btn.setLayout(btn_layout)
 
     # Deshabilitar si no hay stock
-    if stock_actual is not None and stock_actual <= 0:
+    if stock is not None and stock <= 0:
         btn.setEnabled(False)
         btn.setToolTip("Sin stock disponible")
     else:

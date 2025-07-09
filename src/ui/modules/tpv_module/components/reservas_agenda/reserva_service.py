@@ -77,6 +77,10 @@ class ReservaService:
         personas: Optional[int] = None,
         notas: Optional[str] = None,
     ) -> Reserva:
+        """
+        Crea una reserva y ACTUALIZA el estado de la mesa en la tabla 'mesas' a 'reservada' usando el campo 'numero'.
+        Cumple política de sincronización total UI/DB.
+        """
         mesa_id_str = str(mesa_id) if mesa_id is not None else ""
         print(
             f"[ReservaService] Creando reserva: mesa_id={mesa_id_str}, cliente={cliente}, fecha_hora={fecha_hora}, duracion_min={duracion_min}, telefono={telefono}, personas={personas}, notas={notas}"
@@ -101,11 +105,18 @@ class ReservaService:
                     ),
                 )
                 reserva_id = c.lastrowid if c.lastrowid is not None else -1
+                # --- FIX HEFEST v0.0.12: sincronizar estado de mesa en tabla 'mesas' ---
+                try:
+                    c.execute(
+                        "UPDATE mesas SET estado = ? WHERE numero = ?",
+                        ("reservada", mesa_id_str),
+                    )
+                except Exception as e:
+                    print(f"[ReservaService][EXCEPCIÓN FUNCIONAL] No se pudo actualizar estado de mesa {mesa_id_str} a 'reservada': {e}")
                 conn.commit()
             print(f"[ReservaService] Reserva creada con id={reserva_id}")
         except Exception as e:
             import traceback
-
             print(
                 f"[ReservaService][ERROR] Error al crear reserva: {e}\n{traceback.format_exc()}"
             )
@@ -123,12 +134,20 @@ class ReservaService:
         )
 
     def cancelar_reserva(self, reserva_id: int) -> bool:
-        """Cancela la reserva cambiando su estado a 'cancelada'. Devuelve True si se modificó alguna fila."""
+        """Cancela la reserva cambiando su estado a 'cancelada' y libera la mesa en la tabla mesas."""
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()
+            # Obtener el número de mesa asociado a la reserva
+            c.execute("SELECT mesa_id FROM reservas WHERE id = ?", (reserva_id,))
+            row = c.fetchone()
+            mesa_id = row[0] if row else None
+            # Cancelar la reserva
             c.execute(
                 "UPDATE reservas SET estado = ? WHERE id = ?", ("cancelada", reserva_id)
             )
+            # Liberar la mesa si se encontró
+            if mesa_id is not None:
+                c.execute("UPDATE mesas SET estado = 'libre' WHERE numero = ?", (mesa_id,))
             conn.commit()
             return c.rowcount > 0
 

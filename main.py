@@ -16,6 +16,12 @@ Esto mantiene el log de ejecución más limpio y enfocado en errores relevantes.
 
 import sys
 import os
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
 
 # === FILTRO DE AVISOS QT (IGNORAR box-shadow/transform) ===
 try:

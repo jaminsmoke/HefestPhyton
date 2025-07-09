@@ -212,12 +212,18 @@ class DatabaseManager:
 
     @contextmanager
     def _get_connection(self):
-        conn = sqlite3.connect(self.db_path)
+        # Añadimos timeout para evitar bloqueos inmediatos y activamos WAL para concurrencia
+        conn = sqlite3.connect(self.db_path, timeout=10)
         conn.row_factory = sqlite3.Row
         try:
+            # Activar WAL solo la primera vez por conexión
+            conn.execute('PRAGMA journal_mode=WAL;')
             yield conn
         finally:
             conn.close()
+
+    # TODO: Si se detecta uso multihilo, migrar a una única conexión compartida o pool de conexiones.
+    #       Documentar y refactorizar para evitar bloqueos en escenarios concurrentes.
 
     def query(self, sql, params=()):
         with self._get_connection() as conn:

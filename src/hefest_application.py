@@ -35,12 +35,30 @@ console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
 
+
 # Configuración global
 logging.basicConfig(level=logging.DEBUG, handlers=[file_handler, console_handler])
 logger = logging.getLogger(__name__)
 
 # Asegurar propagación y nivel DEBUG para todos los loggers
 logging.captureWarnings(True)
+
+# === Manejo global de excepciones no capturadas ===
+import sys
+def global_exception_hook(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    logger.critical("Excepción no capturada", exc_info=(exc_type, exc_value, exc_traceback))
+    # Opcional: mostrar mensaje de error al usuario
+    try:
+        from PyQt6.QtWidgets import QMessageBox
+        QMessageBox.critical(None, "Error crítico", f"Se ha producido un error inesperado. Revisa el log para más detalles.\n\n{exc_value}")
+    except Exception:
+        pass
+    # Salida explícita para evitar procesos colgados
+    sys.exit(1)
+sys.excepthook = global_exception_hook
 
 # Importar componentes necesarios
 from data.db_manager import DatabaseManager

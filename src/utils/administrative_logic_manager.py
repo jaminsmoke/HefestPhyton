@@ -236,7 +236,7 @@ class AdministrativeLogicManager:
                         "action": "Reabastecer producto",
                         "details": {
                             "producto": producto["nombre"],
-                            "stock_actual": producto["stock"],
+                        "stock": producto["stock"],
                             "categoria": producto["categoria"],
                         },
                     }

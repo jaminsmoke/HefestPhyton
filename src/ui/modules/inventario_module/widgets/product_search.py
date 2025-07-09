@@ -377,11 +377,11 @@ class ProductSearchWidget(QWidget):
                 font-size: 13px;
                 background-color: {colors['surface']};
             }}
-            
+
             QLineEdit:focus {{
                 border-color: {colors['primary']};
             }}
-            
+
             QPushButton {{
                 background-color: {colors['primary']};
                 color: white;
@@ -389,7 +389,7 @@ class ProductSearchWidget(QWidget):
                 border-radius: 6px;
                 font-weight: bold;
             }}
-            
+
             QPushButton:hover {{
                 background-color: {colors['primary_hover']};
             }}
@@ -515,7 +515,7 @@ class ProductSearchWidget(QWidget):
         nombre = product.get("nombre", "Sin nombre")
         codigo = product.get("codigo", "")
         categoria = product.get("categoria", "")
-        stock = product.get("stock_actual", 0)
+        stock = product.get("stock", 0)
         # Formato del texto
         text = f"{nombre}"
         if codigo:

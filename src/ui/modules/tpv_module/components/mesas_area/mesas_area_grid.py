@@ -63,6 +63,8 @@ def populate_grid(instance):
         return set(range(first_row, last_row))
 
     def lazy_load_rows():
+        import logging
+        logger = logging.getLogger("mesas_area_grid")
         visible_rows = get_visible_rows()
         tpv_service = getattr(instance, "tpv_service", None)
         for row in visible_rows:
@@ -86,7 +88,9 @@ def populate_grid(instance):
                 mesa_widget.iniciar_tpv_requested.connect(instance._on_iniciar_tpv)
                 instance.mesa_widgets.append(mesa_widget)
                 instance.mesas_layout.addWidget(mesa_widget, row, col)
+                # logger.debug(f"[CICLO][GRID] addWidget: mesa={getattr(mesa, 'numero', None)} estado={getattr(mesa, 'estado', None)} en row={row} col={col}")
             instance._lazy_loaded_rows.add(row)
+        # logger.debug(f"[CICLO][GRID] lazy_load_rows ejecutado. Filas visibles: {visible_rows}")
 
     # Conectar el evento de scroll para lazy loading
     from PyQt6.QtCore import QTimer
@@ -303,18 +307,27 @@ def add_mesa_grid_callbacks_to_instance(instance):
 
 def clear_mesa_widgets(instance):
     try:
+        import logging
+        logger = logging.getLogger("mesas_area_grid")
         if not hasattr(instance, "mesas_layout") or instance.mesas_layout is None:
             return
         instance.mesa_widgets.clear()
+        # Eliminar TODOS los widgets del layout, no solo los que tienen .mesa
         while instance.mesas_layout.count():
             child = instance.mesas_layout.takeAt(0)
             if child and child.widget():
                 widget = child.widget()
-                if widget:
-                    widget.deleteLater()
+                # Loggear si es widget de mesa o mensaje
+                mesa_num = getattr(widget, 'mesa', None)
+                if mesa_num is not None:
+                    # logger.debug(f"[CICLO][GRID] removeWidget: mesa={getattr(widget.mesa, 'numero', None)} estado={getattr(widget.mesa, 'estado', None)}")
+                    pass
+                else:
+                    # logger.debug(f"[CICLO][GRID] removeWidget: widget auxiliar tipo={type(widget).__name__}")
+                    pass
+                widget.deleteLater()
     except Exception as e:
         import logging
-
         logging.getLogger(__name__).error(f"Error limpiando widgets de mesa: {e}")
 
 

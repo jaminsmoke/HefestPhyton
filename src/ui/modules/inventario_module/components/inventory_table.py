@@ -123,7 +123,7 @@ class InventoryTableWidget(QTableWidget):
             border: 1px solid {colors['border']};
             border-radius: 8px;
         }}
-        
+
         QHeaderView::section {{
             background-color: {colors['surface_variant']};
             color: {colors['text_primary']};
@@ -131,16 +131,16 @@ class InventoryTableWidget(QTableWidget):
             border: 1px solid {colors['border']};
             font-weight: bold;
         }}
-        
+
         QHeaderView::section:hover {{
             background-color: {colors['surface_hover']};
         }}
-        
+
         QTableWidget::item {{
             padding: 4px;
             border: none;
         }}
-        
+
         QTableWidget::item:selected {{
             background-color: {colors['primary']};
             color: white;
@@ -186,7 +186,7 @@ class InventoryTableWidget(QTableWidget):
         self.setItem(row, 3, categoria_item)
 
         # Stock (con indicador visual)
-        stock_actual = getattr(product, "stock_actual", 0)
+        stock_actual = getattr(product, "stock", 0)
         stock_minimo = getattr(product, "stock_minimo", 0)
         stock_item = QTableWidgetItem(str(stock_actual))
         stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -241,7 +241,7 @@ class InventoryTableWidget(QTableWidget):
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(4, 4, 4, 4)
 
-        stock_actual = getattr(product, "stock_actual", 0)
+        stock_actual = getattr(product, "stock", 0)
         stock_minimo = getattr(product, "stock_minimo", 0)
 
         # Determinar estado y color
@@ -364,7 +364,7 @@ class InventoryTableWidget(QTableWidget):
         """
         from PyQt6.QtWidgets import QInputDialog
 
-        stock_actual = getattr(product, "stock_actual", 0)
+        stock_actual = getattr(product, "stock", 0)
         nombre = getattr(product, "nombre", "ProductoType")
 
         new_stock, ok = QInputDialog.getInt(
@@ -620,7 +620,7 @@ class StockAlertWidget(QWidget):
         name_label.setStyleSheet("font-weight: bold; font-size: 12px;")
         info_layout.addWidget(name_label)
 
-        stock_actual = getattr(product, "stock_actual", 0)
+        stock_actual = getattr(product, "stock", 0)
         stock_minimo = getattr(product, "stock_minimo", 0)
         stock_label = QLabel(f"Stock: {stock_actual} / {stock_minimo}")
         stock_label.setStyleSheet("font-size: 11px; color: #856404;")

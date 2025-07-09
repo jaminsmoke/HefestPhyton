@@ -27,6 +27,8 @@ class TPVAvanzado(QWidget):
         parent=None,
     ):
         super().__init__(parent)
+        # Inicialización obligatoria para evitar advertencias y asegurar robustez
+        self.selected_user = None
         self.mesa = mesa
         if db_manager is None:
             raise ValueError(
@@ -52,9 +54,32 @@ class TPVAvanzado(QWidget):
         if self.mesa and self.tpv_service:
             comanda = None
             if hasattr(self.tpv_service, "get_comanda_activa"):
-                comanda = self.tpv_service.get_comanda_activa(self.mesa.id)
+                comanda = self.tpv_service.get_comanda_activa(self.mesa.numero)
             if comanda:
+                logger.info(f"[TPVAvanzado] Comanda activa recuperada para mesa {self.mesa.numero}: {comanda}")
                 self.current_order = comanda
+            else:
+                # Forzar creación y persistencia de comanda si no existe
+                # Obtener usuario autenticado si existe
+                usuario_id = -1
+                if self.selected_user is not None and hasattr(self.selected_user, "id"):
+                    usuario_id = self.selected_user.id
+                else:
+                    # Intentar obtener usuario autenticado desde AuthService
+                    try:
+                        from services.auth_service import get_auth_service
+                        auth_service = get_auth_service()
+                        if hasattr(auth_service, "current_user") and auth_service.current_user and hasattr(auth_service.current_user, "id"):
+                            usuario_id = auth_service.current_user.id
+                    except Exception:
+                        pass
+                # Asegurar que usuario_id sea siempre int
+                if usuario_id is None:
+                    usuario_id = -1
+                logger.info(f"[TPVAvanzado] No existe comanda activa para mesa {self.mesa.numero}, creando nueva con usuario_id={usuario_id}...")
+                nueva_comanda = self.tpv_service.crear_comanda(self.mesa.numero, usuario_id=usuario_id)
+                logger.info(f"[TPVAvanzado] Comanda creada y persistida para mesa {self.mesa.numero}: {nueva_comanda}")
+                self.current_order = nueva_comanda
         self.setup_ui()
         # --- Sincronización en tiempo real: escuchar cambios de comanda ---
         try:
@@ -159,7 +184,7 @@ class TPVAvanzado(QWidget):
             else:
                 usuario_id = -1  # Manejar caso sin usuario seleccionado
             self.current_order = self.tpv_service.crear_comanda(
-                self.mesa.id, usuario_id=usuario_id
+                self.mesa.numero, usuario_id=usuario_id
             )
             logger.info(
                 f"Nuevo pedido iniciado para mesa {self.mesa.numero} por usuario {usuario_id}"

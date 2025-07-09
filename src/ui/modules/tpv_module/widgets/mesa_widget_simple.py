@@ -17,6 +17,24 @@ from src.utils.modern_styles import ModernStyles
 
 
 class MesaWidget(QFrame):
+    def showEvent(self, event):
+        import logging
+        logger = logging.getLogger("mesa_widget_simple")
+        # logger.debug(f"[CICLO][MESA_WIDGET] showEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
+        super().showEvent(event)
+
+    def hideEvent(self, event):
+        import logging
+        logger = logging.getLogger("mesa_widget_simple")
+        # logger.debug(f"[CICLO][MESA_WIDGET] hideEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
+        super().hideEvent(event)
+
+    def paintEvent(self, event):
+        import logging
+        logger = logging.getLogger("mesa_widget_simple")
+        # logger.debug(f"[CICLO][MESA_WIDGET] paintEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
+        super().paintEvent(event)
+
     def _on_reserva_event_bus_creada(self, reserva):
         # Si la reserva es para esta mesa, actualizar estado y contador
         mesa_numero = str(getattr(self.mesa, "numero", None))
@@ -158,10 +176,15 @@ class MesaWidget(QFrame):
             pass  # Excepción suprimida por limpieza de logs
 
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
-        # Si la actualización es para esta mesa, refrescar datos y UI
-        if str(getattr(mesa_actualizada, "id", None)) == str(
-            getattr(self.mesa, "id", None)
+        import logging
+        logger = logging.getLogger("mesa_widget_simple")
+        # logger.debug(f"[EVENTBUS][MESA_WIDGET] Recibido mesa_actualizada: id={getattr(mesa_actualizada, 'id', None)} numero={getattr(mesa_actualizada, 'numero', None)} estado={getattr(mesa_actualizada, 'estado', None)} | Widget actual: id={getattr(self.mesa, 'id', None)} numero={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
+        # Forzar actualización SIEMPRE que el id o el numero coincidan (más robusto)
+        if (
+            str(getattr(mesa_actualizada, "numero", None)) == str(getattr(self.mesa, "numero", None))
+            or str(getattr(mesa_actualizada, "id", None)) == str(getattr(self.mesa, "id", None))
         ):
+            # logger.debug(f"[EVENTBUS][MESA_WIDGET] update_mesa ejecutado para mesa numero={getattr(mesa_actualizada, 'numero', None)} id={getattr(mesa_actualizada, 'id', None)}")
             self.update_mesa(mesa_actualizada)
 
     def setup_ui(self):
@@ -385,9 +408,7 @@ class MesaWidget(QFrame):
                 }
             """
         self.setStyleSheet(ModernStyles.get_base_widget_style())
-
         colores = self.get_colores()
-
         # Estilo principal del widget - Compacto y ajustado
         self.setStyleSheet(
             f"""
@@ -398,7 +419,6 @@ class MesaWidget(QFrame):
                 margin: 4px;
                 padding: 2px;
             }}
-
             QFrame#mesa_widget:hover {{
                 border: 5px solid #1976d2;
                 background-color: #e3f2fd;
@@ -406,10 +426,22 @@ class MesaWidget(QFrame):
             }}
         """
         )
+        # Forzar refresco de estilos Qt (posible bug de caché)
+        style_obj = self.style() if hasattr(self, 'style') else None
+        if style_obj and hasattr(style_obj, 'unpolish') and hasattr(style_obj, 'polish'):
+            style_obj.unpolish(self)
+            style_obj.polish(self)
+        self.update()
+        self.repaint()
 
         # Alias de mesa - Solo color y peso, sin tamaño de fuente ni altura/margen (cumpliendo política)
-        # TODO v0.0.14: Cumplimiento estricto - Eliminar duplicidad de estilos, solo CSS para elipsis
         self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
+        alias_style = self.alias_label.style() if hasattr(self.alias_label, 'style') else None
+        if alias_style and hasattr(alias_style, 'unpolish') and hasattr(alias_style, 'polish'):
+            alias_style.unpolish(self.alias_label)
+            alias_style.polish(self.alias_label)
+        self.alias_label.update()
+        self.alias_label.repaint()
 
         # Estado - Badge ultra-compacto centrado perfectamente
         self.estado_label.setStyleSheet(
@@ -427,15 +459,39 @@ class MesaWidget(QFrame):
             }}
         """
         )
+        estado_style = self.estado_label.style() if hasattr(self.estado_label, 'style') else None
+        if estado_style and hasattr(estado_style, 'unpolish') and hasattr(estado_style, 'polish'):
+            estado_style.unpolish(self.estado_label)
+            estado_style.polish(self.estado_label)
+        self.estado_label.update()
+        self.estado_label.repaint()
 
         # Capacidad - Información ajustada
         self.capacidad_label.setStyleSheet(ModernStyles.get_capacidad_label_style())
+        capacidad_style = self.capacidad_label.style() if hasattr(self.capacidad_label, 'style') else None
+        if capacidad_style and hasattr(capacidad_style, 'unpolish') and hasattr(capacidad_style, 'polish'):
+            capacidad_style.unpolish(self.capacidad_label)
+            capacidad_style.polish(self.capacidad_label)
+        self.capacidad_label.update()
+        self.capacidad_label.repaint()
 
         # Zona + Identificador - Información contextual compacta
         self.zona_label.setStyleSheet(ModernStyles.get_zona_label_style())
+        zona_style = self.zona_label.style() if hasattr(self.zona_label, 'style') else None
+        if zona_style and hasattr(zona_style, 'unpolish') and hasattr(zona_style, 'polish'):
+            zona_style.unpolish(self.zona_label)
+            zona_style.polish(self.zona_label)
+        self.zona_label.update()
+        self.zona_label.repaint()
 
         # Contador de próxima reserva - Estilo compacto y mejor integrado
         self.contador_label.setStyleSheet(ModernStyles.get_contador_label_style())
+        contador_style = self.contador_label.style() if hasattr(self.contador_label, 'style') else None
+        if contador_style and hasattr(contador_style, 'unpolish') and hasattr(contador_style, 'polish'):
+            contador_style.unpolish(self.contador_label)
+            contador_style.polish(self.contador_label)
+        self.contador_label.update()
+        self.contador_label.repaint()
 
     def _darken_color(self, color_hex):
         """Oscurece un color hex para efectos"""
@@ -448,6 +504,9 @@ class MesaWidget(QFrame):
         return color_map.get(color_hex, color_hex)
 
     def resizeEvent(self, event):
+        import logging
+        logger = logging.getLogger("mesa_widget_simple")
+        # logger.debug(f"[CICLO][MESA_WIDGET] resizeEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
         super().resizeEvent(event)
         self._ajustar_fuente_nombre()
 
@@ -517,32 +576,79 @@ class MesaWidget(QFrame):
         return bool(self.mesa.alias) or (self.mesa.personas_temporal is not None)
 
     def update_mesa(self, mesa: Mesa):
-        """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario"""
-        self.mesa = mesa
-        nueva_reserva = getattr(mesa, "proxima_reserva", None)
-        # Log eliminado por limpieza
-        # Excepción funcional: Si la mesa está reservada/ocupada y no hay proxima_reserva, conservar la última reserva activa localmente
-        if nueva_reserva is not None:
-            self.proxima_reserva = nueva_reserva
-            self._ultima_reserva_activa = nueva_reserva
-        elif (
-            self.mesa.estado in ("reservada", "ocupada")
-            and self._ultima_reserva_activa is not None
-        ):
-            # TODO: Refactorizar cuando el backend permita enviar la reserva activa aunque esté en curso
-            # Excepción documentada: ver README y política de cumplimiento
-            self.proxima_reserva = self._ultima_reserva_activa
+        # ...existing code...
+        """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario. Usa la instancia real de la mesa por 'numero'."""
+        mesa_real = None
+        if hasattr(self, "tpv_service") and self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_id"):
+            try:
+                mesa_real = self.tpv_service.get_mesa_by_id(getattr(mesa, "numero", None))
+            except Exception:
+                mesa_real = None
+        if mesa_real:
+            self.mesa = mesa_real
         else:
+            self.mesa = mesa
+
+        # --- LÓGICA DE PRIORIDAD DE ESTADO ---
+        # Si la mesa está ocupada (por comanda), debe prevalecer sobre reservada
+        if getattr(self.mesa, "estado", None) == "ocupada":
             self.proxima_reserva = None
             self._ultima_reserva_activa = None
-        self.alias_label.setText(mesa.nombre_display)
-        self.capacidad_label.setText(f"👥 {mesa.personas_display} personas")
+        else:
+            # Si hay una reserva activa, mantenerla
+            nueva_reserva = getattr(self.mesa, "proxima_reserva", None)
+            if nueva_reserva is not None:
+                self.proxima_reserva = nueva_reserva
+                self._ultima_reserva_activa = nueva_reserva
+            elif (
+                self.mesa.estado == "reservada"
+                and self._ultima_reserva_activa is not None
+            ):
+                self.proxima_reserva = self._ultima_reserva_activa
+            else:
+                self.proxima_reserva = None
+                self._ultima_reserva_activa = None
+
+        # Forzar actualización del estado visual tras cambios de comanda
+        estado_anterior = getattr(self, "_estado_anterior", None)
         self.estado_label.setText(self.get_estado_texto())
-        zona_texto = mesa.zona if hasattr(mesa, "zona") and mesa.zona else "Principal"
-        identificador = mesa.numero
+        self.apply_styles()
+        # Forzar refresco visual completo
+        self.estado_label.repaint()
+        self.estado_label.update()
+        self.alias_label.repaint()
+        self.alias_label.update()
+        self.capacidad_label.repaint()
+        self.capacidad_label.update()
+        self.zona_label.repaint()
+        self.zona_label.update()
+        self.repaint()
+        self.update()
+        # Forzar update/repaint del layout y widget padre
+        parent = self.parentWidget()
+        if parent:
+            parent.update()
+            parent.repaint()
+            layout = parent.layout() if hasattr(parent, 'layout') else None
+            if layout is not None:
+                if hasattr(layout, 'update'):
+                    layout.update()
+                if hasattr(layout, 'activate'):
+                    layout.activate()
+        # Forzar update/repaint del layout principal
+        if hasattr(self, 'layout_principal') and self.layout_principal:
+            self.layout_principal.update()
+            self.layout_principal.activate()
+        # Feedback visual si el estado cambia a "ocupada"
+        if self.mesa.estado == "ocupada" and estado_anterior != "ocupada":
+            self._feedback_visual_label(self.estado_label)
+        self._estado_anterior = self.mesa.estado
+        self.alias_label.setText(self.mesa.nombre_display)
+        self.capacidad_label.setText(f"👥 {self.mesa.personas_display} personas")
+        zona_texto = self.mesa.zona if hasattr(self.mesa, "zona") and self.mesa.zona else "Principal"
+        identificador = self.mesa.numero
         self.zona_label.setText(f"🏢 {zona_texto} • {identificador}")
         self.restore_btn.setVisible(self._tiene_datos_temporales())
-        self.apply_styles()
         self._ajustar_fuente_nombre()
         self._actualizar_contador_reserva()
         # Forzar el timer según el estado de proxima_reserva
@@ -550,6 +656,9 @@ class MesaWidget(QFrame):
             self._contador_timer.start()
         else:
             self._contador_timer.stop()
+        # Refuerzo: forzar repaint y update del widget completo
+        self.update()
+        self.repaint()
 
     def _actualizar_contador_reserva(self):
         from datetime import datetime, time

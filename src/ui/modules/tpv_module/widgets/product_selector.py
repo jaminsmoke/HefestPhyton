@@ -91,11 +91,11 @@ class ProductCard(QFrame):
 
         # Stock disponible
         if (
-            hasattr(self.producto, "stock_actual")
-            and self.producto.stock_actual is not None
+            hasattr(self.producto, "stock")
+            and self.producto.stock is not None
         ):
-            stock_text = f"Stock: {self.producto.stock_actual}"
-            stock_color = "#d32f2f" if self.producto.stock_actual < 5 else "#1976d2"
+            stock_text = f"Stock: {self.producto.stock}"
+            stock_color = "#d32f2f" if self.producto.stock < 5 else "#1976d2"
         else:
             stock_text = "Disponible"
             stock_color = "#1976d2"

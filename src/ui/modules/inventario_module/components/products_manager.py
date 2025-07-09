@@ -362,11 +362,11 @@ class ProductsManagerWidget(QWidget):
                 self.products_table.setItem(row, 3, precio_item)
 
                 # Stock actual
-                stock_item = QTableWidgetItem(str(producto.stock_actual))
+                stock_item = QTableWidgetItem(str(producto.stock))
                 stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 # Colorear según nivel de stock
-                if producto.stock_actual == 0:
+                if producto.stock == 0:
                     stock_item.setBackground(QColor("#fee2e2"))  # Rojo claro
                 elif producto.necesita_reposicion():
                     stock_item.setBackground(QColor("#fef3c7"))  # Amarillo claro
@@ -381,7 +381,7 @@ class ProductsManagerWidget(QWidget):
                 self.products_table.setItem(row, 5, min_stock_item)
 
                 # Estado
-                if producto.stock_actual == 0:
+                if producto.stock == 0:
                     estado = "Sin Stock"
                     color = QColor("#fca5a5")
                 elif producto.necesita_reposicion():
@@ -403,13 +403,13 @@ class ProductsManagerWidget(QWidget):
         """Actualizar estadísticas"""
         try:
             total_products = len(self.productos_cache)
-            total_value = sum(p.precio * p.stock_actual for p in self.productos_cache)
+            total_value = sum(p.precio * p.stock for p in self.productos_cache)
             low_stock = sum(
                 1
                 for p in self.productos_cache
-                if p.necesita_reposicion() and p.stock_actual > 0
+                if p.necesita_reposicion() and p.stock > 0
             )
-            out_of_stock = sum(1 for p in self.productos_cache if p.stock_actual == 0)
+            out_of_stock = sum(1 for p in self.productos_cache if p.stock == 0)
 
             self.total_products_label.setText(f"Total productos: {total_products}")
             self.total_value_label.setText(f"Valor total: ${total_value:.2f}")
@@ -425,7 +425,7 @@ class ProductsManagerWidget(QWidget):
             alertas = []
 
             # Productos sin stock
-            sin_stock = [p for p in self.productos_cache if p.stock_actual == 0]
+            sin_stock = [p for p in self.productos_cache if p.stock == 0]
             if sin_stock:
                 alertas.append(f"⚠️ {len(sin_stock)} producto(s) sin stock")
 
@@ -433,7 +433,7 @@ class ProductsManagerWidget(QWidget):
             stock_bajo = [
                 p
                 for p in self.productos_cache
-                if p.necesita_reposicion() and p.stock_actual > 0
+                if p.necesita_reposicion() and p.stock > 0
             ]
             if stock_bajo:
                 alertas.append(f"⚠️ {len(stock_bajo)} producto(s) con stock bajo")
@@ -476,7 +476,7 @@ class ProductsManagerWidget(QWidget):
                         "nombre": producto.nombre,
                         "categoria": producto.categoria,
                         "precio": producto.precio,
-                        "stock_actual": producto.stock_actual,
+                        "stock": producto.stock,
                         "stock_minimo": producto.stock_minimo,
                     }
                 )
@@ -555,8 +555,8 @@ class ProductsManagerWidget(QWidget):
                 nuevo_stock, ok = QInputDialog.getInt(
                     self,
                     "Ajustar Stock",
-                    f"Stock actual de {producto.nombre}: {producto.stock_actual}\nNuevo stock:",
-                    producto.stock_actual,
+                    f"Stock actual de {producto.nombre}: {producto.stock}\nNuevo stock:",
+                    producto.stock,
                     0,
                     9999,
                 )
@@ -645,7 +645,7 @@ class ProductsManagerWidget(QWidget):
                                 producto.nombre,
                                 producto.categoria,
                                 producto.precio,
-                                producto.stock_actual,
+                                producto.stock,
                                 producto.stock_minimo,
                             ]
                         )
@@ -688,13 +688,13 @@ class ProductsManagerWidget(QWidget):
                 padding: 15px;
                 margin-bottom: 10px;
             }
-            
+
             #ModuleTitle {
                 color: white;
                 font-size: 24px;
                 font-weight: bold;
             }
-            
+
             #SearchPanel {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -710,24 +710,24 @@ class ProductsManagerWidget(QWidget):
                 selection-color: white;
                 outline: none;
             }
-            
+
             #ProductsTable::item {
                 padding: 8px;
                 border-bottom: 1px solid #f1f5f9;
                 border: none;
             }
-            
+
             #ProductsTable::item:selected {
                 background: #3b82f6;
                 color: white;
                 border: none;
                 outline: none;
             }
-            
+
             #ProductsTable::item:hover {
                 background: #e6f3ff;
             }
-            
+
             #ProductsTable QHeaderView::section {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -735,13 +735,13 @@ class ProductsManagerWidget(QWidget):
                 font-weight: bold;
                 color: #374151;
             }
-            
+
             #ProductsTable QHeaderView::section:horizontal {
                 border-left: none;
                 border-right: none;
                 border-top: none;
             }
-            
+
             #StatsPanel, #AlertsPanel {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -750,14 +750,14 @@ class ProductsManagerWidget(QWidget):
                 margin: 5px;
                 min-width: 200px;
             }
-            
+
             #PanelTitle {
                 font-weight: bold;
                 font-size: 16px;
                 color: #2d3748;
                 margin-bottom: 10px;
             }
-            
+
             QPushButton {
                 background: #3b82f6;
                 color: white;
@@ -767,23 +767,23 @@ class ProductsManagerWidget(QWidget):
                 font-weight: bold;
                 min-width: 100px;
             }
-            
+
             QPushButton:hover {
                 background: #2563eb;
             }
-            
+
             QPushButton:disabled {
                 background: #9ca3af;
                 color: #6b7280;
             }
-            
+
             QLineEdit, QComboBox {
                 border: 2px solid #e2e8f0;
                 border-radius: 4px;
                 padding: 6px;
                 font-size: 14px;
             }
-            
+
             QLineEdit:focus, QComboBox:focus {
                 border-color: #3b82f6;
             }

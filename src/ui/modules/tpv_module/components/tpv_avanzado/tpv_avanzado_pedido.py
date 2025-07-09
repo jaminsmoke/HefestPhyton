@@ -467,10 +467,18 @@ def agregar_producto_a_pedido(parent, nombre, precio):
                     ),
                     None,
                 )
-                if producto:
+            if producto:
+                try:
                     parent.tpv_service.cambiar_cantidad_producto(
                         parent.current_order.id, producto.id, nueva_cantidad
                     )
+                except Exception as e:
+                    import logging
+                    logging.error(f"Error al cambiar cantidad de producto en comanda: {e}")
+                    # Opcional: mostrar mensaje en la UI
+                    from PyQt6.QtWidgets import QMessageBox
+                    QMessageBox.critical(parent, "Error", f"No se pudo actualizar la cantidad del producto en la comanda.\n{e}")
+                    return
             return
 
     # Si no existe, agregar nueva fila
@@ -508,13 +516,20 @@ def agregar_producto_a_pedido(parent, nombre, precio):
             None,
         )
         if producto:
-            parent.tpv_service.agregar_producto_a_comanda(
-                parent.current_order.id,
-                producto.id,
-                producto.nombre,
-                producto.precio,
-                1,
-            )
+            try:
+                parent.tpv_service.agregar_producto_a_comanda(
+                    parent.current_order.id,
+                    producto.id,
+                    producto.nombre,
+                    producto.precio,
+                    1,
+                )
+            except Exception as e:
+                import logging
+                logging.error(f"Error al agregar producto a comanda: {e}")
+                from PyQt6.QtWidgets import QMessageBox
+                QMessageBox.critical(parent, "Error", f"No se pudo agregar el producto a la comanda.\n{e}")
+                return
 
     # Refrescar estado en la UI tras agregar el primer producto
     if hasattr(parent, "refrescar_estado_pedido_ui"):

@@ -72,7 +72,7 @@ class MesaController(QObject):
             # ...
             # El servicio debe emitir la señal global, no el controlador
 
-            logger.info(f"Cargadas {len(self.mesas)} mesas")
+            # logger.debug(f"Cargadas {len(self.mesas)} mesas")
 
         except Exception as e:
             error_msg = f"Error cargando mesas: {e}"
@@ -145,7 +145,7 @@ class MesaController(QObject):
             MesaController.mesa_event_bus.mesa_actualizada.emit(mesa_actual)
             self.load_mesas()  # Recargar desde servicio tras editar
 
-            logger.info(f"Mesa {nuevo_numero} actualizada correctamente")
+            # logger.debug(f"Mesa {nuevo_numero} actualizada correctamente")
             return True
 
         except Exception as e:
@@ -185,7 +185,7 @@ class MesaController(QObject):
                 MesaController.mesa_event_bus.mesa_eliminada.emit(numero)
                 self.load_mesas()  # Recargar desde servicio tras eliminar
 
-                logger.info(f"Mesa {mesa_actual.numero} eliminada correctamente")
+                # logger.debug(f"Mesa {mesa_actual.numero} eliminada correctamente")
                 return True
             else:
                 self.error_occurred.emit("Error eliminando mesa del sistema")
@@ -291,7 +291,7 @@ class MesaController(QObject):
             self.mesas = mesas
             # El servicio debe emitir la señal global, no el controlador
 
-            logger.info(f"Cargadas {len(mesas)} mesas desde el servicio")
+            # logger.debug(f"Cargadas {len(mesas)} mesas desde el servicio")
 
         except Exception as e:
             error_msg = f"Error cargando mesas: {e}"
