@@ -28,21 +28,16 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QGridLayout,
     QGraphicsDropShadowEffect,
-    QSizePolicy,
-    QPushButton,
     QScrollArea,
     QApplication,
-    QMenu,
 )
-from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtSignal, QRect
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtSignal
 from PyQt6.QtGui import (
     QFont,
     QColor,
     QPainter,
-    QPaintEvent,
     QLinearGradient,
     QBrush,
-    QPen,
 )
 import logging
 from datetime import datetime
@@ -570,7 +565,6 @@ class UltraModernMetricCard(UltraModernCard):
         """DESACTIVADO - Solo datos reales, sin simulación"""
         # Eliminada simulación de datos - Solo usar datos reales del RealDataManager
         # La clase base no debe simular datos, solo mostrar datos reales
-        pass
 
     def update_metric_data(
         self, value=None, trend=None, target=None, progress_percentage=None

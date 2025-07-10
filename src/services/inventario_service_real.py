@@ -7,10 +7,9 @@ Cambios: Restauración completa + soporte de categorías para proveedores
 """
 
 import logging
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
-from datetime import datetime, date
-from enum import Enum
+from datetime import datetime
 
 from .base_service import BaseService
 

@@ -4,7 +4,7 @@ Proporciona informes detallados sobre ventas, ocupación, inventario y otros KPI
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -12,25 +12,16 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QLabel,
     QPushButton,
-    QComboBox,
     QDateEdit,
     QTableWidget,
     QTableWidgetItem,
     QHeaderView,
     QFrame,
-    QGridLayout,
-    QScrollArea,
-    QGroupBox,
-    QFormLayout,
-    QProgressBar,
-    QTextEdit,
-    QCheckBox,
-    QSpinBox,
     QFileDialog,
     QMessageBox,
 )
 from PyQt6.QtCore import Qt, QDate, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QColor, QPalette
+from PyQt6.QtGui import QColor
 
 # Comentado: PyQt6.QtChart no está disponible en todas las instalaciones
 # from PyQt6.QtChart import QChart, QChartView, QBarSeries, QBarSet, QLineSeries, QPieSeries, QPieSlice
@@ -575,7 +566,6 @@ class ReportesModule(BaseModule):
         """Actualiza todos los datos de los reportes"""
         logger.info("Actualizando datos de reportes...")
         # Aquí se implementaría la lógica para actualizar con datos reales
-        pass
 
     def exportar_reporte(self):
         """Exporta el reporte actual"""
@@ -608,7 +598,6 @@ class ReportesModule(BaseModule):
         """Carga los datos iniciales para los reportes"""
         logger.info("Cargando datos iniciales de reportes...")
         # Aquí se implementaría la carga inicial de datos
-        pass
 
     def setup_ui(self):
         """Configura la interfaz del módulo"""

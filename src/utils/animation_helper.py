@@ -12,7 +12,6 @@ from PyQt6.QtCore import (
     QRect,
     QPoint,
     QSequentialAnimationGroup,
-    QParallelAnimationGroup,
 )
 from PyQt6.QtWidgets import (
     QGraphicsOpacityEffect,

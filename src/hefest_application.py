@@ -63,7 +63,6 @@ sys.excepthook = global_exception_hook
 # Importar componentes necesarios
 from data.db_manager import DatabaseManager
 from ui.windows.hefest_main_window import MainWindow
-from utils.modern_styles import ModernStyles
 
 from services.auth_service import get_auth_service
 from services.audit_service import AuditService

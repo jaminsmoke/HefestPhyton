@@ -20,7 +20,6 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QDate, QTime, pyqtSignal
 from PyQt6.QtGui import QFont, QRegularExpressionValidator
 from PyQt6.QtCore import QRegularExpression
-from datetime import datetime, timedelta
 from services.tpv_service import Mesa
 from core.hefest_data_models import Reserva
 from src.ui.modules.tpv_module.event_bus import reserva_event_bus
@@ -625,7 +624,7 @@ class ReservaDialog(QDialog):
 
     def sugerir_proxima_hora_libre(self):
         """Ajusta la hora de la reserva a la próxima hora libre sugerida y muestra feedback llamativo, sin mover el scroll ni expandir el contenido. Si la sugerencia es en el pasado, muestra advertencia y no ajusta la hora."""
-        from datetime import datetime, date
+        from datetime import datetime
 
         # Guardar posición actual del scroll vertical
         scroll_bar = getattr(self, "scroll_area", None)

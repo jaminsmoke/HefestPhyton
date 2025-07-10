@@ -4,7 +4,7 @@ TPV Avanzado - Componente principal modularizado
 
 import logging
 from typing import Optional
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QSplitter, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal
 
 from services.tpv_service import TPVService, Mesa

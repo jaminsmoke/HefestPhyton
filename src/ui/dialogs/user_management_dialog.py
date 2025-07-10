@@ -5,11 +5,9 @@ Diálogo para crear y editar usuarios del sistema.
 from PyQt6.QtWidgets import (
     QDialog,
     QVBoxLayout,
-    QHBoxLayout,
     QFormLayout,
     QLineEdit,
     QComboBox,
-    QPushButton,
     QLabel,
     QDialogButtonBox,
     QMessageBox,

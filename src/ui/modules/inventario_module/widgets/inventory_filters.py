@@ -30,7 +30,7 @@ VERSIÓN: v0.0.12
 """
 
 import logging
-from typing import List, Dict, Any, Callable
+from typing import List, Dict, Any
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -42,10 +42,8 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QSlider,
     QLabel,
-    QFrame,
 )
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
 
 from src.utils.modern_styles import ModernStyles
 
@@ -305,7 +303,6 @@ class InventoryFiltersWidget(QWidget):
     def _on_filter_changed(self):
         """Maneja cambios en los filtros"""
         # Auto-aplicar filtros en tiempo real (opcional)
-        pass
 
     def _on_state_all_changed(self, checked: bool):
         """Maneja el cambio del checkbox 'Todos'"""

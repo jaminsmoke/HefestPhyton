@@ -9,29 +9,17 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QGridLayout,
-    QSplitter,
     QLabel,
-    QPushButton,
-    QLineEdit,
-    QComboBox,
-    QTableWidget,
-    QTableWidgetItem,
     QTabWidget,
     QFrame,
-    QScrollArea,
-    QGroupBox,
     QSizePolicy,
-    QHeaderView,
-    QSpacerItem,
     QMessageBox,
     QApplication,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QPalette, QColor
+from PyQt6.QtCore import Qt
 
 from ui.modules.module_base_interface import BaseModule
-from services.tpv_service import TPVService, Mesa, Producto, Comanda, LineaComanda
+from services.tpv_service import TPVService, Mesa, Producto, Comanda
 from .components.reservas_agenda.reserva_service import ReservaService
 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
@@ -39,8 +27,6 @@ from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 # TPVDashboard eliminado para evitar métricas duplicadas
 # from .components.tpv_dashboard import TPVDashboard
 from .components.mesas_area import MesasArea
-from .widgets.filters_panel import FiltersPanel
-from .widgets.statistics_panel import StatisticsPanel
 from .controllers.mesa_controller import MesaController
 from .components.reservas_agenda.reservas_agenda_tab import ReservasAgendaTab
 
@@ -87,7 +73,7 @@ class TPVModule(BaseModule):
         mesa_event_bus.alias_cambiado.connect(self._on_alias_cambiado)
         # Forzar emisión de mesas tras conectar señales para asegurar que la UI reciba la lista inicial
         try:
-            from services.tpv_service import TPVService
+            pass
 
             if hasattr(self, "tpv_service") and self.tpv_service:
                 mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
@@ -225,7 +211,6 @@ class TPVModule(BaseModule):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
         )
         # Refuerzo defensivo: limpiar layout anterior antes de crear uno nuevo y asignar layout con setLayout
-        import logging
 
         clear_layout(self.mesas_widget)
         old_layout = self.mesas_widget.layout()

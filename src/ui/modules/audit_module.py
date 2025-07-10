@@ -4,8 +4,6 @@ Muestra los registros de auditoría y permite filtrarlos.
 """
 
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
     QTableWidget,
     QTableWidgetItem,
     QHeaderView,
@@ -14,7 +12,6 @@ from PyQt6.QtWidgets import (
 )
 from ui.modules.module_base_interface import BaseModule
 from services.audit_service import AuditService
-from PyQt6.QtCore import Qt
 import logging
 
 logger = logging.getLogger(__name__)

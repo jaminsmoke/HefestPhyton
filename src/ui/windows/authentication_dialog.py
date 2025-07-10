@@ -10,15 +10,10 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
-    QHBoxLayout,
-    QFrame,
-    QMessageBox,
     QCheckBox,
 )
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QIcon, QPixmap, QFont, QPalette, QColor
+from PyQt6.QtCore import Qt
 
-from utils.animation_helper import AnimationHelper, EffectsHelper
 from services.auth_service import get_auth_service
 
 logger = logging.getLogger(__name__)

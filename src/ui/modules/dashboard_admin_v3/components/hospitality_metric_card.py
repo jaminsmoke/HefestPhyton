@@ -3,9 +3,8 @@ Tarjeta de métricas especializada para hostelería con datos reales
 COMPLETAMENTE AUTO-GESTIONADA - Se conecta directamente al RealDataManager
 """
 
-from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QProgressBar
+from PyQt6.QtCore import pyqtSignal, QTimer
 
 from .dashboard_metric_components import UltraModernMetricCard
 import logging

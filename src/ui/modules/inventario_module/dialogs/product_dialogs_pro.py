@@ -50,15 +50,13 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QFrame,
     QMessageBox,
-    QDialogButtonBox,
     QGroupBox,
     QCheckBox,
-    QDateEdit,
     QWidget,
     QScrollArea,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QDate
-from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtCore import Qt, QDate
+from PyQt6.QtGui import QFont
 
 from services.inventario_service_real import Producto
 

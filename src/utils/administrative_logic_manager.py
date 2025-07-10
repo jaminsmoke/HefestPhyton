@@ -4,8 +4,8 @@ Maneja objetivos, tendencias y progreso basado en criterios de negocio hotelero
 Consulta datos reales de la base de datos
 """
 
-from typing import Dict, Any, Tuple, Optional
-from datetime import datetime, timedelta
+from typing import Dict, Any
+from datetime import datetime
 import logging
 from data.db_manager import DatabaseManager
 

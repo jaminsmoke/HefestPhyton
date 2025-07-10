@@ -6,8 +6,6 @@ Interfaz dedicada para la gestión completa de categorías de productos
 """
 
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -22,14 +20,12 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QGroupBox,
     QGridLayout,
-    QSpacerItem,
-    QSizePolicy,
     QMessageBox,
     QDialog,
     QTextEdit,
 )
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtGui import QFont
 
 logger = logging.getLogger(__name__)
 

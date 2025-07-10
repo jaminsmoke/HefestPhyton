@@ -20,19 +20,17 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QApplication,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime, QFile, QPropertyAnimation
-from PyQt6.QtGui import QCloseEvent, QAction, QPalette, QColor, QIcon
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime, QPropertyAnimation
+from PyQt6.QtGui import QAction
 
 from src.__version__ import __version__
 from ..components.main_navigation_sidebar import ModernSidebar
-from ..modules.module_base_interface import BaseModule
 
 # === SISTEMA VISUAL V3 ULTRA-MODERNO ===
 from ..modules.dashboard_admin_v3.ultra_modern_admin_dashboard import (
     UltraModernAdminDashboard,
 )
 
-from utils.qt_css_compat import purge_modern_css_from_widget_tree
 
 # Importar servicios de autenticación y auditoría
 from services.auth_service import get_auth_service
@@ -41,7 +39,6 @@ from core.hefest_data_models import Role
 from data.db_manager import DatabaseManager
 
 # Importar decorador de roles
-from utils.decorators import require_role
 
 logger = logging.getLogger(__name__)
 

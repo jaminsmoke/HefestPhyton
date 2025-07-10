@@ -14,12 +14,10 @@ Caracteristicas:
 - Validacion de permisos
 """
 
-import hashlib
 import logging
 import time
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, field
-from enum import Enum
 
 from core.hefest_data_models import User, Role
 from .base_service import BaseService
@@ -30,13 +28,11 @@ logger = logging.getLogger(__name__)
 class AuthenticationError(Exception):
     """Excepcion para errores de autenticacion"""
 
-    pass
 
 
 class PermissionError(Exception):
     """Excepcion para errores de permisos"""
 
-    pass
 
 
 @dataclass

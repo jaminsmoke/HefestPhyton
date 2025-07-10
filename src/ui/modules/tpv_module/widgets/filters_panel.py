@@ -4,7 +4,6 @@ Versión: v0.0.14
 """
 
 import logging
-from typing import Callable, Optional
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -13,7 +12,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFrame,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +42,6 @@ class FiltersPanel(QFrame):
 
     def setup_ui(self):
         """Configura la interfaz del panel de filtros"""
-        import logging
 
         self.setStyleSheet(
             """

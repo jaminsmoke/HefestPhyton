@@ -12,7 +12,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFrame,
     QTabWidget,
-    QSizePolicy,
 )
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont

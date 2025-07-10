@@ -77,4 +77,3 @@ class BaseModule(QWidget):
 
     def refresh(self):
         """Actualiza los datos del módulo"""
-        pass

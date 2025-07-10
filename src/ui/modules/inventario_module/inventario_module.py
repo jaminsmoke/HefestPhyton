@@ -9,10 +9,8 @@ Widget principal que organiza el inventario en pestañas separadas:
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 
 from PyQt6.QtWidgets import (
-    QWidget,
     QVBoxLayout,
     QHBoxLayout,
     QPushButton,
@@ -21,8 +19,7 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtCore import pyqtSignal
 
 from ..module_base_interface import BaseModule
 from services.inventario_service_real import InventarioService
@@ -177,7 +174,6 @@ class InventarioModule(BaseModule):
     def on_suppliers_updated(self):
         """Manejar actualización de proveedores"""
         # Los proveedores pueden afectar a los productos en el futuro
-        pass
 
     def get_module_name(self) -> str:
         """Obtener el nombre del módulo"""

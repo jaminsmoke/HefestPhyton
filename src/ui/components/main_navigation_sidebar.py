@@ -13,7 +13,6 @@ from PyQt6.QtWidgets import (
     QMessageBox,
 )
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
 
 # Importar servicios de autenticación
 from services.auth_service import get_auth_service

@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QLabel,
-    QPushButton,
     QComboBox,
 )
 from services.auth_service import get_auth_service

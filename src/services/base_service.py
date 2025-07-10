@@ -95,7 +95,6 @@ class BaseService(ABC):
     @abstractmethod
     def get_service_name(self) -> str:
         """Retorna el nombre del servicio para logging y debugging"""
-        pass
 
     def get_service_status(self) -> Dict[str, Any]:
         """

@@ -8,7 +8,6 @@ from typing import Optional, Dict, Any, List
 from core.hefest_data_models import User
 import logging
 
-from .base_service import BaseService
 
 logger = logging.getLogger(__name__)
 

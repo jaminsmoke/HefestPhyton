@@ -4,7 +4,7 @@ Versión: v0.0.14
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import List
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -17,13 +17,11 @@ from PyQt6.QtWidgets import (
     QScrollArea,
     QFrame,
     QSizePolicy,
-    QToolButton,
-    QButtonGroup,
     QSpacerItem,
     QApplication,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve, QSize
-from PyQt6.QtGui import QFont, QPalette, QColor, QIcon, QPixmap
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont
 
 from services.tpv_service import Producto
 

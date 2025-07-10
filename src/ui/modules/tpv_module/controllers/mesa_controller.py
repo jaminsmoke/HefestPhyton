@@ -4,8 +4,7 @@ Versión: v0.0.14
 """
 
 import logging
-from typing import List, Optional, Callable
-from PyQt6.QtWidgets import QMessageBox
+from typing import List, Optional
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from services.tpv_service import TPVService, Mesa

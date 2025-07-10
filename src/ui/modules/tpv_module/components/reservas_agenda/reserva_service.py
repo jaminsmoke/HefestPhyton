@@ -136,7 +136,6 @@ class ReservaService:
     def cancelar_reserva(self, reserva_id: int, tpv_service=None) -> bool:
         """Cancela la reserva cambiando su estado a 'cancelada' y libera la mesa en la tabla mesas. Además, emite el evento mesa_actualizada para refresco UI inmediato."""
         from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
-        import logging
         # logger = logging.getLogger("reserva_service")
         mesa_obj = None
         with sqlite3.connect(self.db_path) as conn:

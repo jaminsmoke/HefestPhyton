@@ -3,7 +3,7 @@ kpi_components.py
 Componentes reutilizables para widgets KPI avanzados (tooltips, badges, animaciones, sparkline, accesibilidad, layout)
 """
 
-from PyQt6.QtWidgets import QFrame, QLabel, QWidget
+from PyQt6.QtWidgets import QLabel
 from PyQt6.QtCore import Qt
 
 

@@ -44,7 +44,6 @@ FECHA: Diciembre 2024
 """
 
 import logging
-from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from PyQt6.QtWidgets import (
@@ -59,23 +58,17 @@ from PyQt6.QtWidgets import (
     QHeaderView,
     QLineEdit,
     QComboBox,
-    QGroupBox,
-    QGridLayout,
-    QSpacerItem,
-    QSizePolicy,
     QMessageBox,
     QDialog,
     QFileDialog,
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtGui import QColor
 
 # Importar diálogos profesionales
 from ..dialogs.product_dialogs_pro import (
     NewProductDialog,
     EditProductDialog,
-    StockAdjustmentDialog,
-    DeleteConfirmationDialog,
 )
 
 logger = logging.getLogger(__name__)

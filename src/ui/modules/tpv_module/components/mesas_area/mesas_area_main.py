@@ -4,13 +4,12 @@ Clase principal MesasArea (coordinador) y punto de entrada del área modularizad
 """
 
 import logging
-from typing import List, Optional, Callable, Dict
+from typing import List, Optional, Dict
 from PyQt6.QtWidgets import QFrame, QVBoxLayout
 from PyQt6.QtCore import pyqtSignal
 
 from ...widgets.mesa_widget_simple import MesaWidget
 from services.tpv_service import Mesa, TPVService
-from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
 # Importar subcomponentes
 from .mesas_area_header import FiltersSectionUltraPremium
@@ -22,7 +21,6 @@ from .mesas_area_grid import (
 )
 from .mesas_area_stats import update_stats_from_mesas
 from .mesas_area_utils import (
-    calcular_columnas_optimas,
     restaurar_datos_temporales,
     guardar_dato_temporal,
 )

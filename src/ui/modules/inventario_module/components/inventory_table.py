@@ -7,7 +7,7 @@ específicos para la gestión de inventario en hostelería.
 """
 
 import logging
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -19,14 +19,11 @@ from PyQt6.QtWidgets import (
     QLabel,
     QFrame,
     QProgressBar,
-    QComboBox,
-    QLineEdit,
     QAbstractItemView,
     QMenu,
-    QMessageBox,
 )
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QColor, QFont, QAction
+from PyQt6.QtGui import QColor, QAction
 
 from src.utils.modern_styles import ModernStyles
 

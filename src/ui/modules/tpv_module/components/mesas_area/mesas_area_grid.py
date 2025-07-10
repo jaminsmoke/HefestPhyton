@@ -3,7 +3,7 @@ mesas_area_grid.py
 Lógica y helpers para el grid de mesas y renderizado de widgets
 """
 
-from PyQt6.QtWidgets import QGridLayout, QWidget, QLabel, QFrame, QVBoxLayout
+from PyQt6.QtWidgets import QGridLayout, QWidget
 from PyQt6.QtCore import Qt
 
 

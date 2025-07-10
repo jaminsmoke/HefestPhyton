@@ -5,9 +5,8 @@ Versión: v0.0.14
 
 import logging
 from typing import Optional
-from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel
+from PyQt6.QtCore import QTimer
 
 from services.tpv_service import TPVService
 

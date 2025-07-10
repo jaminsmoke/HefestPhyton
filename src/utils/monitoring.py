@@ -361,7 +361,6 @@ class AlertManager:
     def _send_alert_notification(self, rule: Dict[str, Any], current_value: float):
         """Envía notificación de alerta."""
         # Implementar envío de notificaciones (email, webhook, etc.)
-        pass
 
 
 class PerformanceMonitor:

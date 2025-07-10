@@ -5,11 +5,9 @@ NUEVA FEATURE: Nombre editable con doble-click (ID fijo)
 Versión: v0.0.14 - FIXED RESPONSIVE ALIAS
 """
 
-from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit, QMenu
+from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent
 from PyQt6.QtGui import QFont
-from PyQt6.QtGui import QAction
-import sys
 
 from services.tpv_service import Mesa
 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
@@ -179,7 +177,6 @@ class MesaWidget(QFrame):
 
     def setup_ui(self):
         from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
-        from PyQt6.QtGui import QIcon
 
         # Protección: limpiar layout anterior si existe
         old_layout = self.layout()
@@ -849,7 +846,6 @@ class MesaWidget(QFrame):
             QSizePolicy,
         )
         from PyQt6.QtCore import Qt
-        from PyQt6.QtGui import QFont, QIcon
 
         valor_actual = self.mesa.personas_display
         valor_original = self.mesa.capacidad

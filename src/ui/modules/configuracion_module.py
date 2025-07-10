@@ -18,20 +18,16 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QGroupBox,
     QFormLayout,
-    QTextEdit,
-    QScrollArea,
     QFrame,
     QGridLayout,
-    QSlider,
-    QProgressBar,
     QFileDialog,
     QMessageBox,
     QTableWidget,
     QTableWidgetItem,
     QHeaderView,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QPixmap, QColor, QColor
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtGui import QColor, QColor
 
 from ui.modules.module_base_interface import BaseModule
 from utils.application_config_manager import ConfigManager

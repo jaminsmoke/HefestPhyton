@@ -40,7 +40,7 @@ VERSIÓN: v0.0.12
 """
 
 import logging
-from typing import List, Dict, Any, Optional, Callable
+from typing import List, Dict, Any
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -54,7 +54,7 @@ from PyQt6.QtWidgets import (
     QFrame,
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QStringListModel, QTimer
-from PyQt6.QtGui import QFont, QColor
+from PyQt6.QtGui import QColor
 
 from src.utils.modern_styles import ModernStyles
 

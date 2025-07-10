@@ -3,8 +3,7 @@ Servicio de datos para el Dashboard de Hefest - Versión funcional
 """
 
 import logging
-from datetime import datetime, date, timedelta
-from typing import Dict, List, Tuple, Optional, Union
+from typing import Dict, List, Optional
 from dataclasses import dataclass
 
 from .base_service import BaseService

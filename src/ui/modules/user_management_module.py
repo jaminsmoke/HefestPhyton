@@ -5,8 +5,6 @@ Permite ver y gestionar usuarios del sistema.
 
 import logging
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
     QHBoxLayout,
     QTableWidget,
     QTableWidgetItem,
@@ -15,14 +13,11 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 from ui.modules.module_base_interface import BaseModule
-from core.hefest_data_models import User, Role
+from core.hefest_data_models import User
 from services.auth_service import get_auth_service
-from services.audit_service import AuditService
-from utils.decorators import require_role
 
 logger = logging.getLogger(__name__)
 

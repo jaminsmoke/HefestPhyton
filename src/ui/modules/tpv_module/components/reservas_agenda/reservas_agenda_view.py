@@ -21,10 +21,6 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QDateTime, pyqtSignal, QTimer, QSize
 from typing import Any, Optional
 from .reserva_service import ReservaService
-from core.hefest_data_models import Reserva
-from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
-from datetime import datetime, timedelta
-from services.tpv_service import Mesa
 
 
 class CrearReservaDialog(QDialog):

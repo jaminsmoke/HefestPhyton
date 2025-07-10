@@ -6,8 +6,6 @@ Interfaz dedicada para la gestión completa de proveedores
 """
 
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -23,8 +21,6 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QGroupBox,
     QGridLayout,
-    QSpacerItem,
-    QSizePolicy,
     QMessageBox,
     QDialog,
     QTextEdit,

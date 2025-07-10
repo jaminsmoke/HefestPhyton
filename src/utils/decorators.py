@@ -5,7 +5,6 @@ Funciones auxiliares para control de acceso y otras funcionalidades.
 
 from functools import wraps
 from services.auth_service import get_auth_service
-from core.hefest_data_models import Role
 from PyQt6.QtWidgets import QMessageBox
 
 

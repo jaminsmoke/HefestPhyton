@@ -34,7 +34,6 @@ def get_dashboard_components():
 # Exportación directa principal
 try:
     from .ultra_modern_admin_dashboard import UltraModernAdminDashboard
-    from .components import UltraModernMetricCard, HospitalityMetricCard
 
     # Alias para compatibilidad con código existente
     DashboardAdminController = UltraModernAdminDashboard
