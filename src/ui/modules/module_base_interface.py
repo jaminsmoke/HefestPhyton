@@ -17,8 +17,9 @@ except ImportError:
 
 
 class BaseModule(QWidget):
-    """Clase base para todos los módulos de la aplicación"""  # Señales comunes para todos los módulos
+    """Clase base para todos los módulos de la aplicación"""
 
+    # Señales comunes para todos los módulos
     status_changed = pyqtSignal(str)  # Para actualizar la barra de estado
     error_occurred = pyqtSignal(str)  # Para notificar errores
 

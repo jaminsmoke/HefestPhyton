@@ -233,45 +233,58 @@ class TPVService(BaseService):
             self.logger.debug(f"[persistir_comanda] lineas a persistir: {comanda.lineas}")
             if comanda.id is not None:
                 comanda_data["id"] = comanda.id
-                updated = self.db_manager.update("comandas", comanda.id, comanda_data)
+                # Verificar que db_manager está disponible antes de llamar update
+                if self.db_manager is not None:
+                    updated = self.db_manager.update("comandas", comanda.id, comanda_data)
+                else:
+                    updated = False
             else:
                 updated = False
 
             if not updated:
-                new_id = self.db_manager.insert("comandas", comanda_data)
-                comanda.id = new_id
+                # Verificar que db_manager está disponible antes de llamar insert
+                if self.db_manager is not None:
+                    new_id = self.db_manager.insert("comandas", comanda_data)
+                    comanda.id = new_id
+                else:
+                    self.logger.error("No se puede insertar comanda: db_manager no disponible")
+                    return False
 
             # Borrar líneas anteriores y añadir detalles usando la MISMA conexión/cursor
-            with self.db_manager._get_connection() as conn:
-                if comanda.id is not None:
-                    cursor = conn.cursor()
-                    cursor.execute(
-                        "DELETE FROM comanda_detalles WHERE comanda_id = ?", (comanda.id,)
-                    )
-                    for linea in comanda.lineas:
-                        detalle = (
-                            comanda.id,
-                            linea.producto_id,
-                            linea.cantidad,
-                            linea.precio_unidad,
-                            getattr(linea, "notas", None),
-                        )
-                        self.logger.debug(f"[persistir_comanda] Insertando detalle: {{'comanda_id': detalle[0], 'producto_id': detalle[1], 'cantidad': detalle[2], 'precio_unitario': detalle[3], 'notas': detalle[4]}}")
+            if self.db_manager is not None:
+                with self.db_manager._get_connection() as conn:
+                    if comanda.id is not None:
+                        cursor = conn.cursor()
                         cursor.execute(
-                            "INSERT INTO comanda_detalles (comanda_id, producto_id, cantidad, precio_unitario, notas) VALUES (?, ?, ?, ?, ?)",
-                            detalle
+                            "DELETE FROM comanda_detalles WHERE comanda_id = ?", (comanda.id,)
                         )
-                    conn.commit()
-                    cursor.execute(
-                        "SELECT producto_id, cantidad, precio_unitario FROM comanda_detalles WHERE comanda_id = ?",
-                        (comanda.id,),
-                    )
-                    lineas_db = cursor.fetchall()
-                    self.logger.debug(f"[persistir_comanda] Detalles en BD tras commit: {lineas_db}")
+                        for linea in comanda.lineas:
+                            detalle = (
+                                comanda.id,
+                                linea.producto_id,
+                                linea.cantidad,
+                                linea.precio_unidad,
+                                getattr(linea, "notas", None),
+                            )
+                            self.logger.debug(f"[persistir_comanda] Insertando detalle: {{'comanda_id': detalle[0], 'producto_id': detalle[1], 'cantidad': detalle[2], 'precio_unitario': detalle[3], 'notas': detalle[4]}}")
+                            cursor.execute(
+                                "INSERT INTO comanda_detalles (comanda_id, producto_id, cantidad, precio_unitario, notas) VALUES (?, ?, ?, ?, ?)",
+                                detalle
+                            )
+                        conn.commit()
+                        cursor.execute(
+                            "SELECT producto_id, cantidad, precio_unitario FROM comanda_detalles WHERE comanda_id = ?",
+                            (comanda.id,),
+                        )
+                        lineas_db = cursor.fetchall()
+                        self.logger.debug(f"[persistir_comanda] Detalles en BD tras commit: {lineas_db}")
+            else:
+                self.logger.error("No se pueden persistir detalles: db_manager no disponible")
+                return False
 
             # ACTUALIZAR ESTADO DE LA MESA EN BD SEGÚN LA LÓGICA DE NEGOCIO (por numero)
             try:
-                if hasattr(comanda, 'mesa_id') and comanda.mesa_id:
+                if hasattr(comanda, 'mesa_id') and comanda.mesa_id and self.db_manager is not None:
                     mesa_obj = next((m for m in self._mesas_cache if str(m.numero) == str(comanda.mesa_id)), None)
                     if mesa_obj:
                         if comanda.estado in ("abierta", "en_proceso"):

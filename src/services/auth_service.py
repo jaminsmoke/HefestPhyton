@@ -72,10 +72,10 @@ class AuthService(BaseService):
 
     from typing import Any, Optional
 
-    try:
+    # Import para type hints
+    from typing import TYPE_CHECKING
+    if TYPE_CHECKING:
         from data.db_manager import DatabaseManager
-    except ImportError:
-        DatabaseManager = Any  # fallback para tipado
 
     def __init__(self, db_manager: Optional["DatabaseManager"] = None):
         """

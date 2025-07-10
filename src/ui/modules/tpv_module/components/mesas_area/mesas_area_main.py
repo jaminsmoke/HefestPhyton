@@ -306,7 +306,7 @@ class MesasArea(QFrame):
             restaurar_datos_temporales(self, mesas)
         self.mesas = mesas
         # Buscar el widget de filtros en el header y actualizar chips de zona si existe
-        if hasattr(self, "header"):
+        if hasattr(self, "header") and self.header is not None:
             filtros = None
             for child in self.header.findChildren(FiltersSectionUltraPremium):
                 if child.objectName() == "FiltersSectionUltraPremium":
@@ -781,7 +781,7 @@ class MesasArea(QFrame):
             self._zonas_personalizadas = set()
         self._zonas_personalizadas.add(nombre_zona)
         # Forzar actualización de chips de zona en el header
-        if hasattr(self, "header"):
+        if hasattr(self, "header") and self.header is not None:
             for child in self.header.findChildren(FiltersSectionUltraPremium):
                 if hasattr(child, "update_zonas_chips"):
                     child.update_zonas_chips()

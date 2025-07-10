@@ -4,7 +4,7 @@ Diálogo moderno y organizado para gestión completa de mesas
 """
 
 import logging
-from typing import Optional
+from typing import Optional, Any
 from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
@@ -34,6 +34,12 @@ logger = logging.getLogger(__name__)
 
 
 class MesaDialog(TabbedDialog):
+    """Diálogo de gestión de mesa con pestañas para múltiples operaciones"""
+
+    # Anotaciones de tipo para atributos
+    mesa: Mesa
+    reserva_service: Optional[Any]
+
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
         # Si la actualización es para esta mesa, refrescar datos y UI
         if str(getattr(mesa_actualizada, "numero", None)) == str(
