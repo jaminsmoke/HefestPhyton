@@ -125,3 +125,21 @@ release/
 
 # ===== VISUAL STUDIO Y COPILOT CHAT =====
 .vs/
+
+# ===== CONFIGURACIÓN DE CALIDAD DE CÓDIGO =====
+# INCLUIR: Archivos de configuración de herramientas de calidad
+# .codacy.yml          - Configuración principal de Codacy
+# .pylintrc            - Configuración de Pylint
+# bandit.yml           - Configuración de análisis de seguridad
+# .prospector.yml      - Configuración de Prospector
+# .markdownlint.json   - Configuración de linting de Markdown
+# pyproject.toml       - Configuración de proyecto Python (ya incluido)
+# .cspell.json         - Configuración de corrector ortográfico (ya incluido)
+
+# EXCLUIR: Reportes y resultados temporales de análisis
+.codacy/
+codacy-analysis.json
+codacy-coverage.xml
+.prospector-report/
+pylint-report.txt
+bandit-report.json
