@@ -113,6 +113,30 @@ class Producto:
         """
         return self.precio * self.stock_actual
 
+    @property
+    def stock(self) -> int:
+        """
+        Alias para stock_actual para compatibilidad con código legacy.
+        
+        Returns
+        -------
+        int
+            Stock actual del producto.
+        """
+        return self.stock_actual
+
+    @stock.setter
+    def stock(self, value: int):
+        """
+        Setter para stock que actualiza stock_actual.
+        
+        Parameters
+        ----------
+        value : int
+            Nuevo valor de stock.
+        """
+        self.stock_actual = value
+
     def __str__(self):
         return (
             f"Producto(id={self.id}, nombre='{self.nombre}', stock={self.stock_actual})"

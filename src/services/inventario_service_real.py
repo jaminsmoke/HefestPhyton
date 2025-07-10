@@ -8,36 +8,12 @@ Cambios: Restauración completa + soporte de categorías para proveedores
 
 import logging
 from typing import List, Dict, Optional, Any
-from dataclasses import dataclass
 from datetime import datetime
 
 from .base_service import BaseService
+from core.hefest_data_models import Producto
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class Producto:
-    """Clase de datos para un producto del inventario"""
-
-    id: Optional[int]
-    nombre: str
-    categoria: str
-    precio: float
-    stock_actual: int
-    stock_minimo: int
-    proveedor_id: Optional[int] = None
-    proveedor_nombre: Optional[str] = None
-    fecha_ultima_entrada: Optional[datetime] = None
-
-    def necesita_reposicion(self) -> bool:
-        """Indica si el producto necesita reposición"""
-        return self.stock_actual <= self.stock_minimo
-
-    @property
-    def valor_total(self) -> float:
-        """Valor total del stock (precio * cantidad)"""
-        return self.precio * self.stock_actual
 
 
 class InventarioService(BaseService):

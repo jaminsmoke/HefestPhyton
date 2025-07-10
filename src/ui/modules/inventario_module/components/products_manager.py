@@ -355,11 +355,11 @@ class ProductsManagerWidget(QWidget):
                 self.products_table.setItem(row, 3, precio_item)
 
                 # Stock actual
-                stock_item = QTableWidgetItem(str(producto.stock))
+                stock_item = QTableWidgetItem(str(producto.stock_actual))
                 stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 # Colorear según nivel de stock
-                if producto.stock == 0:
+                if producto.stock_actual == 0:
                     stock_item.setBackground(QColor("#fee2e2"))  # Rojo claro
                 elif producto.necesita_reposicion():
                     stock_item.setBackground(QColor("#fef3c7"))  # Amarillo claro
