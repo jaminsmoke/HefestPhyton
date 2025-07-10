@@ -8,6 +8,7 @@ Este módulo inicializa los componentes principales y lanza la interfaz gráfica
 import sys
 import re
 import logging
+from typing import Optional, Type, Any
 from PyQt6.QtWidgets import QApplication, QDialog, QInputDialog, QLineEdit, QMessageBox
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
@@ -44,12 +45,15 @@ logger = logging.getLogger(__name__)
 logging.captureWarnings(True)
 
 # === Manejo global de excepciones no capturadas ===
-import sys
-def global_exception_hook(exc_type, exc_value, exc_traceback):
+def global_exception_hook(
+    exc_type: Type[BaseException],
+    exc_value: BaseException,
+    exc_traceback: Optional[Any]
+) -> None:
     if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)  # type: ignore
         return
-    logger.critical("Excepción no capturada", exc_info=(exc_type, exc_value, exc_traceback))
+    logger.critical("Excepción no capturada", exc_info=(exc_type, exc_value, exc_traceback))  # type: ignore
     # Opcional: mostrar mensaje de error al usuario
     try:
         from PyQt6.QtWidgets import QMessageBox
@@ -80,27 +84,32 @@ class Hefest:
         # Filtro para warnings de CSS backdrop-filter (stdout y stderr)
         import io
         import sys as _sys
+        from typing import List
+
         class CSSWarningFilter(io.StringIO):
-            def __init__(self, original):
+            def __init__(self, original: Any) -> None:
                 super().__init__()
                 self._original = original
-                self._buffer = ""
-            def write(self, txt):
-                self._buffer += txt
-                while "\n" in self._buffer:
-                    line, self._buffer = self._buffer.split("\n", 1)
-                    if not re.search(r"Unknown property backdrop-filter", line):
-                        if self._original is not None and hasattr(self._original, "write"):
-                            self._original.write(line + "\n")
-            def flush(self):
-                if self._buffer:
-                    if not re.search(r"Unknown property backdrop-filter", self._buffer):
-                        if self._original is not None and hasattr(self._original, "write"):
-                            self._original.write(self._buffer)
+                self._buffer: str = ""
+
+            def write(self, txt: str) -> None:  # type: ignore
+                self._buffer += txt  # type: ignore
+                while "\n" in self._buffer:  # type: ignore
+                    line, self._buffer = self._buffer.split("\n", 1)  # type: ignore
+                    if not re.search(r"Unknown property backdrop-filter", line):  # type: ignore
+                        if self._original is not None and hasattr(self._original, "write"):  # type: ignore
+                            self._original.write(line + "\n")  # type: ignore
+
+            def flush(self) -> None:
+                if self._buffer:  # type: ignore
+                    if not re.search(r"Unknown property backdrop-filter", self._buffer):  # type: ignore
+                        if self._original is not None and hasattr(self._original, "write"):  # type: ignore
+                            self._original.write(self._buffer)  # type: ignore
                     self._buffer = ""
-            def writelines(self, lines):
-                for line in lines:
-                    self.write(line)
+
+            def writelines(self, lines: List[str]) -> None:  # type: ignore
+                for line in lines:  # type: ignore
+                    self.write(line)  # type: ignore
         _sys.stderr = CSSWarningFilter(_sys.__stderr__)
         _sys.stdout = CSSWarningFilter(_sys.__stdout__)
         # Intentar filtrar también mensajes de Qt (si es posible)
@@ -186,7 +195,7 @@ class Hefest:
 
         # Mostrar el selector de usuario
         user_selector = UserSelector(self.auth_service)
-        user_selector.user_selected.connect(self.authenticate_user)
+        user_selector.user_selected.connect(self.authenticate_user)  # type: ignore
 
         # Ejecutar el selector
         result = user_selector.exec()

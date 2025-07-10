@@ -3,11 +3,12 @@ mesas_area_grid.py
 Lógica y helpers para el grid de mesas y renderizado de widgets
 """
 
-from PyQt6.QtWidgets import QGridLayout, QWidget
+from typing import Any, Optional, List
+from PyQt6.QtWidgets import QGridLayout, QWidget, QLayout, QScrollArea
 from PyQt6.QtCore import Qt
 
 
-def create_scroll_area(instance, layout):
+def create_scroll_area(instance: Any, layout: QLayout) -> QScrollArea:
     from PyQt6.QtWidgets import QScrollArea, QWidget, QGridLayout
     from PyQt6.QtCore import Qt
 
@@ -28,14 +29,14 @@ def create_scroll_area(instance, layout):
         Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter
     )
     scroll_area.setWidget(mesas_container)
-    layout.addWidget(scroll_area, 1)
+    layout.addWidget(scroll_area)
     instance.scroll_area = scroll_area
     return scroll_area
 
 
-def populate_grid(instance):
+def populate_grid(instance: Any) -> None:
     from ...widgets.mesa_widget_simple import MesaWidget
-    from .mesas_area_utils import restaurar_datos_temporales, calcular_columnas_optimas
+    from .mesas_area_utils import restaurar_datos_temporales, calcular_columnas_optimas  # type: ignore[misc]
     from PyQt6.QtCore import QTimer
 
     restaurar_datos_temporales(instance, instance.filtered_mesas)
@@ -63,8 +64,6 @@ def populate_grid(instance):
         return set(range(first_row, last_row))
 
     def lazy_load_rows():
-        import logging
-        logger = logging.getLogger("mesas_area_grid")
         visible_rows = get_visible_rows()
         tpv_service = getattr(instance, "tpv_service", None)
         for row in visible_rows:
@@ -80,12 +79,12 @@ def populate_grid(instance):
                     proxima_reserva=getattr(mesa, "proxima_reserva", None),
                     tpv_service=tpv_service,
                 )
-                mesa_widget.personas_changed.connect(instance._on_personas_mesa_changed)
-                mesa_widget.restaurar_original.connect(
+                mesa_widget.personas_changed.connect(instance._on_personas_mesa_changed)  # type: ignore
+                mesa_widget.restaurar_original.connect(  # type: ignore
                     instance.restaurar_estado_original_mesa
                 )
-                mesa_widget.reservar_mesa_requested.connect(instance._on_reservar_mesa)
-                mesa_widget.iniciar_tpv_requested.connect(instance._on_iniciar_tpv)
+                mesa_widget.reservar_mesa_requested.connect(instance._on_reservar_mesa)  # type: ignore
+                mesa_widget.iniciar_tpv_requested.connect(instance._on_iniciar_tpv)  # type: ignore
                 instance.mesa_widgets.append(mesa_widget)
                 instance.mesas_layout.addWidget(mesa_widget, row, col)
                 # logger.debug(f"[CICLO][GRID] addWidget: mesa={getattr(mesa, 'numero', None)} estado={getattr(mesa, 'estado', None)} en row={row} col={col}")
@@ -96,17 +95,17 @@ def populate_grid(instance):
     from PyQt6.QtCore import QTimer
 
     def on_scroll():
-        QTimer.singleShot(10, lazy_load_rows)
+        QTimer.singleShot(10, lazy_load_rows)  # type: ignore
 
     scroll = instance.scroll_area.verticalScrollBar()
     if scroll:
-        scroll.valueChanged.connect(on_scroll)
+        scroll.valueChanged.connect(on_scroll)  # type: ignore
     lazy_load_rows()
 
 
 # Métodos para conectar en la instancia (por ejemplo, en la clase del área de mesas)
-def add_mesa_grid_callbacks_to_instance(instance):
-    def _on_reservar_mesa(mesa):
+def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
+    def _on_reservar_mesa(mesa: Any) -> None:
         try:
             from src.ui.modules.tpv_module.dialogs.reserva_dialog import ReservaDialog
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
@@ -115,7 +114,7 @@ def add_mesa_grid_callbacks_to_instance(instance):
             logging.getLogger(__name__).debug(f"[mesas_area_grid] _on_reservar_mesa: Abriendo ReservaDialog para mesa_id={getattr(mesa, 'id', None)}")
             # Mantener referencia al dialog para evitar recolección de basura
             if not hasattr(instance, "_active_dialogs"):
-                instance._active_dialogs = []
+                instance._active_dialogs = []  # type: ignore[attr-defined]
             logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Creando ReservaDialog")
             dialog = ReservaDialog(
                 instance,
@@ -123,9 +122,9 @@ def add_mesa_grid_callbacks_to_instance(instance):
                 reserva_service=getattr(instance, "reserva_service", None),
             )
             logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] ReservaDialog creado")
-            instance._active_dialogs.append(dialog)
+            instance._active_dialogs.append(dialog)  # type: ignore[attr-defined]
 
-            def on_reserva_creada(reserva):
+            def on_reserva_creada(reserva: Any) -> None:
                 logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Callback on_reserva_creada ejecutado. reserva={reserva}")
                 reserva_service = getattr(instance, "reserva_service", None)
                 if reserva_service is None:
@@ -200,14 +199,14 @@ def add_mesa_grid_callbacks_to_instance(instance):
                         pass
 
             logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Conectando señal reserva_creada de dialog a on_reserva_creada")
-            dialog.reserva_creada.connect(on_reserva_creada)
+            dialog.reserva_creada.connect(on_reserva_creada)  # type: ignore
             logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Ejecutando dialog.exec() para dialog")
             dialog.exec()
             logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] dialog.exec() finalizado para dialog")
             # Si el usuario cierra el diálogo sin crear reserva, limpiar referencia
             if hasattr(instance, "_active_dialogs"):
                 try:
-                    instance._active_dialogs.remove(dialog)
+                    instance._active_dialogs.remove(dialog)  # type: ignore[attr-defined]
                 except Exception:
                     pass
         except Exception as e:
@@ -215,7 +214,7 @@ def add_mesa_grid_callbacks_to_instance(instance):
 
             logging.getLogger(__name__).error(f"Error abriendo ReservaDialog: {e}")
 
-    def _on_iniciar_tpv(mesa):
+    def _on_iniciar_tpv(mesa: Any) -> None:
         try:
             from src.ui.modules.tpv_module.components.tpv_avanzado.tpv_avanzado_main import (
                 TPVAvanzado,
@@ -229,15 +228,15 @@ def add_mesa_grid_callbacks_to_instance(instance):
                 )
 
             class TPVDialog(QDialog):
-                def __init__(self, mesa, parent=None):
+                def __init__(self, mesa: Any, parent: Optional[QWidget] = None) -> None:
                     super().__init__(parent)
-                    self.setWindowTitle(f"TPV Avanzado - Mesa {mesa.numero}")
+                    self.setWindowTitle(f"TPV Avanzado - Mesa {mesa.numero}")  # type: ignore[attr-defined]
                     self.setMinimumSize(900, 600)
                     layout = QVBoxLayout(self)
                     tpv_service = getattr(instance, "tpv_service", None)
                     comanda = None
                     if tpv_service and hasattr(tpv_service, "get_comanda_activa"):
-                        comanda = tpv_service.get_comanda_activa(mesa.numero)
+                        comanda = tpv_service.get_comanda_activa(mesa.numero)  # type: ignore[attr-defined]
                     self.tpv_widget = TPVAvanzado(
                         mesa,
                         tpv_service=tpv_service,
@@ -245,7 +244,7 @@ def add_mesa_grid_callbacks_to_instance(instance):
                         parent=self,
                     )
                     if comanda:
-                        self.tpv_widget.set_pedido_actual(comanda)
+                        self.tpv_widget.set_pedido_actual(comanda)  # type: ignore[misc]
                     layout.addWidget(self.tpv_widget)
 
             dialog = TPVDialog(mesa, instance)
@@ -287,32 +286,32 @@ def clear_mesa_widgets(instance):
         logger = logging.getLogger("mesas_area_grid")
         if not hasattr(instance, "mesas_layout") or instance.mesas_layout is None:
             return
-        instance.mesa_widgets.clear()
-        layout = instance.mesas_layout
+        instance.mesa_widgets.clear()  # type: ignore[attr-defined]
+        layout = instance.mesas_layout  # type: ignore[attr-defined]
         # Eliminar TODOS los widgets del layout
-        while layout.count():
-            child = layout.takeAt(0)
+        while layout.count():  # type: ignore[attr-defined]
+            child = layout.takeAt(0)  # type: ignore[attr-defined]
             if child and child.widget():
                 widget = child.widget()
                 widget.setParent(None)
                 widget.deleteLater()
         # Extra: limpiar widgets huérfanos del contenedor (mesas_container)
-        parent_widget = layout.parentWidget() if hasattr(layout, 'parentWidget') else None
+        parent_widget = layout.parentWidget() if hasattr(layout, 'parentWidget') else None  # type: ignore[attr-defined]
         if parent_widget:
-            for w in parent_widget.findChildren(QWidget):
-                if w.parent() == parent_widget and w not in instance.mesa_widgets:
+            for w in parent_widget.findChildren(QWidget):  # type: ignore[attr-defined]
+                if w.parent() == parent_widget and w not in instance.mesa_widgets:  # type: ignore[attr-defined]
                     w.setParent(None)
                     w.deleteLater()
-            parent_widget.update()
-            parent_widget.repaint()
+            parent_widget.update()  # type: ignore[attr-defined]
+            parent_widget.repaint()  # type: ignore[attr-defined]
         # Forzar update/repaint del layout
-        layout.update()
+        layout.update()  # type: ignore[attr-defined]
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Error limpiando widgets de mesa: {e}")
 
 
-def show_no_mesas_message(instance):
+def show_no_mesas_message(instance: Any) -> None:
     from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
 
     try:
@@ -337,14 +336,14 @@ def show_no_mesas_message(instance):
         subtitle_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         subtitle_label.setStyleSheet(ModernStyles.get_subtitle_label_style())
         container_layout.addWidget(subtitle_label)
-        instance.mesas_layout.addWidget(message_container, 0, 0, 1, 4)
+        instance.mesas_layout.addWidget(message_container, 0, 0, 1, 4)  # type: ignore[attr-defined]
     except Exception as e:
         import logging
 
         logging.getLogger(__name__).error(f"Error mostrando mensaje de no mesas: {e}")
 
 
-def create_mesas_grid(parent, mesas):
+def create_mesas_grid(parent: Any, mesas: Any) -> QWidget:
     # Lógica migrada para crear el grid de mesas
     grid_widget = QWidget(parent)
     layout = QGridLayout(grid_widget)

@@ -5,26 +5,28 @@ NUEVA FEATURE: Nombre editable con doble-click (ID fijo)
 Versión: v0.0.14 - FIXED RESPONSIVE ALIAS
 """
 
-from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent
-from PyQt6.QtGui import QFont
+from typing import Optional, Any
+from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit, QWidget, QDialog
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent, QObject, QPropertyAnimation
+from PyQt6.QtGui import QFont, QPaintEvent, QShowEvent, QHideEvent, QResizeEvent, QMouseEvent, QKeyEvent
 
 from services.tpv_service import Mesa
+from src.core.hefest_data_models import Reserva
 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 from src.utils.modern_styles import ModernStyles
 
 
 class MesaWidget(QFrame):
-    def showEvent(self, event):
+    def showEvent(self, event: QShowEvent) -> None:
         super().showEvent(event)
 
-    def hideEvent(self, event):
+    def hideEvent(self, event: QHideEvent) -> None:
         super().hideEvent(event)
 
-    def paintEvent(self, event):
+    def paintEvent(self, event: QPaintEvent) -> None:
         super().paintEvent(event)
 
-    def _on_reserva_event_bus_creada(self, reserva):
+    def _on_reserva_event_bus_creada(self, reserva: Reserva) -> None:
         # Si la reserva es para esta mesa, actualizar estado y contador
         mesa_numero = str(getattr(self.mesa, "numero", None))
         reserva_mesa_id = str(getattr(reserva, "mesa_id", None))
@@ -49,7 +51,7 @@ class MesaWidget(QFrame):
     iniciar_tpv_requested = pyqtSignal(object)  # Emite la mesa
 
     # --- Selección múltiple para acciones por lotes ---
-    def set_batch_mode(self, enabled: bool):
+    def set_batch_mode(self, enabled: bool) -> None:
         self.batch_mode = enabled
         if enabled:
             if not hasattr(self, "batch_checkbox"):
@@ -69,7 +71,7 @@ class MesaWidget(QFrame):
             if hasattr(self, "batch_checkbox"):
                 self.batch_checkbox.hide()
 
-    def _on_batch_checkbox_changed(self, state):
+    def _on_batch_checkbox_changed(self, state: int) -> None:
         # Buscar el ancestro que tenga el método toggle_mesa_selection
         parent = self.parent()
         while parent is not None:
@@ -91,23 +93,23 @@ class MesaWidget(QFrame):
     personas_changed = pyqtSignal(Mesa, int)  # Señal para cambio de personas
     restaurar_original = pyqtSignal(int)  # Señal para restaurar valores originales
 
-    def __init__(self, mesa: Mesa, parent=None, proxima_reserva=None, tpv_service=None):
+    def __init__(self, mesa: Mesa, parent: Optional[Any] = None, proxima_reserva: Optional[Reserva] = None, tpv_service: Optional[Any] = None) -> None:
         super().__init__(parent)
-        self.mesa = mesa
-        self.proxima_reserva = proxima_reserva
-        self._ultima_reserva_activa = proxima_reserva  # Guarda la última reserva activa
+        self.mesa: Mesa = mesa
+        self.proxima_reserva: Optional[Reserva] = proxima_reserva
+        self._ultima_reserva_activa: Optional[Reserva] = proxima_reserva  # Guarda la última reserva activa
         self.setFixedSize(220, 160)  # Tamaño más compacto ajustado al contenido
         self.setObjectName("mesa_widget")
 
         # Variables para edición de nombre
-        self.editing_mode = False
-        self.alias_line_edit = None  # Para el modo edición
-        self.click_timer = QTimer()  # Para distinguir click simple vs doble click
+        self.editing_mode: bool = False
+        self.alias_line_edit: Optional[QLineEdit] = None  # Para el modo edición
+        self.click_timer: QTimer = QTimer()  # Para distinguir click simple vs doble click
         self.click_timer.setSingleShot(True)
         self.click_timer.timeout.connect(self._handle_single_click)
-        self.pending_click = False
+        self.pending_click: bool = False
 
-        self.tpv_service = tpv_service
+        self.tpv_service: Optional[Any] = tpv_service
 
         # --- SINCRONIZACIÓN Y PERSISTENCIA REAL AL INICIALIZAR ---
         # Refrescar estado real de la mesa desde el servicio si está disponible
@@ -168,14 +170,14 @@ class MesaWidget(QFrame):
             import logging
             logging.getLogger(__name__).warning(f"Error suscribiéndose a mesa_event_bus: {e}")
 
-    def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
+    def _on_mesa_event_bus_actualizada(self, mesa_actualizada: Mesa) -> None:
         if (
             str(getattr(mesa_actualizada, "numero", None)) == str(getattr(self.mesa, "numero", None))
             or str(getattr(mesa_actualizada, "id", None)) == str(getattr(self.mesa, "id", None))
         ):
             self.update_mesa(mesa_actualizada)
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
 
         # Protección: limpiar layout anterior si existe
@@ -324,7 +326,7 @@ class MesaWidget(QFrame):
         if self.proxima_reserva:
             self._contador_timer.start()
 
-    def get_estado_texto(self):
+    def get_estado_texto(self) -> str:
         """Obtiene el texto del estado de forma compacta"""
         estados = {
             "libre": "✓ LIBRE",
@@ -334,7 +336,7 @@ class MesaWidget(QFrame):
         }
         return estados.get(self.mesa.estado, "? DESCONOCIDO")
 
-    def get_colores(self):
+    def get_colores(self) -> dict[str, str]:
         """Obtiene los colores según el estado"""
         colores = {
             "libre": {
@@ -364,7 +366,7 @@ class MesaWidget(QFrame):
         }
         return colores.get(self.mesa.estado, colores["libre"])
 
-    def apply_styles(self):
+    def apply_styles(self) -> None:
         """Aplica estilos visuales según el estado de la mesa"""
         base_style = """
             QFrame#mesa_widget {
@@ -481,7 +483,7 @@ class MesaWidget(QFrame):
         self.contador_label.update()
         self.contador_label.repaint()
 
-    def _darken_color(self, color_hex):
+    def _darken_color(self, color_hex: str) -> str:
         """Oscurece un color hex para efectos"""
         color_map = {
             "#4caf50": "#388e3c",
@@ -491,7 +493,7 @@ class MesaWidget(QFrame):
         }
         return color_map.get(color_hex, color_hex)
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QResizeEvent) -> None:
         # import logging
         # logger = logging.getLogger("mesa_widget_simple")
         # logger.debug(f"[CICLO][MESA_WIDGET] resizeEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
@@ -559,11 +561,11 @@ class MesaWidget(QFrame):
         self.updateGeometry()
         self.repaint()
 
-    def _tiene_datos_temporales(self):
+    def _tiene_datos_temporales(self) -> bool:
         """Devuelve True si hay alias o capacidad temporal activa"""
         return bool(self.mesa.alias) or (self.mesa.personas_temporal is not None)
 
-    def update_mesa(self, mesa: Mesa):
+    def update_mesa(self, mesa: Mesa) -> None:
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario. Usa la instancia real de la mesa por 'numero'."""
         mesa_real = None
         if hasattr(self, "tpv_service") and self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_id"):
@@ -644,7 +646,7 @@ class MesaWidget(QFrame):
         self.update()
         self.repaint()
 
-    def _actualizar_contador_reserva(self):
+    def _actualizar_contador_reserva(self) -> None:
         from datetime import datetime, time
 
         reserva = self.proxima_reserva
@@ -765,7 +767,7 @@ class MesaWidget(QFrame):
 
         QTimer.singleShot(0, self._ajustar_fuente_nombre)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QMouseEvent) -> None:
         """Muestra menú emergente moderno con acciones principales al hacer click izquierdo"""
         from PyQt6.QtWidgets import QMenu
         from PyQt6.QtGui import QAction
@@ -813,7 +815,7 @@ class MesaWidget(QFrame):
 
             logging.getLogger(__name__).error(f"Error abriendo MesaDialog: {e}")
 
-    def eventFilter(self, obj, event):
+    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
         # Mostrar tooltip claro con el alias completo al hacer hover sobre el alias_label
         if obj == self.alias_label:
             if event.type() == QEvent.Type.Enter:
@@ -824,7 +826,7 @@ class MesaWidget(QFrame):
                 self.alias_label.setToolTip("")
         return super().eventFilter(obj, event)
 
-    def keyPressEvent(self, event):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
         """Maneja eventos de teclado"""
         if self.editing_mode and event.key() == Qt.Key.Key_Escape:
             # Cancelar edición con Escape
@@ -836,7 +838,6 @@ class MesaWidget(QFrame):
     def _editar_personas(self):
         """Permite editar temporalmente el número de personas de la mesa con UX moderna y visual profesional"""
         from PyQt6.QtWidgets import (
-            QDialog,
             QVBoxLayout,
             QHBoxLayout,
             QLabel,
@@ -854,7 +855,7 @@ class MesaWidget(QFrame):
 
         class PersonasDialog(QDialog):
             def __init__(
-                self, nombre_display, valor_actual, valor_original, parent=None
+                self, nombre_display: str, valor_actual: int, valor_original: int, parent: Optional[QWidget] = None
             ):
                 super().__init__(parent)
                 self.setWindowTitle("Editar número de personas")
@@ -984,7 +985,7 @@ class MesaWidget(QFrame):
             # Al finalizar edición de personas, ajustar nombre
             self._ajustar_fuente_nombre()
 
-    def _feedback_visual_label(self, label):
+    def _feedback_visual_label(self, label: QLabel) -> None:
         """
         Provides a simple visual feedback animation by making the given label briefly fade out and back in.
         This creates a blinking effect to draw the user's attention to the label.
@@ -993,7 +994,6 @@ class MesaWidget(QFrame):
             label (QWidget): The label widget to animate.
         """
         """Animación simple de parpadeo para feedback visual"""
-        from PyQt6.QtCore import QPropertyAnimation
 
         anim = QPropertyAnimation(label, b"windowOpacity")
         anim.setDuration(300)

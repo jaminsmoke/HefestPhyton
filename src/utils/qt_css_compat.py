@@ -6,12 +6,14 @@ en equivalentes compatibles con PyQt6.
 
 import re
 import logging
+from typing import Optional, Any, Dict
 from PyQt6.QtCore import QObject, QEvent
+from PyQt6.QtWidgets import QWidget
 
 logger = logging.getLogger(__name__)
 
 
-def convert_to_qt_compatible_css(css_code):
+def convert_to_qt_compatible_css(css_code: Optional[str]) -> str:
     """
     Convierte propiedades CSS modernas a equivalentes compatibles con QSS (Qt Style Sheets)
 
@@ -60,7 +62,7 @@ def convert_to_qt_compatible_css(css_code):
     return result
 
 
-def apply_qt_workarounds(widget, style_class=""):
+def apply_qt_workarounds(widget: QWidget, style_class: str = "") -> QWidget:
     """
     Aplica workarounds para simular efectos modernos en Qt
 
@@ -68,8 +70,8 @@ def apply_qt_workarounds(widget, style_class=""):
         widget (QWidget): Widget al que aplicar los workarounds
         style_class (str): Clase de estilo para aplicar efectos específicos
     """  # Si el estilo actual contiene propiedades no compatibles, convertirlo
-    if hasattr(widget, "styleSheet") and callable(widget.styleSheet):
-        current_style = widget.styleSheet()
+    if hasattr(widget, "styleSheet") and callable(widget.styleSheet):  # type: ignore[misc]
+        current_style = widget.styleSheet()  # type: ignore[misc]
         if current_style and isinstance(current_style, str):
             if (
                 "transition" in current_style
@@ -81,7 +83,7 @@ def apply_qt_workarounds(widget, style_class=""):
                 or "radial-gradient" in current_style
             ):
                 compatible_style = convert_to_qt_compatible_css(current_style)
-                widget.setStyleSheet(compatible_style)
+                widget.setStyleSheet(compatible_style)  # type: ignore[misc]
 
     return widget
 
@@ -92,18 +94,18 @@ class StylesheetFilter(QObject):
     aplicados a cualquier widget en la aplicación.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QObject] = None) -> None:
         """Inicializa el filtro de eventos"""
         super().__init__(parent)
-        self._filtered_stylesheets = {}  # Cache para no procesar repetidamente
+        self._filtered_stylesheets: Dict[str, str] = {}  # Cache para no procesar repetidamente
 
-    def eventFilter(self, obj, event):
+    def eventFilter(self, obj: Any, event: QEvent) -> bool:
         """Filtra eventos de cambio de estilo"""
         if event.type() == QEvent.Type.DynamicPropertyChange:
-            prop_name = event.propertyName().data().decode()
+            prop_name = event.propertyName().data().decode()  # type: ignore[misc]
             if prop_name == "styleSheet":
-                if hasattr(obj, "styleSheet") and callable(obj.styleSheet):
-                    stylesheet = obj.styleSheet()
+                if hasattr(obj, "styleSheet") and callable(obj.styleSheet):  # type: ignore[misc]
+                    stylesheet = obj.styleSheet()  # type: ignore[misc]
                     # Solo procesar si contiene propiedades no compatibles
                     if stylesheet and isinstance(stylesheet, str):
                         if (
@@ -125,12 +127,12 @@ class StylesheetFilter(QObject):
 
                             # Aplicar stylesheet compatible
                             if compatible != stylesheet:
-                                obj.setStyleSheet(compatible)
+                                obj.setStyleSheet(compatible)  # type: ignore[misc]
 
         return False  # Siempre permitir que el evento se propague
 
 
-def install_global_stylesheet_filter(app):
+def install_global_stylesheet_filter(app: Any) -> Any:
     """
     Instala un filtro de eventos global para interceptar y corregir
     todos los styleSheets aplicados en la aplicación.
@@ -145,7 +147,7 @@ def install_global_stylesheet_filter(app):
     return style_filter
 
 
-def purge_modern_css_from_widget_tree(widget):
+def purge_modern_css_from_widget_tree(widget: Any) -> Any:
     """
     Limpia recursivamente todos los widgets en un árbol de widgets
     de propiedades CSS modernas no compatibles con PyQt6.
@@ -153,8 +155,8 @@ def purge_modern_css_from_widget_tree(widget):
     Args:
         widget: El widget raíz desde el que comenzar la limpieza
     """  # Limpiar el stylesheet del widget actual
-    if hasattr(widget, "styleSheet") and callable(widget.styleSheet):
-        current_style = widget.styleSheet()
+    if hasattr(widget, "styleSheet") and callable(widget.styleSheet):  # type: ignore[misc]
+        current_style = widget.styleSheet()  # type: ignore[misc]
         if current_style and isinstance(current_style, str):
             if (
                 "transition" in current_style
@@ -166,7 +168,7 @@ def purge_modern_css_from_widget_tree(widget):
                 or "radial-gradient" in current_style
             ):
                 compatible_style = convert_to_qt_compatible_css(current_style)
-                widget.setStyleSheet(compatible_style)
+                widget.setStyleSheet(compatible_style)  # type: ignore[misc]
 
     # Procesar recursivamente todos los widgets hijos
     if hasattr(widget, "children"):

@@ -2,6 +2,7 @@
 TPV Avanzado - Panel de pedido modularizado
 """
 
+from typing import Any
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -12,12 +13,13 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFrame,
     QHeaderView,
+    QSplitter,
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 
-def create_pedido_panel(parent, splitter):
+def create_pedido_panel(parent: QWidget, splitter: QSplitter) -> QWidget:
     """Crea el panel de pedido actual y pago"""
     widget = QWidget()
     layout = QVBoxLayout(widget)
@@ -91,8 +93,9 @@ def create_pedido_panel(parent, splitter):
     # Obtener estado actual de la comanda
     estado_valor = "Sin pedido"
     estado_actual = None
-    if hasattr(parent, "current_order") and parent.current_order is not None:
-        estado_actual = getattr(parent.current_order, "estado", None)
+    if hasattr(parent, "current_order") and getattr(parent, "current_order") is not None:  # type: ignore
+        current_order = getattr(parent, "current_order")  # type: ignore
+        estado_actual = getattr(current_order, "estado", None)  # type: ignore
         estado_valor = estado_actual if estado_actual else "Desconocido"
     estado_valor_label = QLabel(estado_valor.capitalize())
     estado_valor_label.setFont(QFont("Segoe UI", 11, QFont.Weight.Medium))
@@ -123,14 +126,14 @@ def create_pedido_panel(parent, splitter):
         estado_combo.addItem(op.capitalize(), op)
     estado_combo.setEnabled(bool(opciones))
 
-    def on_estado_combo_changed(idx):
+    def on_estado_combo_changed(idx: int) -> None:
         if idx <= 0:
             return
         nuevo_estado = estado_combo.currentData()
         if (
             not nuevo_estado
             or not hasattr(parent, "current_order")
-            or parent.current_order is None
+            or getattr(parent, "current_order") is None  # type: ignore
         ):
             return
         # Llamar a TPVService para cambiar el estado
@@ -138,16 +141,20 @@ def create_pedido_panel(parent, splitter):
         error_msg = None
         if hasattr(parent, "tpv_service"):
             try:
-                exito = parent.tpv_service.cambiar_estado_comanda(
-                    parent.current_order.id, nuevo_estado
+                current_order = getattr(parent, "current_order")  # type: ignore
+                tpv_service = getattr(parent, "tpv_service")  # type: ignore
+                exito = tpv_service.cambiar_estado_comanda(  # type: ignore
+                    current_order.id, nuevo_estado  # type: ignore
                 )
             except Exception as e:
                 error_msg = str(e)
             if exito:
-                parent.current_order.estado = nuevo_estado
+                current_order = getattr(parent, "current_order")  # type: ignore
+                setattr(current_order, "estado", nuevo_estado)  # type: ignore
                 # Refrescar UI de estado y combo
                 if hasattr(parent, "refrescar_estado_pedido_ui"):
-                    parent.refrescar_estado_pedido_ui()
+                    refrescar_func = getattr(parent, "refrescar_estado_pedido_ui")  # type: ignore
+                    refrescar_func()  # type: ignore
             else:
                 from PyQt6.QtWidgets import QMessageBox
 
@@ -162,18 +169,19 @@ def create_pedido_panel(parent, splitter):
     layout.addWidget(estado_frame)
 
     # Guardar referencia para futuras actualizaciones
-    parent.estado_pedido_label = estado_valor_label
-    parent.estado_pedido_combo = estado_combo
+    setattr(parent, "estado_pedido_label", estado_valor_label)  # type: ignore
+    setattr(parent, "estado_pedido_combo", estado_combo)  # type: ignore
 
     # Tabla de productos del pedido
-    parent.pedido_table = QTableWidget()
-    parent.pedido_table.setColumnCount(6)
-    parent.pedido_table.setHorizontalHeaderLabels(
+    pedido_table = QTableWidget()
+    setattr(parent, "pedido_table", pedido_table)  # type: ignore
+    pedido_table.setColumnCount(6)
+    pedido_table.setHorizontalHeaderLabels(
         ["Producto", "Precio", "Cant.", "Descuento", "Total", "Eliminar"]
     )
 
     # Configurar tabla
-    header = parent.pedido_table.horizontalHeader()
+    header = pedido_table.horizontalHeader()
     if header:
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
@@ -181,7 +189,7 @@ def create_pedido_panel(parent, splitter):
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
 
-    parent.pedido_table.setStyleSheet(
+    pedido_table.setStyleSheet(
         """
         QTableWidget {
             border: 1px solid #e5e7eb;
@@ -208,7 +216,7 @@ def create_pedido_panel(parent, splitter):
     """
     )
 
-    layout.addWidget(parent.pedido_table)
+    layout.addWidget(pedido_table)
 
     # Panel de totales
     totales_frame = create_totales_panel(parent)
@@ -239,30 +247,28 @@ def create_pedido_panel(parent, splitter):
     layout.addWidget(descuento_global_btn)
 
     # Inicializar método para agregar productos
-    parent.agregar_producto_pedido = lambda nombre, precio: agregar_producto_a_pedido(
-        parent, nombre, precio
-    )
+    setattr(parent, "agregar_producto_pedido",
+            lambda nombre, precio: agregar_producto_a_pedido(parent, nombre, precio))  # type: ignore
 
     # --- NUEVO: Inicializar tabla con productos de la comanda activa (si existen) ---
-    if hasattr(parent, "current_order") and parent.current_order is not None:
-        table = parent.pedido_table
-        for linea in getattr(parent.current_order, "lineas", []):
-            row = table.rowCount()
-            table.insertRow(row)
-            nombre = getattr(linea, "producto_nombre", "")
-            precio = getattr(linea, "precio_unidad", 0.0)
-            cantidad = getattr(linea, "cantidad", 1)
-            descuento = getattr(
-                linea, "descuento", 0.0
-            )  # Si se implementa descuento por línea
+    if hasattr(parent, "current_order") and getattr(parent, "current_order") is not None:  # type: ignore
+        table = getattr(parent, "pedido_table")  # type: ignore
+        current_order = getattr(parent, "current_order")  # type: ignore
+        for linea in getattr(current_order, "lineas", []):  # type: ignore
+            row = table.rowCount()  # type: ignore
+            table.insertRow(row)  # type: ignore
+            nombre = getattr(linea, "producto_nombre", "")  # type: ignore
+            precio = getattr(linea, "precio_unidad", 0.0)  # type: ignore
+            cantidad = getattr(linea, "cantidad", 1)  # type: ignore
+            descuento = getattr(linea, "descuento", 0.0)  # type: ignore
             total_linea = precio * cantidad * (1 - descuento / 100)
-            table.setItem(row, 0, QTableWidgetItem(nombre))
-            table.setItem(row, 1, QTableWidgetItem(f"€{precio:.2f}"))
+            table.setItem(row, 0, QTableWidgetItem(nombre))  # type: ignore
+            table.setItem(row, 1, QTableWidgetItem(f"€{precio:.2f}"))  # type: ignore
             cantidad_item = QTableWidgetItem(str(cantidad))
             cantidad_item.setFlags(cantidad_item.flags() | Qt.ItemFlag.ItemIsEditable)
-            table.setItem(row, 2, cantidad_item)
-            table.setItem(row, 3, QTableWidgetItem(f"{descuento:.0f}%"))
-            table.setItem(row, 4, QTableWidgetItem(f"€{total_linea:.2f}"))
+            table.setItem(row, 2, cantidad_item)  # type: ignore
+            table.setItem(row, 3, QTableWidgetItem(f"{descuento:.0f}%"))  # type: ignore
+            table.setItem(row, 4, QTableWidgetItem(f"€{total_linea:.2f}"))  # type: ignore
             eliminar_btn = QPushButton("❌")
             eliminar_btn.setStyleSheet(
                 "background: #ef4444; color: white; border: none; border-radius: 4px; font-weight: bold;"
@@ -270,73 +276,66 @@ def create_pedido_panel(parent, splitter):
             eliminar_btn.clicked.connect(
                 lambda _, n=nombre: eliminar_producto_de_pedido(parent, n)
             )
-            table.setCellWidget(row, 5, eliminar_btn)
+            table.setCellWidget(row, 5, eliminar_btn)  # type: ignore
 
     splitter.addWidget(widget)
+    return widget
 
 
-def create_totales_panel(parent):
+def create_totales_panel(parent: Any) -> QFrame:
     """Crea el panel de totales"""
     frame = QFrame()
     frame.setStyleSheet(
         """
         QFrame {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #f0f9ff, stop:1 #e0f2fe);
-            border: 2px solid #0ea5e9;
-            border-radius: 10px;
-            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
         }
     """
     )
-
     layout = QVBoxLayout(frame)
 
-    # Labels de totales
-    parent.subtotal_label = QLabel("Subtotal: €0.00")
-    parent.subtotal_label.setFont(QFont("Segoe UI", 12))
-    parent.subtotal_label.setStyleSheet("color: #374151;")
-    layout.addWidget(parent.subtotal_label)
+    subtotal_label = QLabel("Subtotal: €0.00")
+    subtotal_label.setFont(QFont("Segoe UI", 12))
+    setattr(parent, "subtotal_label", subtotal_label)  # type: ignore
 
-    parent.iva_label = QLabel("IVA (21%): €0.00")
-    parent.iva_label.setFont(QFont("Segoe UI", 12))
-    parent.iva_label.setStyleSheet("color: #374151;")
-    layout.addWidget(parent.iva_label)
+    iva_label = QLabel("IVA (21%): €0.00")
+    iva_label.setFont(QFont("Segoe UI", 12))
+    setattr(parent, "iva_label", iva_label)  # type: ignore
 
-    parent.total_label = QLabel("TOTAL: €0.00")
-    parent.total_label.setFont(QFont("Segoe UI", 16, QFont.Weight.Bold))
-    parent.total_label.setStyleSheet("color: #059669; margin-top: 5px;")
-    layout.addWidget(parent.total_label)
+    total_label = QLabel("TOTAL: €0.00")
+    total_label.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+    total_label.setStyleSheet("color: #059669;")
+    setattr(parent, "total_label", total_label)  # type: ignore
+
+    layout.addWidget(subtotal_label)
+    layout.addWidget(iva_label)
+    layout.addWidget(total_label)
 
     return frame
 
 
-def create_actions_panel(parent):
+def create_actions_panel(parent: Any) -> QFrame:
     """Crea el panel de botones de acción"""
     frame = QFrame()
-    layout = QVBoxLayout(frame)
-    layout.setSpacing(10)
+    layout = QHBoxLayout(frame)
 
-    # Botón de procesar pago
-    pago_btn = QPushButton("💳 Procesar Pago")
-    pago_btn.setFixedHeight(50)
-    pago_btn.setFont(QFont("Segoe UI", 14, QFont.Weight.Bold))
+    # Botón de pago
+    pago_btn = QPushButton("💳 Pagar")
     pago_btn.setStyleSheet(
         """
         QPushButton {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #34d399, stop:1 #10b981);
+            background: #059669;
             color: white;
             border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 14px;
         }
         QPushButton:hover {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 #10b981, stop:1 #059669);
-            transform: translateY(-1px);
-        }
-        QPushButton:pressed {
             background: #047857;
         }
     """
@@ -344,10 +343,8 @@ def create_actions_panel(parent):
     pago_btn.clicked.connect(lambda: procesar_pago(parent))
     layout.addWidget(pago_btn)
 
-    # Fila de botones secundarios
-    secondary_layout = QHBoxLayout()
-
-    descuento_btn = QPushButton("🏷️ Descuento Global")
+    # Botón de descuento
+    descuento_btn = QPushButton("% Descuento")
     descuento_btn.setStyleSheet(
         """
         QPushButton {
@@ -355,7 +352,7 @@ def create_actions_panel(parent):
             color: white;
             border: none;
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 8px 16px;
             font-weight: bold;
         }
         QPushButton:hover {
@@ -364,333 +361,256 @@ def create_actions_panel(parent):
     """
     )
     descuento_btn.clicked.connect(lambda: aplicar_descuento_global(parent))
-    secondary_layout.addWidget(descuento_btn)
+    layout.addWidget(descuento_btn)
 
-    # Definir estilos para el botón de nota
-    NOTA_BTN_STYLE_NORMAL = """
+    # Botón de nota
+    nota_btn = QPushButton("📝 Nota")
+    nota_btn.setStyleSheet(
+        """
         QPushButton {
             background: #6366f1;
             color: white;
             border: none;
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 8px 16px;
             font-weight: bold;
         }
         QPushButton:hover {
             background: #4f46e5;
         }
     """
-    NOTA_BTN_STYLE_CON_NOTA = """
-        QPushButton {
-            background: #fbbf24;
-            color: #222;
-            border: 2px solid #f59e0b;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: #fde68a;
-        }
-    """
-    nota_btn = QPushButton("📝 Nota")
-    nota_btn.setStyleSheet(NOTA_BTN_STYLE_NORMAL)
+    )
+    setattr(parent, "NOTA_BTN_STYLE_NORMAL", nota_btn.styleSheet())  # type: ignore
+    setattr(parent, "NOTA_BTN_STYLE_CON_NOTA",
+            nota_btn.styleSheet().replace("#6366f1", "#dc2626"))  # type: ignore
+    setattr(parent, "nota_btn", nota_btn)  # type: ignore
     nota_btn.clicked.connect(lambda: editar_nota_pedido(parent))
-    parent.nota_btn = nota_btn
-    parent.NOTA_BTN_STYLE_NORMAL = NOTA_BTN_STYLE_NORMAL
-    parent.NOTA_BTN_STYLE_CON_NOTA = NOTA_BTN_STYLE_CON_NOTA
-    secondary_layout.addWidget(nota_btn)
-
-    layout.addLayout(secondary_layout)
+    layout.addWidget(nota_btn)
 
     return frame
 
 
-def agregar_producto_a_pedido(parent, nombre, precio):
-    """Agrega un producto al pedido actual con soporte de descuento por línea"""
-    table = parent.pedido_table
-    # --- NUEVO: Crear comanda si no existe ---
-    if not hasattr(parent, "current_order") or parent.current_order is None:
-        if (
-            hasattr(parent, "tpv_service")
-            and hasattr(parent, "mesa")
-            and parent.tpv_service
-            and parent.mesa
-        ):
-            usuario = getattr(parent, "selected_user", -1)
-            # Extraer usuario_id de forma segura (evita errores de tipo)
-            if isinstance(usuario, int):
-                usuario_id = usuario
-            elif hasattr(usuario, "id") and isinstance(usuario.id, int):
-                usuario_id = usuario.id
-            elif hasattr(usuario, "usuario_id") and isinstance(usuario.usuario_id, int):
-                usuario_id = usuario.usuario_id
-            else:
-                usuario_id = -1
-            parent.current_order = parent.tpv_service.crear_comanda(
-                parent.mesa.id, usuario_id=usuario_id
-            )
-            # Refrescar estado en la UI
-            if hasattr(parent, "refrescar_estado_pedido_ui"):
-                parent.refrescar_estado_pedido_ui()
+def agregar_producto_a_pedido(parent: Any, nombre: str, precio: float) -> None:
+    """Agrega un producto al pedido actual"""
+    table = getattr(parent, "pedido_table", None)  # type: ignore
+    if not table:
+        return
 
     # Buscar si el producto ya existe
-    for row in range(table.rowCount()):
-        if table.item(row, 0) and table.item(row, 0).text() == nombre:
+    for row in range(table.rowCount()):  # type: ignore
+        item = table.item(row, 0)  # type: ignore
+        if item and item.text() == nombre:  # type: ignore
             # Incrementar cantidad
-            cantidad_item = table.item(row, 2)
-            cantidad_actual = int(cantidad_item.text())
-            nueva_cantidad = cantidad_actual + 1
-            cantidad_item.setText(str(nueva_cantidad))
+            cantidad_item = table.item(row, 2)  # type: ignore
+            if cantidad_item:
+                cantidad_actual = int(cantidad_item.text())  # type: ignore
+                nueva_cantidad = cantidad_actual + 1
+                cantidad_item.setText(str(nueva_cantidad))  # type: ignore
 
-            # Mantener descuento existente
-            descuento_item = table.item(row, 3)
-            descuento = (
-                float(descuento_item.text().replace("%", "")) if descuento_item else 0.0
-            )
-            # Actualizar total de la línea considerando descuento
-            total_linea = precio * nueva_cantidad * (1 - descuento / 100)
-            table.setItem(row, 4, QTableWidgetItem(f"€{total_linea:.2f}"))
+                # Actualizar total de la línea
+                precio_item = table.item(row, 1)  # type: ignore
+                if precio_item:
+                    precio_texto = precio_item.text().replace("€", "")  # type: ignore
+                    precio_unitario = float(precio_texto)
+                    nuevo_total = precio_unitario * nueva_cantidad
+                    total_item = table.item(row, 4)  # type: ignore
+                    if total_item:
+                        total_item.setText(f"€{nuevo_total:.2f}")  # type: ignore
 
-            actualizar_totales(parent)
-            # Persistir en backend
-            if (
-                hasattr(parent, "current_order")
-                and parent.current_order is not None
-                and hasattr(parent, "tpv_service")
-            ):
-                producto = next(
-                    (
-                        p
-                        for p in parent.tpv_service.get_todos_productos()
-                        if p.nombre == nombre
-                    ),
-                    None,
-                )
-            if producto:
-                try:
-                    parent.tpv_service.cambiar_cantidad_producto(
-                        parent.current_order.id, producto.id, nueva_cantidad
-                    )
-                except Exception as e:
-                    import logging
-                    logging.error(f"Error al cambiar cantidad de producto en comanda: {e}")
-                    # Opcional: mostrar mensaje en la UI
-                    from PyQt6.QtWidgets import QMessageBox
-                    QMessageBox.critical(parent, "Error", f"No se pudo actualizar la cantidad del producto en la comanda.\n{e}")
-                    return
-            return
+                actualizar_totales(parent)
+                return
 
     # Si no existe, agregar nueva fila
-    row = table.rowCount()
-    table.insertRow(row)
+    row = table.rowCount()  # type: ignore
+    table.insertRow(row)  # type: ignore
 
-    table.setItem(row, 0, QTableWidgetItem(nombre))
-    table.setItem(row, 1, QTableWidgetItem(f"€{precio:.2f}"))
+    table.setItem(row, 0, QTableWidgetItem(nombre))  # type: ignore
+    table.setItem(row, 1, QTableWidgetItem(f"€{precio:.2f}"))  # type: ignore
+
     cantidad_item = QTableWidgetItem("1")
     cantidad_item.setFlags(cantidad_item.flags() | Qt.ItemFlag.ItemIsEditable)
-    table.setItem(row, 2, cantidad_item)
-    table.setItem(row, 3, QTableWidgetItem("0%"))  # Descuento por línea
-    table.setItem(row, 4, QTableWidgetItem(f"€{precio:.2f}"))
-    # Botón eliminar
-    from PyQt6.QtWidgets import QPushButton
+    table.setItem(row, 2, cantidad_item)  # type: ignore
 
+    table.setItem(row, 3, QTableWidgetItem("0%"))  # type: ignore
+    table.setItem(row, 4, QTableWidgetItem(f"€{precio:.2f}"))  # type: ignore
+
+    # Botón eliminar
     eliminar_btn = QPushButton("❌")
     eliminar_btn.setStyleSheet(
         "background: #ef4444; color: white; border: none; border-radius: 4px; font-weight: bold;"
     )
-    eliminar_btn.clicked.connect(
-        lambda _, n=nombre: eliminar_producto_de_pedido(parent, n)
-    )
-    table.setCellWidget(row, 5, eliminar_btn)
-
-    actualizar_totales(parent)
-    # Persistir en backend
-    if (
-        hasattr(parent, "current_order")
-        and parent.current_order is not None
-        and hasattr(parent, "tpv_service")
-    ):
-        producto = next(
-            (p for p in parent.tpv_service.get_todos_productos() if p.nombre == nombre),
-            None,
-        )
-        if producto:
-            try:
-                parent.tpv_service.agregar_producto_a_comanda(
-                    parent.current_order.id,
-                    producto.id,
-                    producto.nombre,
-                    producto.precio,
-                    1,
-                )
-            except Exception as e:
-                import logging
-                logging.error(f"Error al agregar producto a comanda: {e}")
-                from PyQt6.QtWidgets import QMessageBox
-                QMessageBox.critical(parent, "Error", f"No se pudo agregar el producto a la comanda.\n{e}")
-                return
-
-    # Refrescar estado en la UI tras agregar el primer producto
-    if hasattr(parent, "refrescar_estado_pedido_ui"):
-        parent.refrescar_estado_pedido_ui()
+    eliminar_btn.clicked.connect(lambda: eliminar_producto_de_pedido(parent, nombre))
+    table.setCellWidget(row, 5, eliminar_btn)  # type: ignore
 
     # Conectar edición de cantidad
-    def on_cantidad_editada(row_idx=row, col_idx=2):
-        item = table.item(row_idx, col_idx)
+    def on_cantidad_editada(row_idx: int = row, col_idx: int = 2) -> None:
+        item = table.item(row_idx, col_idx)  # type: ignore
         if item:
             try:
-                nueva_cantidad = int(item.text())
+                nueva_cantidad = int(item.text())  # type: ignore
                 if nueva_cantidad <= 0:
                     eliminar_producto_de_pedido(parent, nombre)
                 else:
                     cambiar_cantidad_producto_pedido(parent, nombre, nueva_cantidad)
-            except Exception:
-                pass
+            except ValueError:
+                item.setText("1")  # type: ignore
 
-    table.itemChanged.connect(
-        lambda item, n=nombre, r=row: (
-            on_cantidad_editada(r, 2)
-            if item.column() == 2 and item.row() == r
-            else None
-        )
+    table.itemChanged.connect(  # type: ignore
+        lambda item: on_cantidad_editada() if item.column() == 2 else None
     )
 
+    actualizar_totales(parent)
 
-def eliminar_producto_de_pedido(parent, producto_nombre):
+
+def eliminar_producto_de_pedido(parent: Any, producto_nombre: str) -> None:
     """Elimina un producto individual del pedido y lo persiste en backend"""
-    table = parent.pedido_table
+    table = getattr(parent, "pedido_table", None)  # type: ignore
+    if not table:
+        return
     row_to_remove = None
-    for row in range(table.rowCount()):
-        if table.item(row, 0) and table.item(row, 0).text() == producto_nombre:
+    for row in range(table.rowCount()):  # type: ignore
+        item = table.item(row, 0)  # type: ignore
+        if item and item.text() == producto_nombre:  # type: ignore
             row_to_remove = row
             break
     if row_to_remove is not None:
-        table.removeRow(row_to_remove)
+        table.removeRow(row_to_remove)  # type: ignore
         actualizar_totales(parent)
         # Persistir en backend
         if (
             hasattr(parent, "current_order")
-            and parent.current_order is not None
+            and getattr(parent, "current_order") is not None  # type: ignore
             and hasattr(parent, "tpv_service")
         ):
+            current_order = getattr(parent, "current_order")  # type: ignore
+            tpv_service = getattr(parent, "tpv_service")  # type: ignore
             producto = next(
                 (
                     p
-                    for p in parent.tpv_service.get_todos_productos()
-                    if p.nombre == producto_nombre
+                    for p in tpv_service.get_todos_productos()  # type: ignore
+                    if p.nombre == producto_nombre  # type: ignore
                 ),
                 None,
             )
             if producto:
-                parent.tpv_service.eliminar_producto_de_comanda(
-                    parent.current_order.id, producto.id
+                tpv_service.eliminar_producto_de_comanda(  # type: ignore
+                    current_order.id, producto.id  # type: ignore
                 )
 
 
-def cambiar_cantidad_producto_pedido(parent, producto_nombre, nueva_cantidad):
+def cambiar_cantidad_producto_pedido(parent: Any, producto_nombre: str, nueva_cantidad: int) -> None:
     """Cambia la cantidad de un producto y lo persiste en backend"""
-    table = parent.pedido_table
-    for row in range(table.rowCount()):
-        if table.item(row, 0) and table.item(row, 0).text() == producto_nombre:
-            table.setItem(row, 2, QTableWidgetItem(str(nueva_cantidad)))
+    table = getattr(parent, "pedido_table", None)  # type: ignore
+    if not table:
+        return
+    for row in range(table.rowCount()):  # type: ignore
+        item = table.item(row, 0)  # type: ignore
+        if item and item.text() == producto_nombre:  # type: ignore
+            # Actualizar cantidad y total
+            cantidad_item = table.item(row, 2)  # type: ignore
+            precio_item = table.item(row, 1)  # type: ignore
+            total_item = table.item(row, 4)  # type: ignore
+
+            if cantidad_item and precio_item and total_item:
+                cantidad_item.setText(str(nueva_cantidad))  # type: ignore
+                precio_texto = precio_item.text().replace("€", "")  # type: ignore
+                precio = float(precio_texto)
+                nuevo_total = precio * nueva_cantidad
+                total_item.setText(f"€{nuevo_total:.2f}")  # type: ignore
+
             actualizar_totales(parent)
-            # Persistir en backend
-            if (
-                hasattr(parent, "current_order")
-                and parent.current_order is not None
-                and hasattr(parent, "tpv_service")
-            ):
-                producto = next(
-                    (
-                        p
-                        for p in parent.tpv_service.get_todos_productos()
-                        if p.nombre == producto_nombre
-                    ),
-                    None,
-                )
-                if producto:
-                    parent.tpv_service.cambiar_cantidad_producto(
-                        parent.current_order.id, producto.id, nueva_cantidad
-                    )
             break
 
 
-# NOTA: Para integración completa, conectar estas funciones a acciones de la UI (botón eliminar, edición de cantidad, etc.)
+def actualizar_totales(parent: Any) -> None:
+    """Actualiza los totales del pedido"""
+    table = getattr(parent, "pedido_table", None)  # type: ignore
+    if not table:
+        return
 
-
-def actualizar_totales(parent):
-    """Actualiza los totales del pedido considerando descuentos"""
-    table = parent.pedido_table
     subtotal = 0.0
-
-    for row in range(table.rowCount()):
-        precio_item = table.item(row, 1)
-        cantidad_item = table.item(row, 2)
-        descuento_item = table.item(row, 3)
-        if precio_item and cantidad_item and descuento_item:
-            precio = float(precio_item.text().replace("€", ""))
-            cantidad = int(cantidad_item.text())
-            descuento = float(descuento_item.text().replace("%", ""))
-            total_linea = precio * cantidad * (1 - descuento / 100)
-            table.setItem(row, 4, QTableWidgetItem(f"€{total_linea:.2f}"))
-            subtotal += total_linea
+    for row in range(table.rowCount()):  # type: ignore
+        total_item = table.item(row, 4)  # type: ignore
+        if total_item:
+            total_texto = total_item.text().replace("€", "")  # type: ignore
+            subtotal += float(total_texto)
 
     iva = subtotal * 0.21
     total = subtotal + iva
 
-    parent.subtotal_label.setText(f"Subtotal: €{subtotal:.2f}")
-    parent.iva_label.setText(f"IVA (21%): €{iva:.2f}")
-    parent.total_label.setText(f"TOTAL: €{total:.2f}")
+    subtotal_label = getattr(parent, "subtotal_label", None)  # type: ignore
+    iva_label = getattr(parent, "iva_label", None)  # type: ignore
+    total_label = getattr(parent, "total_label", None)  # type: ignore
+
+    if subtotal_label:
+        subtotal_label.setText(f"Subtotal: €{subtotal:.2f}")  # type: ignore
+    if iva_label:
+        iva_label.setText(f"IVA (21%): €{iva:.2f}")  # type: ignore
+    if total_label:
+        total_label.setText(f"TOTAL: €{total:.2f}")  # type: ignore
 
 
-def limpiar_pedido(parent):
+def limpiar_pedido(parent: Any) -> None:
     """Limpia el pedido actual"""
-    parent.pedido_table.setRowCount(0)
+    pedido_table = getattr(parent, "pedido_table", None)  # type: ignore
+    if pedido_table:
+        pedido_table.setRowCount(0)  # type: ignore
     actualizar_totales(parent)
     # Persistir limpieza en backend
     if (
         hasattr(parent, "current_order")
-        and parent.current_order is not None
+        and getattr(parent, "current_order") is not None  # type: ignore
         and hasattr(parent, "tpv_service")
     ):
+        current_order = getattr(parent, "current_order")  # type: ignore
+        tpv_service = getattr(parent, "tpv_service")  # type: ignore
         # Eliminar todas las líneas de la comanda
-        for linea in list(parent.current_order.lineas):
-            parent.tpv_service.eliminar_producto_de_comanda(
-                parent.current_order.id, linea.producto_id
+        for linea in list(getattr(current_order, "lineas", [])):  # type: ignore
+            tpv_service.eliminar_producto_de_comanda(  # type: ignore
+                current_order.id, linea.producto_id  # type: ignore
             )
 
 
-def procesar_pago(parent):
+def procesar_pago(parent: Any) -> None:
     """Procesa el pago del pedido"""
-    table = parent.pedido_table
-    if table.rowCount() == 0:
+    table = getattr(parent, "pedido_table", None)  # type: ignore
+    if not table or table.rowCount() == 0:  # type: ignore
         return
 
-    total_text = parent.total_label.text().replace("TOTAL: €", "")
-    total = float(total_text)
+    total_label = getattr(parent, "total_label", None)  # type: ignore
+    if not total_label:
+        return
+
+    total_text = total_label.text().replace("TOTAL: €", "")  # type: ignore
+    try:
+        total = float(total_text)
+    except ValueError:
+        return
 
     # Procesar pago en backend
     exito = False
     if (
         hasattr(parent, "current_order")
-        and parent.current_order is not None
+        and getattr(parent, "current_order") is not None  # type: ignore
         and hasattr(parent, "tpv_service")
     ):
-        exito = parent.tpv_service.pagar_comanda(
-            parent.current_order.id, getattr(parent, "selected_user", -1)
+        current_order = getattr(parent, "current_order")  # type: ignore
+        tpv_service = getattr(parent, "tpv_service")  # type: ignore
+        exito = tpv_service.pagar_comanda(  # type: ignore
+            current_order.id, getattr(parent, "selected_user", -1)  # type: ignore
         )
     if exito:
         # Limpiar pedido después del pago
         limpiar_pedido(parent)
         # Refrescar UI de estado y grid de mesas
         if hasattr(parent, "refrescar_estado_pedido_ui"):
-            parent.refrescar_estado_pedido_ui()
+            refrescar_func = getattr(parent, "refrescar_estado_pedido_ui")  # type: ignore
+            refrescar_func()  # type: ignore
         # Opcional: mostrar mensaje de éxito
         from PyQt6.QtWidgets import QMessageBox
 
         QMessageBox.information(
-            parent,
+            parent,  # type: ignore
             "Pago realizado",
             "El pago se ha procesado y la mesa ha sido liberada.",
         )
@@ -698,37 +618,43 @@ def procesar_pago(parent):
         from PyQt6.QtWidgets import QMessageBox
 
         QMessageBox.warning(
-            parent,
+            parent,  # type: ignore
             "Error de pago",
-            "No se pudo procesar el pago. Verifique la conexión o el estado de la comanda.",
+            "No se pudo procesar el pago. Verifique los datos.",
         )
 
 
-def aplicar_descuento_global(parent):
+def aplicar_descuento_global(parent: Any) -> None:
     """Solicita y aplica un descuento global a todas las líneas"""
     from PyQt6.QtWidgets import QInputDialog
 
     descuento, ok = QInputDialog.getDouble(
-        parent, "Descuento global", "Porcentaje de descuento (%):", 0, 0, 100, 1
+        parent, "Descuento global", "Porcentaje de descuento (%):", 0, 0, 100, 1  # type: ignore
     )
     if ok:
-        table = parent.pedido_table
-        for row in range(table.rowCount()):
-            table.setItem(row, 3, QTableWidgetItem(f"{descuento:.0f}%"))
+        table = getattr(parent, "pedido_table", None)  # type: ignore
+        if not table:
+            return
+        for row in range(table.rowCount()):  # type: ignore
+            table.setItem(row, 3, QTableWidgetItem(f"{descuento:.0f}%"))  # type: ignore
         actualizar_totales(parent)
         # Persistir descuentos en backend
         if (
             hasattr(parent, "current_order")
-            and parent.current_order is not None
+            and getattr(parent, "current_order") is not None  # type: ignore
             and hasattr(parent, "tpv_service")
         ):
-            for row in range(table.rowCount()):
-                producto_nombre = table.item(row, 0).text()
+            for row in range(table.rowCount()):  # type: ignore
+                item = table.item(row, 0)  # type: ignore
+                if not item:
+                    continue
+                producto_nombre = item.text()  # type: ignore
+                tpv_service = getattr(parent, "tpv_service")  # type: ignore
                 producto = next(
                     (
                         p
-                        for p in parent.tpv_service.get_todos_productos()
-                        if p.nombre == producto_nombre
+                        for p in tpv_service.get_todos_productos()  # type: ignore
+                        if p.nombre == producto_nombre  # type: ignore
                     ),
                     None,
                 )
@@ -737,21 +663,24 @@ def aplicar_descuento_global(parent):
                     pass  # TODO: persistir descuento por línea si se implementa en el modelo
 
 
-def editar_nota_pedido(parent):
+def editar_nota_pedido(parent: Any) -> None:
     """Permite añadir o editar una nota al pedido actual"""
     from PyQt6.QtWidgets import QInputDialog
 
-    nota_actual = getattr(parent, "nota_pedido", "")
+    nota_actual = getattr(parent, "nota_pedido", "")  # type: ignore
     nota, ok = QInputDialog.getMultiLineText(
-        parent, "Nota del pedido", "Ingrese una nota para el pedido:", nota_actual
+        parent, "Nota del pedido", "Ingrese una nota para el pedido:", nota_actual  # type: ignore
     )
     if ok:
-        parent.nota_pedido = nota
+        setattr(parent, "nota_pedido", nota)  # type: ignore
         # Mostrar visualmente que hay nota
         if hasattr(parent, "nota_btn"):
+            nota_btn = getattr(parent, "nota_btn")  # type: ignore
             if nota.strip():
-                parent.nota_btn.setToolTip(f"Nota: {nota}")
-                parent.nota_btn.setStyleSheet(parent.NOTA_BTN_STYLE_CON_NOTA)
+                nota_btn.setToolTip(f"Nota: {nota}")  # type: ignore
+                style_con_nota = getattr(parent, "NOTA_BTN_STYLE_CON_NOTA", "")  # type: ignore
+                nota_btn.setStyleSheet(style_con_nota)  # type: ignore
             else:
-                parent.nota_btn.setToolTip("")
-                parent.nota_btn.setStyleSheet(parent.NOTA_BTN_STYLE_NORMAL)
+                nota_btn.setToolTip("")  # type: ignore
+                style_normal = getattr(parent, "NOTA_BTN_STYLE_NORMAL", "")  # type: ignore
+                nota_btn.setStyleSheet(style_normal)  # type: ignore

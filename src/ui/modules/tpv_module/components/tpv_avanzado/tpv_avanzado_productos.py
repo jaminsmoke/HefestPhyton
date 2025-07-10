@@ -2,6 +2,7 @@
 TPV Avanzado - Panel de productos modularizado
 """
 
+from typing import Any, Optional, Dict, List
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -17,7 +18,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 
 
-def create_productos_panel(parent, splitter):
+def create_productos_panel(parent: Any, splitter: Any) -> None:
     """Crea el panel de productos y categorías"""
     widget = QWidget()
     layout = QVBoxLayout(widget)
@@ -84,10 +85,10 @@ def create_productos_panel(parent, splitter):
         tabs.addTab(tab, categoria)
 
     layout.addWidget(tabs)
-    splitter.addWidget(widget)
+    splitter.addWidget(widget)  # type: ignore
 
 
-def create_categoria_tab(parent, categoria):
+def create_categoria_tab(parent: Any, categoria: str) -> QWidget:
     """Crea una pestaña para una categoría específica"""
     tab = QWidget()
     layout = QVBoxLayout(tab)
@@ -98,24 +99,24 @@ def create_categoria_tab(parent, categoria):
     grid_layout.setSpacing(10)
 
     # Obtener productos de la categoría (con stock)
-    productos_data = []
-    if parent.tpv_service:
-        productos = parent.tpv_service.get_productos_por_categoria(categoria)
-        for p in productos:
-            productos_data.append(
+    productos_data: List[Dict[str, Any]] = []
+    if parent.tpv_service:  # type: ignore
+        productos = parent.tpv_service.get_productos_por_categoria(categoria)  # type: ignore
+        for p in productos:  # type: ignore
+            productos_data.append(  # type: ignore
                 {
-                    "nombre": p.nombre,
-                    "precio": p.precio,
-                    "stock": getattr(p, "stock", None),
+                    "nombre": p.nombre,  # type: ignore
+                    "precio": p.precio,  # type: ignore
+                    "stock": getattr(p, "stock", None),  # type: ignore
                 }
             )
     # Eliminar productos de ejemplo: si no hay productos reales, no mostrar nada
 
     # Crear botones de productos con stock
     row, col = 0, 0
-    for prod in productos_data:
+    for prod in productos_data:  # type: ignore
         btn = create_producto_button(
-            parent, prod["nombre"], prod["precio"], prod.get("stock")
+            parent, prod["nombre"], prod["precio"], prod.get("stock")  # type: ignore
         )
         grid_layout.addWidget(btn, row, col)
         col += 1
@@ -129,13 +130,13 @@ def create_categoria_tab(parent, categoria):
     return tab
 
 
-def create_producto_button(parent, nombre, precio, stock=None):
+def create_producto_button(parent: Any, nombre: str, precio: float, stock: Optional[Any] = None) -> QPushButton:
     """Crea un botón para un producto, mostrando stock y bloqueando si no hay stock"""
     btn = QPushButton()
     btn.setFixedSize(120, 80)
 
     # Layout interno del botón
-    btn_layout = QVBoxLayout()
+    btn_layout: QVBoxLayout = QVBoxLayout()
 
     nombre_label = QLabel(nombre)
     nombre_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
@@ -148,7 +149,7 @@ def create_producto_button(parent, nombre, precio, stock=None):
     precio_label.setStyleSheet("color: #059669;")
 
     # Mostrar stock
-    stock_text = ""
+    stock_text: str = ""
     if stock is not None:
         if stock <= 0:
             stock_text = "Sin stock"
@@ -173,12 +174,12 @@ def create_producto_button(parent, nombre, precio, stock=None):
         btn.setEnabled(False)
         btn.setToolTip("Sin stock disponible")
     else:
-        btn.clicked.connect(lambda: agregar_producto(parent, nombre, precio))
+        btn.clicked.connect(lambda: agregar_producto(parent, nombre, precio))  # type: ignore
 
     return btn
 
 
-def agregar_producto(parent, nombre, precio):
+def agregar_producto(parent: Any, nombre: str, precio: float) -> None:
     """Agrega un producto al pedido actual"""
-    if hasattr(parent, "agregar_producto_pedido"):
-        parent.agregar_producto_pedido(nombre, precio)
+    if hasattr(parent, "agregar_producto_pedido"):  # type: ignore
+        parent.agregar_producto_pedido(nombre, precio)  # type: ignore

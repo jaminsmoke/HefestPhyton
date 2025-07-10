@@ -3,6 +3,7 @@ Módulo de gestión de hospedería que hereda de BaseModule.
 """
 
 import logging
+from typing import List, Dict, Any, Optional
 from PyQt6.QtWidgets import (
     QFrame,
     QVBoxLayout,
@@ -37,21 +38,21 @@ logger = logging.getLogger(__name__)
 class HospederiaModule(BaseModule):
     """Módulo completo de gestión de hospedería"""
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self) -> None:
+        super().__init__()  # type: ignore[misc]
         self.hospederia_service = HospederiaService()
-        self.rooms_data = []
-        self.reservations_data = []
+        self.rooms_data: List[Dict[str, Any]] = []
+        self.reservations_data: List[Dict[str, Any]] = []
 
         # Timer para actualización automática
         self.update_timer = QTimer()
-        self.update_timer.timeout.connect(self.refresh_data)
+        self.update_timer.timeout.connect(self.refresh_data)  # type: ignore[misc]
         self.update_timer.start(30000)  # Actualizar cada 30 segundos
 
         self.setup_ui()
         self.refresh_data()
 
-    def create_module_header(self):
+    def create_module_header(self) -> QFrame:  # type: ignore[override]
         """Crea el header del módulo de hospedería"""
         header = QFrame()
         header.setObjectName("module-header")
@@ -108,7 +109,7 @@ class HospederiaModule(BaseModule):
             }
         """
         )
-        new_booking_btn.clicked.connect(self.show_new_reservation_dialog)
+        new_booking_btn.clicked.connect(self.show_new_reservation_dialog)  # type: ignore[misc]
         layout.addWidget(new_booking_btn)
 
         check_in_btn = QPushButton("🏠 Check-in")
@@ -127,12 +128,12 @@ class HospederiaModule(BaseModule):
                 background: #059669;
             }        """
         )
-        check_in_btn.clicked.connect(self.show_check_in_dialog)
+        check_in_btn.clicked.connect(self.show_check_in_dialog)  # type: ignore[misc]
         layout.addWidget(check_in_btn)
 
         return header
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Configura la interfaz del módulo de hospedería"""
         # Crear el header del módulo
         header = self.create_module_header()
@@ -141,7 +142,7 @@ class HospederiaModule(BaseModule):
         # Inicializar tabla de reservas
         self.reservations_table = QTableWidget()
         self.reservations_table.setColumnCount(5)
-        self.reservations_table.setHorizontalHeaderLabels(
+        self.reservations_table.setHorizontalHeaderLabels(  # type: ignore[misc]
             ["ID", "Huésped", "Fecha Check-In", "Fecha Check-Out", "Estado"]
         )
         header = self.reservations_table.horizontalHeader()
@@ -153,7 +154,7 @@ class HospederiaModule(BaseModule):
 
         # Botón de actualizar
         refresh_btn = QPushButton("Actualizar Reservas")
-        refresh_btn.clicked.connect(self.load_reservations)
+        refresh_btn.clicked.connect(self.load_reservations)  # type: ignore[misc]
         self.content_layout.addWidget(refresh_btn)
 
         # Asegurarse de que el método `load_reservations` esté definido
@@ -161,7 +162,7 @@ class HospederiaModule(BaseModule):
             self.load_reservations or self._placeholder_load_reservations
         )
 
-    def _placeholder_load_reservations(self):
+    def _placeholder_load_reservations(self) -> None:
         """Placeholder para evitar errores si `load_reservations` no está implementado"""
         QMessageBox.information(
             self,
@@ -169,7 +170,7 @@ class HospederiaModule(BaseModule):
             "La funcionalidad de cargar reservas aún no está implementada.",
         )
 
-    def create_rooms_tab(self):
+    def create_rooms_tab(self) -> QWidget:
         """Crea la pestaña de gestión de habitaciones"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -185,7 +186,7 @@ class HospederiaModule(BaseModule):
         # Grid de habitaciones
         rooms_grid = QGridLayout()
         rooms_grid.setSpacing(10)
-        self.populate_rooms_grid(rooms_grid)
+        self.populate_rooms_grid(rooms_grid)  # type: ignore[misc]
 
         rooms_widget = QWidget()
         rooms_widget.setLayout(rooms_grid)
@@ -194,7 +195,7 @@ class HospederiaModule(BaseModule):
         layout.addStretch()
         return widget
 
-    def create_reservations_tab(self):
+    def create_reservations_tab(self) -> QWidget:
         """Crea la pestaña de gestión de reservas"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -203,7 +204,7 @@ class HospederiaModule(BaseModule):
         # Tabla de reservas
         self.reservations_table = QTableWidget()  # Inicialización del atributo
         self.reservations_table.setColumnCount(6)
-        self.reservations_table.setHorizontalHeaderLabels(
+        self.reservations_table.setHorizontalHeaderLabels(  # type: ignore[misc]
             ["ID", "Cliente", "Habitación", "Check-in", "Check-out", "Estado"]
         )
         header = self.reservations_table.horizontalHeader()
@@ -216,7 +217,7 @@ class HospederiaModule(BaseModule):
         buttons_layout = QHBoxLayout()
 
         new_reservation_btn = QPushButton("Nueva Reserva")
-        new_reservation_btn.clicked.connect(self.show_new_reservation_dialog)
+        new_reservation_btn.clicked.connect(self.show_new_reservation_dialog)  # type: ignore[misc]
         buttons_layout.addWidget(new_reservation_btn)
 
         edit_reservation_btn = QPushButton("Editar Reserva")
@@ -230,7 +231,7 @@ class HospederiaModule(BaseModule):
 
         return widget
 
-    def create_checkin_tab(self):
+    def create_checkin_tab(self) -> QWidget:
         """Crea la pestaña de check-in/check-out"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -244,7 +245,7 @@ class HospederiaModule(BaseModule):
         checkin_layout.addRow("Reserva:", self.checkin_reservation_combo)
 
         checkin_btn = QPushButton("Realizar Check-in")
-        checkin_btn.clicked.connect(self.show_check_in_dialog)
+        checkin_btn.clicked.connect(self.show_check_in_dialog)  # type: ignore[misc]
         checkin_layout.addRow(checkin_btn)
 
         layout.addWidget(checkin_group)
@@ -257,7 +258,7 @@ class HospederiaModule(BaseModule):
         checkout_layout.addRow("Habitación:", self.checkout_room_combo)
 
         checkout_btn = QPushButton("Realizar Check-out")
-        checkout_btn.clicked.connect(self.show_check_out_dialog)
+        checkout_btn.clicked.connect(self.show_check_out_dialog)  # type: ignore[misc]
         checkout_layout.addRow(checkout_btn)
 
         layout.addWidget(checkout_group)
@@ -265,7 +266,7 @@ class HospederiaModule(BaseModule):
         layout.addStretch()
         return widget
 
-    def populate_rooms_grid(self, grid_layout):
+    def populate_rooms_grid(self, grid_layout: QGridLayout) -> None:
         """Popula el grid con las habitaciones"""
         rooms = [
             ("101", "Disponible", "#10b981"),
@@ -297,17 +298,17 @@ class HospederiaModule(BaseModule):
                 }}
             """
             )
-            room_btn.clicked.connect(
-                lambda checked, room=room_number: self.show_room_details(room)
+            room_btn.clicked.connect(  # type: ignore[misc]
+                lambda checked, room=room_number: self.show_room_details(room)  # type: ignore[misc]
             )
 
-            grid_layout.addWidget(room_btn, row, col)
+            grid_layout.addWidget(room_btn, row, col)  # type: ignore[misc]
             col += 1
             if col > 3:  # 4 columnas
                 col = 0
                 row += 1
 
-    def show_room_details(self, room_number):
+    def show_room_details(self, room_number: str) -> None:
         """Muestra los detalles de una habitación"""
         QMessageBox.information(
             self,
@@ -315,25 +316,25 @@ class HospederiaModule(BaseModule):
             f"Información de la habitación {room_number}",
         )
 
-    def show_new_reservation_dialog(self):
+    def show_new_reservation_dialog(self) -> None:
         """Muestra el diálogo para crear una nueva reserva"""
         dialog = NewReservationDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:  # type: ignore[misc]
             self.refresh_data()
 
-    def show_check_in_dialog(self):
+    def show_check_in_dialog(self) -> None:
         """Muestra el diálogo de check-in"""
         dialog = CheckInDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:  # type: ignore[misc]
             self.refresh_data()
 
-    def show_check_out_dialog(self):
+    def show_check_out_dialog(self) -> None:
         """Muestra el diálogo de check-out"""
         dialog = CheckOutDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:  # type: ignore[misc]
             self.refresh_data()
 
-    def refresh_data(self):
+    def refresh_data(self) -> None:
         """Actualiza los datos del módulo"""
         try:
             # Actualizar datos de habitaciones
@@ -356,7 +357,7 @@ class HospederiaModule(BaseModule):
                 self, "Error", "Error al actualizar los datos de hospedería"
             )
 
-    def update_room_statistics(self):
+    def update_room_statistics(self) -> None:
         """Actualiza las estadísticas de habitaciones"""
         if hasattr(self, "available_label"):
             available_count = len(
@@ -373,7 +374,7 @@ class HospederiaModule(BaseModule):
             self.occupied_label.setText(f"Ocupadas: {occupied_count}")
             self.cleaning_label.setText(f"Limpieza: {cleaning_count}")
 
-    def update_reservations_table(self):
+    def update_reservations_table(self) -> None:
         """Actualiza la tabla de reservas"""
         if hasattr(self, "reservations_table"):
             self.reservations_table.setRowCount(len(self.reservations_data))
@@ -398,23 +399,23 @@ class HospederiaModule(BaseModule):
                     row, 5, QTableWidgetItem(reservation.get("status", ""))
                 )
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Actualiza los datos del módulo"""
         logger.info("Actualizando módulo de hospedería...")
         self.refresh_data()
-        self.status_changed.emit("Hospedería actualizada")
+        self.status_changed.emit("Hospedería actualizada")  # type: ignore[misc]
 
 
 class NewReservationDialog(QDialog):
     """Diálogo para crear nuevas reservas"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Nueva Reserva")
         self.setFixedSize(400, 350)
         self.setup_ui()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         layout = QFormLayout(self)
 
         # Campos del formulario
@@ -425,7 +426,7 @@ class NewReservationDialog(QDialog):
         layout.addRow("Teléfono:", self.client_phone_edit)
 
         self.room_combo = QComboBox()
-        self.room_combo.addItems(
+        self.room_combo.addItems(  # type: ignore[misc]
             ["101", "102", "103", "104", "201", "202", "203", "204"]
         )
         layout.addRow("Habitación:", self.room_combo)
@@ -449,21 +450,21 @@ class NewReservationDialog(QDialog):
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)  # type: ignore[misc]
+        buttons.rejected.connect(self.reject)  # type: ignore[misc]
         layout.addRow(buttons)
 
 
 class CheckInDialog(QDialog):
     """Diálogo para realizar check-in"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Check-in")
         self.setFixedSize(350, 250)
         self.setup_ui()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         layout = QFormLayout(self)
 
         self.reservation_combo = QComboBox()
@@ -474,7 +475,7 @@ class CheckInDialog(QDialog):
         layout.addRow("Fecha Real Check-in:", self.actual_checkin_date)
 
         self.payment_method_combo = QComboBox()
-        self.payment_method_combo.addItems(["Efectivo", "Tarjeta", "Transferencia"])
+        self.payment_method_combo.addItems(["Efectivo", "Tarjeta", "Transferencia"])  # type: ignore[misc]
         layout.addRow("Método de Pago:", self.payment_method_combo)
 
         self.deposit_required = QCheckBox("Requiere Depósito")
@@ -484,21 +485,21 @@ class CheckInDialog(QDialog):
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)  # type: ignore[misc]
+        buttons.rejected.connect(self.reject)  # type: ignore[misc]
         layout.addRow(buttons)
 
 
 class CheckOutDialog(QDialog):
     """Diálogo para realizar check-out"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setWindowTitle("Check-out")
         self.setFixedSize(350, 300)
         self.setup_ui()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         layout = QFormLayout(self)
 
         self.room_combo = QComboBox()
@@ -526,6 +527,6 @@ class CheckOutDialog(QDialog):
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)  # type: ignore[misc]
+        buttons.rejected.connect(self.reject)  # type: ignore[misc]
         layout.addRow(buttons)

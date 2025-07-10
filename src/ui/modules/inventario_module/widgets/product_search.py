@@ -40,7 +40,7 @@ VERSIÓN: v0.0.12
 """
 
 import logging
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -78,20 +78,21 @@ class ProductSearchWidget(QWidget):
     product_selected = pyqtSignal(dict)  # Producto seleccionado
     filter_applied = pyqtSignal(str, str)  # Filtro aplicado (tipo, valor)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.modern_styles = ModernStyles()
         self.search_history: List[str] = []
         self.product_suggestions: List[Dict[str, Any]] = []
+        self.filter_buttons: Dict[str, QPushButton] = {}
         self.search_timer = QTimer()
         self.search_timer.setSingleShot(True)
-        self.search_timer.timeout.connect(self._perform_search)
+        self.search_timer.timeout.connect(self._perform_search)  # type: ignore[misc]
 
         self._setup_ui()
         self._apply_styles()
         self._connect_signals()
 
-    def _setup_ui(self):
+    def _setup_ui(self) -> None:
         """Configura la interfaz de búsqueda"""
         main_layout = QVBoxLayout(self)
         main_layout.setSpacing(12)
@@ -337,34 +338,34 @@ class ProductSearchWidget(QWidget):
 
         return frame
 
-    def _connect_signals(self):
+    def _connect_signals(self) -> None:
         """Conecta las señales de los widgets"""
         # Campo de búsqueda
-        self.search_input.textChanged.connect(self._on_search_text_changed)
-        self.search_input.returnPressed.connect(self._perform_search)
+        self.search_input.textChanged.connect(self._on_search_text_changed)  # type: ignore[misc]
+        self.search_input.returnPressed.connect(self._perform_search)  # type: ignore[misc]
 
         # Botones
-        self.search_btn.clicked.connect(self._perform_search)
-        self.clear_btn.clicked.connect(self._clear_search)
-        self.clear_history_btn.clicked.connect(self._clear_history)
+        self.search_btn.clicked.connect(self._perform_search)  # type: ignore[misc]
+        self.clear_btn.clicked.connect(self._clear_search)  # type: ignore[misc]
+        self.clear_history_btn.clicked.connect(self._clear_history)  # type: ignore[misc]
 
         # Lista de resultados
-        self.results_list.itemClicked.connect(self._on_result_selected)
-        self.results_list.itemDoubleClicked.connect(self._on_result_double_clicked)
+        self.results_list.itemClicked.connect(self._on_result_selected)  # type: ignore[misc]
+        self.results_list.itemDoubleClicked.connect(self._on_result_double_clicked)  # type: ignore[misc]
 
         # Lista de historial
-        self.history_list.itemClicked.connect(self._on_history_selected)
+        self.history_list.itemClicked.connect(self._on_history_selected)  # type: ignore[misc]
 
         # Filtros rápidos
         for filter_key, btn in self.filter_buttons.items():
-            btn.clicked.connect(
-                lambda checked, key=filter_key: self._on_filter_clicked(key, checked)
+            btn.clicked.connect(  # type: ignore[misc]
+                lambda checked, key=filter_key: self._on_filter_clicked(key, checked)  # type: ignore[misc]
             )
 
         # Completer
-        self.completer.activated.connect(self._on_completer_activated)
+        self.completer.activated.connect(self._on_completer_activated)  # type: ignore[misc]
 
-    def _apply_styles(self):
+    def _apply_styles(self) -> None:
         """Aplica estilos modernos"""
         colors = self.modern_styles.COLORS
 
@@ -555,8 +556,8 @@ class ProductSearchWidget(QWidget):
 
     def get_active_filters(self) -> List[str]:
         """Obtiene los filtros activos"""
-        active_filters = []
+        active_filters: List[str] = []
         for filter_key, btn in self.filter_buttons.items():
             if btn.isChecked():
-                active_filters.append(filter_key)
+                active_filters.append(filter_key)  # type: ignore[misc]
         return active_filters

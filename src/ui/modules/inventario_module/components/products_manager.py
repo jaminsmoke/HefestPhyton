@@ -45,6 +45,7 @@ FECHA: Diciembre 2024
 
 import logging
 from datetime import datetime
+from typing import Optional, List, Dict, Any, Union
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -83,13 +84,13 @@ class ProductsManagerWidget(QWidget):
     producto_seleccionado = pyqtSignal(dict)
     producto_actualizado = pyqtSignal()
 
-    def __init__(self, inventario_service, parent=None):
+    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
         """Inicializar el widget gestor de productos"""
         super().__init__(parent)
 
         self.inventario_service = inventario_service
-        self.productos_cache = []
-        self.categorias_cache = []
+        self.productos_cache: List[Any] = []
+        self.categorias_cache: List[Dict[str, Any]] = []
 
         self.init_ui()
         self.load_products()
@@ -97,12 +98,12 @@ class ProductsManagerWidget(QWidget):
 
         # Timer para actualización automática
         self.refresh_timer = QTimer()
-        self.refresh_timer.timeout.connect(self.refresh_data)
+        self.refresh_timer.timeout.connect(self.refresh_data)  # type: ignore
         self.refresh_timer.start(60000)  # Actualizar cada minuto
 
         logger.info("ProductsManagerWidget inicializado correctamente")
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """Inicializar la interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -141,10 +142,10 @@ class ProductsManagerWidget(QWidget):
 
         # Botones de acción rápida
         self.add_product_btn = QPushButton("➕ Nuevo Producto")
-        self.add_product_btn.clicked.connect(self.add_product)
+        self.add_product_btn.clicked.connect(self.add_product)  # type: ignore
 
         self.export_btn = QPushButton("📊 Exportar")
-        self.export_btn.clicked.connect(self.export_to_csv)
+        self.export_btn.clicked.connect(self.export_to_csv)  # type: ignore
 
         layout.addWidget(self.add_product_btn)
         layout.addWidget(self.export_btn)
@@ -161,13 +162,13 @@ class ProductsManagerWidget(QWidget):
         search_label = QLabel("Buscar:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar productos...")
-        self.search_input.textChanged.connect(self.on_search_changed)
+        self.search_input.textChanged.connect(self.on_search_changed)  # type: ignore
 
         # Filtro por categoría
         category_label = QLabel("Categoría:")
         self.category_combo = QComboBox()
         self.category_combo.addItem("Todas las categorías", "")
-        self.category_combo.currentTextChanged.connect(self.on_category_changed)
+        self.category_combo.currentTextChanged.connect(self.on_category_changed)  # type: ignore
 
         layout.addWidget(search_label)
         layout.addWidget(self.search_input)
@@ -296,10 +297,10 @@ class ProductsManagerWidget(QWidget):
 
         return panel
 
-    def load_products(self, search_text: str = "", category: str = ""):
+    def load_products(self, search_text: str = "", category: str = "") -> None:
         """Cargar productos desde el servicio"""
         try:
-            self.productos_cache = self.inventario_service.get_productos(
+            self.productos_cache = self.inventario_service.get_productos(  # type: ignore
                 search_text, category
             )
             self.update_products_table()
@@ -312,10 +313,10 @@ class ProductsManagerWidget(QWidget):
                 self, "Error", f"No se pudieron cargar los productos: {str(e)}"
             )
 
-    def load_categories(self):
+    def load_categories(self) -> None:
         """Cargar categorías desde el servicio"""
         try:
-            categorias = self.inventario_service.get_categorias()
+            categorias = self.inventario_service.get_categorias()  # type: ignore
 
             # Limpiar combo
             self.category_combo.clear()
@@ -330,32 +331,32 @@ class ProductsManagerWidget(QWidget):
         except Exception as e:
             logger.error(f"Error cargando categorías: {e}")
 
-    def update_products_table(self):
+    def update_products_table(self) -> None:
         """Actualizar la tabla de productos"""
         try:
             self.products_table.setRowCount(len(self.productos_cache))
 
             for row, producto in enumerate(self.productos_cache):
                 # ID
-                self.products_table.setItem(row, 0, QTableWidgetItem(str(producto.id)))
+                self.products_table.setItem(row, 0, QTableWidgetItem(str(producto.id)))  # type: ignore
 
                 # Nombre
-                self.products_table.setItem(row, 1, QTableWidgetItem(producto.nombre))
+                self.products_table.setItem(row, 1, QTableWidgetItem(producto.nombre))  # type: ignore
 
                 # Categoría
                 self.products_table.setItem(
-                    row, 2, QTableWidgetItem(producto.categoria)
+                    row, 2, QTableWidgetItem(producto.categoria)  # type: ignore
                 )
 
                 # Precio
-                precio_item = QTableWidgetItem(f"${producto.precio:.2f}")
+                precio_item = QTableWidgetItem(f"${producto.precio:.2f}")  # type: ignore
                 precio_item.setTextAlignment(
                     Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
                 )
                 self.products_table.setItem(row, 3, precio_item)
 
                 # Stock actual
-                stock_item = QTableWidgetItem(str(producto.stock_actual))
+                stock_item = QTableWidgetItem(str(producto.stock_actual))  # type: ignore
                 stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 # Colorear según nivel de stock

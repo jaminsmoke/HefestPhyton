@@ -3,11 +3,12 @@ Servicio de gestión de habitaciones y reservas.
 """
 
 import logging
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass
 from datetime import date
 
 from .base_service import BaseService
+from data.db_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class Reserva:
 class HospederiaService(BaseService):
     """Servicio para la gestión de hospedería"""
 
-    def __init__(self, db_manager=None):
+    def __init__(self, db_manager: Optional['DatabaseManager'] = None):
         super().__init__(db_manager)
         self._habitaciones_cache = []
         self._load_habitaciones()
@@ -121,12 +122,12 @@ class HospederiaService(BaseService):
 
         return stats
 
-    def get_rooms(self) -> List[Dict]:
+    def get_rooms(self) -> List[Dict[str, Any]]:
         """Obtiene habitaciones en formato para el módulo UI"""
-        rooms = []
+        rooms: List[Dict[str, Any]] = []
         for hab in self._habitaciones_cache:
             # Mapear estados a formato UI
-            status_map = {
+            status_map: Dict[str, str] = {
                 "libre": "available",
                 "ocupada": "occupied",
                 "limpieza": "cleaning",
@@ -146,10 +147,10 @@ class HospederiaService(BaseService):
             )
         return rooms
 
-    def get_reservations(self) -> List[Dict]:
+    def get_reservations(self) -> List[Dict[str, Any]]:
         """Obtiene reservas en formato para el módulo UI"""
         # Datos de prueba para reservas
-        reservations = [
+        reservations: List[Dict[str, Any]] = [
             {
                 "id": 1,
                 "client_name": "Juan Pérez",
@@ -177,7 +178,7 @@ class HospederiaService(BaseService):
         ]
         return reservations
 
-    def create_reservation(self, reservation_data: Dict) -> bool:
+    def create_reservation(self, reservation_data: Dict[str, Any]) -> bool:
         """Crea una nueva reserva"""
         try:
             # Validar datos requeridos
@@ -224,7 +225,7 @@ class HospederiaService(BaseService):
             logger.error(f"Error al crear reserva: {e}")
             return False
 
-    def perform_checkin(self, checkin_data: Dict) -> bool:
+    def perform_checkin(self, checkin_data: Dict[str, Any]) -> bool:
         """Realiza check-in de una reserva"""
         try:
             room_number = checkin_data.get("room_number")
@@ -246,7 +247,7 @@ class HospederiaService(BaseService):
             logger.error(f"Error en check-in: {e}")
             return False
 
-    def perform_checkout(self, checkout_data: Dict) -> bool:
+    def perform_checkout(self, checkout_data: Dict[str, Any]) -> bool:
         """Realiza check-out de una habitación"""
         try:
             room_number = checkout_data.get("room_number")

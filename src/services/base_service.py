@@ -6,8 +6,11 @@ Ubicación: src/services/base_service.py
 """
 
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, TYPE_CHECKING
 from abc import ABC, abstractmethod
+
+if TYPE_CHECKING:
+    from data.db_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +26,7 @@ class BaseService(ABC):
     - Patrones de inicialización
     """
 
-    def __init__(self, db_manager=None):
+    def __init__(self, db_manager: Optional["DatabaseManager"] = None) -> None:
         """
         Inicialización base para todos los servicios.
 
@@ -63,7 +66,7 @@ class BaseService(ABC):
         return True
 
     def handle_db_error(
-        self, error: Exception, operation: str, default_return=None
+        self, error: Exception, operation: str, default_return: Any = None
     ) -> Any:
         """
         Manejo estandarizado de errores de base de datos.
@@ -79,7 +82,7 @@ class BaseService(ABC):
         self.logger.error(f"Error en {operation}: {error}")
         return default_return
 
-    def log_operation(self, operation: str, details: Optional[Dict[str, Any]] = None):
+    def log_operation(self, operation: str, details: Optional[Dict[str, Any]] = None) -> None:
         """
         Log estandarizado de operaciones del servicio.
 

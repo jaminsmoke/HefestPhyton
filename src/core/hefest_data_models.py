@@ -117,7 +117,7 @@ class Producto:
     def stock(self) -> int:
         """
         Alias para stock_actual para compatibilidad con código legacy.
-        
+
         Returns
         -------
         int
@@ -129,7 +129,7 @@ class Producto:
     def stock(self, value: int):
         """
         Setter para stock que actualiza stock_actual.
-        
+
         Parameters
         ----------
         value : int

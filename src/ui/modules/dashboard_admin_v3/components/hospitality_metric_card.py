@@ -3,7 +3,8 @@ Tarjeta de métricas especializada para hostelería con datos reales
 COMPLETAMENTE AUTO-GESTIONADA - Se conecta directamente al RealDataManager
 """
 
-from PyQt6.QtWidgets import QProgressBar
+from typing import Any, Optional
+from PyQt6.QtWidgets import QProgressBar, QWidget
 from PyQt6.QtCore import pyqtSignal, QTimer
 
 from .dashboard_metric_components import UltraModernMetricCard
@@ -20,20 +21,20 @@ class HospitalityMetricCard(UltraModernMetricCard):
 
     def __init__(
         self,
-        metric_type,
-        data_manager=None,
-        title="",
-        value="0",
-        unit="",
-        trend="+0.0%",
-        target=None,
-        metric_color=None,
-        icon="",
-        parent=None,
-    ):
+        metric_type: str,
+        data_manager: Any = None,
+        title: str = "",
+        value: str = "0",
+        unit: str = "",
+        trend: str = "+0.0%",
+        target: Optional[float] = None,
+        metric_color: Optional[str] = None,
+        icon: str = "",
+        parent: Optional[QWidget] = None,
+    ) -> None:
 
         # Configuración específica por tipo de métrica hostelera
-        self.hospitality_config = {
+        self.hospitality_config: dict[str, dict[str, Any]] = {
             "ocupacion": {
                 "title": "Ocupación de Habitaciones",
                 "unit": "%",
@@ -134,7 +135,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         }
 
         self.metric_type = metric_type
-        self.config = self.hospitality_config.get(
+        self.config: dict[str, Any] = self.hospitality_config.get(
             metric_type,
             {
                 "title": title,
@@ -164,12 +165,12 @@ class HospitalityMetricCard(UltraModernMetricCard):
 
         # Timer para auto-actualización (independiente del dashboard)
         self.refresh_timer = QTimer()
-        self.refresh_timer.timeout.connect(self.auto_refresh_data)
+        self.refresh_timer.timeout.connect(self.auto_refresh_data)  # type: ignore[reportUnknownMemberType]
 
         # Si tenemos data_manager, conectarnos a sus señales
         if self.data_manager:
-            self.data_manager.metric_updated.connect(self.on_metric_data_updated)
-            self.data_manager.data_updated.connect(self.on_all_data_updated)
+            self.data_manager.metric_updated.connect(self.on_metric_data_updated)  # type: ignore[reportUnknownMemberType]
+            self.data_manager.data_updated.connect(self.on_all_data_updated)  # type: ignore[reportUnknownMemberType]
             # logger.debug(f"Tarjeta {metric_type} conectada al RealDataManager")
 
         self.setup_hospitality_features()
@@ -182,7 +183,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         #     f"HospitalityMetricCard creada para {metric_type} - Auto-gestionada: {bool(self.data_manager)}"
         # )
 
-    def start_auto_refresh(self, interval_ms=3000):
+    def start_auto_refresh(self, interval_ms: int = 3000) -> None:
         """Iniciar actualización automática de datos"""
         if self.data_manager and not self.refresh_timer.isActive():
             self.refresh_timer.start(interval_ms)
@@ -191,13 +192,13 @@ class HospitalityMetricCard(UltraModernMetricCard):
             #     f"Auto-refresh iniciado para {self.metric_type} cada {interval_ms}ms"
             # )
 
-    def stop_auto_refresh(self):
+    def stop_auto_refresh(self) -> None:
         """Detener actualización automática"""
         if self.refresh_timer.isActive():
             self.refresh_timer.stop()
             # logger.debug(f"Auto-refresh detenido para {self.metric_type}")
 
-    def auto_refresh_data(self):
+    def auto_refresh_data(self) -> None:
         """Actualización automática de datos desde el RealDataManager"""
         if not self.data_manager or not self.auto_refresh_enabled:
             return
@@ -219,18 +220,18 @@ class HospitalityMetricCard(UltraModernMetricCard):
         except Exception as e:
             logger.error(f"Error en auto-refresh de {self.metric_type}: {e}")
 
-    def on_metric_data_updated(self, metric_name, metric_data):
+    def on_metric_data_updated(self, metric_name: str, metric_data: dict[str, Any]) -> None:
         """Callback cuando el RealDataManager actualiza datos de métricas"""
         if metric_name == self.metric_type:
             self.update_from_real_data(metric_data)
 
-    def on_all_data_updated(self, all_data):
+    def on_all_data_updated(self, all_data: dict[str, Any]) -> None:
         """Callback cuando el RealDataManager actualiza todos los datos"""
         metric_data = all_data.get(self.metric_type, {})
         if metric_data:
             self.update_from_real_data(metric_data)
 
-    def update_from_real_data(self, metric_data):
+    def update_from_real_data(self, metric_data: dict[str, Any]) -> None:
         """Actualizar la tarjeta usando datos reales del RealDataManager"""
         try:
             value = metric_data.get("value", self.value)
@@ -251,7 +252,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
 
         self.setup_hospitality_features()
 
-    def setup_hospitality_features(self):
+    def setup_hospitality_features(self) -> None:
         """Configurar características específicas de hostelería"""
 
         # Agregar barra de progreso si hay objetivo
@@ -264,7 +265,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         # Agregar tooltip con descripción
         self.setToolTip(self.config.get("description", ""))
 
-    def add_progress_bar(self):
+    def add_progress_bar(self) -> None:
         """Agregar barra de progreso para métricas con objetivo"""
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
@@ -288,7 +289,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         # Agregar la barra al layout principal
         self.main_layout.addWidget(self.progress_bar)
 
-    def apply_hospitality_styling(self):
+    def apply_hospitality_styling(self) -> None:
         """Aplicar estilo específico de hostelería"""
         # Borde lateral con color de la métrica
         hospitality_style = f"""
@@ -304,7 +305,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
             }}        """
         self.setStyleSheet(hospitality_style)
 
-    def update_metric_data(self, value, trend=None, additional_data=None):
+    def update_metric_data(self, value: Any, trend: Optional[Any] = None, additional_data: Optional[dict[str, Any]] = None) -> None:
         """Actualizar datos de la métrica con información específica de hostelería"""
         try:
             # Usar el método de la clase base que ya maneja la lógica básica
@@ -368,7 +369,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
             ),
         }
 
-    def set_target(self, new_target):
+    def set_target(self, new_target: float) -> None:
         """Actualizar objetivo de la métrica"""
         self.config["target"] = new_target
         if hasattr(self, "progress_bar"):
@@ -377,7 +378,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
 
         logger.info(f"Objetivo actualizado para {self.metric_type}: {new_target}")
 
-    def is_target_achieved(self):
+    def is_target_achieved(self) -> Optional[bool]:
         """Verificar si se ha alcanzado el objetivo"""
         if "target" not in self.config:
             return None
@@ -397,7 +398,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         except (ValueError, TypeError):
             return False
 
-    def get_performance_status(self):
+    def get_performance_status(self) -> str:
         """Obtener estado de rendimiento de la métrica"""
         if not self.is_target_achieved():
             return "below_target"
@@ -418,15 +419,15 @@ class HospitalityMetricCard(UltraModernMetricCard):
         except (ValueError, TypeError):
             return "unknown"
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Limpiar recursos y desconectar señales"""
         try:
             self.stop_auto_refresh()
 
             if self.data_manager:
                 # Desconectar señales del data manager
-                self.data_manager.metric_updated.disconnect(self.on_metric_data_updated)
-                self.data_manager.data_updated.disconnect(self.on_all_data_updated)
+                self.data_manager.metric_updated.disconnect(self.on_metric_data_updated)  # type: ignore[reportUnknownMemberType]
+                self.data_manager.data_updated.disconnect(self.on_all_data_updated)  # type: ignore[reportUnknownMemberType]
                 # logger.debug(
                 #     f"Tarjeta {self.metric_type} desconectada del RealDataManager"
                 # )
@@ -434,7 +435,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         except Exception as e:
             logger.warning(f"Error en cleanup de {self.metric_type}: {e}")
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor para asegurar limpieza de recursos"""
         try:
             self.cleanup()

@@ -16,6 +16,7 @@ Caracteristicas:
 
 import logging
 import time
+import sqlite3
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, field
 
@@ -50,7 +51,7 @@ class SessionInfo:
         """Verifica si la sesion ha expirado (por defecto 1 hora)"""
         return (time.time() - self.last_activity) > timeout_seconds
 
-    def update_activity(self):
+    def update_activity(self) -> None:
         """Actualiza el timestamp de la ultima actividad"""
         self.last_activity = time.time()
 
@@ -91,7 +92,7 @@ class AuthService(BaseService):
         """Retorna el nombre de este servicio"""
         return "AuthService"
 
-    def _initialize_default_users(self):
+    def _initialize_default_users(self) -> None:
         """Inicializa los usuarios por defecto del sistema"""
         self.default_users = [
             User(
@@ -166,8 +167,8 @@ class AuthService(BaseService):
             return self.default_users
 
         try:
-            conn = self.db_manager.get_connection()
-            cursor = conn.cursor()
+            conn = self.db_manager.get_connection()  # type: ignore
+            cursor: sqlite3.Cursor = conn.cursor()  # type: ignore
             cursor.execute(
                 """
                 SELECT id, username, name, role, password, email, phone, is_active
@@ -175,16 +176,16 @@ class AuthService(BaseService):
             """
             )
 
-            db_users: list[Any] = cursor.fetchall()
-            users: list[User] = []
+            db_users = cursor.fetchall()  # type: ignore
+            users: List[User] = []
 
             for db_user in db_users:
                 try:
                     # Si es tupla, convertir a dict para tipado robusto
                     if isinstance(db_user, dict):
-                        row = db_user
+                        row: Dict[str, Any] = db_user
                     else:
-                        row = {
+                        row: Dict[str, Any] = {
                             "id": db_user[0],
                             "username": db_user[1],
                             "name": db_user[2],
@@ -196,13 +197,13 @@ class AuthService(BaseService):
                         }
                     role = Role(row["role"]) if row["role"] else Role.EMPLOYEE
                     user = User(
-                        id=row["id"],
-                        username=row["username"],
-                        name=row["name"],
+                        id=int(row["id"]) if row["id"] is not None else None,
+                        username=str(row["username"]),
+                        name=str(row["name"]),
                         role=role,
-                        password=row["password"],
-                        email=row["email"],
-                        phone=row["phone"],
+                        password=str(row["password"]),
+                        email=str(row["email"]),
+                        phone=str(row["phone"]),
                         is_active=bool(row["is_active"]),
                     )
                     users.append(user)
@@ -317,7 +318,7 @@ class AuthService(BaseService):
             logger.error(f"Error durante login: {e}")
             return False
 
-    def logout(self):
+    def logout(self) -> None:
         """Cierra la sesion actual"""
         if self.current_session:
             logger.info(f"Logout para usuario: {self.current_session.username}")
@@ -381,7 +382,7 @@ class AuthService(BaseService):
 
         return str(uuid.uuid4())
 
-    def has_permission(self, permission) -> bool:
+    def has_permission(self, permission: str) -> bool:
         """
         Verifica si el usuario actual tiene un permiso especifico
 
@@ -471,7 +472,7 @@ class AuthService(BaseService):
 
         return user_level >= required_level
 
-    def require_permission(self, permission: str):
+    def require_permission(self, permission: str) -> None:
         """
         Decorador/funcion que requiere un permiso especifico
 
@@ -489,7 +490,7 @@ class AuthService(BaseService):
                 f"Acceso denegado. Rol actual: {current_role}, Permiso requerido: {permission}"
             )
 
-    def update_activity(self):
+    def update_activity(self) -> None:
         """Actualiza la actividad de la sesion currente"""
         if self.current_session:
             self.current_session.update_activity()

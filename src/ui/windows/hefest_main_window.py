@@ -4,22 +4,22 @@ Ventana principal moderna de la aplicación Hefest.
 
 import logging
 import os
+from typing import Optional, Dict, Any
 from PyQt6.QtWidgets import (
     QMainWindow,
     QStatusBar,
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QFrame,
     QLabel,
     QPushButton,
     QMenuBar,
     QMenu,
     QMessageBox,
-    QScrollArea,  # <-- Añadido
-    QFileDialog,
-    QApplication,
+    QScrollArea,
 )
+from PyQt6.QtCore import QTimer, QEvent, QObject
+from PyQt6.QtGui import QCloseEvent, QKeyEvent, QResizeEvent
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime, QPropertyAnimation
 from PyQt6.QtGui import QAction
 
@@ -33,7 +33,7 @@ from ..modules.dashboard_admin_v3.ultra_modern_admin_dashboard import (
 
 
 # Importar servicios de autenticación y auditoría
-from services.auth_service import get_auth_service
+from services.auth_service import AuthService, get_auth_service
 from services.audit_service import AuditService
 from core.hefest_data_models import Role
 from data.db_manager import DatabaseManager
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
     # Señales
     module_changed = pyqtSignal(str)
 
-    def __init__(self, auth_service=None):
+    def __init__(self, auth_service: Optional[AuthService] = None) -> None:
         super().__init__()
         logger.info("Initializing MainWindow")
         self.setWindowTitle(f"Hefest v{__version__} - Sistema Integral de Hostelería")
@@ -65,8 +65,8 @@ class MainWindow(QMainWindow):
 
         # Variables de estado
         self.current_module = None
-        self.module_widgets = {}
-        self._module_scroll_positions = {}  # Guardar posición de scroll por módulo
+        self.module_widgets: Dict[str, QWidget] = {}
+        self._module_scroll_positions: Dict[str, int] = {}  # Guardar posición de scroll por módulo
         # Mapping de módulos a roles requeridos
         self.module_permissions = {
             "dashboard": Role.EMPLOYEE,
@@ -90,19 +90,19 @@ class MainWindow(QMainWindow):
         self.setWindowFlag(Qt.WindowType.WindowMinMaxButtonsHint, True)
         self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, True)
         # Cargar módulo inicial después de asegurar que el usuario esté autenticado
-        QTimer.singleShot(500, self.load_initial_module)
+        QTimer.singleShot(500, self.load_initial_module)  # type: ignore[reportUnknownMemberType]
 
-    def load_initial_module(self):
+    def load_initial_module(self) -> None:
         """Carga el módulo inicial después de verificar que el usuario esté autenticado"""
         if not self.auth_service.is_authenticated:
             logger.warning("Usuario no autenticado aún, reintentando en 500ms...")
-            QTimer.singleShot(500, self.load_initial_module)
+            QTimer.singleShot(500, self.load_initial_module)  # type: ignore[reportUnknownMemberType]
             return
 
         logger.info("Usuario autenticado, cargando dashboard inicial...")
         self.show_module("dashboard")
 
-    def check_module_permission(self, module_id):
+    def check_module_permission(self, module_id: str) -> bool:
         """Verifica si el usuario tiene permisos para acceder al módulo"""
         if module_id not in self.module_permissions:
             logger.warning(f"El módulo {module_id} no tiene permisos configurados.")
@@ -110,15 +110,11 @@ class MainWindow(QMainWindow):
 
         required_role = self.module_permissions[module_id]
 
-        current_user = self.auth_service.current_user
-        is_authenticated = self.auth_service.is_authenticated
-        current_session = self.auth_service.current_session
-
-        has_permission = self.auth_service.has_permission(required_role)
+        has_permission = self.auth_service.has_permission(required_role.value)
 
         return has_permission
 
-    def create_permission_denied_widget(self, module_id):
+    def create_permission_denied_widget(self, module_id: str) -> QWidget:
         """Crea un widget que muestra mensaje de acceso denegado"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -148,7 +144,7 @@ class MainWindow(QMainWindow):
         layout.addStretch()
         return widget
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Configura la interfaz principal"""
         logger.info("Setting up modern UI components")
 
@@ -199,10 +195,10 @@ class MainWindow(QMainWindow):
         """
         )
         self.scroll_to_top_btn.hide()
-        self.scroll_to_top_btn.clicked.connect(self.animate_scroll_to_top)
+        self.scroll_to_top_btn.clicked.connect(self.animate_scroll_to_top)  # type: ignore[reportUnknownMemberType]
         vbar = self.scroll_area.verticalScrollBar()
         if vbar is not None:
-            vbar.valueChanged.connect(self.toggle_scroll_to_top_btn)
+            vbar.valueChanged.connect(self.toggle_scroll_to_top_btn)  # type: ignore[reportUnknownMemberType]
         self.toggle_scroll_to_top_btn()
 
         # Barra de estado moderna
@@ -242,7 +238,7 @@ class MainWindow(QMainWindow):
 
         # Timer para actualizar fecha/hora
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_status_bar)
+        self.timer.timeout.connect(self.update_status_bar)  # type: ignore[reportUnknownMemberType]
         self.timer.start(1000)
 
         # Agregar widgets a la barra de estado
@@ -251,10 +247,10 @@ class MainWindow(QMainWindow):
 
     def setup_connections(self):
         """Configura las conexiones de señales"""
-        self.sidebar.module_selected.connect(self.show_module)
-        self.module_changed.connect(self.on_module_changed)
+        self.sidebar.module_selected.connect(self.show_module)  # type: ignore[reportUnknownMemberType]
+        self.module_changed.connect(self.on_module_changed)  # type: ignore[reportUnknownMemberType]
         # Conectar la señal de logout del sidebar
-        self.sidebar.logout_requested.connect(self.handle_logout)
+        self.sidebar.logout_requested.connect(self.handle_logout)  # type: ignore[reportUnknownMemberType]
 
     def setup_menu(self):
         """Configura el menú de la aplicación"""
@@ -267,8 +263,8 @@ class MainWindow(QMainWindow):
 
         # Acción de salir
         exit_action = QAction("Salir", self)
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
+        exit_action.triggered.connect(self.close)  # type: ignore[reportUnknownMemberType]
+        file_menu.addAction(exit_action)  # type: ignore[reportUnknownMemberType]
 
         # Menú Módulos
         modules_menu = QMenu("Módulos", self)
@@ -285,16 +281,16 @@ class MainWindow(QMainWindow):
         ]:
             action = QAction(module_id.capitalize().replace("_", " "), self)
             action.setProperty("module_id", module_id)
-            action.triggered.connect(self.module_action_triggered)
-            modules_menu.addAction(action)
+            action.triggered.connect(self.module_action_triggered)  # type: ignore[reportUnknownMemberType]
+            modules_menu.addAction(action)  # type: ignore[reportUnknownMemberType]
         # Menú Ayuda
         help_menu = QMenu("Ayuda", self)
         menu_bar.addMenu(help_menu)
 
         # Acción de acerca de
         about_action = QAction("Acerca de", self)
-        about_action.triggered.connect(self.show_about_dialog)
-        help_menu.addAction(about_action)
+        about_action.triggered.connect(self.show_about_dialog)  # type: ignore[reportUnknownMemberType]
+        help_menu.addAction(about_action)  # type: ignore[reportUnknownMemberType]
 
     def module_action_triggered(self):
         """Maneja la activación de acciones de módulo desde el menú"""
@@ -303,7 +299,7 @@ class MainWindow(QMainWindow):
             module_id = action.property("module_id")
             self.show_module(module_id)
 
-    def show_module(self, module_id):
+    def show_module(self, module_id: str) -> None:
         """Muestra el módulo especificado si el usuario tiene permisos"""
         # Guardar posición de scroll del módulo actual
         if self.current_module is not None:
@@ -348,7 +344,7 @@ class MainWindow(QMainWindow):
             anim.start()
             self._scroll_anim = anim
 
-    def create_module_widget(self, module_id):
+    def create_module_widget(self, module_id: str) -> QWidget:
         """Crea un widget para el módulo especificado"""
         try:
             module_class = self.get_module_class(module_id)
@@ -377,11 +373,11 @@ class MainWindow(QMainWindow):
             logger.error(f"Error al crear el widget del módulo {module_id}: {e}")
             return self.create_permission_denied_widget(module_id)
 
-    def get_module_class(self, module_id):
+    def get_module_class(self, module_id: str) -> Any:
         """Obtiene la clase del módulo correspondiente al module_id"""
         from ui.modules.tpv_module.tpv_module import TPVModule
 
-        module_classes = {
+        module_classes: dict[str, Any] = {
             # === SISTEMA VISUAL V3 ULTRA-MODERNO ===
             "dashboard": UltraModernAdminDashboard,  # NUEVO: Dashboard V3 Ultra-Moderno
             # Otros módulos (usar sistema antiguo temporalmente)
@@ -397,12 +393,12 @@ class MainWindow(QMainWindow):
         }
 
         if module_id in module_classes:
-            class_path = module_classes[module_id]
+            class_path: Any = module_classes[module_id]
             if isinstance(class_path, str):
                 # Importar la clase dinámicamente
                 module_name, class_name = class_path.rsplit(".", 1)
                 module = __import__(module_name, fromlist=[class_name])
-                return getattr(module, class_name)
+                return getattr(module, class_name)  # type: ignore[reportUnknownVariableType]
             else:
                 return class_path
         else:
@@ -431,17 +427,17 @@ class MainWindow(QMainWindow):
             user_text = f"Usuario: {current_user.name} ({current_user.role.value})"
             self.user_label.setText(user_text)
 
-    def on_module_changed(self, module_id):
+    def on_module_changed(self, module_id: str) -> None:
         """Maneja el cambio de módulo"""
         logger.info(f"Módulo cambiado a: {module_id}")
 
-    def closeEvent(self, event):
+    def closeEvent(self, a0: QCloseEvent | None) -> None:
         """Maneja el cierre de la ventana"""
         logger.info("Close event triggered")
         if hasattr(self, "timer"):
             self.timer.stop()
-        if event:
-            event.accept()
+        if a0:
+            a0.accept()
 
     def show_about_dialog(self):
         """Muestra el diálogo Acerca de"""
@@ -453,38 +449,38 @@ class MainWindow(QMainWindow):
         msg.setIcon(QMessageBox.Icon.Information)
         msg.exec()
 
-    def keyPressEvent(self, event):
-        super().keyPressEvent(event)
+    def keyPressEvent(self, a0: QKeyEvent | None) -> None:
+        super().keyPressEvent(a0)
         # Atajos de scroll para el área principal
         vbar = self.scroll_area.verticalScrollBar()
-        if vbar is not None:
-            if event.key() == Qt.Key.Key_PageDown:
+        if vbar is not None and a0 is not None:
+            if a0.key() == Qt.Key.Key_PageDown:
                 vbar.setValue(min(vbar.value() + vbar.pageStep(), vbar.maximum()))
-            elif event.key() == Qt.Key.Key_PageUp:
+            elif a0.key() == Qt.Key.Key_PageUp:
                 vbar.setValue(max(vbar.value() - vbar.pageStep(), 0))
-            elif event.key() == Qt.Key.Key_Home:
+            elif a0.key() == Qt.Key.Key_Home:
                 vbar.setValue(0)
-            elif event.key() == Qt.Key.Key_End:
+            elif a0.key() == Qt.Key.Key_End:
                 vbar.setValue(vbar.maximum())
 
         # Ctrl+Q para salir
         if (
-            event.key() == Qt.Key.Key_Q
-            and event.modifiers() & Qt.KeyboardModifier.ControlModifier
+            a0 is not None and a0.key() == Qt.Key.Key_Q
+            and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
         ):
             self.close()
 
         # F12 para abrir el menú de depuración (si está disponible)
-        if event.key() == Qt.Key.Key_F12:
+        if a0 is not None and a0.key() == Qt.Key.Key_F12:
             debug_menu_action = self.findChild(QAction, "debugMenuAction")
             if debug_menu_action:
                 debug_menu_action.trigger()
 
         # Ctrl+Shift+R para recargar el módulo currente
         if (
-            event.key() == Qt.Key.Key_R
-            and event.modifiers() & Qt.KeyboardModifier.ControlModifier
-            and event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+            a0 is not None and a0.key() == Qt.Key.Key_R
+            and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
+            and a0.modifiers() & Qt.KeyboardModifier.ShiftModifier
         ):
             if self.current_module:
                 logger.info("Reloading current module: %s", self.current_module)
@@ -492,17 +488,17 @@ class MainWindow(QMainWindow):
 
         # Ctrl+Shift+L para ver el registro de auditoría
         if (
-            event.key() == Qt.Key.Key_L
-            and event.modifiers() & Qt.KeyboardModifier.ControlModifier
-            and event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+            a0 is not None and a0.key() == Qt.Key.Key_L
+            and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
+            and a0.modifiers() & Qt.KeyboardModifier.ShiftModifier
         ):
             self.show_module("audit")
 
         # Ctrl+Shift+U para gestionar usuarios y roles
         if (
-            event.key() == Qt.Key.Key_U
-            and event.modifiers() & Qt.KeyboardModifier.ControlModifier
-            and event.modifiers() & Qt.KeyboardModifier.ShiftModifier
+            a0 is not None and a0.key() == Qt.Key.Key_U
+            and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
+            and a0.modifiers() & Qt.KeyboardModifier.ShiftModifier
         ):
             self.show_module("users")
 
@@ -522,13 +518,13 @@ class MainWindow(QMainWindow):
             style.unpolish(self.scroll_area)
             style.polish(self.scroll_area)
 
-    def eventFilter(self, obj, event):
-        if obj == self.scroll_area and event.type() == event.Type.Resize:
+    def eventFilter(self, a0: QObject | None, a1: QEvent | None) -> bool:
+        if a0 == self.scroll_area and a1 is not None and a1.type() == a1.Type.Resize:
             self.update_scroll_overflow_indicators()
-        return super().eventFilter(obj, event)
+        return super().eventFilter(a0, a1)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        super().resizeEvent(a0)
         # Posicionar el botón flotante en la esquina inferior derecha de la QScrollArea
         if hasattr(self, "scroll_to_top_btn"):
             area = self.scroll_area.geometry()

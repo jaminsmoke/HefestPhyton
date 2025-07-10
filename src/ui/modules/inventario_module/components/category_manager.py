@@ -6,6 +6,7 @@ Interfaz dedicada para la gestión completa de categorías de productos
 """
 
 import logging
+from typing import Optional, List, Dict, Any, Union
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -39,19 +40,19 @@ class CategoryManagerWidget(QWidget):
     categoria_actualizada = pyqtSignal()
     categoria_seleccionada = pyqtSignal(dict)
 
-    def __init__(self, inventario_service, parent=None):
+    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
         """Inicializar el widget gestor de categorías"""
         super().__init__(parent)
 
         self.inventario_service = inventario_service
-        self.categorias_cache = []
+        self.categorias_cache: List[Dict[str, Any]] = []
 
         self.init_ui()
         self.load_categories()
 
         logger.info("CategoryManagerWidget inicializado correctamente")
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """Inicializar la interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -105,7 +106,7 @@ class CategoryManagerWidget(QWidget):
         search_label = QLabel("Buscar:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar categorías...")
-        self.search_input.textChanged.connect(self.filter_categories)
+        self.search_input.textChanged.connect(self.filter_categories)  # type: ignore
 
         layout.addWidget(search_label)
         layout.addWidget(self.search_input)
@@ -113,14 +114,14 @@ class CategoryManagerWidget(QWidget):
 
         # Botones de acción
         self.add_btn = QPushButton("➕ Nueva Categoría")
-        self.add_btn.clicked.connect(self.add_category)
+        self.add_btn.clicked.connect(self.add_category)  # type: ignore
 
         self.edit_btn = QPushButton("✏️ Editar")
-        self.edit_btn.clicked.connect(self.edit_selected_category)
+        self.edit_btn.clicked.connect(self.edit_selected_category)  # type: ignore
         self.edit_btn.setEnabled(False)
 
         self.delete_btn = QPushButton("🗑️ Eliminar")
-        self.delete_btn.clicked.connect(self.delete_selected_category)
+        self.delete_btn.clicked.connect(self.delete_selected_category)  # type: ignore
         self.delete_btn.setEnabled(False)
 
         layout.addWidget(self.add_btn)
@@ -159,8 +160,8 @@ class CategoryManagerWidget(QWidget):
             header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)  # Modificada
             header.resizeSection(5, 120)
         # Conectar señales
-        table.itemSelectionChanged.connect(self.on_category_selected)
-        table.itemDoubleClicked.connect(self.edit_selected_category)
+        table.itemSelectionChanged.connect(self.on_category_selected)  # type: ignore
+        table.itemDoubleClicked.connect(self.edit_selected_category)  # type: ignore
 
         return table
 
@@ -185,10 +186,10 @@ class CategoryManagerWidget(QWidget):
 
         return panel
 
-    def load_categories(self):
+    def load_categories(self) -> None:
         """Cargar categorías desde el servicio"""
         try:
-            self.categorias_cache = self.inventario_service.get_categorias_completas()
+            self.categorias_cache = self.inventario_service.get_categorias_completas()  # type: ignore
             self.update_categories_table()
             self.update_statistics()
         except Exception as e:
@@ -197,7 +198,7 @@ class CategoryManagerWidget(QWidget):
                 self, "Error", f"No se pudieron cargar las categorías: {str(e)}"
             )
 
-    def update_categories_table(self):
+    def update_categories_table(self) -> None:
         """Actualizar la tabla de categorías"""
         try:
             # Las categorías ahora son objetos completos con todos los campos
@@ -206,7 +207,7 @@ class CategoryManagerWidget(QWidget):
             for row, categoria in enumerate(self.categorias_cache):
                 # ID
                 self.categories_table.setItem(
-                    row, 0, QTableWidgetItem(str(categoria.get("id", "N/A")))
+                    row, 0, QTableWidgetItem(str(categoria.get("id", "N/A")))  # type: ignore
                 )
 
                 # Nombre
@@ -268,7 +269,7 @@ class CategoryManagerWidget(QWidget):
         except:
             return 0
 
-    def update_statistics(self):
+    def update_statistics(self) -> None:
         """Actualizar estadísticas"""
         try:
             total = len(self.categorias_cache)
@@ -277,7 +278,7 @@ class CategoryManagerWidget(QWidget):
 
             # Las categorías ahora son objetos completos
             for categoria in self.categorias_cache:
-                categoria_nombre = categoria.get("nombre", "")
+                categoria_nombre = categoria.get("nombre", "")  # type: ignore
                 count = self.get_products_count_for_category(categoria_nombre)
                 if count > 0:
                     used += 1
@@ -290,7 +291,7 @@ class CategoryManagerWidget(QWidget):
         except Exception as e:
             logger.error(f"Error actualizando estadísticas: {e}")
 
-    def filter_categories(self, text: str):
+    def filter_categories(self, text: str) -> None:
         """Filtrar categorías por texto"""
         try:
             for row in range(self.categories_table.rowCount()):
@@ -308,7 +309,7 @@ class CategoryManagerWidget(QWidget):
         except Exception as e:
             logger.error(f"Error filtrando categorías: {e}")
 
-    def on_category_selected(self):
+    def on_category_selected(self) -> None:
         """Manejar selección de categoría"""
         selected_rows = set(
             item.row() for item in self.categories_table.selectedItems()
@@ -324,25 +325,25 @@ class CategoryManagerWidget(QWidget):
                 categoria = self.categorias_cache[
                     row
                 ]  # Ya es un objeto completo                # Emitir la categoría completa
-                self.categoria_seleccionada.emit(categoria)
+                self.categoria_seleccionada.emit(categoria)  # type: ignore
 
-    def add_category(self):
+    def add_category(self) -> None:
         """Agregar nueva categoría"""
         # Limpiar selección de la tabla para evitar conflictos
         self.categories_table.clearSelection()
 
         # Crear diálogo sin pasar categoría (modo creación)
-        dialog = CategoryDialog(self.inventario_service, self, categoria=None)
+        dialog = CategoryDialog(self.inventario_service, self, categoria=None)  # type: ignore
 
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.load_categories()
-            self.categoria_actualizada.emit()
+            self.categoria_actualizada.emit()  # type: ignore
             # Limpiar selección después de crear
             self.categories_table.clearSelection()
             self.edit_btn.setEnabled(False)
             self.delete_btn.setEnabled(False)
 
-    def edit_selected_category(self):
+    def edit_selected_category(self) -> None:
         """Editar categoría seleccionada"""
         try:
             selected_rows = set(
@@ -449,18 +450,18 @@ class CategoryManagerWidget(QWidget):
                 padding: 15px;
                 margin-bottom: 10px;
             }
-            
+
             #ModuleTitle {
                 color: white;
                 font-size: 24px;
                 font-weight: bold;
             }
-            
+
             #ModuleSubtitle {
                 color: rgba(255, 255, 255, 0.8);
                 font-size: 14px;
             }
-            
+
             #SearchPanel {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -476,24 +477,24 @@ class CategoryManagerWidget(QWidget):
                 selection-color: white;
                 outline: none;
             }
-            
+
             #CategoriesTable::item {
                 padding: 8px;
                 border-bottom: 1px solid #f1f5f9;
                 border: none;
             }
-            
+
             #CategoriesTable::item:selected {
                 background: #3b82f6;
                 color: white;
                 border: none;
                 outline: none;
             }
-            
+
             #CategoriesTable::item:hover {
                 background: #e6f3ff;
             }
-            
+
             #CategoriesTable QHeaderView::section {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -501,13 +502,13 @@ class CategoryManagerWidget(QWidget):
                 font-weight: bold;
                 color: #374151;
             }
-            
+
             #CategoriesTable QHeaderView::section:horizontal {
                 border-left: none;
                 border-right: none;
                 border-top: none;
             }
-            
+
             #StatsPanel {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -516,7 +517,7 @@ class CategoryManagerWidget(QWidget):
                 font-weight: bold;
                 color: #4a5568;
             }
-            
+
             QPushButton {
                 background: #3b82f6;
                 color: white;
@@ -526,23 +527,23 @@ class CategoryManagerWidget(QWidget):
                 font-weight: bold;
                 min-width: 100px;
             }
-            
+
             QPushButton:hover {
                 background: #2563eb;
             }
-            
+
             QPushButton:disabled {
                 background: #9ca3af;
                 color: #6b7280;
             }
-            
+
             QLineEdit {
                 border: 2px solid #e2e8f0;
                 border-radius: 4px;
                 padding: 6px;
                 font-size: 14px;
             }
-            
+
             QLineEdit:focus {
                 border-color: #3b82f6;
             }
@@ -553,7 +554,7 @@ class CategoryManagerWidget(QWidget):
 class CategoryDialog(QDialog):
     """Diálogo mejorado para crear/editar categorías con validaciones avanzadas"""
 
-    def __init__(self, inventario_service, parent=None, categoria=None):
+    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None, categoria: Optional[Dict[str, Any]] = None) -> None:
         super().__init__(parent)
 
         self.inventario_service = inventario_service
@@ -566,7 +567,7 @@ class CategoryDialog(QDialog):
         )
         if self.is_edit_mode and self.categoria:
             logger.info(
-                f"Editando categoría ID: {self.categoria.get('id', 'N/A')} - Nombre: {self.categoria.get('nombre', 'N/A')}"
+                f"Editando categoría ID: {self.categoria.get('id', 'N/A')} - Nombre: {self.categoria.get('nombre', 'N/A')}"  # type: ignore
             )
         else:
             logger.info("Creando nueva categoría")
@@ -735,11 +736,11 @@ class CategoryDialog(QDialog):
 
         self.cancel_btn = QPushButton("❌ Cancelar")
         self.cancel_btn.setObjectName("cancelBtn")
-        self.cancel_btn.clicked.connect(self.reject)
+        self.cancel_btn.clicked.connect(self.reject)  # type: ignore
 
         self.save_btn = QPushButton("💾 Guardar" if self.is_edit_mode else "✅ Crear")
         self.save_btn.setObjectName("saveBtn")
-        self.save_btn.clicked.connect(self.save_category)
+        self.save_btn.clicked.connect(self.save_category)  # type: ignore
         self.save_btn.setDefault(True)
 
         buttons_layout.addWidget(self.cancel_btn)
@@ -747,13 +748,13 @@ class CategoryDialog(QDialog):
 
         layout.addLayout(buttons_layout)
 
-    def setup_validations(self):
+    def setup_validations(self) -> None:
         """Configurar validaciones en tiempo real"""
         # Validación del nombre
-        self.name_input.textChanged.connect(self.validate_name)
+        self.name_input.textChanged.connect(self.validate_name)  # type: ignore
 
         # Contador de caracteres para descripción
-        self.description_input.textChanged.connect(self.update_char_counter)
+        self.description_input.textChanged.connect(self.update_char_counter)  # type: ignore
 
     def validate_name(self):
         """Validar el campo nombre en tiempo real"""

@@ -10,7 +10,7 @@ import logging
 import hashlib
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple, Union, cast
 
 # EXCEPCIÓN FUNCIONAL: No configurar logging global aquí para evitar duplicidad de handlers.
 # El logging global se configura únicamente en el entrypoint principal (hefest_application.py).
@@ -24,7 +24,7 @@ class ConfigManager:
     las preferencias del usuario y los ajustes del sistema.
     """
 
-    DEFAULT_CONFIG = {
+    DEFAULT_CONFIG: Dict[str, Dict[str, Any]] = {
         "app": {"name": "Hefest", "version": "0.0.14", "theme": "light"},
         "database": {"type": "sqlite", "path": "hefest.db"},
         "ui": {"language": "es", "font_size": 10, "show_toolbar": True},
@@ -45,10 +45,11 @@ class ConfigManager:
         },
     }
 
-    def __init__(self, config_file="config.json"):
+    def __init__(self, config_file: str = "config.json") -> None:
         """Inicializa el gestor de configuración"""
-        self.config_dir = self._get_config_dir()
-        self.config_file = os.path.join(self.config_dir, config_file)
+        self.config_dir: str = self._get_config_dir()
+        self.config_file: str = os.path.join(self.config_dir, config_file)
+        self.config: Dict[str, Dict[str, Any]] = {}
 
         # Cargar configuración o crear una nueva
         if os.path.exists(self.config_file):
@@ -64,7 +65,7 @@ class ConfigManager:
             self.config = self.DEFAULT_CONFIG
             self._save_config()
 
-    def _get_config_dir(self):
+    def _get_config_dir(self) -> str:
         """Obtiene el directorio de configuración"""
         # Determinar directorio según la plataforma
         app_data = os.path.join(str(Path.home()), "AppData", "Local", "Hefest")
@@ -74,18 +75,18 @@ class ConfigManager:
 
         return app_data
 
-    def _load_config(self):
+    def _load_config(self) -> Dict[str, Dict[str, Any]]:
         """Carga la configuración desde el archivo"""
         with open(self.config_file, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    def _save_config(self):
+    def _save_config(self) -> None:
         """Guarda la configuración en el archivo"""
         with open(self.config_file, "w", encoding="utf-8") as f:
             json.dump(self.config, f, indent=4)
         logger.info(f"Configuración guardada en {self.config_file}")
 
-    def get(self, section, key=None):
+    def get(self, section: str, key: Optional[str] = None) -> Optional[Union[Dict[str, Any], Any]]:
         """
         Obtiene una sección completa o un valor específico de la configuración
 
@@ -107,7 +108,7 @@ class ConfigManager:
 
         return None
 
-    def set(self, section, key, value):
+    def set(self, section: str, key: str, value: Any) -> None:
         """
         Establece un valor en la configuración
 
@@ -122,7 +123,7 @@ class ConfigManager:
         self.config[section][key] = value
         self._save_config()
 
-    def update_section(self, section, values):
+    def update_section(self, section: str, values: Dict[str, Any]) -> None:
         """
         Actualiza una sección completa de la configuración
 
@@ -136,7 +137,7 @@ class ConfigManager:
         self.config[section].update(values)
         self._save_config()
 
-    def reset_to_default(self, section=None):
+    def reset_to_default(self, section: Optional[str] = None) -> None:
         """
         Restablece la configuración a los valores predeterminados
 
@@ -150,28 +151,26 @@ class ConfigManager:
 
         self._save_config()
 
-    def get_all_config(self):
+    def get_all_config(self) -> Dict[str, Any]:
         """
         Retorna toda la configuración actual como un diccionario plano
 
         Returns:
             dict: Configuración completa en formato plano
         """
-        flat_config = {}
-
-        def flatten_dict(d, parent_key="", sep="_"):
-            items = []
+        def flatten_dict(d: Dict[str, Any], parent_key: str = "", sep: str = "_") -> Dict[str, Any]:
+            items: List[Tuple[str, Any]] = []
             for k, v in d.items():
                 new_key = f"{parent_key}{sep}{k}" if parent_key else k
                 if isinstance(v, dict):
-                    items.extend(flatten_dict(v, new_key, sep=sep).items())
+                    items.extend(flatten_dict(cast(Dict[str, Any], v), new_key, sep=sep).items())
                 else:
                     items.append((new_key, v))
             return dict(items)
 
         return flatten_dict(self.config)
 
-    def set_config(self, key, value):
+    def set_config(self, key: str, value: Any) -> None:
         """
         Establece un valor de configuración usando notación de punto
 
@@ -180,7 +179,7 @@ class ConfigManager:
             value: Valor a establecer
         """
         keys = key.split(".")
-        current = self.config
+        current: Dict[str, Any] = self.config
 
         # Navegar hasta el penúltimo nivel
         for k in keys[:-1]:
@@ -191,7 +190,7 @@ class ConfigManager:
         current[keys[-1]] = value
         self._save_config()
 
-    def get_config(self, key, default=None):
+    def get_config(self, key: str, default: Any = None) -> Any:
         """
         Obtiene un valor de configuración usando notación de punto
 
@@ -203,7 +202,7 @@ class ConfigManager:
             Valor de configuración o valor por defecto
         """
         keys = key.split(".")
-        current = self.config
+        current: Any = self.config
 
         try:
             for k in keys:
@@ -212,7 +211,7 @@ class ConfigManager:
         except (KeyError, TypeError):
             return default
 
-    def export_config(self, file_path):
+    def export_config(self, file_path: str) -> None:
         """
         Exporta la configuración actual a un archivo
 
@@ -227,7 +226,7 @@ class ConfigManager:
             logger.error(f"Error al exportar configuración: {e}")
             raise
 
-    def import_config(self, file_path):
+    def import_config(self, file_path: str) -> None:
         """
         Importa configuración desde un archivo
 
@@ -236,7 +235,7 @@ class ConfigManager:
         """
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                imported_config = json.load(f)
+                imported_config: Dict[str, Any] = json.load(f)
 
             # Validar y aplicar configuración importada
             self.config.update(imported_config)
@@ -292,7 +291,7 @@ class ConfigManager:
 
     def validate_config(self) -> List[str]:
         """Valida la configuración y retorna lista de errores encontrados"""
-        errors = []
+        errors: List[str] = []
 
         # Validaciones básicas
         required_sections = ["app", "database", "ui"]
@@ -331,16 +330,16 @@ class ConfigManager:
 
     def get_user_settings(self) -> Dict[str, Any]:
         """Obtiene solo las configuraciones modificadas por el usuario"""
-        user_settings = {}
+        user_settings: Dict[str, Any] = {}
 
-        def compare_configs(default: Dict, current: Dict, path: str = ""):
+        def compare_configs(default: Dict[str, Any], current: Dict[str, Any], path: str = "") -> None:
             for key, value in current.items():
-                current_path = f"{path}.{key}" if path else key
+                current_path: str = f"{path}.{key}" if path else key
 
                 if key not in default:
                     user_settings[current_path] = value
                 elif isinstance(value, dict) and isinstance(default[key], dict):
-                    compare_configs(default[key], value, current_path)
+                    compare_configs(cast(Dict[str, Any], default[key]), cast(Dict[str, Any], value), current_path)
                 elif value != default[key]:
                     user_settings[current_path] = value
 
@@ -349,7 +348,7 @@ class ConfigManager:
 
     def get_config_info(self) -> Dict[str, Any]:
         """Obtiene información sobre la configuración actual"""
-        config_info = {
+        config_info: Dict[str, Any] = {
             "config_file": self.config_file,
             "config_dir": self.config_dir,
             "last_modified": None,

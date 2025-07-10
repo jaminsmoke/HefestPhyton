@@ -6,6 +6,7 @@ Este módulo proporciona funciones para crear animaciones fluidas y efectos
 visuales avanzados usando QPropertyAnimation y otros efectos de Qt.
 """
 
+from typing import Optional, Callable
 from PyQt6.QtCore import (
     QPropertyAnimation,
     QEasingCurve,
@@ -14,6 +15,7 @@ from PyQt6.QtCore import (
     QSequentialAnimationGroup,
 )
 from PyQt6.QtWidgets import (
+    QWidget,
     QGraphicsOpacityEffect,
     QGraphicsDropShadowEffect,
     QGraphicsBlurEffect,
@@ -28,7 +30,12 @@ class AnimationHelper:
     """Helper class para gestionar animaciones y efectos visuales"""
 
     @staticmethod
-    def fade_in(widget, duration=300, start_opacity=0.0, end_opacity=1.0):
+    def fade_in(
+        widget: QWidget,
+        duration: int = 300,
+        start_opacity: float = 0.0,
+        end_opacity: float = 1.0
+    ) -> Optional[QPropertyAnimation]:
         """Animación de fade in"""
         try:
             # Reutilizar efecto si ya existe y es del tipo correcto
@@ -57,7 +64,11 @@ class AnimationHelper:
             return None
 
     @staticmethod
-    def fade_out(widget, duration=300, callback=None):
+    def fade_out(
+        widget: QWidget,
+        duration: int = 300,
+        callback: Optional[Callable[[], None]] = None
+    ) -> Optional[QPropertyAnimation]:
         """Animación de fade out"""
         try:
             effect = widget.graphicsEffect()
@@ -76,7 +87,7 @@ class AnimationHelper:
             animation.setEasingCurve(QEasingCurve.Type.InCubic)
 
             if callback:
-                animation.finished.connect(callback)
+                animation.finished.connect(callback)  # type: ignore[reportUnknownMemberType]
 
             animation.start(QPropertyAnimation.DeletionPolicy.DeleteWhenStopped)
             # widget._fade_animation = animation
@@ -86,7 +97,12 @@ class AnimationHelper:
             return None
 
     @staticmethod
-    def slide_in(widget, direction="left", duration=400, distance=200):
+    def slide_in(
+        widget: QWidget,
+        direction: str = "left",
+        duration: int = 400,
+        distance: int = 200
+    ) -> Optional[QPropertyAnimation]:
         """Animación de deslizamiento hacia adentro"""
         try:
             current_pos = widget.pos()
@@ -109,14 +125,21 @@ class AnimationHelper:
             animation.setEasingCurve(QEasingCurve.Type.OutBack)
             animation.start()
 
-            widget._slide_animation = animation
+            # Mantener referencia usando setattr para evitar warning de tipo
+            setattr(widget, '_slide_animation', animation)
             return animation
         except Exception as e:
             logger.error(f"Error en slide_in: {e}")
             return None
 
     @staticmethod
-    def slide_out(widget, direction="left", duration=400, distance=200, callback=None):
+    def slide_out(
+        widget: QWidget,
+        direction: str = "left",
+        duration: int = 400,
+        distance: int = 200,
+        callback: Optional[Callable[[], None]] = None
+    ) -> Optional[QPropertyAnimation]:
         """Animación de deslizamiento hacia afuera"""
         try:
             current_pos = widget.pos()
@@ -137,17 +160,23 @@ class AnimationHelper:
             animation.setEasingCurve(QEasingCurve.Type.InBack)
 
             if callback:
-                animation.finished.connect(callback)
+                animation.finished.connect(callback)  # type: ignore[reportUnknownMemberType]
 
             animation.start()
-            widget._slide_animation = animation
+            # Mantener referencia usando setattr para evitar warning de tipo
+            setattr(widget, '_slide_animation', animation)
             return animation
         except Exception as e:
             logger.error(f"Error en slide_out: {e}")
             return None
 
     @staticmethod
-    def scale_animation(widget, start_scale=1.0, end_scale=1.05, duration=200):
+    def scale_animation(
+        widget: QWidget,
+        start_scale: float = 1.0,
+        end_scale: float = 1.05,
+        duration: int = 200
+    ) -> Optional[QPropertyAnimation]:
         """Animación de escala para efectos hover"""
         try:
             current_geometry = widget.geometry()
@@ -169,14 +198,19 @@ class AnimationHelper:
             animation.setEasingCurve(QEasingCurve.Type.OutCubic)
             animation.start()
 
-            widget._scale_animation = animation
+            # Mantener referencia usando setattr para evitar warning de tipo
+            setattr(widget, '_scale_animation', animation)
             return animation
         except Exception as e:
             logger.error(f"Error en scale_animation: {e}")
             return None
 
     @staticmethod
-    def bounce_animation(widget, intensity=10, duration=600):
+    def bounce_animation(
+        widget: QWidget,
+        intensity: int = 10,
+        duration: int = 600
+    ) -> Optional[QSequentialAnimationGroup]:
         """Animación de rebote"""
         try:
             original_pos = widget.pos()
@@ -218,7 +252,8 @@ class AnimationHelper:
             group.addAnimation(settle_animation)
             group.start()
 
-            widget._bounce_animation = group
+            # Mantener referencia usando setattr para evitar warning de tipo
+            setattr(widget, '_bounce_animation', group)
             return group
         except Exception as e:
             logger.error(f"Error en bounce_animation: {e}")
@@ -229,7 +264,11 @@ class EffectsHelper:
     """Helper class para aplicar efectos gráficos"""
 
     @staticmethod
-    def apply_opacity_effect(widget, opacity=0.5, duration=None):
+    def apply_opacity_effect(
+        widget: QWidget,
+        opacity: float = 0.5,
+        duration: Optional[int] = None
+    ) -> Optional[QGraphicsOpacityEffect]:
         """Aplica un efecto de opacidad, opcionalmente animado"""
         try:
             effect = widget.graphicsEffect()
@@ -254,8 +293,12 @@ class EffectsHelper:
 
     @staticmethod
     def apply_drop_shadow(
-        widget, blur_radius=15, x_offset=5, y_offset=5, color=QColor(0, 0, 0, 80)
-    ):
+        widget: QWidget,
+        blur_radius: int = 15,
+        x_offset: int = 5,
+        y_offset: int = 5,
+        color: QColor = QColor(0, 0, 0, 80)
+    ) -> Optional[QGraphicsDropShadowEffect]:
         """Aplica un efecto de sombra"""
         try:
             # Intentar reutilizar el efecto si ya existe y es del tipo correcto
@@ -280,7 +323,11 @@ class EffectsHelper:
             return None
 
     @staticmethod
-    def apply_blur_effect(widget, blur_radius=5, duration=None):
+    def apply_blur_effect(
+        widget: QWidget,
+        blur_radius: int = 5,
+        duration: Optional[int] = None
+    ) -> Optional[QGraphicsBlurEffect]:
         """Aplica un efecto de desenfoque, opcionalmente animado"""
         try:
             effect = widget.graphicsEffect()
@@ -304,7 +351,11 @@ class EffectsHelper:
             return None
 
     @staticmethod
-    def apply_acrylic_effect(widget, opacity=0.85, blur_radius=15):
+    def apply_acrylic_effect(
+        widget: QWidget,
+        opacity: float = 0.85,
+        blur_radius: int = 15
+    ) -> Optional[QGraphicsOpacityEffect]:
         """Aplica efecto acrílico (glassmorphism)"""
         try:
             # Crear efecto combinado de opacidad y blur
@@ -332,19 +383,23 @@ class TransitionHelper:
     """Helper class para transiciones entre vistas"""
 
     @staticmethod
-    def cross_fade_transition(old_widget, new_widget, duration=500):
+    def cross_fade_transition(
+        old_widget: QWidget,
+        new_widget: QWidget,
+        duration: int = 500
+    ) -> None:
         """Transición cruzada entre dos widgets"""
         try:
             # Fade out el widget anterior
             fade_out_anim = AnimationHelper.fade_out(old_widget, duration // 2)
 
             # Fade in el widget nuevo después de un pequeño delay
-            def start_fade_in():
+            def start_fade_in() -> None:
                 AnimationHelper.fade_in(new_widget, duration // 2)
                 new_widget.show()
 
             if fade_out_anim:
-                fade_out_anim.finished.connect(start_fade_in)
+                fade_out_anim.finished.connect(start_fade_in)  # type: ignore[reportUnknownMemberType]
             else:
                 start_fade_in()
 
@@ -352,11 +407,16 @@ class TransitionHelper:
             logger.error(f"Error en cross_fade_transition: {e}")
 
     @staticmethod
-    def slide_transition(old_widget, new_widget, direction="left", duration=400):
+    def slide_transition(
+        old_widget: QWidget,
+        new_widget: QWidget,
+        direction: str = "left",
+        duration: int = 400
+    ) -> None:
         """Transición deslizante entre dos widgets"""
         try:
             # Deslizar hacia afuera el widget anterior
-            slide_out_anim = AnimationHelper.slide_out(
+            _slide_out_anim = AnimationHelper.slide_out(
                 old_widget, direction, duration, callback=lambda: old_widget.hide()
             )
 

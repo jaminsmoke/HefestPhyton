@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QAbstractItemView,
     QMenu,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QPoint
 from PyQt6.QtGui import QColor, QAction
 
 from src.utils.modern_styles import ModernStyles
@@ -51,8 +51,8 @@ class InventoryTableWidget(QTableWidget):
     product_delete_requested = pyqtSignal(object)  # Solicitud de eliminación
     stock_update_requested = pyqtSignal(object, int)  # Actualización de stock
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)  # type: ignore
         self.modern_styles = ModernStyles()
         self.products_data: List[Any] = []
         self._setup_table()
@@ -75,7 +75,7 @@ class InventoryTableWidget(QTableWidget):
             "Acciones",
         ]
         self.setColumnCount(len(columns))
-        self.setHorizontalHeaderLabels(columns)
+        self.setHorizontalHeaderLabels(columns)  # type: ignore
 
         # Configurar header
         header = self.horizontalHeader()
@@ -99,13 +99,13 @@ class InventoryTableWidget(QTableWidget):
         self.setSortingEnabled(True)
 
         # Conectar señales
-        self.itemSelectionChanged.connect(self._on_selection_changed)
-        self.itemDoubleClicked.connect(self._on_item_double_clicked)
+        self.itemSelectionChanged.connect(self._on_selection_changed)  # type: ignore
+        self.itemDoubleClicked.connect(self._on_item_double_clicked)  # type: ignore
 
     def _setup_context_menu(self):
         """Configura el menú contextual"""
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._show_context_menu)
+        self.customContextMenuRequested.connect(self._show_context_menu)  # type: ignore
 
     def _apply_styles(self):
         """Aplica estilos modernos a la tabla"""
@@ -306,7 +306,7 @@ class InventoryTableWidget(QTableWidget):
             }
         """
         )
-        edit_btn.clicked.connect(lambda: self.product_edit_requested.emit(product))
+        edit_btn.clicked.connect(lambda: self.product_edit_requested.emit(product))  # type: ignore
 
         # Botón eliminar
         delete_btn = QPushButton("🗑️")
@@ -325,7 +325,7 @@ class InventoryTableWidget(QTableWidget):
             }
         """
         )
-        delete_btn.clicked.connect(lambda: self.product_delete_requested.emit(product))
+        delete_btn.clicked.connect(lambda: self.product_delete_requested.emit(product))  # type: ignore
 
         # Botón stock
         stock_btn = QPushButton("📦")
@@ -344,7 +344,7 @@ class InventoryTableWidget(QTableWidget):
             }
         """
         )
-        stock_btn.clicked.connect(lambda: self._show_stock_dialog(product))
+        stock_btn.clicked.connect(lambda: self._show_stock_dialog(product))  # type: ignore
 
         layout.addWidget(edit_btn)
         layout.addWidget(delete_btn)
@@ -378,23 +378,23 @@ class InventoryTableWidget(QTableWidget):
             product = self.products_data[current_row]
             self.product_selected.emit(product)
 
-    def _on_item_double_clicked(self, item):
+    def _on_item_double_clicked(self, item: QTableWidgetItem) -> None:
         """Maneja el doble clic en un item"""
         if item is None:
             return
-        row = item.row()
+        row = item.row()  # type: ignore
         if 0 <= row < len(self.products_data):
             product = self.products_data[row]
             self.product_edit_requested.emit(product)
 
-    def _show_context_menu(self, position):
+    def _show_context_menu(self, position: QPoint) -> None:
         """
         Muestra el menú contextual.
 
         Args:
             position: Posición del clic
         """
-        item = self.itemAt(position)
+        item = self.itemAt(position)  # type: ignore
         if not item:
             return
 
@@ -409,35 +409,35 @@ class InventoryTableWidget(QTableWidget):
 
         # Acciones
         edit_action = QAction("Editar ProductoType", self)
-        edit_action.triggered.connect(lambda: self.product_edit_requested.emit(product))
+        edit_action.triggered.connect(lambda: self.product_edit_requested.emit(product))  # type: ignore
 
         delete_action = QAction("Eliminar ProductoType", self)
-        delete_action.triggered.connect(
+        delete_action.triggered.connect(  # type: ignore
             lambda: self.product_delete_requested.emit(product)
         )
 
         stock_action = QAction("Ajustar stock", self)
-        stock_action.triggered.connect(lambda: self._show_stock_dialog(product))
+        stock_action.triggered.connect(lambda: self._show_stock_dialog(product))  # type: ignore
 
         # Añadir acciones al menú
-        menu.addAction(edit_action)
-        menu.addAction(stock_action)
+        menu.addAction(edit_action)  # type: ignore
+        menu.addAction(stock_action)  # type: ignore
         menu.addSeparator()
-        menu.addAction(delete_action)
+        menu.addAction(delete_action)  # type: ignore
 
         # Mostrar menú
-        menu.exec(self.mapToGlobal(position))
+        menu.exec(self.mapToGlobal(position))  # type: ignore
 
-    def _match_search_text(self, product, search_text: str) -> bool:
+    def _match_search_text(self, product: Any, search_text: str) -> bool:
         if not search_text:
             return True
-        nombre = getattr(product, "nombre", "")
+        nombre = getattr(product, "nombre", "")  # type: ignore
         return search_text.lower() in nombre.lower()
 
-    def _match_category(self, product, category: str) -> bool:
+    def _match_category(self, product: Any, category: str) -> bool:
         if not category or category == "Todas":
             return True
-        categoria = getattr(product, "categoria", "")
+        categoria = getattr(product, "categoria", "")  # type: ignore
         return categoria == category
 
     def filter_products(self, search_text: str = "", category: str = ""):
@@ -501,8 +501,8 @@ class StockAlertWidget(QWidget):
     # Señales
     order_requested = pyqtSignal(object)  # Solicitud de pedido
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)  # type: ignore
         self.modern_styles = ModernStyles()
         self.alert_products: List[ProductoType] = []
         self._setup_ui()
@@ -644,7 +644,7 @@ class StockAlertWidget(QWidget):
             }
         """
         )
-        order_btn.clicked.connect(lambda: self.order_requested.emit(product))
+        order_btn.clicked.connect(lambda: self.order_requested.emit(product))  # type: ignore
         layout.addWidget(order_btn)
 
         return widget
@@ -661,8 +661,8 @@ class InventoryStatsWidget(QWidget):
     - Actualización automática
     """
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)  # type: ignore
         self.modern_styles = ModernStyles()
         self._setup_ui()
         self._apply_styles()

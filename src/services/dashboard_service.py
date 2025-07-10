@@ -3,10 +3,11 @@ Servicio de datos para el Dashboard de Hefest - Versión funcional
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple, Any, Union
 from dataclasses import dataclass
 
 from .base_service import BaseService
+from data.db_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
@@ -58,14 +59,19 @@ class AlertaOperativa:
 class DashboardDataService(BaseService):
     """Servicio que proporciona datos para el dashboard"""
 
-    def __init__(self, db_manager=None):
+    def __init__(self, db_manager: Optional[DatabaseManager] = None):
         super().__init__(db_manager)
 
     def get_service_name(self) -> str:
         """Retorna el nombre de este servicio"""
         return "DashboardDataService"
 
-    def _query_or_default(self, query: str, params: tuple = (), default=0):
+    def _query_or_default(
+        self,
+        query: str,
+        params: Tuple[Any, ...] = (),
+        default: Union[int, float, str, List[Any], Dict[str, Any]] = 0
+    ) -> Union[int, float, str, List[Dict[str, Any]], Dict[str, Any]]:
         """Helper para ejecutar consultas con fallback"""
         if not self.db_manager or not hasattr(self.db_manager, "query"):
             self.logger.debug("db_manager no disponible")
@@ -77,16 +83,23 @@ class DashboardDataService(BaseService):
             self.logger.error(f"Error ejecutando consulta: {e}")
             return default
 
-    def _extract_value_from_result(self, result, key=None, default=0):
+    def _extract_value_from_result(
+        self,
+        result: Union[List[Dict[str, Any]], Dict[str, Any], int, float, None],
+        key: Optional[str] = None,
+        default: Union[int, float] = 0
+    ) -> float:
         """Helper para extraer valores de resultados"""
         try:
             if isinstance(result, list) and len(result) > 0:
                 if isinstance(result[0], dict) and key:
-                    return float(result[0].get(key, default))
+                    value = result[0].get(key, default)
+                    return float(value) if value is not None else float(default)
                 elif isinstance(result[0], (int, float)):
                     return float(result[0])
             elif isinstance(result, dict) and key:
-                return float(result.get(key, default))
+                value = result.get(key, default)
+                return float(value) if value is not None else float(default)
             elif isinstance(result, (int, float)):
                 return float(result)
             return float(default)
@@ -166,7 +179,7 @@ class DashboardDataService(BaseService):
             VentasPorHora("19:00", 298.80, 7),
         ]
 
-    def get_estado_mesas(self) -> List[Dict]:
+    def get_estado_mesas(self) -> List[Dict[str, Any]]:
         """Obtiene el estado actual de todas las mesas"""
         return [
             {

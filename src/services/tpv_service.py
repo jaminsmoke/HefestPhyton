@@ -266,7 +266,7 @@ class TPVService(BaseService):
                                 linea.precio_unidad,
                                 getattr(linea, "notas", None),
                             )
-                            self.logger.debug(f"[persistir_comanda] Insertando detalle: {{'comanda_id': detalle[0], 'producto_id': detalle[1], 'cantidad': detalle[2], 'precio_unitario': detalle[3], 'notas': detalle[4]}}")
+                            self.logger.debug(f"[persistir_comanda] Insertando detalle: {{'comanda_id': {detalle[0]}, 'producto_id': {detalle[1]}, 'cantidad': {detalle[2]}, 'precio_unitario': {detalle[3]}, 'notas': {detalle[4]}}}")
                             cursor.execute(
                                 "INSERT INTO comanda_detalles (comanda_id, producto_id, cantidad, precio_unitario, notas) VALUES (?, ?, ?, ?, ?)",
                                 detalle
@@ -357,12 +357,12 @@ class TPVService(BaseService):
 
     """Servicio para la gestión del TPV"""
 
-    def __init__(self, db_manager=None):
+    def __init__(self, db_manager: Optional[Any] = None):
         super().__init__(db_manager)
-        self._mesas_cache = []
-        self._categorias_cache = []
-        self._productos_cache = []
-        self._comandas_cache = {}  # {mesa_id: Comanda}
+        self._mesas_cache: List[Mesa] = []
+        self._categorias_cache: List[Dict[str, Any]] = []
+        self._productos_cache: List[Producto] = []
+        self._comandas_cache: Dict[str, Comanda] = {}  # {mesa_id: Comanda}
         self._next_comanda_id = 1  # ID para comandas
 
         self._load_datos()
@@ -407,11 +407,11 @@ class TPVService(BaseService):
             self._mesas_cache = []
             for row in result:
                 mesa = Mesa(
-                    id=row[0],
-                    numero=row[1],
-                    zona=row[2] or "Sin zona",
-                    estado=row[3] or "libre",
-                    capacidad=row[4] or 4,
+                    id=row["id"],
+                    numero=row["numero"],
+                    zona=row["zona"] or "Sin zona",
+                    estado=row["estado"] or "libre",
+                    capacidad=row["capacidad"] or 4,
                 )
                 self._mesas_cache.append(mesa)
             # print(f"[DEBUG TPVService] _load_mesas_from_db: {len(self._mesas_cache)} mesas cargadas")  # Eliminado debug
@@ -435,7 +435,7 @@ class TPVService(BaseService):
             )
             self._categorias_cache = []
             for row in result:
-                categoria = {"id": row[0], "nombre": row[1]}
+                categoria = {"id": row["id"], "nombre": row["nombre"]}
                 self._categorias_cache.append(categoria)
             self.logger.info(
                 f"Cargadas {len(self._categorias_cache)} categorías desde la base de datos"
@@ -461,11 +461,11 @@ class TPVService(BaseService):
             self._productos_cache = []
             for row in result:
                 producto = Producto(
-                    id=row[0],
-                    nombre=row[1],
-                    precio=row[2] or 0.0,
-                    categoria=row[3] or "Sin categoría",
-                    stock=row[4] if row[4] is not None else None,
+                    id=row["id"],
+                    nombre=row["nombre"],
+                    precio=row["precio"] or 0.0,
+                    categoria=row["categoria"] or "Sin categoría",
+                    stock=row["stock"] if row["stock"] is not None else None,
                 )
                 self._productos_cache.append(producto)
             self.logger.info(
@@ -491,8 +491,8 @@ class TPVService(BaseService):
             )
             self._comandas_cache = {}
             for row in result:
-                comanda_id = row[0]
-                mesa_id = row[1]
+                comanda_id = row["id"]
+                mesa_id = row["mesa_id"]
 
                 # Cargar detalles de la comanda
                 detalles = self.db_manager.query(
@@ -506,18 +506,18 @@ class TPVService(BaseService):
                 lineas = []
                 for detalle in detalles:
                     producto = next(
-                        (p for p in self._productos_cache if p.id == detalle[0]), None
+                        (p for p in self._productos_cache if p.id == detalle["producto_id"]), None
                     )
                     if producto and hasattr(producto, "nombre"):
                         nombre_producto = producto.nombre
                     else:
-                        nombre_producto = f"Producto {detalle[0]}"
+                        nombre_producto = f"Producto {detalle['producto_id']}"
 
                     linea = LineaComanda(
-                        producto_id=detalle[0],
+                        producto_id=detalle["producto_id"],
                         producto_nombre=nombre_producto,
-                        precio_unidad=detalle[2],
-                        cantidad=detalle[1],
+                        precio_unidad=detalle["precio_unitario"],
+                        cantidad=detalle["cantidad"],
                     )
                     lineas.append(linea)
 
@@ -528,10 +528,10 @@ class TPVService(BaseService):
                     id=comanda_id,
                     mesa_id=mesa_id,
                     fecha_apertura=(
-                        datetime.fromisoformat(row[3]) if row[3] else datetime.now()
+                        datetime.fromisoformat(row["fecha_hora"]) if row["fecha_hora"] else datetime.now()
                     ),
                     fecha_cierre=None,
-                    estado=row[4] or "abierta",
+                    estado=row["estado"] or "abierta",
                     lineas=lineas,
                 )
                 self._comandas_cache[mesa_id] = comanda
@@ -646,7 +646,7 @@ class TPVService(BaseService):
                 return mesa
         return None
 
-    def get_categorias(self) -> List[Dict]:
+    def get_categorias(self) -> List[Dict[str, Any]]:
         """Retorna lista de categorías de productos"""
         return self._categorias_cache.copy()
 
@@ -694,7 +694,7 @@ class TPVService(BaseService):
             if not rows or len(rows) == 0:
                 return None
             row = rows[0]
-            comanda_id = row[0]
+            comanda_id = row["id"]
             # Cargar detalles de la comanda
             detalles = self.db_manager.query(
                 """
@@ -707,30 +707,30 @@ class TPVService(BaseService):
             lineas = []
             for detalle in detalles:
                 producto = next(
-                    (p for p in self._productos_cache if p.id == detalle[0]), None
+                    (p for p in self._productos_cache if p.id == detalle["producto_id"]), None
                 )
                 if producto and hasattr(producto, "nombre"):
                     nombre_producto = producto.nombre
                 else:
-                    nombre_producto = f"Producto {detalle[0]}"
+                    nombre_producto = f"Producto {detalle['producto_id']}"
                 linea = LineaComanda(
-                    producto_id=detalle[0],
+                    producto_id=detalle["producto_id"],
                     producto_nombre=nombre_producto,
-                    precio_unidad=detalle[2],
-                    cantidad=detalle[1],
+                    precio_unidad=detalle["precio_unitario"],
+                    cantidad=detalle["cantidad"],
                 )
                 lineas.append(linea)
             comanda = Comanda(
-                id=row[0],
-                mesa_id=str(row[1]),
+                id=row["id"],
+                mesa_id=str(row["mesa_id"]),
                 fecha_apertura=(
-                    datetime.fromisoformat(row[3]) if row[3] else datetime.now()
+                    datetime.fromisoformat(row["fecha_hora"]) if row["fecha_hora"] else datetime.now()
                 ),
                 fecha_cierre=None,
-                estado=row[4] or "abierta",
+                estado=row["estado"] or "abierta",
                 lineas=lineas,
             )
-            comanda.usuario_id = row[2] if len(row) > 2 else None
+            comanda.usuario_id = row["usuario_id"] if "usuario_id" in row and row["usuario_id"] else None
             self._comandas_cache[mesa_id] = comanda
             return comanda
         except Exception as e:
@@ -953,32 +953,32 @@ class TPVService(BaseService):
             lineas = []
             for detalle in detalles:
                 producto = next(
-                    (p for p in self._productos_cache if p.id == detalle[0]), None
+                    (p for p in self._productos_cache if p.id == detalle["producto_id"]), None
                 )
                 if producto and hasattr(producto, "nombre"):
                     nombre_producto = producto.nombre
                 else:
-                    nombre_producto = f"Producto {detalle[0]}"
+                    nombre_producto = f"Producto {detalle['producto_id']}"
                 linea = LineaComanda(
-                    producto_id=detalle[0],
+                    producto_id=detalle["producto_id"],
                     producto_nombre=nombre_producto,
-                    precio_unidad=detalle[2],
-                    cantidad=detalle[1],
+                    precio_unidad=detalle["precio_unitario"],
+                    cantidad=detalle["cantidad"],
                 )
                 lineas.append(linea)
             comanda = Comanda(
-                id=row[0],
-                mesa_id=row[1],
+                id=row["id"],
+                mesa_id=row["mesa_id"],
                 fecha_apertura=(
-                    datetime.fromisoformat(row[3]) if row[3] else datetime.now()
+                    datetime.fromisoformat(row["fecha_hora"]) if row["fecha_hora"] else datetime.now()
                 ),
                 fecha_cierre=None,
-                estado=row[4] or "abierta",
+                estado=row["estado"] or "abierta",
                 lineas=lineas,
             )
-            comanda.usuario_id = row[2] if len(row) > 2 else None
+            comanda.usuario_id = row["usuario_id"] if "usuario_id" in row and row["usuario_id"] else None
             # Guardar en caché para futuras búsquedas
-            self._comandas_cache[row[1]] = comanda
+            self._comandas_cache[row["mesa_id"]] = comanda
             return comanda
         except Exception as e:
             self.logger.error(
@@ -1536,7 +1536,7 @@ class TPVService(BaseService):
             self.logger.error(f"Error creando reserva: {e}")
             return None
 
-    def get_reservas_mesa(self, mesa_id: str, fecha: Optional[date] = None) -> list:
+    def get_reservas_mesa(self, mesa_id: str, fecha: Optional[date] = None) -> List[Reserva]:
         """Obtiene reservas activas de una mesa, opcionalmente filtradas por fecha (modelo unificado)"""
         if not self.db_manager:
             return []
@@ -1549,15 +1549,15 @@ class TPVService(BaseService):
             rows = self.db_manager.query(query, tuple(params))
             reservas = [
                 Reserva(
-                    id=row[0],
-                    mesa_id=row[1],
-                    cliente_nombre=row[2],
-                    cliente_telefono=row[7] or "",
-                    fecha_reserva=datetime.fromisoformat(row[3]).date(),
-                    hora_reserva=datetime.fromisoformat(row[3]).strftime("%H:%M"),
-                    numero_personas=row[8] if row[8] is not None else 1,
-                    estado=row[5],
-                    notas=row[6] or "",
+                    id=row["id"],
+                    mesa_id=row["mesa_id"],
+                    cliente_nombre=row["cliente"],
+                    cliente_telefono=row["telefono"] or "",
+                    fecha_reserva=datetime.fromisoformat(row["fecha_hora"]).date(),
+                    hora_reserva=datetime.fromisoformat(row["fecha_hora"]).strftime("%H:%M"),
+                    numero_personas=row["personas"] if row["personas"] is not None else 1,
+                    estado=row["estado"],
+                    notas=row["notas"] or "",
                 )
                 for row in rows
             ]
@@ -1575,7 +1575,7 @@ class TPVService(BaseService):
             row = self.db_manager.query(
                 "SELECT mesa_id FROM reservas WHERE id = ?", (reserva_id,)
             )
-            mesa_id = row[0][0] if row and len(row[0]) > 0 else None
+            mesa_id = row[0]["mesa_id"] if row and len(row) > 0 else None
             self.db_manager.execute(
                 "UPDATE reservas SET estado = 'cancelada' WHERE id = ?", (reserva_id,)
             )
@@ -1585,7 +1585,7 @@ class TPVService(BaseService):
                     "SELECT COUNT(*) FROM reservas WHERE mesa_id = ? AND estado = 'activa'",
                     (mesa_id,),
                 )
-                if rows and rows[0][0] == 0:
+                if rows and rows[0]["COUNT(*)"] == 0:
                     try:
                         self.db_manager.execute(
                             "UPDATE mesas SET estado = ? WHERE numero = ?",
@@ -1615,9 +1615,9 @@ class TPVService(BaseService):
             )
             for row in rows:
                 hora_existente = datetime.combine(
-                    fecha, datetime.strptime(row[0], "%H:%M:%S").time()
+                    fecha, datetime.strptime(row["hora"], "%H:%M:%S").time()
                 )
-                duracion_existente = row[1] if row[1] is not None else 120
+                duracion_existente = row["duracion_min"] if row["duracion_min"] is not None else 120
                 hora_fin_existente = hora_existente + timedelta(
                     minutes=duracion_existente
                 )

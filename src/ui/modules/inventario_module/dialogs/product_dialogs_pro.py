@@ -66,7 +66,7 @@ logger = logging.getLogger(__name__)
 class ProductDialog(QDialog):
     """Diálogo base profesional para productos con diseño moderno"""
 
-    def __init__(self, parent=None, title="Producto", inventario_service=None):
+    def __init__(self, parent: Optional[QWidget] = None, title: str = "Producto", inventario_service: Optional[Any] = None) -> None:
         super().__init__(parent)
         self.setObjectName("ProductDialog")
         self.inventario_service = inventario_service
@@ -78,7 +78,7 @@ class ProductDialog(QDialog):
         self.apply_styles()
         self.load_initial_data()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Configurar la interfaz de usuario profesional"""
         self.setFixedSize(750, 850)
         self.setModal(True)
@@ -209,7 +209,7 @@ class ProductDialog(QDialog):
         nombre_label.setMinimumWidth(150)
         self.nombre_input = QLineEdit()
         self.nombre_input.setPlaceholderText("Ej: Coca Cola 330ml, Pizza Margherita...")
-        self.nombre_input.textChanged.connect(self.validate_form)
+        self.nombre_input.textChanged.connect(self.validate_form)  # type: ignore
         grid_layout.addWidget(nombre_label, 0, 0)
         grid_layout.addWidget(self.nombre_input, 0, 1)
 
@@ -220,7 +220,7 @@ class ProductDialog(QDialog):
         self.categoria_combo = QComboBox()
         self.categoria_combo.setEditable(True)
         self.categoria_combo.setPlaceholderText("Seleccionar o crear nueva categoría")
-        self.categoria_combo.currentTextChanged.connect(self.validate_form)
+        self.categoria_combo.currentTextChanged.connect(self.validate_form)  # type: ignore
         grid_layout.addWidget(categoria_label, 1, 0)
         grid_layout.addWidget(self.categoria_combo, 1, 1)
 
@@ -299,7 +299,7 @@ class ProductDialog(QDialog):
         self.precio_compra_input.setRange(0.00, 999999.99)
         self.precio_compra_input.setDecimals(2)
         self.precio_compra_input.setSuffix(" €")
-        self.precio_compra_input.valueChanged.connect(self.calculate_margin)
+        self.precio_compra_input.valueChanged.connect(self.calculate_margin)  # type: ignore
         grid_layout.addWidget(precio_compra_label, 0, 0)
         grid_layout.addWidget(self.precio_compra_input, 0, 1)
 
@@ -311,8 +311,8 @@ class ProductDialog(QDialog):
         self.precio_input.setRange(0.01, 999999.99)
         self.precio_input.setDecimals(2)
         self.precio_input.setSuffix(" €")
-        self.precio_input.valueChanged.connect(self.calculate_margin)
-        self.precio_input.valueChanged.connect(self.validate_form)
+        self.precio_input.valueChanged.connect(self.calculate_margin)  # type: ignore
+        self.precio_input.valueChanged.connect(self.validate_form)  # type: ignore
         grid_layout.addWidget(precio_venta_label, 0, 2)
         grid_layout.addWidget(self.precio_input, 0, 3)
 
@@ -439,7 +439,7 @@ class ProductDialog(QDialog):
         unidad_label.setStyleSheet("font-weight: 500; color: #374151;")
         unidad_label.setMinimumWidth(120)
         self.unidad_combo = QComboBox()
-        self.unidad_combo.addItems(
+        self.unidad_combo.addItems(  # type: ignore[misc]
             [
                 "Unidades",
                 "Kg",
@@ -460,7 +460,7 @@ class ProductDialog(QDialog):
         estado_label.setStyleSheet("font-weight: 500; color: #374151;")
         estado_label.setMinimumWidth(120)
         self.estado_combo = QComboBox()
-        self.estado_combo.addItems(["Activo", "Inactivo", "Descontinuado", "Agotado"])
+        self.estado_combo.addItems(["Activo", "Inactivo", "Descontinuado", "Agotado"])  # type: ignore[misc]
         grid_layout.addWidget(estado_label, 2, 2)
         grid_layout.addWidget(self.estado_combo, 2, 3)
 
@@ -527,7 +527,7 @@ class ProductDialog(QDialog):
         perecedero_label.setStyleSheet("font-weight: 500; color: #374151;")
         perecedero_label.setMinimumWidth(120)
         self.perecedero_checkbox = QCheckBox()
-        self.perecedero_checkbox.stateChanged.connect(self.on_perecedero_changed)
+        self.perecedero_checkbox.stateChanged.connect(self.on_perecedero_changed)  # type: ignore[misc]
         grid_layout.addWidget(perecedero_label, 0, 2)
         grid_layout.addWidget(self.perecedero_checkbox, 0, 3)
 
@@ -566,11 +566,11 @@ class ProductDialog(QDialog):
         # Botones
         self.cancel_btn = QPushButton("Cancelar")
         self.cancel_btn.setObjectName("SecondaryButton")
-        self.cancel_btn.clicked.connect(self.reject)
+        self.cancel_btn.clicked.connect(self.reject)  # type: ignore[misc]
 
         self.accept_btn = QPushButton("Guardar Producto")
         self.accept_btn.setObjectName("PrimaryButton")
-        self.accept_btn.clicked.connect(self.accept_product)
+        self.accept_btn.clicked.connect(self.accept_product)  # type: ignore[misc]
         self.accept_btn.setEnabled(False)
 
         layout.addWidget(self.cancel_btn)
@@ -587,23 +587,23 @@ class ProductDialog(QDialog):
                 border: 1px solid #e2e8f0;
                 border-radius: 12px;
             }
-            
+
             #DialogHeader {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #4f46e5, stop:1 #7c3aed);
                 border-radius: 8px 8px 0 0;
                 padding: 15px 20px;
             }
-            
+
             #DialogTitle {
                 color: white;
                 font-weight: bold;
             }
-            
+
             #DialogSubtitle {
                 color: rgba(255, 255, 255, 0.9);
             }
-            
+
             QGroupBox {
                 font-weight: bold;
                 color: #374151;
@@ -615,7 +615,7 @@ class ProductDialog(QDialog):
                 font-size: 14px;
                 background: white;
             }
-            
+
             QGroupBox::title {
                 subcontrol-origin: margin;
                 left: 20px;
@@ -627,7 +627,7 @@ class ProductDialog(QDialog):
                 font-weight: bold;
                 color: #1e293b;
             }
-            
+
             QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox, QTextEdit {
                 padding: 10px 14px;
                 border: 2px solid #e2e8f0;
@@ -636,21 +636,21 @@ class ProductDialog(QDialog):
                 background: white;
                 min-height: 20px;
             }
-            
-            QLineEdit:focus, QComboBox:focus, QSpinBox:focus, 
+
+            QLineEdit:focus, QComboBox:focus, QSpinBox:focus,
             QDoubleSpinBox:focus, QTextEdit:focus {
                 border-color: #4f46e5;
                 outline: none;
                 background: #fefefe;
             }
-            
+
             QLabel {
                 color: #374151;
                 font-size: 14px;
                 font-weight: 500;
                 padding: 2px 0px;
             }
-            
+
             QDateEdit {
                 padding: 10px 14px;
                 border: 2px solid #e2e8f0;
@@ -659,19 +659,19 @@ class ProductDialog(QDialog):
                 background: white;
                 min-height: 20px;
             }
-            
+
             QDateEdit:focus {
                 border-color: #4f46e5;
                 outline: none;
                 background: #fefefe;
             }
-            
+
             QCheckBox {
                 font-size: 14px;
                 color: #374151;
                 spacing: 8px;
             }
-            
+
             QCheckBox::indicator {
                 width: 18px;
                 height: 18px;
@@ -679,13 +679,13 @@ class ProductDialog(QDialog):
                 border-radius: 4px;
                 background: white;
             }
-            
+
             QCheckBox::indicator:checked {
                 background: #4f46e5;
                 border-color: #4f46e5;
                 image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOSIgdmlld0JveD0iMCAwIDEyIDkiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMSAxTDQgOEwxIDUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=);
             }
-            
+
             #PrimaryButton {
                 background: #4f46e5;
                 color: white;
@@ -696,15 +696,15 @@ class ProductDialog(QDialog):
                 font-size: 14px;
                 min-width: 100px;
             }
-            
+
             #PrimaryButton:hover {
                 background: #4338ca;
             }
-            
+
             #PrimaryButton:pressed {
                 background: #3730a3;
             }
-            
+
             #SecondaryButton {
                 background: white;
                 color: #374151;
@@ -715,28 +715,28 @@ class ProductDialog(QDialog):
                 font-size: 14px;
                 min-width: 100px;
             }
-            
+
             #SecondaryButton:hover {
                 background: #f8fafc;
                 border-color: #cbd5e1;
             }
-            
+
             #SecondaryButton:pressed {
                 background: #f1f5f9;
             }
-            
+
             #DialogFooter {
                 background: #f8fafc;
                 border-top: 1px solid #e2e8f0;
                 border-radius: 0 0 8px 8px;
             }
-            
+
             #ValidationLabel {
                 font-size: 12px;
                 padding: 4px 8px;
                 border-radius: 4px;
             }
-            
+
             #MarginLabel {
                 font-size: 12px;
                 font-weight: bold;
@@ -747,45 +747,45 @@ class ProductDialog(QDialog):
         """
         )
 
-    def set_categories(self, categories: list):
+    def set_categories(self, categories: list[Any]) -> None:
         """Establecer las categorías disponibles"""
         self.categoria_combo.clear()
-        self.categoria_combo.addItems(categories)
+        self.categoria_combo.addItems(categories)  # type: ignore
 
-    def accept_product(self):
+    def accept_product(self) -> None:
         """Validar y aceptar el producto"""
         if not self.validate_form():
             return
         self.accept()
 
-    def load_initial_data(self):
+    def load_initial_data(self) -> None:
         """Cargar datos iniciales (categorías, proveedores)"""
         try:
             if self.inventario_service:
                 # Cargar categorías
                 categorias = self.inventario_service.get_categorias()
                 categoria_names = [
-                    cat.get("nombre", cat) if isinstance(cat, dict) else str(cat)
+                    cat.get("nombre", cat) if isinstance(cat, dict) else str(cat)  # type: ignore[misc]
                     for cat in categorias
                 ]
-                self.categoria_combo.addItems(categoria_names)
+                self.categoria_combo.addItems(categoria_names)  # type: ignore[misc]
 
                 # Cargar proveedores
                 proveedores = self.inventario_service.get_proveedores()
                 proveedor_names = [
                     (
-                        prov.get("nombre", str(prov))
+                        prov.get("nombre", str(prov))  # type: ignore[misc]
                         if isinstance(prov, dict)
                         else str(prov)
                     )
                     for prov in proveedores
                 ]
-                self.proveedor_combo.addItems(proveedor_names)
+                self.proveedor_combo.addItems(proveedor_names)  # type: ignore[misc]
 
         except Exception as e:
             logger.error(f"Error cargando datos iniciales: {e}")
 
-    def calculate_margin(self):
+    def calculate_margin(self) -> None:
         """Calcular margen de beneficio automáticamente"""
         try:
             precio_compra = self.precio_compra_input.value()
@@ -801,7 +801,9 @@ class ProductDialog(QDialog):
                 elif margen < 30:
                     color = "#f59e0b"  # Amarillo
                 else:
-                    color = "#10b981"  # Verde                self.margen_label.setStyleSheet(f"color: {color}; font-weight: bold;")
+                    color = "#10b981"  # Verde
+
+                self.margen_label.setStyleSheet(f"color: {color}; font-weight: bold;")
             else:
                 self.margen_label.setText("0.00%")
                 self.margen_label.setStyleSheet("color: #6b7280;")
@@ -809,7 +811,7 @@ class ProductDialog(QDialog):
         except Exception as e:
             logger.error(f"Error calculando margen: {e}")
 
-    def on_perecedero_changed(self, state):
+    def on_perecedero_changed(self, state: Any) -> None:
         """Manejar cambio en checkbox de producto perecedero"""
         is_perecedero = state == Qt.CheckState.Checked.value
         self.caducidad_input.setEnabled(is_perecedero)
@@ -818,10 +820,10 @@ class ProductDialog(QDialog):
             # Si no es perecedero, poner fecha muy lejana
             self.caducidad_input.setDate(QDate.currentDate().addYears(10))
 
-    def validate_form(self):
+    def validate_form(self) -> bool:
         """Validar formulario en tiempo real"""
         is_valid = True
-        errors = []
+        errors: list[str] = []
 
         # Validar nombre
         nombre = self.nombre_input.text().strip()
@@ -879,7 +881,7 @@ class ProductDialog(QDialog):
 class NewProductDialog(ProductDialog):
     """Diálogo para crear un nuevo producto"""
 
-    def __init__(self, parent=None, categories=None, inventario_service=None):
+    def __init__(self, parent: Optional[QWidget] = None, categories: Optional[Any] = None, inventario_service: Optional[Any] = None) -> None:
         super().__init__(parent, "Nuevo Producto", inventario_service)
 
         if categories:
@@ -970,11 +972,11 @@ class EditProductDialog(ProductDialog):
 
     def __init__(
         self,
-        parent=None,
+        parent: Optional[QWidget] = None,
         producto: Optional[Producto] = None,
-        categories=None,
-        inventario_service=None,
-    ):
+        categories: Optional[Any] = None,
+        inventario_service: Optional[Any] = None,
+    ) -> None:
         super().__init__(parent, "Editar Producto", inventario_service)
 
         if categories:
@@ -1071,7 +1073,7 @@ class EditProductDialog(ProductDialog):
 class StockAdjustmentDialog(QDialog):
     """Diálogo para ajustar el stock de un producto"""
 
-    def __init__(self, parent=None, producto: Optional[Producto] = None):
+    def __init__(self, parent: Optional[QWidget] = None, producto: Optional[Producto] = None) -> None:
         super().__init__(parent)
         self.producto = producto
         self.setWindowTitle("Ajustar Stock")
@@ -1130,13 +1132,13 @@ class StockAdjustmentDialog(QDialog):
         adjust_layout = QFormLayout(adjust_group)
 
         self.tipo_combo = QComboBox()
-        self.tipo_combo.addItems(["Entrada", "Salida", "Ajuste Manual"])
-        self.tipo_combo.currentTextChanged.connect(self.on_tipo_changed)
+        self.tipo_combo.addItems(["Entrada", "Salida", "Ajuste Manual"])  # type: ignore[misc]
+        self.tipo_combo.currentTextChanged.connect(self.on_tipo_changed)  # type: ignore[misc]
         adjust_layout.addRow("Tipo de Movimiento:", self.tipo_combo)
 
         self.cantidad_input = QSpinBox()
         self.cantidad_input.setRange(1, 999999)
-        self.cantidad_input.valueChanged.connect(self.update_preview)
+        self.cantidad_input.valueChanged.connect(self.update_preview)  # type: ignore[misc]
         adjust_layout.addRow("Cantidad:", self.cantidad_input)
 
         self.nuevo_stock_label = QLabel("0")
@@ -1158,11 +1160,11 @@ class StockAdjustmentDialog(QDialog):
 
         cancel_btn = QPushButton("Cancelar")
         cancel_btn.setObjectName("SecondaryButton")
-        cancel_btn.clicked.connect(self.reject)
+        cancel_btn.clicked.connect(self.reject)  # type: ignore[misc]
 
         self.accept_btn = QPushButton("Aplicar Ajuste")
         self.accept_btn.setObjectName("PrimaryButton")
-        self.accept_btn.clicked.connect(self.accept_adjustment)
+        self.accept_btn.clicked.connect(self.accept_adjustment)  # type: ignore[misc]
 
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(self.accept_btn)
@@ -1178,19 +1180,19 @@ class StockAdjustmentDialog(QDialog):
                 border: 1px solid #e5e7eb;
                 border-radius: 12px;
             }
-            
+
             #DialogHeader {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #f59e0b, stop:1 #f97316);
                 border-radius: 8px 8px 0 0;
                 padding: 15px 20px;
             }
-            
+
             #DialogTitle {
                 color: white;
                 font-weight: bold;
             }
-            
+
             QGroupBox {
                 font-weight: bold;
                 color: #374151;
@@ -1199,14 +1201,14 @@ class StockAdjustmentDialog(QDialog):
                 margin-top: 10px;
                 padding-top: 15px;
             }
-            
+
             QGroupBox::title {
                 subcontrol-origin: margin;
                 left: 10px;
                 padding: 0 8px 0 8px;
                 background: white;
             }
-            
+
             #PrimaryButton {
                 background: #f59e0b;
                 color: white;
@@ -1217,11 +1219,11 @@ class StockAdjustmentDialog(QDialog):
                 font-size: 14px;
                 min-width: 120px;
             }
-            
+
             #PrimaryButton:hover {
                 background: #d97706;
             }
-            
+
             #SecondaryButton {
                 background: #f3f4f6;
                 color: #374151;
@@ -1232,7 +1234,7 @@ class StockAdjustmentDialog(QDialog):
                 font-size: 14px;
                 min-width: 100px;
             }
-            
+
             #SecondaryButton:hover {
                 background: #e5e7eb;
             }
@@ -1350,7 +1352,7 @@ class StockAdjustmentDialog(QDialog):
 class DeleteConfirmationDialog(QDialog):
     """Diálogo de confirmación para eliminar producto"""
 
-    def __init__(self, parent=None, producto: Optional[Producto] = None):
+    def __init__(self, parent: Optional[QWidget] = None, producto: Optional[Producto] = None) -> None:
         super().__init__(parent)
         self.producto = producto
         self.setWindowTitle("Confirmar Eliminación")
@@ -1420,7 +1422,7 @@ class DeleteConfirmationDialog(QDialog):
         self.confirm_checkbox = QCheckBox(
             "Entiendo que esta acción no se puede deshacer"
         )
-        self.confirm_checkbox.stateChanged.connect(self.on_confirm_changed)
+        self.confirm_checkbox.stateChanged.connect(self.on_confirm_changed)  # type: ignore[misc]
         layout.addWidget(self.confirm_checkbox)
 
         # Botones
@@ -1434,7 +1436,7 @@ class DeleteConfirmationDialog(QDialog):
         self.delete_btn = QPushButton("Eliminar Producto")
         self.delete_btn.setObjectName("DangerButton")
         self.delete_btn.setEnabled(False)
-        self.delete_btn.clicked.connect(self.accept)
+        self.delete_btn.clicked.connect(self.accept)  # type: ignore[misc]
 
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(self.delete_btn)
@@ -1450,25 +1452,25 @@ class DeleteConfirmationDialog(QDialog):
                 border: 1px solid #e5e7eb;
                 border-radius: 12px;
             }
-            
+
             #DangerHeader {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
                     stop:0 #ef4444, stop:1 #dc2626);
                 border-radius: 8px 8px 0 0;
                 padding: 15px 20px;
             }
-            
+
             #DialogTitle {
                 color: white;
                 font-weight: bold;
             }
-            
+
             QCheckBox {
                 font-size: 14px;
                 color: #374151;
                 spacing: 8px;
             }
-            
+
             QCheckBox::indicator {
                 width: 18px;
                 height: 18px;
@@ -1476,16 +1478,16 @@ class DeleteConfirmationDialog(QDialog):
                 border-radius: 4px;
                 background: white;
             }
-            
+
             QCheckBox::indicator:checked {
                 background: #ef4444;
                 border-color: #ef4444;
             }
-            
+
             QCheckBox::indicator:checked:hover {
                 background: #dc2626;
             }
-            
+
             #DangerButton {
                 background: #ef4444;
                 color: white;
@@ -1496,16 +1498,16 @@ class DeleteConfirmationDialog(QDialog):
                 font-size: 14px;
                 min-width: 140px;
             }
-            
+
             #DangerButton:hover:enabled {
                 background: #dc2626;
             }
-            
+
             #DangerButton:disabled {
                 background: #d1d5db;
                 color: #9ca3af;
             }
-            
+
             #SecondaryButton {
                 background: #f3f4f6;
                 color: #374151;
@@ -1516,13 +1518,13 @@ class DeleteConfirmationDialog(QDialog):
                 font-size: 14px;
                 min-width: 100px;
             }
-            
+
             #SecondaryButton:hover {
                 background: #e5e7eb;
             }
         """
         )
 
-    def on_confirm_changed(self, state):
+    def on_confirm_changed(self, state: int) -> None:
         """Manejar cambio en el checkbox de confirmación"""
         self.delete_btn.setEnabled(state == Qt.CheckState.Checked.value)

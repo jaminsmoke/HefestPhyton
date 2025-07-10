@@ -1,9 +1,10 @@
+from typing import Optional, List, Dict, Any, Tuple
 import sqlite3
 from contextlib import contextmanager
 import os
 
 class DatabaseManager:
-    def descontar_stock_y_registrar(self, producto_id, cantidad, usuario_id=None, observaciones=None):
+    def descontar_stock_y_registrar(self, producto_id: int, cantidad: int, usuario_id: Optional[int] = None, observaciones: Optional[str] = None) -> int:
         """Descuenta stock de un producto y registra el movimiento en movimientos_stock."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -28,7 +29,7 @@ class DatabaseManager:
             )
             conn.commit()
             return stock_nuevo
-    def update_zona_nombre(self, zona_id, nuevo_nombre):
+    def update_zona_nombre(self, zona_id: int, nuevo_nombre: str) -> bool:
         """Actualiza el nombre de una zona y todas las mesas asociadas a esa zona."""
         # Obtener el nombre actual de la zona
         zona = self.get_by_id('zonas', zona_id)
@@ -40,7 +41,7 @@ class DatabaseManager:
         # Actualizar todas las mesas que tengan esa zona
         self.execute("UPDATE mesas SET zona = ? WHERE zona = ?", (nuevo_nombre, nombre_anterior))
         return True
-    def sync_zonas_from_mesas(self):
+    def sync_zonas_from_mesas(self) -> None:
         """Sincroniza la tabla zonas con los valores únicos de la columna zona de mesas (ignora nulos y 'Todas')."""
         zonas_mesas = self.query("SELECT DISTINCT zona FROM mesas WHERE zona IS NOT NULL AND zona != '' AND zona != 'Todas'")
         zonas_db = set(z['nombre'] for z in self.get_zonas())
@@ -48,23 +49,23 @@ class DatabaseManager:
         for nombre in nuevas_zonas:
             self.create_zona(nombre)
     # Métodos para gestión de zonas (persistencia real)
-    def get_zonas(self):
+    def get_zonas(self) -> List[Dict[str, Any]]:
         """Obtiene todas las zonas ordenadas por nombre ASC"""
         return self.query("SELECT * FROM zonas ORDER BY nombre ASC")
 
-    def create_zona(self, nombre):
+    def create_zona(self, nombre: str) -> Optional[int]:
         """Crea una nueva zona (si no existe)"""
         return self.execute("INSERT INTO zonas (nombre) VALUES (?)", (nombre,))
 
-    def delete_zona(self, zona_id):
+    def delete_zona(self, zona_id: int) -> Optional[int]:
         """Elimina una zona por id"""
         return self.execute("DELETE FROM zonas WHERE id = ?", (zona_id,))
 
-    def get_zona_by_nombre(self, nombre):
+    def get_zona_by_nombre(self, nombre: str) -> Optional[Dict[str, Any]]:
         """Obtiene una zona por nombre"""
         result = self.query("SELECT * FROM zonas WHERE nombre = ?", (nombre,))
         return result[0] if result else None
-    def __init__(self, path=None):
+    def __init__(self, path: Optional[str] = None) -> None:
         if path is None:
             # Calcular la ruta absoluta a la base de datos
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -225,38 +226,38 @@ class DatabaseManager:
     # TODO: Si se detecta uso multihilo, migrar a una única conexión compartida o pool de conexiones.
     #       Documentar y refactorizar para evitar bloqueos en escenarios concurrentes.
 
-    def query(self, sql, params=()):
+    def query(self, sql: str, params: Tuple[Any, ...] = ()) -> List[Dict[str, Any]]:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             return cursor.fetchall()
 
-    def execute(self, sql, params=()):
+    def execute(self, sql: str, params: Tuple[Any, ...] = ()) -> Optional[int]:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             conn.commit()
             return cursor.lastrowid
 
-    def execute_many(self, sql, params_list):
+    def execute_many(self, sql: str, params_list: List[Tuple[Any, ...]]) -> None:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.executemany(sql, params_list)
             conn.commit()
 
-    def get_by_id(self, table, id):
+    def get_by_id(self, table: str, id: int) -> Optional[Dict[str, Any]]:
         sql = f"SELECT * FROM {table} WHERE id = ?"
         result = self.query(sql, (id,))
         return result[0] if result else None
 
-    def insert(self, table, data):
+    def insert(self, table: str, data: Dict[str, Any]) -> Optional[int]:
         columns = ', '.join(data.keys())
         placeholders = ', '.join(['?'] * len(data))
         values = tuple(data.values())
         sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
         return self.execute(sql, values)
 
-    def update(self, table, id, data):
+    def update(self, table: str, id: int, data: Dict[str, Any]) -> bool:
         set_clause = ', '.join([f"{key} = ?" for key in data.keys()])
         values = tuple(data.values()) + (id,)
 
@@ -267,7 +268,7 @@ class DatabaseManager:
             conn.commit()
             return cursor.rowcount > 0  # Retorna True si se actualizó alguna fila
 
-    def delete(self, table, id):
+    def delete(self, table: str, id: int) -> bool:
         sql = f"DELETE FROM {table} WHERE id = ?"
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -276,16 +277,16 @@ class DatabaseManager:
             return cursor.rowcount > 0  # Retorna True si se eliminó alguna fila
 
     # Métodos para gestión de usuarios
-    def get_usuarios(self):
+    def get_usuarios(self) -> List[Dict[str, Any]]:
         """Obtiene todos los usuarios"""
         return self.query("SELECT * FROM usuarios WHERE is_active = 1")
 
-    def get_usuario_by_id(self, user_id):
+    def get_usuario_by_id(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Obtiene un usuario por ID"""
         result = self.query("SELECT * FROM usuarios WHERE id = ? AND is_active = 1", (user_id,))
         return result[0] if result else None
 
-    def validate_user_login(self, user_id, pin):
+    def validate_user_login(self, user_id: int, pin: str) -> Optional[Dict[str, Any]]:
         """Valida las credenciales de usuario"""
         result = self.query(
             "SELECT * FROM usuarios WHERE id = ? AND pin = ? AND is_active = 1",
@@ -293,14 +294,14 @@ class DatabaseManager:
         )
         return result[0] if result else None
 
-    def update_ultimo_acceso(self, user_id, timestamp):
+    def update_ultimo_acceso(self, user_id: int, timestamp: str) -> None:
         """Actualiza el último acceso del usuario"""
         self.execute(
             "UPDATE usuarios SET ultimo_acceso = ? WHERE id = ?",
             (timestamp, user_id)
         )
 
-    def create_usuario(self, nombre, role, pin, email=None, telefono=None):
+    def create_usuario(self, nombre: str, role: str, pin: str, email: Optional[str] = None, telefono: Optional[str] = None) -> Optional[int]:
         """Crea un nuevo usuario"""
         from datetime import datetime
         fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -309,10 +310,11 @@ class DatabaseManager:
             INSERT INTO usuarios (nombre, role, pin, email, telefono, fecha_creacion, is_active)
             VALUES (?, ?, ?, ?, ?, ?, 1)
         """, (nombre, role, pin, email, telefono, fecha_creacion))
-    def update_usuario(self, user_id, **kwargs):
+
+    def update_usuario(self, user_id: int, **kwargs: Any) -> None:
         """Actualiza campos de un usuario"""
-        fields = []
-        values = []
+        fields: List[str] = []
+        values: List[Any] = []
 
         for field, value in kwargs.items():
             if field in ['nombre', 'role', 'pin', 'email', 'telefono', 'is_active']:
@@ -322,18 +324,18 @@ class DatabaseManager:
         if fields:
             values.append(user_id)
             sql = f"UPDATE usuarios SET {', '.join(fields)} WHERE id = ?"
-            self.execute(sql, values)
+            self.execute(sql, tuple(values))
 
-    def delete_usuario(self, user_id):
+    def delete_usuario(self, user_id: int) -> None:
         """Desactiva un usuario (soft delete)"""
         self.execute("UPDATE usuarios SET is_active = 0 WHERE id = ?", (user_id,))
 
     # Métodos para gestión de habitaciones
-    def get_habitaciones(self):
+    def get_habitaciones(self) -> List[Dict[str, Any]]:
         """Obtiene todas las habitaciones"""
         return self.query("SELECT * FROM habitaciones")
 
-    def update_estado_habitacion(self, habitacion_id, estado):
+    def update_estado_habitacion(self, habitacion_id: int, estado: str) -> None:
         """Actualiza el estado de una habitación"""
         self.execute(
             "UPDATE habitaciones SET estado = ? WHERE id = ?",
@@ -341,7 +343,7 @@ class DatabaseManager:
         )
 
     # Métodos para gestión de reservas
-    def get_reservas(self):
+    def get_reservas(self) -> List[Dict[str, Any]]:
         """Obtiene todas las reservas con información del cliente"""
         return self.query("""
             SELECT r.*, c.nombre as cliente_nombre, c.telefono as cliente_telefono,
@@ -352,7 +354,7 @@ class DatabaseManager:
             ORDER BY r.fecha_entrada
         """)
 
-    def create_reserva(self, cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado='pendiente'):
+    def create_reserva(self, cliente_id: int, habitacion_id: int, fecha_entrada: str, fecha_salida: str, estado: str = 'pendiente') -> Optional[int]:
         """Crea una nueva reserva"""
         return self.execute("""
             INSERT INTO reservas (cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado)
@@ -360,7 +362,7 @@ class DatabaseManager:
         """, (cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado))
 
     # Métodos para obtener métricas administrativas reales
-    def get_admin_metrics(self):
+    def get_admin_metrics(self) -> Dict[str, Any]:
         """
         Obtiene métricas administrativas reales del negocio
         Retorna diccionario con métricas clave
@@ -436,7 +438,7 @@ class DatabaseManager:
                 'ticket_promedio': 0.0
             }
 
-    def get_inventory_metrics(self):
+    def get_inventory_metrics(self) -> Dict[str, Any]:
         """Obtiene métricas de inventario reales"""
         try:
             result = self.query("""
@@ -478,7 +480,7 @@ class DatabaseManager:
                 'valor_total_inventario': 0.0
             }
 
-    def get_hospitality_metrics(self):
+    def get_hospitality_metrics(self) -> Dict[str, Any]:
         """Obtiene métricas de hospedería reales"""
         try:
             # Métricas de reservas

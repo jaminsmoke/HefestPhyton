@@ -41,6 +41,7 @@ from PyQt6.QtGui import (
 )
 import logging
 from datetime import datetime
+from typing import Optional, Union, cast
 
 # Importar utilidad de compatibilidad CSS
 from utils.qt_css_compat import convert_to_qt_compatible_css
@@ -53,7 +54,7 @@ class AnimatedProgressBar(QFrame):
 
     valueChanged = pyqtSignal(float)
 
-    def __init__(self, color="#3B82F6", height=6, parent=None):
+    def __init__(self, color: str = "#3B82F6", height: int = 6, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.color = QColor(color)
         self.setFixedHeight(height)
@@ -62,7 +63,7 @@ class AnimatedProgressBar(QFrame):
 
         # Configurar animación
         self.animation = QTimer()
-        self.animation.timeout.connect(self._animate_step)
+        self.animation.timeout.connect(self._animate_step)  # type: ignore
         self.animation_duration = 800
         self.animation_steps = 30
         self.animation_current_step = 0
@@ -74,7 +75,7 @@ class AnimatedProgressBar(QFrame):
     def value(self):
         return self._value
 
-    def paintEvent(self, event):
+    def paintEvent(self, event: QPaintEvent) -> None:  # type: ignore
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -107,7 +108,7 @@ class AnimatedProgressBar(QFrame):
                 self.theme.RADIUS["sm"],
             )
 
-    def setValue(self, value, animated=True):
+    def setValue(self, value: float, animated: bool = True) -> None:
         """Establecer valor con opción de animación"""
         value = max(0.0, min(1.0, value))
         if animated and abs(value - self._value) > 0.01:
@@ -244,7 +245,7 @@ class UltraModernTheme:
     }
 
     # === TIPOGRAFÍA ===
-    TYPOGRAPHY = {
+    TYPOGRAPHY: dict[str, Union[str, int, QFont.Weight]] = {
         "font_family": "Segoe UI",
         "font_family_mono": "Consolas",
         # Tamaños
@@ -272,7 +273,7 @@ class UltraModernTheme:
     }
 
     # === SOMBRAS ===
-    SHADOWS = {
+    SHADOWS: dict[str, dict[str, Union[int, tuple[int, int], QColor]]] = {
         "sm": {"blur": 6, "offset": (0, 1), "color": QColor(0, 0, 0, 25)},
         "md": {"blur": 10, "offset": (0, 4), "color": QColor(0, 0, 0, 30)},
         "lg": {"blur": 15, "offset": (0, 10), "color": QColor(0, 0, 0, 35)},
@@ -284,7 +285,7 @@ class UltraModernTheme:
 class UltraModernBaseWidget(QFrame):
     """Widget base ultra-moderno con funcionalidades avanzadas"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.theme = UltraModernTheme()
         self.setup_base_properties()
@@ -306,21 +307,21 @@ class UltraModernBaseWidget(QFrame):
         """
         )
 
-    def add_shadow(self, level="md"):
+    def add_shadow(self, level: str = "md") -> None:
         """Añadir sombra al widget"""
         if level in self.theme.SHADOWS:
             shadow_config = self.theme.SHADOWS[level]
             shadow = QGraphicsDropShadowEffect()
-            shadow.setBlurRadius(shadow_config["blur"])
-            shadow.setOffset(*shadow_config["offset"])
-            shadow.setColor(shadow_config["color"])
+            shadow.setBlurRadius(cast(int, shadow_config["blur"]))
+            shadow.setOffset(*cast(tuple[int, int], shadow_config["offset"]))
+            shadow.setColor(cast(QColor, shadow_config["color"]))
             self.setGraphicsEffect(shadow)
 
-    def create_font(self, size_key="text_base", weight_key="font_normal"):
+    def create_font(self, size_key: str = "text_base", weight_key: str = "font_normal") -> QFont:
         """Crear fuente con el tema"""
-        font = QFont(self.theme.TYPOGRAPHY["font_family"])
-        font.setPointSize(self.theme.TYPOGRAPHY[size_key])
-        font.setWeight(self.theme.TYPOGRAPHY[weight_key])
+        font = QFont(cast(str, self.theme.TYPOGRAPHY["font_family"]))
+        font.setPointSize(cast(int, self.theme.TYPOGRAPHY[size_key]))
+        font.setWeight(cast(QFont.Weight, self.theme.TYPOGRAPHY[weight_key]))
         return font
 
 
@@ -329,7 +330,7 @@ class UltraModernCard(UltraModernBaseWidget):
 
     clicked = pyqtSignal()
 
-    def __init__(self, padding=16, elevation="md", parent=None):
+    def __init__(self, padding: int = 16, elevation: str = "md", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.padding = padding
         self.elevation = elevation
@@ -370,7 +371,7 @@ class UltraModernCard(UltraModernBaseWidget):
         self.hover_animation.setDuration(200)
         self.hover_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
 
-    def add_content(self, widget):
+    def add_content(self, widget: QWidget) -> None:
         """Añadir contenido a la tarjeta"""
         self.main_layout.addWidget(widget)
 
@@ -382,15 +383,15 @@ class UltraModernMetricCard(UltraModernCard):
 
     def __init__(
         self,
-        title="Métrica",
-        value="0",
-        unit="",
-        trend="+5.2%",
-        metric_type="primary",
-        icon="⭐",
-        target="100",
-        parent=None,
-    ):
+        title: str = "Métrica",
+        value: str = "0",
+        unit: str = "",
+        trend: str = "+5.2%",
+        metric_type: str = "primary",
+        icon: str = "⭐",
+        target: str = "100",
+        parent: Optional[QWidget] = None,
+    ) -> None:
         super().__init__(padding=20, elevation="md", parent=parent)
 
         self.title = title
@@ -412,7 +413,7 @@ class UltraModernMetricCard(UltraModernCard):
         # Tooltip con información detallada
         self.update_tooltip()
 
-    def _parse_value(self, value_str):
+    def _parse_value(self, value_str: str) -> float:
         """Parsear valor string a numérico para cálculos"""
         try:
             # Remover comas, puntos de miles y otros caracteres
@@ -567,8 +568,8 @@ class UltraModernMetricCard(UltraModernCard):
         # La clase base no debe simular datos, solo mostrar datos reales
 
     def update_metric_data(
-        self, value=None, trend=None, target=None, progress_percentage=None
-    ):
+        self, value: Optional[str] = None, trend: Optional[str] = None, target: Optional[str] = None, progress_percentage: Optional[float] = None
+    ) -> None:
         """Actualizar los datos de la métrica con valores reales administrativos"""
         try:
             # Actualizar valor si se proporciona
@@ -580,14 +581,15 @@ class UltraModernMetricCard(UltraModernCard):
 
             # Actualizar tendencia si se proporciona
             if trend is not None:
-                self.trend = trend
-                self.trend_label.setText(trend)
+                self.trend = str(trend)
+                self.trend_label.setText(str(trend))
 
                 # Actualizar colores de tendencia con CSS compatible
-                if trend.startswith("+"):
+                trend_str = str(trend)
+                if trend_str.startswith("+"):
                     trend_color = self.theme.COLORS["green_600"]
                     trend_bg = self.theme.COLORS["green_50"]
-                elif trend.startswith("-"):
+                elif trend_str.startswith("-"):
                     trend_color = self.theme.COLORS["red_600"]
                     trend_bg = self.theme.COLORS["red_50"]
                 else:
@@ -673,11 +675,11 @@ class UltraModernMetricCard(UltraModernCard):
         # Configurar menú contextual básico
         self.context_menu = None  # Se puede expandir más tarde
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QMouseEvent) -> None:  # type: ignore
         """Manejar clics en la tarjeta"""
-        if event.button() == Qt.MouseButton.LeftButton:
+        if hasattr(event, 'button') and event.button() == Qt.MouseButton.LeftButton:  # type: ignore
             # Emitir señal con datos de la métrica
-            metric_data = {
+            metric_data: dict[str, str] = {
                 "title": self.title,
                 "value": self.value,
                 "unit": self.unit,
@@ -686,18 +688,18 @@ class UltraModernMetricCard(UltraModernCard):
                 "target": self.target,
             }
             self.clicked.emit(metric_data)
-        super().mousePressEvent(event)
+        super().mousePressEvent(event)  # type: ignore
 
-    def enterEvent(self, event):
+    def enterEvent(self, event: QEnterEvent) -> None:  # type: ignore
         """Efecto al entrar con el ratón"""
-        super().enterEvent(event)
+        super().enterEvent(event)  # type: ignore
         # Efecto de elevación al hacer hover
         self.raise_()
         self.add_shadow("xl")
 
-    def leaveEvent(self, event):
+    def leaveEvent(self, event: QEvent) -> None:  # type: ignore
         """Efecto al salir con el ratón"""
-        super().leaveEvent(event)
+        super().leaveEvent(event)  # type: ignore
         # Restaurar elevación original
         self.add_shadow(self.elevation)
 
@@ -705,7 +707,7 @@ class UltraModernMetricCard(UltraModernCard):
 class UltraModernDashboard(UltraModernBaseWidget):
     """Dashboard ultra-moderno con grid responsivo"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.setup_dashboard()
         self.create_metric_cards()
@@ -839,20 +841,18 @@ class UltraModernDashboard(UltraModernBaseWidget):
             self.metrics_layout.addWidget(card, row, col)
 
             # Conectar evento click
-            card.clicked.connect(
+            card.clicked.connect(  # type: ignore
                 lambda title=data["title"]: self.on_metric_clicked(title)
             )
 
-    def on_metric_clicked(self, title):
+    def on_metric_clicked(self, title: str) -> None:
         """Manejar click en métrica"""
         logger.info(f"Métrica clickeada: {title}")
 
 
 # === FUNCIÓN DE PRUEBA ===
-def create_ultra_modern_test_window():
+def create_ultra_modern_test_window() -> QWidget:
     """Crear ventana de prueba del sistema ultra-moderno"""
-    app = QApplication.instance() or QApplication([])
-
     # Ventana principal
     window = QWidget()
     window.setWindowTitle("Hefest - Sistema Ultra-Moderno V3")

@@ -4,12 +4,13 @@ Clase principal MesasArea (coordinador) y punto de entrada del área modularizad
 """
 
 import logging
-from typing import List, Optional, Dict
-from PyQt6.QtWidgets import QFrame, QVBoxLayout
+from typing import List, Optional, Dict, Set, Any, Union
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QWidget, QPushButton, QScrollArea
 from PyQt6.QtCore import pyqtSignal
 
 from ...widgets.mesa_widget_simple import MesaWidget
 from services.tpv_service import Mesa, TPVService
+from data.db_manager import DatabaseManager
 
 # Importar subcomponentes
 from .mesas_area_header import FiltersSectionUltraPremium
@@ -29,8 +30,34 @@ logger = logging.getLogger(__name__)
 
 
 class MesasArea(QFrame):
+    # Señales
+    mesa_selected = pyqtSignal(str)
+    mesa_state_changed = pyqtSignal(str, str)
+    nueva_mesa_requested = pyqtSignal()
+    nueva_mesa_con_zona_requested = pyqtSignal(int, int, str)
+    eliminar_mesa_requested = pyqtSignal(str)  # Ahora emite el 'numero' de la mesa
+    eliminar_mesas_requested = pyqtSignal(list)  # Lista de 'numero' (str)
+
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(parent)
+        self.batch_mode: bool = False
+        self.selected_mesas: Set[str] = set()
+        self.mesa_widgets: List[MesaWidget] = []
+        self.mesas: List[Mesa] = []
+        self.filtered_mesas: List[Mesa] = []
+        self._datos_temporales: Dict[str, Any] = {}
+        self.current_zone_filter: str = "Todas"
+        self.current_status_filter: str = "Todos"
+        self.view_mode: str = "grid"
+        self._chips_refs: List[Any] = []  # Referencias a chips de filtro rápido
+        self.mesas_layout: Optional[Any] = None  # Inicializar para evitar errores
+        self.header: Optional[QWidget] = None
+        self.tpv_service: Optional[TPVService] = None
+        self.db_manager: Optional[DatabaseManager] = None
+        self.reserva_service: Optional[Any] = None
+
     # --- Lógica de selección múltiple y acciones por lotes ---
-    def enable_batch_mode(self, enabled: bool):
+    def enable_batch_mode(self, enabled: bool) -> None:
         self.batch_mode = enabled
         for w in self.mesa_widgets:
             if hasattr(w, "set_batch_mode"):
@@ -38,7 +65,7 @@ class MesasArea(QFrame):
         self.selected_mesas = set()
         self.update_batch_action_btn()
 
-    def toggle_mesa_selection(self, mesa_numero):
+    def toggle_mesa_selection(self, mesa_numero: Union[str, int]) -> None:
         """Selecciona/deselecciona una mesa usando su identificador string 'numero'"""
         mesa_numero = str(mesa_numero)
         if not hasattr(self, "selected_mesas"):
@@ -49,14 +76,14 @@ class MesasArea(QFrame):
             self.selected_mesas.add(mesa_numero)
         self.update_batch_action_btn()
 
-    def update_batch_action_btn(self):
+    def update_batch_action_btn(self) -> None:
         # Busca el botón de acción por lotes en el header y lo habilita/deshabilita
         # Solución: buscar el widget en el layout del header
-        if hasattr(self, "header"):
+        if hasattr(self, "header") and self.header:
             # Buscar en los hijos del header un QPushButton con texto 'Acción por lotes'
             from PyQt6.QtWidgets import QPushButton
 
-            def find_batch_btn(widget):
+            def find_batch_btn(widget: QWidget) -> Optional[QPushButton]:
                 for child in widget.findChildren(QPushButton):
                     if child.text() == "Acción por lotes":
                         return child
@@ -66,7 +93,7 @@ class MesasArea(QFrame):
             if batch_btn:
                 batch_btn.setEnabled(bool(self.selected_mesas))
 
-    def do_batch_action(self):
+    def do_batch_action(self) -> None:
         # Ejemplo: eliminar todas las mesas seleccionadas (solo UI, no base de datos)
         if not hasattr(self, "selected_mesas") or not self.selected_mesas:
             return
@@ -78,22 +105,18 @@ class MesasArea(QFrame):
         self.refresh_mesas()  # Centraliza el refresco
         self.update_batch_action_btn()
 
-    def toggle_view_mode(self):
+    def toggle_view_mode(self) -> None:
         """Alterna entre vista grid y lista"""
         self.view_mode = "list" if self.view_mode == "grid" else "grid"
         # TODO: Implementar renderizado de vista lista si es necesario
         self.refresh_mesas()
 
-    """Área de visualización y gestión de mesas (modularizado)"""
-    nueva_mesa_requested = pyqtSignal()
-    nueva_mesa_con_zona_requested = pyqtSignal(int, int, str)
-    eliminar_mesa_requested = pyqtSignal(str)  # Ahora emite el 'numero' de la mesa
-    eliminar_mesas_requested = pyqtSignal(list)  # Lista de 'numero' (str)
-
-    def __init__(
-        self, tpv_service: Optional[TPVService] = None, db_manager=None, parent=None
-    ):
-        super().__init__(parent)
+    def init_with_services(
+        self, tpv_service: Optional[TPVService] = None,
+        db_manager: Optional[DatabaseManager] = None,
+        parent: Optional[QWidget] = None
+    ) -> None:
+        """Inicializa los servicios después de la construcción del widget"""
         if db_manager is None:
             raise ValueError(
                 "db_manager es obligatorio y debe ser inyectado explícitamente en MesasArea"
@@ -143,17 +166,11 @@ class MesasArea(QFrame):
             logger.error(f"Error conectando señal reserva_cancelada: {e}")
         # QTimer eliminado: ahora el refresco es solo por evento comanda_actualizada o reserva_cancelada
 
-    def _on_reserva_cancelada(self, reserva):
+    def _on_reserva_cancelada(self, reserva: Any) -> None:
         # self.refresh_mesas()  # Eliminado log innecesario
         self.refresh_mesas()
 
-
-    # QTimer de refresco automático eliminado: ahora el refresco es solo por evento comanda_actualizada
-
-
-    # Método de detener_refresco_automatico eliminado: ya no se usa QTimer para refresco de mesas
-
-    def comprobar_estado_mesas_inicial(self):
+    def comprobar_estado_mesas_inicial(self) -> None:
         """Forzar comprobación y refresco de estado de mesas y widgets (para llamada explícita desde TPVModule al abrir el módulo)."""
         self._marcar_mesas_ocupadas_por_comanda()
         if hasattr(self, "mesa_widgets") and self.mesa_widgets:
@@ -164,14 +181,14 @@ class MesasArea(QFrame):
                     widget.update_mesa(mesa_obj)
                     widget.mesa = mesa_obj
 
-    def _on_comanda_actualizada(self, comanda):
+    def _on_comanda_actualizada(self, comanda: Any) -> None:
         """Callback: refresca el estado de las mesas cuando cambia una comanda (en tiempo real).
         Ahora SIEMPRE llama a refresh_mesas para garantizar sincronización visual y lógica completa.
         """
         # self.refresh_mesas()  # Eliminado log innecesario
         self.refresh_mesas()
 
-    def _marcar_mesas_ocupadas_por_comanda(self):
+    def _marcar_mesas_ocupadas_por_comanda(self) -> None:
         """Unifica la lógica de estado de la mesa: ocupada si hay comanda activa o reserva en curso, reservada si solo hay reserva futura, libre si ninguna."""
         if not self.tpv_service:
             return
@@ -184,7 +201,7 @@ class MesasArea(QFrame):
         # LOG DIAGNÓSTICO: imprimir comandas activas y mesas_con_comanda
         # Logs de debug eliminados para limpieza
         # Obtener reservas activas si hay reserva_service
-        reservas_por_mesa = {}
+        reservas_por_mesa: Dict[str, List[Any]] = {}
         if hasattr(self, "reserva_service") and self.reserva_service:
             reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
         from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
@@ -246,7 +263,7 @@ class MesasArea(QFrame):
             from .mesas_area_grid import refresh_all_mesa_widgets_styles
             refresh_all_mesa_widgets_styles(self)
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         from PyQt6.QtWidgets import QSizePolicy
 
         self.setStyleSheet(
@@ -293,7 +310,7 @@ class MesasArea(QFrame):
     def set_service(self, tpv_service: TPVService):
         self.tpv_service = tpv_service
 
-    def set_mesas(self, mesas: List[Mesa], datos_temporales: Optional[Dict] = None):
+    def set_mesas(self, mesas: List[Mesa], datos_temporales: Optional[Dict[str, Any]] = None) -> None:
         import logging
         logger = logging.getLogger("mesas_area_main")
         # logger.debug(f"[LOG][MESAS_AREA] set_mesas llamada. Mesas recibidas: {[f'{m.numero}:{getattr(m, 'estado', None)}' for m in mesas]}")
@@ -316,10 +333,10 @@ class MesasArea(QFrame):
         self.refresh_mesas()
         update_stats_from_mesas(self)
 
-    def set_reserva_service(self, reserva_service):
+    def set_reserva_service(self, reserva_service: Any) -> None:
         self.reserva_service = reserva_service
 
-    def refresh_mesas(self):
+    def refresh_mesas(self) -> None:
         # logger.debug("[LOG][MESAS_AREA] refresh_mesas llamada")
         if self.tpv_service:
             nuevas_mesas = self.tpv_service.get_mesas()
@@ -332,7 +349,7 @@ class MesasArea(QFrame):
         # logger.debug(f"[LOG][MESAS_AREA] Estado de mesas tras sincronizar reservas: {[f'{m.numero}:{getattr(m, 'estado', None)}' for m in self.mesas]}")
         # FIX: Se elimina llamada recursiva a self.refresh_mesas() para evitar recursion depth exceeded
 
-    def sincronizar_reservas_en_mesas(self):
+    def sincronizar_reservas_en_mesas(self) -> None:
         """Sincroniza reservas activas y calcula próxima reserva para cada mesa. SOLO modelo unificado. Usa numero como identificador.
         Respeta el estado 'ocupada' si la mesa ya está ocupada por comanda."""
         if hasattr(self, "reserva_service") and self.reserva_service:
@@ -415,7 +432,7 @@ class MesasArea(QFrame):
                     mesa.proxima_reserva = None
         # Eliminar vestigio legacy: _convert_reserva_legacy y referencias legacy eliminadas
 
-    def _convert_reserva_legacy(self, r):
+    def _convert_reserva_legacy(self, r: Any) -> Any:
         """Convierte una reserva legacy (con fecha y hora separados) al modelo unificado."""
         # r.fecha y r.hora pueden no existir en el modelo unificado, así que usar fecha_reserva y hora_reserva
         from datetime import datetime
@@ -453,7 +470,7 @@ class MesasArea(QFrame):
             },
         )()
 
-    def update_filtered_mesas(self):
+    def update_filtered_mesas(self) -> None:
         import logging
         logger = logging.getLogger("mesas_area_main")
         # logger.debug(f"[LOG][MESAS_AREA] update_filtered_mesas llamada. Estado actual de mesas: {[f'{m.numero}:{getattr(m, 'estado', None)}' for m in self.mesas]}")
@@ -493,7 +510,7 @@ class MesasArea(QFrame):
             self.filtered_mesas = mesas_estado
         # logger.debug(f"[LOG][MESAS_AREA] filtered_mesas: {[f'{m.numero}:{getattr(m, 'estado', None)}' for m in self.filtered_mesas]}")
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: Any) -> None:
         super().resizeEvent(event)
         if not hasattr(self, "filtered_mesas") or not self.filtered_mesas:
             return
@@ -506,11 +523,11 @@ class MesasArea(QFrame):
         self._resize_timer.setSingleShot(True)
         self._resize_timer.start(150)
 
-    def _on_zone_changed(self, zone: str):
+    def _on_zone_changed(self, zone: str) -> None:
         self.current_zone_filter = zone
         self.refresh_mesas()
 
-    def _on_status_changed(self, status: str):
+    def _on_status_changed(self, status: str) -> None:
         self.current_status_filter = status
         # Sincronizar chips rápidos
         if hasattr(self, "_chips_refs"):
@@ -521,20 +538,20 @@ class MesasArea(QFrame):
         self.update_filtered_mesas()
         populate_grid(self)
 
-    def _on_search_changed(self, text):
+    def _on_search_changed(self, text: str) -> None:
         self.update_filtered_mesas()
         populate_grid(self)
 
-    def set_search_input(self, widget):
+    def set_search_input(self, widget: Any) -> None:
         self.search_input = widget
 
-    def set_zone_combo(self, widget):
+    def set_zone_combo(self, widget: Any) -> None:
         self.zone_combo = widget
 
-    def set_status_combo(self, widget):
+    def set_status_combo(self, widget: Any) -> None:
         self.status_combo = widget
 
-    def _on_alias_mesa_changed(self, mesa, nuevo_alias: str):
+    def _on_alias_mesa_changed(self, mesa: Mesa, nuevo_alias: str) -> None:
         from .mesas_area_utils import guardar_dato_temporal
 
         mesa_numero = str(mesa.numero)
@@ -558,7 +575,7 @@ class MesasArea(QFrame):
                     w.update_mesa(m)
         self.refresh_mesas()
 
-    def _on_personas_mesa_changed(self, mesa, nuevas_personas: int):
+    def _on_personas_mesa_changed(self, mesa: Mesa, nuevas_personas: int) -> None:
         from .mesas_area_utils import guardar_dato_temporal
 
         guardar_dato_temporal(self, mesa.numero, personas=nuevas_personas)
@@ -572,7 +589,7 @@ class MesasArea(QFrame):
                 w.update_mesa(m)
         self.refresh_mesas()
 
-    def restaurar_estado_original_mesa(self, mesa_numero):
+    def restaurar_estado_original_mesa(self, mesa_numero: Union[str, int]) -> None:
         mesa_numero = str(mesa_numero)
         if mesa_numero in self._datos_temporales:
             del self._datos_temporales[mesa_numero]
@@ -588,7 +605,7 @@ class MesasArea(QFrame):
 
         populate_grid(self)
 
-    def _on_nueva_mesa_clicked(self):
+    def _on_nueva_mesa_clicked(self) -> None:
         """Maneja el click del botón Nueva Mesa con nomenclatura correlativa por zona"""
         try:
             from PyQt6.QtWidgets import QInputDialog, QMessageBox
@@ -666,7 +683,7 @@ class MesasArea(QFrame):
                 self, "Error", f"Error al procesar la creación de mesa: {str(e)}"
             )
 
-    def _on_eliminar_mesa_clicked(self):
+    def _on_eliminar_mesa_clicked(self) -> None:
         """Maneja el click del botón Eliminar Mesa (soporta selección múltiple)"""
         try:
             from PyQt6.QtWidgets import (
@@ -739,7 +756,7 @@ class MesasArea(QFrame):
                 self, "Error", f"Error al procesar la eliminación de mesa: {str(e)}"
             )
 
-    def sync_scroll_with(self, other_scroll_area):
+    def sync_scroll_with(self, other_scroll_area: Any) -> None:
         """Sincroniza el scroll vertical de esta área con otra QScrollArea"""
         # Buscar el atributo scroll_area en self
         scroll_area = getattr(self, "scroll_area", None)
@@ -765,13 +782,13 @@ class MesasArea(QFrame):
         scroll_area.verticalScrollBar().valueChanged.connect(on_scroll)
         other_scroll_area.verticalScrollBar().valueChanged.connect(on_other_scroll)
 
-    def sync_reservas(self, reserva_service):
+    def sync_reservas(self, reserva_service: Any) -> None:
         """Sincroniza reservas y fuerza refresco visual de mesas tras cambios críticos (cancelación, creación, edición)."""
         self.set_reserva_service(reserva_service)
         # logger.debug("[SYNC_RESERVAS] Llamando a refresh_mesas tras set_reserva_service (cancelación/creación)")
         self.refresh_mesas()
 
-    def crear_zona(self, nombre_zona: str):
+    def crear_zona(self, nombre_zona: str) -> None:
         """Crea una nueva zona y actualiza la UI y chips de zonas."""
         # Opcional: aquí podrías persistir en base de datos si es necesario
         # Añadir la zona a una lista interna o forzar refresco de chips

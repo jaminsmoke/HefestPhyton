@@ -6,6 +6,7 @@ Interfaz dedicada para la gestión completa de proveedores
 """
 
 import logging
+from typing import Optional, List, Dict, Any, Union
 
 from PyQt6.QtWidgets import (
     QWidget,
@@ -40,19 +41,19 @@ class SupplierManagerWidget(QWidget):
     proveedor_actualizado = pyqtSignal()
     proveedor_seleccionado = pyqtSignal(dict)
 
-    def __init__(self, inventario_service, parent=None):
+    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
         """Inicializar el widget gestor de proveedores"""
         super().__init__(parent)
 
         self.inventario_service = inventario_service
-        self.proveedores_cache = []
+        self.proveedores_cache: List[Dict[str, Any]] = []
 
         self.init_ui()
         self.load_suppliers()
 
         logger.info("SupplierManagerWidget inicializado correctamente")
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """Inicializar la interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -106,7 +107,7 @@ class SupplierManagerWidget(QWidget):
         search_label = QLabel("Buscar:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar proveedores...")
-        self.search_input.textChanged.connect(self.filter_suppliers)
+        self.search_input.textChanged.connect(self.filter_suppliers)  # type: ignore
 
         layout.addWidget(search_label)
         layout.addWidget(self.search_input)
@@ -114,14 +115,14 @@ class SupplierManagerWidget(QWidget):
 
         # Botones de acción
         self.add_btn = QPushButton("➕ Nuevo Proveedor")
-        self.add_btn.clicked.connect(self.add_supplier)
+        self.add_btn.clicked.connect(self.add_supplier)  # type: ignore
 
         self.edit_btn = QPushButton("✏️ Editar")
-        self.edit_btn.clicked.connect(self.edit_selected_supplier)
+        self.edit_btn.clicked.connect(self.edit_selected_supplier)  # type: ignore
         self.edit_btn.setEnabled(False)
 
         self.delete_btn = QPushButton("🗑️ Eliminar")
-        self.delete_btn.clicked.connect(self.delete_selected_supplier)
+        self.delete_btn.clicked.connect(self.delete_selected_supplier)  # type: ignore
         self.delete_btn.setEnabled(False)
 
         layout.addWidget(self.add_btn)
@@ -133,7 +134,7 @@ class SupplierManagerWidget(QWidget):
     def create_suppliers_table(self) -> QTableWidget:
         """Crear la tabla de proveedores"""
         table = QTableWidget()
-        table.setObjectName("SuppliersTable")  # Configurar columnas
+        table.setObjectName("SuppliersTable")        # Configurar columnas
         headers = [
             "ID",
             "Nombre",
@@ -145,7 +146,7 @@ class SupplierManagerWidget(QWidget):
             "Estado",
         ]
         table.setColumnCount(len(headers))
-        table.setHorizontalHeaderLabels(headers)
+        table.setHorizontalHeaderLabels(headers)  # type: ignore
 
         # Configurar tabla
         table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -195,10 +196,10 @@ class SupplierManagerWidget(QWidget):
 
         return panel
 
-    def load_suppliers(self):
+    def load_suppliers(self) -> None:
         """Cargar proveedores desde el servicio"""
         try:
-            self.proveedores_cache = self.inventario_service.get_proveedores()
+            self.proveedores_cache = self.inventario_service.get_proveedores()  # type: ignore
             self.update_suppliers_table()
             self.update_statistics()
 
@@ -208,7 +209,7 @@ class SupplierManagerWidget(QWidget):
                 self, "Error", f"No se pudieron cargar los proveedores: {str(e)}"
             )
 
-    def update_suppliers_table(self):
+    def update_suppliers_table(self) -> None:
         """Actualizar la tabla de proveedores"""
         try:
             self.suppliers_table.setRowCount(len(self.proveedores_cache))
@@ -271,11 +272,11 @@ class SupplierManagerWidget(QWidget):
         except Exception as e:
             logger.error(f"Error actualizando tabla de proveedores: {e}")
 
-    def update_statistics(self):
+    def update_statistics(self) -> None:
         """Actualizar estadísticas"""
         try:
             total = len(self.proveedores_cache)
-            active = sum(1 for p in self.proveedores_cache if p.get("activo", True))
+            active = sum(1 for p in self.proveedores_cache if p.get("activo", True))  # type: ignore
             inactive = total - active
 
             self.total_suppliers_label.setText(f"Total: {total}")
@@ -285,7 +286,7 @@ class SupplierManagerWidget(QWidget):
         except Exception as e:
             logger.error(f"Error actualizando estadísticas: {e}")
 
-    def filter_suppliers(self, text: str):
+    def filter_suppliers(self, text: str) -> None:
         """Filtrar proveedores por texto"""
         try:
             for row in range(self.suppliers_table.rowCount()):
@@ -303,7 +304,7 @@ class SupplierManagerWidget(QWidget):
         except Exception as e:
             logger.error(f"Error filtrando proveedores: {e}")
 
-    def on_supplier_selected(self):
+    def on_supplier_selected(self) -> None:
         """Manejar selección de proveedor"""
         selected_rows = set(item.row() for item in self.suppliers_table.selectedItems())
         has_selection = bool(selected_rows)
@@ -315,16 +316,16 @@ class SupplierManagerWidget(QWidget):
             row = next(iter(selected_rows))
             if row < len(self.proveedores_cache):
                 proveedor = self.proveedores_cache[row]
-                self.proveedor_seleccionado.emit(proveedor)
+                self.proveedor_seleccionado.emit(proveedor)  # type: ignore
 
-    def add_supplier(self):
+    def add_supplier(self) -> None:
         """Agregar nuevo proveedor"""
-        dialog = SupplierDialog(self.inventario_service, self)
+        dialog = SupplierDialog(self.inventario_service, self)  # type: ignore
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.load_suppliers()
-            self.proveedor_actualizado.emit()
+            self.proveedor_actualizado.emit()  # type: ignore
 
-    def edit_selected_supplier(self):
+    def edit_selected_supplier(self) -> None:
         """Editar proveedor seleccionado"""
         try:
             selected_rows = set(
@@ -336,10 +337,10 @@ class SupplierManagerWidget(QWidget):
             row = next(iter(selected_rows))
             if row < len(self.proveedores_cache):
                 proveedor = self.proveedores_cache[row]
-                dialog = SupplierDialog(self.inventario_service, self, proveedor)
+                dialog = SupplierDialog(self.inventario_service, self, proveedor)  # type: ignore
                 if dialog.exec() == QDialog.DialogCode.Accepted:
                     self.load_suppliers()
-                    self.proveedor_actualizado.emit()
+                    self.proveedor_actualizado.emit()  # type: ignore
 
         except Exception as e:
             logger.error(f"Error editando proveedor: {e}")
@@ -347,7 +348,7 @@ class SupplierManagerWidget(QWidget):
                 self, "Error", f"No se pudo editar el proveedor: {str(e)}"
             )
 
-    def delete_selected_supplier(self):
+    def delete_selected_supplier(self) -> None:
         """Eliminar proveedor seleccionado"""
         try:
             selected_rows = set(
@@ -364,14 +365,14 @@ class SupplierManagerWidget(QWidget):
                 reply = QMessageBox.question(
                     self,
                     "Confirmar eliminación",
-                    f"¿Estás seguro de que deseas eliminar el proveedor '{proveedor.get('nombre', '')}'?",
+                    f"¿Estás seguro de que deseas eliminar el proveedor '{proveedor.get('nombre', '')}'?",  # type: ignore
                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 )
 
                 if reply == QMessageBox.StandardButton.Yes:
-                    if self.inventario_service.eliminar_proveedor(proveedor.get("id")):
+                    if self.inventario_service.eliminar_proveedor(proveedor.get("id")):  # type: ignore
                         self.load_suppliers()
-                        self.proveedor_actualizado.emit()
+                        self.proveedor_actualizado.emit()  # type: ignore
                         QMessageBox.information(
                             self, "Éxito", "Proveedor eliminado correctamente"
                         )
@@ -386,7 +387,7 @@ class SupplierManagerWidget(QWidget):
                 self, "Error", f"No se pudo eliminar el proveedor: {str(e)}"
             )
 
-    def apply_styles(self):
+    def apply_styles(self) -> None:
         """Aplicar estilos al widget"""
         self.setStyleSheet(
             """
@@ -397,18 +398,18 @@ class SupplierManagerWidget(QWidget):
                 padding: 15px;
                 margin-bottom: 10px;
             }
-            
+
             #ModuleTitle {
                 color: white;
                 font-size: 24px;
                 font-weight: bold;
             }
-            
+
             #ModuleSubtitle {
                 color: rgba(255, 255, 255, 0.8);
                 font-size: 14px;
             }
-            
+
             #SearchPanel {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -424,24 +425,24 @@ class SupplierManagerWidget(QWidget):
                 selection-color: white;
                 outline: none;
             }
-            
+
             #SuppliersTable::item {
                 padding: 8px;
                 border-bottom: 1px solid #f1f5f9;
                 border: none;
             }
-            
+
             #SuppliersTable::item:selected {
                 background: #10b981;
                 color: white;
                 border: none;
                 outline: none;
             }
-            
+
             #SuppliersTable::item:hover {
                 background: #e6f7ff;
             }
-            
+
             #SuppliersTable QHeaderView::section {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -449,13 +450,13 @@ class SupplierManagerWidget(QWidget):
                 font-weight: bold;
                 color: #374151;
             }
-            
+
             #SuppliersTable QHeaderView::section:horizontal {
                 border-left: none;
                 border-right: none;
                 border-top: none;
             }
-            
+
             #StatsPanel {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
@@ -464,7 +465,7 @@ class SupplierManagerWidget(QWidget):
                 font-weight: bold;
                 color: #4a5568;
             }
-            
+
             QPushButton {
                 background: #10b981;
                 color: white;
@@ -474,23 +475,23 @@ class SupplierManagerWidget(QWidget):
                 font-weight: bold;
                 min-width: 100px;
             }
-            
+
             QPushButton:hover {
                 background: #059669;
             }
-            
+
             QPushButton:disabled {
                 background: #9ca3af;
                 color: #6b7280;
             }
-            
+
             QLineEdit {
                 border: 2px solid #e2e8f0;
                 border-radius: 4px;
                 padding: 6px;
                 font-size: 14px;
             }
-            
+
             QLineEdit:focus {
                 border-color: #10b981;
             }
@@ -501,7 +502,7 @@ class SupplierManagerWidget(QWidget):
 class SupplierDialog(QDialog):
     """Diálogo mejorado para crear/editar proveedores con validaciones avanzadas"""
 
-    def __init__(self, inventario_service, parent=None, proveedor=None):
+    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None, proveedor: Optional[Dict[str, Any]] = None) -> None:
         super().__init__(parent)
 
         self.inventario_service = inventario_service
@@ -514,7 +515,7 @@ class SupplierDialog(QDialog):
         if self.is_edit_mode:
             self.load_supplier_data()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """Inicializar interfaz del diálogo mejorada"""
         self.setWindowTitle(
             "✏️ Editar Proveedor" if self.is_edit_mode else "➕ Nuevo Proveedor"
@@ -740,24 +741,24 @@ class SupplierDialog(QDialog):
 
         layout.addLayout(buttons_layout)
 
-    def setup_validations(self):
+    def setup_validations(self) -> None:
         """Configurar validaciones en tiempo real"""
         # Validación del nombre
-        self.name_input.textChanged.connect(self.validate_name)
+        self.name_input.textChanged.connect(self.validate_name)  # type: ignore
 
         # Validación del teléfono
-        self.phone_input.textChanged.connect(self.validate_phone)
+        self.phone_input.textChanged.connect(self.validate_phone)  # type: ignore
 
         # Validación del email
-        self.email_input.textChanged.connect(
-            self.validate_email
-        )  # Contador de caracteres para dirección
-        self.address_input.textChanged.connect(self.update_address_counter)
+        self.email_input.textChanged.connect(self.validate_email)  # type: ignore
+
+        # Contador de caracteres para dirección
+        self.address_input.textChanged.connect(self.update_address_counter)  # type: ignore
 
         # Cargar categorías después de configurar validaciones
         self.load_categories()
 
-    def load_categories(self):
+    def load_categories(self) -> None:
         """Cargar categorías de proveedores en el combo box"""
         try:
             if hasattr(self.inventario_service, "get_categorias_proveedores"):
@@ -796,17 +797,17 @@ class SupplierDialog(QDialog):
             for categoria in default_categories:
                 self.category_combo.addItem(categoria)
 
-    def load_supplier_data(self):
+    def load_supplier_data(self) -> None:
         """Cargar datos del proveedor en edición"""
         if self.proveedor:
-            self.name_input.setText(self.proveedor.get("nombre", ""))
-            self.contact_input.setText(self.proveedor.get("contacto", ""))
-            self.phone_input.setText(self.proveedor.get("telefono", ""))
-            self.email_input.setText(self.proveedor.get("email", ""))
-            self.address_input.setPlainText(self.proveedor.get("direccion", ""))
+            self.name_input.setText(self.proveedor.get("nombre", ""))  # type: ignore
+            self.contact_input.setText(self.proveedor.get("contacto", ""))  # type: ignore
+            self.phone_input.setText(self.proveedor.get("telefono", ""))  # type: ignore
+            self.email_input.setText(self.proveedor.get("email", ""))  # type: ignore
+            self.address_input.setPlainText(self.proveedor.get("direccion", ""))  # type: ignore
 
             # Cargar categoría
-            categoria = self.proveedor.get("categoria", "General")
+            categoria = self.proveedor.get("categoria", "General")  # type: ignore
             if categoria:
                 self.category_combo.setCurrentText(categoria)
             else:
@@ -814,9 +815,9 @@ class SupplierDialog(QDialog):
 
             # Información del sistema
             if hasattr(self, "id_label"):
-                self.id_label.setText(str(self.proveedor.get("id", "N/A")))
+                self.id_label.setText(str(self.proveedor.get("id", "N/A")))  # type: ignore
             if hasattr(self, "created_label"):
-                created = self.proveedor.get("fecha_creacion", "N/A")
+                created = self.proveedor.get("fecha_creacion", "N/A")  # type: ignore
                 if created != "N/A":
                     try:
                         from datetime import datetime

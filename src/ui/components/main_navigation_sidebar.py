@@ -3,6 +3,7 @@ Sidebar moderno para la aplicación Hefest.
 """
 
 import logging
+from typing import Optional, Any, Dict
 from PyQt6.QtWidgets import (
     QFrame,
     QVBoxLayout,
@@ -29,20 +30,20 @@ class ModernSidebar(QFrame):
     module_selected = pyqtSignal(str)
     logout_requested = pyqtSignal()
 
-    def __init__(self, parent=None, auth_service=None):
+    def __init__(self, parent: Optional[QWidget] = None, auth_service: Optional[Any] = None) -> None:
         super().__init__(parent)
         logger.info("Inicializando ModernSidebar")
         # logger.debug("Constructor de ModernSidebar inicializado correctamente.")
 
         # Usar el servicio de autenticación pasado o crear uno nuevo
-        self.auth_service = auth_service if auth_service else get_auth_service()
-        self.current_active = None
-        self.nav_buttons = {}
+        self.auth_service: Any = auth_service if auth_service else get_auth_service()
+        self.current_active: Optional[str] = None
+        self.nav_buttons: Dict[str, QPushButton] = {}
 
         # Configurar el sidebar
         self.setup_ui()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """Configura la interfaz del sidebar"""
         self.setFixedWidth(300)
         self.setFrameStyle(QFrame.Shape.NoFrame)
@@ -71,7 +72,7 @@ class ModernSidebar(QFrame):
         layout.addStretch()
         self.create_footer(layout)
 
-    def create_header(self, layout):
+    def create_header(self, layout: QVBoxLayout) -> None:
         """Crea el header del sidebar"""
         header = QFrame()
         header.setFixedHeight(120)
@@ -117,9 +118,9 @@ class ModernSidebar(QFrame):
         )
         header_layout.addWidget(title_label)
         header_layout.addWidget(subtitle_label)
-        layout.addWidget(header)
+        layout.addWidget(header)  # type: ignore
 
-    def create_navigation(self, layout):
+    def create_navigation(self, layout: QVBoxLayout) -> None:
         """Crea los botones de navegación según los permisos del usuario"""
         # logger.debug("Método create_navigation llamado correctamente.")
 
@@ -165,7 +166,7 @@ class ModernSidebar(QFrame):
             # logger.debug("Módulos disponibles según permisos:")
             # logger.debug("Iniciando evaluación de módulos para la barra lateral...")
             for module_id, icon, title, description, required_role in modules:
-                has_permission = self.auth_service.has_permission(required_role)
+                has_permission = self.auth_service.has_permission(required_role.value)
 
                 if has_permission:
                     btn = self.create_nav_button(module_id, icon, title, description)
@@ -174,9 +175,9 @@ class ModernSidebar(QFrame):
                 else:
                     logger.warning(f"Acceso denegado al módulo: {module_id}")
 
-        layout.addWidget(nav_container)
+        layout.addWidget(nav_container)  # type: ignore
 
-    def create_nav_button(self, module_id, icon, title, description):
+    def create_nav_button(self, module_id: str, icon: str, title: str, description: str) -> QPushButton:
         """Crea un botón de navegación moderno"""
         btn = QPushButton()
         btn.setObjectName(f"nav_btn_{module_id}")
@@ -264,14 +265,14 @@ class ModernSidebar(QFrame):
                 )
             self.module_selected.emit(module_id)
 
-        btn.clicked.connect(log_and_emit)
+        btn.clicked.connect(log_and_emit)  # type: ignore
 
         # Tooltip
         btn.setToolTip(f"{title}\n{description}")
 
         return btn
 
-    def create_footer(self, layout):
+    def create_footer(self, layout: QVBoxLayout) -> None:
         """Crea el footer del sidebar con información del usuario y botón de logout"""
         footer = QFrame()
         footer.setFixedHeight(80)
@@ -289,9 +290,9 @@ class ModernSidebar(QFrame):
         footer_layout.setSpacing(5)
 
         # Información del usuario
-        current_user = self.auth_service.current_user
+        current_user = self.auth_service.current_user  # type: ignore
         if current_user:
-            user_label = QLabel(f"👤 {current_user.name}")
+            user_label = QLabel(f"👤 {getattr(current_user, 'name', 'Usuario')}")  # type: ignore
             user_label.setStyleSheet(
                 """
                 QLabel {
@@ -302,7 +303,7 @@ class ModernSidebar(QFrame):
             """
             )
 
-            role_label = QLabel(f"Rol: {current_user.role.value}")
+            role_label = QLabel(f"Rol: {getattr(getattr(current_user, 'role', None), 'value', 'Sin rol')}")  # type: ignore
             role_label.setStyleSheet(
                 """
                 QLabel {
@@ -338,12 +339,12 @@ class ModernSidebar(QFrame):
         """
         )
 
-        logout_btn.clicked.connect(self.logout_clicked)
+        logout_btn.clicked.connect(self.logout_clicked)  # type: ignore
         footer_layout.addWidget(logout_btn)
 
-        layout.addWidget(footer)
+        layout.addWidget(footer)  # type: ignore
 
-    def logout_clicked(self):
+    def logout_clicked(self) -> None:
         """Maneja el clic en el botón de logout"""
         reply = QMessageBox.question(
             self,
@@ -360,7 +361,7 @@ class ModernSidebar(QFrame):
 
             self.logout_requested.emit()
 
-    def set_active_module(self, module_id):
+    def set_active_module(self, module_id: str) -> None:
         """Establece el módulo activo visualmente"""
         # Resetear todos los botones
         for btn_id, btn in self.nav_buttons.items():
