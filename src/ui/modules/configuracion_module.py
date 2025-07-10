@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Módulo de configuración del sistema Hefest.
 Permite gestionar configuraciones de la aplicación, parámetros del sistema,
@@ -36,22 +37,25 @@ from PyQt6.QtGui import QFont, QPixmap, QColor, QColor
 from ui.modules.module_base_interface import BaseModule
 from utils.application_config_manager import ConfigManager
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ConfiguracionModule(BaseModule):
     """Módulo de configuración del sistema"""
 
     # Señales
-    configuracion_cambiada = pyqtSignal(str, object)  # (clave, valor)
+    _ = pyqtSignal(str, object)  # (clave, valor)
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.config_manager = ConfigManager()
         self.setup_ui()
         self.cargar_configuracion()
 
     def create_module_header(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el header del módulo de configuración"""
         header = QFrame()
         header.setObjectName("module-header")
@@ -71,13 +75,13 @@ class ConfiguracionModule(BaseModule):
         layout.setContentsMargins(20, 0, 20, 0)
 
         # Icono y título
-        title_container = QHBoxLayout()
+        _ = QHBoxLayout()
 
         icon_label = QLabel("⚙️")
         icon_label.setStyleSheet("font-size: 32px;")
         title_container.addWidget(icon_label)
 
-        title_text = QVBoxLayout()
+        _ = QVBoxLayout()
         title = QLabel("Configuración del Sistema")
         title.setStyleSheet("font-size: 24px; font-weight: bold; color: white;")
         subtitle = QLabel("Gestión de parámetros y ajustes de la aplicación")
@@ -133,6 +137,8 @@ class ConfiguracionModule(BaseModule):
         return header
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz del módulo"""
         # Header del módulo
         header = self.create_module_header()
@@ -185,6 +191,8 @@ class ConfiguracionModule(BaseModule):
         self.content_layout.addWidget(self.tabs)
 
     def create_general_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de configuración general"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -209,7 +217,7 @@ class ConfiguracionModule(BaseModule):
             }
         """
         )
-        empresa_layout = QFormLayout(empresa_group)
+        _ = QFormLayout(empresa_group)
 
         self.nombre_empresa = QLineEdit()
         self.nombre_empresa.setPlaceholderText("Nombre de la empresa")
@@ -232,7 +240,7 @@ class ConfiguracionModule(BaseModule):
         # Configuración regional
         regional_group = QGroupBox("Configuración Regional")
         regional_group.setStyleSheet(empresa_group.styleSheet())
-        regional_layout = QFormLayout(regional_group)
+        _ = QFormLayout(regional_group)
 
         self.idioma_combo = QComboBox()
         self.idioma_combo.addItems(["Español", "English", "Français", "Deutsch"])
@@ -252,6 +260,8 @@ class ConfiguracionModule(BaseModule):
         self.tabs.addTab(tab, "🏢 General")
 
     def create_database_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de configuración de base de datos"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -271,7 +281,7 @@ class ConfiguracionModule(BaseModule):
             }
         """
         )
-        conexion_layout = QFormLayout(conexion_group)
+        _ = QFormLayout(conexion_group)
 
         self.db_path = QLineEdit()
         self.db_path.setReadOnly(True)
@@ -292,10 +302,10 @@ class ConfiguracionModule(BaseModule):
         # Estadísticas de la base de datos
         stats_group = QGroupBox("Estadísticas de la Base de Datos")
         stats_group.setStyleSheet(conexion_group.styleSheet())
-        stats_layout = QGridLayout(stats_group)
+        _ = QGridLayout(stats_group)
 
         # Información ficticia para demostración
-        stats_labels = [
+        _ = [
             ("Total de Usuarios:", "5"),
             ("Total de Productos:", "150"),
             ("Total de Reservas:", "89"),
@@ -305,7 +315,7 @@ class ConfiguracionModule(BaseModule):
         ]
 
         for i, (label, value) in enumerate(stats_labels):
-            row = i // 2
+            _ = i // 2
             col = (i % 2) * 2
 
             stats_layout.addWidget(QLabel(label), row, col)
@@ -316,7 +326,7 @@ class ConfiguracionModule(BaseModule):
         layout.addWidget(stats_group)
 
         # Botones de mantenimiento
-        mantenimiento_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         optimizar_btn = QPushButton("🔧 Optimizar BD")
         optimizar_btn.setStyleSheet(
@@ -360,6 +370,8 @@ class ConfiguracionModule(BaseModule):
         self.tabs.addTab(tab, "💾 Base de Datos")
 
     def create_interface_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de configuración de interfaz"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -379,7 +391,7 @@ class ConfiguracionModule(BaseModule):
             }
         """
         )
-        apariencia_layout = QFormLayout(apariencia_group)
+        _ = QFormLayout(apariencia_group)
 
         self.tema_combo = QComboBox()
         self.tema_combo.addItems(["Claro", "Oscuro", "Automático"])
@@ -398,7 +410,7 @@ class ConfiguracionModule(BaseModule):
         # Configuración de fuentes
         fuentes_group = QGroupBox("Fuentes")
         fuentes_group.setStyleSheet(apariencia_group.styleSheet())
-        fuentes_layout = QFormLayout(fuentes_group)
+        _ = QFormLayout(fuentes_group)
 
         self.fuente_principal = QComboBox()
         self.fuente_principal.addItems(["Sistema", "Arial", "Segoe UI", "Roboto"])
@@ -414,7 +426,7 @@ class ConfiguracionModule(BaseModule):
         # Configuración de notificaciones
         notif_group = QGroupBox("Notificaciones")
         notif_group.setStyleSheet(apariencia_group.styleSheet())
-        notif_layout = QVBoxLayout(notif_group)
+        _ = QVBoxLayout(notif_group)
 
         self.notif_sonido = QCheckBox("Sonidos de notificación")
         self.notif_sonido.setChecked(True)
@@ -434,6 +446,8 @@ class ConfiguracionModule(BaseModule):
         self.tabs.addTab(tab, "🎨 Interfaz")
 
     def create_modules_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de configuración de módulos"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -453,7 +467,7 @@ class ConfiguracionModule(BaseModule):
             }
         """
         )
-        modules_layout = QVBoxLayout(modules_group)
+        _ = QVBoxLayout(modules_group)
 
         # Tabla de módulos
         self.modules_table = QTableWidget(0, 4)
@@ -469,7 +483,7 @@ class ConfiguracionModule(BaseModule):
             header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
         # Datos ficticios de módulos
-        modules_data = [
+        _ = [
             ("Dashboard", "Activo", "v2.1", True),
             ("TPV", "Activo", "v1.5", True),
             ("TPV Avanzado", "Activo", "v1.0", True),
@@ -485,7 +499,7 @@ class ConfiguracionModule(BaseModule):
 
             self.modules_table.setItem(i, 0, QTableWidgetItem(nombre))
 
-            estado_item = QTableWidgetItem(estado)
+            _ = QTableWidgetItem(estado)
             if estado == "Activo":
                 estado_item.setBackground(QColor("#dcfce7"))
                 estado_item.setForeground(QColor("#166534"))
@@ -522,6 +536,8 @@ class ConfiguracionModule(BaseModule):
         self.tabs.addTab(tab, "🧩 Módulos")
 
     def create_security_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de configuración de seguridad"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -541,7 +557,7 @@ class ConfiguracionModule(BaseModule):
             }
         """
         )
-        password_layout = QFormLayout(password_group)
+        _ = QFormLayout(password_group)
 
         self.min_length = QSpinBox()
         self.min_length.setRange(4, 20)
@@ -564,7 +580,7 @@ class ConfiguracionModule(BaseModule):
         # Sesiones
         session_group = QGroupBox("Gestión de Sesiones")
         session_group.setStyleSheet(password_group.styleSheet())
-        session_layout = QFormLayout(session_group)
+        _ = QFormLayout(session_group)
 
         self.session_timeout = QSpinBox()
         self.session_timeout.setRange(5, 480)
@@ -582,7 +598,7 @@ class ConfiguracionModule(BaseModule):
         # Auditoría
         audit_group = QGroupBox("Configuración de Auditoría")
         audit_group.setStyleSheet(password_group.styleSheet())
-        audit_layout = QVBoxLayout(audit_group)
+        _ = QVBoxLayout(audit_group)
 
         self.log_login = QCheckBox("Registrar inicios de sesión")
         self.log_login.setChecked(True)
@@ -602,6 +618,8 @@ class ConfiguracionModule(BaseModule):
         self.tabs.addTab(tab, "🔐 Seguridad")
 
     def create_backup_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de respaldo y mantenimiento"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -621,7 +639,7 @@ class ConfiguracionModule(BaseModule):
             }
         """
         )
-        backup_layout = QFormLayout(backup_group)
+        _ = QFormLayout(backup_group)
 
         self.backup_enabled = QCheckBox("Habilitar respaldos automáticos")
         self.backup_enabled.setChecked(True)
@@ -652,10 +670,10 @@ class ConfiguracionModule(BaseModule):
         # Acciones de respaldo
         actions_group = QGroupBox("Acciones de Respaldo")
         actions_group.setStyleSheet(backup_group.styleSheet())
-        actions_layout = QVBoxLayout(actions_group)
+        _ = QVBoxLayout(actions_group)
 
         # Botones de acción
-        button_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         crear_backup_btn = QPushButton("💾 Crear Respaldo Ahora")
         crear_backup_btn.setStyleSheet(
@@ -696,7 +714,7 @@ class ConfiguracionModule(BaseModule):
         actions_layout.addLayout(button_layout)
 
         # Información del último respaldo
-        info_layout = QFormLayout()
+        _ = QFormLayout()
 
         ultimo_backup_label = QLabel("Hace 2 días - Exitoso")
         ultimo_backup_label.setStyleSheet("color: #059669; font-weight: bold;")
@@ -712,6 +730,8 @@ class ConfiguracionModule(BaseModule):
         self.tabs.addTab(tab, "💾 Respaldo")
 
     def cargar_configuracion(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga la configuración actual del sistema"""
         try:
             config = self.config_manager.get_all_config()
@@ -752,15 +772,17 @@ class ConfiguracionModule(BaseModule):
             logger.info("Configuración cargada correctamente")
 
         except Exception as e:
-            logger.error(f"Error al cargar configuración: {e}")
+            logger.error("Error al cargar configuración: %s", e)
             QMessageBox.warning(
                 self, "Error", f"Error al cargar la configuración:\n{str(e)}"
             )
 
     def guardar_configuracion(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Guarda los cambios de configuración"""
         try:
-            config = {
+            _ = {
                 # Configuración general
                 "company_name": self.nombre_empresa.text(),
                 "company_address": self.direccion_empresa.text(),
@@ -802,14 +824,16 @@ class ConfiguracionModule(BaseModule):
             logger.info("Configuración guardada correctamente")
 
         except Exception as e:
-            logger.error(f"Error al guardar configuración: {e}")
+            logger.error("Error al guardar configuración: %s", e)
             QMessageBox.critical(
                 self, "Error", f"Error al guardar la configuración:\n{str(e)}"
             )
 
     def restaurar_configuracion(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Restaura la configuración a los valores por defecto"""
-        reply = QMessageBox.question(
+        _ = QMessageBox.question(
             self,
             "Confirmar Restauración",
             "¿Está seguro de que desea restaurar la configuración a los valores por defecto?\nEsta acción no se puede deshacer.",
@@ -826,12 +850,14 @@ class ConfiguracionModule(BaseModule):
                 )
                 logger.info("Configuración restaurada a valores por defecto")
             except Exception as e:
-                logger.error(f"Error al restaurar configuración: {e}")
+                logger.error("Error al restaurar configuración: %s", e)
                 QMessageBox.critical(
                     self, "Error", f"Error al restaurar la configuración:\n{str(e)}"
                 )
 
     def seleccionar_db_path(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Abre diálogo para seleccionar la ruta de la base de datos"""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -843,16 +869,20 @@ class ConfiguracionModule(BaseModule):
             self.db_path.setText(file_path)
 
     def seleccionar_backup_path(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Abre diálogo para seleccionar la carpeta de respaldo"""
-        dir_path = QFileDialog.getExistingDirectory(
+        _ = QFileDialog.getExistingDirectory(
             self, "Seleccionar Carpeta de Respaldo"
         )
         if dir_path:
             self.backup_path.setText(dir_path)
 
     def optimizar_base_datos(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Optimiza la base de datos"""
-        reply = QMessageBox.question(
+        _ = QMessageBox.question(
             self,
             "Optimizar Base de Datos",
             "¿Desea optimizar la base de datos?\nEsto puede mejorar el rendimiento pero puede tardar unos minutos.",
@@ -867,6 +897,8 @@ class ConfiguracionModule(BaseModule):
             logger.info("Base de datos optimizada")
 
     def verificar_integridad(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica la integridad de la base de datos"""
         # Simular verificación
         QMessageBox.information(
@@ -877,6 +909,8 @@ class ConfiguracionModule(BaseModule):
         logger.info("Integridad de base de datos verificada")
 
     def crear_backup(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un respaldo manual de la base de datos"""
         try:
             QMessageBox.information(
@@ -886,12 +920,14 @@ class ConfiguracionModule(BaseModule):
             )
             logger.info("Respaldo manual creado")
         except Exception as e:
-            logger.error(f"Error al crear respaldo: {e}")
+            logger.error("Error al crear respaldo: %s", e)
             QMessageBox.critical(
                 self, "Error", f"Error al crear el respaldo:\n{str(e)}"
             )
 
     def restaurar_backup(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Restaura la base de datos desde un respaldo"""
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -901,7 +937,7 @@ class ConfiguracionModule(BaseModule):
         )
 
         if file_path:
-            reply = QMessageBox.question(
+            _ = QMessageBox.question(
                 self,
                 "Confirmar Restauración",
                 "¿Está seguro de que desea restaurar desde este respaldo?\nTodos los datos actuales se perderán.",
@@ -916,9 +952,9 @@ class ConfiguracionModule(BaseModule):
                         "Restauración Completa",
                         "Base de datos restaurada correctamente.",
                     )
-                    logger.info(f"Base de datos restaurada desde: {file_path}")
+                    logger.info("Base de datos restaurada desde: %s", file_path)
                 except Exception as e:
-                    logger.error(f"Error al restaurar respaldo: {e}")
+                    logger.error("Error al restaurar respaldo: %s", e)
                     QMessageBox.critical(
                         self, "Error", f"Error al restaurar el respaldo:\n{str(e)}"
                     )

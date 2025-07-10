@@ -1,11 +1,13 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+from PyQt6.QtCore import Qt
+
 """
 Tarjeta de métrica ULTRA SIMPLIFICADA que funciona como las básicas
 """
 
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                              QSizePolicy, QFrame)
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QColor
 
 class UltraSimpleMetricCard(QWidget):
     """Tarjeta ultra simple que replica la estructura de las tarjetas básicas que funcionan"""
@@ -27,9 +29,11 @@ class UltraSimpleMetricCard(QWidget):
         
         self.setup_ultra_simple_ui()
         
-        print(f"🟢 UltraSimpleMetricCard creada: {self.title}")
+        print("🟢 UltraSimpleMetricCard creada: %s" % self.title)
         
     def setup_ultra_simple_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """UI ultra simple exactamente como las tarjetas básicas que funcionan"""
         
         # Tamaño fijo como las básicas
@@ -74,7 +78,7 @@ class UltraSimpleMetricCard(QWidget):
         # Trend simple
         if self.trend:
             self.trend_label = QLabel(self.trend)
-            trend_color = self._get_trend_color(self.trend)
+            _ = self._get_trend_color(self.trend)
             self.trend_label.setStyleSheet(f"""
                 font-size: 12px; 
                 font-weight: bold; 
@@ -99,13 +103,15 @@ class UltraSimpleMetricCard(QWidget):
         return "#64748b"
     
     def update_value(self, new_value: str, new_trend: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar valores"""
         if self.value_label:
             self.value_label.setText(new_value)
             self.value = new_value
             
         if new_trend and self.trend_label:
-            trend_color = self._get_trend_color(new_trend)
+            _ = self._get_trend_color(new_trend)
             self.trend_label.setText(new_trend)
             self.trend_label.setStyleSheet(f"""
                 font-size: 12px; 

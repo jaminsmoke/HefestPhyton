@@ -1,3 +1,9 @@
+import logging
+from typing import List, Dict, Any, Callable
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal
+from src.utils.modern_styles import ModernStyles
+
 """
 Widget de filtros para el inventario - Hefest v0.0.12
 =====================================================
@@ -29,9 +35,6 @@ AUTOR: Hefest Development Team
 VERSIÓN: v0.0.12
 """
 
-import logging
-from typing import List, Dict, Any, Callable
-from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -44,12 +47,9 @@ from PyQt6.QtWidgets import (
     QLabel,
     QFrame,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
 
-from src.utils.modern_styles import ModernStyles
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class InventoryFiltersWidget(QWidget):
@@ -66,10 +66,11 @@ class InventoryFiltersWidget(QWidget):
     """
 
     # Señales
-    filters_changed = pyqtSignal(dict)  # Emite los filtros aplicados
+    _ = pyqtSignal(dict)  # Emite los filtros aplicados
     filters_cleared = pyqtSignal()  # Limpia todos los filtros
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.modern_styles = ModernStyles()
         self.current_filters = {}
@@ -158,7 +159,7 @@ class InventoryFiltersWidget(QWidget):
         stock_layout = QVBoxLayout()
         stock_layout.addWidget(QLabel("Rango de Stock:"))
 
-        stock_controls = QHBoxLayout()
+        _ = QHBoxLayout()
         self.stock_min_slider = QSlider(Qt.Orientation.Horizontal)
         self.stock_min_slider.setRange(0, 1000)
         self.stock_min_slider.setValue(0)
@@ -183,7 +184,7 @@ class InventoryFiltersWidget(QWidget):
 
     def _create_action_buttons(self) -> QHBoxLayout:
         """Crea los botones de acción"""
-        layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         # Botón aplicar filtros
         self.apply_btn = QPushButton("Aplicar Filtros")
@@ -250,7 +251,7 @@ class InventoryFiltersWidget(QWidget):
 
     def _apply_styles(self):
         """Aplica estilos modernos"""
-        colors = self.modern_styles.COLORS
+        _ = self.modern_styles.COLORS
         self.setStyleSheet(
             f"""
             QGroupBox {{
@@ -332,7 +333,7 @@ class InventoryFiltersWidget(QWidget):
 
     def _apply_filters(self):
         """Aplica los filtros actuales"""
-        filters = {
+        _ = {
             "search_text": self.search_input.text().strip(),
             "category": self.category_combo.currentData() or "",
             "supplier": self.supplier_combo.currentData() or "",
@@ -361,7 +362,7 @@ class InventoryFiltersWidget(QWidget):
         if self.state_all.isChecked():
             return ["all"]
 
-        states = []
+        _ = []
         if self.state_good.isChecked():
             states.append("good")
         if self.state_low.isChecked():
@@ -374,6 +375,8 @@ class InventoryFiltersWidget(QWidget):
         return states
 
     def load_categories(self, categories: List[str]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga las categorías disponibles"""
         self.category_combo.clear()
         self.category_combo.addItem("Todas las categorías", "")
@@ -381,6 +384,8 @@ class InventoryFiltersWidget(QWidget):
             self.category_combo.addItem(category, category)
 
     def load_suppliers(self, suppliers: List[str]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga los proveedores disponibles"""
         self.supplier_combo.clear()
         self.supplier_combo.addItem("Todos los proveedores", "")
@@ -388,5 +393,7 @@ class InventoryFiltersWidget(QWidget):
             self.supplier_combo.addItem(supplier, supplier)
 
     def get_current_filters(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene los filtros actuales"""
         return self.current_filters.copy()

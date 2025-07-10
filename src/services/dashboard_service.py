@@ -1,15 +1,15 @@
+import logging
+from typing import Dict, List, Tuple, Optional, Union
+from dataclasses import dataclass
+from .base_service import BaseService
+
 """
 Servicio de datos para el Dashboard de Hefest - Versión funcional
 """
 
-import logging
-from datetime import datetime, date, timedelta
-from typing import Dict, List, Tuple, Optional, Union
-from dataclasses import dataclass
 
-from .base_service import BaseService
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 @dataclass
@@ -24,12 +24,16 @@ class MetricaKPI:
 
     @property
     def cambio_porcentual(self) -> float:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if self.valor_anterior == 0:
             return 0.0
         return ((self.valor_actual - self.valor_anterior) / self.valor_anterior) * 100
 
     @property
     def cambio_texto(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         cambio = self.cambio_porcentual
         simbolo = "+" if cambio > 0 else ""
         return f"{simbolo}{cambio:.1f}%"
@@ -60,9 +64,12 @@ class DashboardDataService(BaseService):
     """Servicio que proporciona datos para el dashboard"""
 
     def __init__(self, db_manager=None):
+        """TODO: Add docstring"""
         super().__init__(db_manager)
 
     def get_service_name(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna el nombre de este servicio"""
         return "DashboardDataService"
 
@@ -75,7 +82,7 @@ class DashboardDataService(BaseService):
             result = self.db_manager.query(query, params)
             return result if result is not None else default
         except Exception as e:
-            self.logger.error(f"Error ejecutando consulta: {e}")
+            self.logger.error("Error ejecutando consulta: %s", e)
             return default
 
     def _extract_value_from_result(self, result, key=None, default=0):
@@ -95,66 +102,80 @@ class DashboardDataService(BaseService):
             return float(default)
 
     def get_ventas_hoy(self) -> MetricaKPI:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene las ventas del día actual"""
         return MetricaKPI(
-            nombre="Ventas Hoy",
+            _ = "Ventas Hoy",
             valor_actual=1245.80,
-            valor_anterior=1180.50,
+            _ = 1180.50,
             unidad="€",
-            formato="currency",
+            _ = "currency",
         )
 
     def get_ocupacion_mesas(self) -> MetricaKPI:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene la ocupación actual de mesas"""
         return MetricaKPI(
-            nombre="Ocupación Actual",
+            _ = "Ocupación Actual",
             valor_actual=8.0,
-            valor_anterior=7.0,
+            _ = 7.0,
             unidad="/15",
-            formato="integer",
+            _ = "integer",
         )
 
     def get_comandas_hoy(self) -> MetricaKPI:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene el número de comandas de hoy"""
         return MetricaKPI(
-            nombre="Comandas Hoy",
+            _ = "Comandas Hoy",
             valor_actual=23.0,
-            valor_anterior=19.0,
+            _ = 19.0,
             unidad="comandas",
-            formato="integer",
+            _ = "integer",
         )
 
     def get_ticket_promedio(self) -> MetricaKPI:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene el ticket promedio del día"""
         return MetricaKPI(
-            nombre="Ticket Promedio",
+            _ = "Ticket Promedio",
             valor_actual=54.12,
-            valor_anterior=62.13,
+            _ = 62.13,
             unidad="€",
-            formato="currency",
+            _ = "currency",
         )
 
     def get_reservas_hoy(self) -> MetricaKPI:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene las reservas para hoy"""
         return MetricaKPI(
-            nombre="Reservas Hoy",
+            _ = "Reservas Hoy",
             valor_actual=7.0,
-            valor_anterior=5.0,
+            _ = 5.0,
             unidad="reservas",
-            formato="integer",
+            _ = "integer",
         )
 
     def get_productos_stock_bajo(self) -> MetricaKPI:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene productos con stock bajo"""
         return MetricaKPI(
-            nombre="Stock Bajo",
+            _ = "Stock Bajo",
             valor_actual=3.0,
-            valor_anterior=2.0,
+            _ = 2.0,
             unidad="productos",
-            formato="integer",
+            _ = "integer",
         )
 
     def get_ventas_por_hora(self) -> List[VentasPorHora]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene las ventas agrupadas por hora"""
         return [
             VentasPorHora("12:00", 150.50, 3),
@@ -168,6 +189,8 @@ class DashboardDataService(BaseService):
         ]
 
     def get_estado_mesas(self) -> List[Dict]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene el estado actual de todas las mesas"""
         return [
             {
@@ -202,35 +225,39 @@ class DashboardDataService(BaseService):
         ]
 
     def get_alertas_operativas(self) -> List[AlertaOperativa]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Genera alertas operativas"""
         return [
             AlertaOperativa(
-                tipo="warning",
+                _ = "warning",
                 mensaje="Stock bajo: Aceite de Oliva (2/8)",
-                prioridad="high",
+                _ = "high",
                 icono="📦",
-                accion="Pedir Stock",
+                _ = "Pedir Stock",
                 contexto={"producto": "Aceite de Oliva", "stock_actual": 2},
             ),
             AlertaOperativa(
-                tipo="info",
+                _ = "info",
                 mensaje="Mesa 2 ocupada 2.5h",
-                prioridad="medium",
+                _ = "medium",
                 icono="⏱️",
-                accion="Ver Mesa",
+                _ = "Ver Mesa",
                 contexto={"mesa_id": 2, "horas": 2.5},
             ),
             AlertaOperativa(
-                tipo="success",
+                _ = "success",
                 mensaje="2 reserva(s) confirmadas para hoy",
-                prioridad="low",
+                _ = "low",
                 icono="📅",
-                accion="Ver Reservas",
+                _ = "Ver Reservas",
                 contexto={"count": 2},
             ),
         ]
 
     def get_todas_las_metricas(self) -> List[MetricaKPI]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las métricas principales"""
         return [
             self.get_ventas_hoy(),
@@ -242,8 +269,10 @@ class DashboardDataService(BaseService):
         ]
 
     def get_metricas_como_dict(self) -> Dict[str, MetricaKPI]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las métricas como diccionario"""
-        metricas = self.get_todas_las_metricas()
+        _ = self.get_todas_las_metricas()
         return {
             "ventas_hoy": metricas[0],
             "ocupacion_mesas": metricas[1],

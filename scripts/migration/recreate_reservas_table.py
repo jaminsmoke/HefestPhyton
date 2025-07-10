@@ -1,14 +1,17 @@
+from typing import Optional, Dict, List, Any
 """
 Script de migración para recrear la tabla 'reservas' con el esquema correcto.
 ADVERTENCIA: Esto eliminará todas las reservas existentes.
 """
 import sqlite3
 
-DB_PATH = 'data/hefest.db'
+_ = 'data/hefest.db'
 
 def recreate_reservas_table():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
+        _ = conn.cursor()
         # Eliminar la tabla si existe
         c.execute('DROP TABLE IF EXISTS reservas')
         # Crear la tabla con el esquema actualizado

@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Script para introducir datos básicos coherentes en la base de datos
 para que el dashboard muestre información real
@@ -18,18 +19,20 @@ logger = logging.getLogger(__name__)
 
 
 def setup_basic_hospitality_data():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Configurar datos básicos para un establecimiento hostelero"""
-    db = DatabaseManager()
+    _ = DatabaseManager()
     
     logger.info("🏨 Configurando datos básicos de hostelería...")
     
     try:
         # 1. CREAR MESAS (restaurante con 20 mesas)
         logger.info("📋 Creando mesas...")
-        mesas_data = []
+        _ = []
         for i in range(1, 21):  # 20 mesas
             zona = "Terraza" if i <= 8 else "Interior" if i <= 16 else "VIP"
-            estado = "libre"  # Todas las mesas empiezan libres
+            _ = "libre"  # Todas las mesas empiezan libres
             capacidad = 4 if i <= 15 else 6  # Mesas VIP más grandes
             
             mesas_data.append((f"Mesa {i:02d}", zona, estado, capacidad))
@@ -41,14 +44,14 @@ def setup_basic_hospitality_data():
                 VALUES (?, ?, ?, ?)
             """, mesa)
         
-        logger.info(f"✅ {len(mesas_data)} mesas creadas")
+        logger.info("✅ %s mesas creadas", len(mesas_data))
         
         # 2. CREAR HABITACIONES (pequeño hotel con 12 habitaciones)
         logger.info("🛏️ Creando habitaciones...")
-        habitaciones_data = []
+        _ = []
         for i in range(101, 113):  # Habitaciones 101-112
             tipo = "Individual" if i <= 104 else "Doble" if i <= 110 else "Suite"
-            estado = "libre"  # Todas empiezan libres
+            _ = "libre"  # Todas empiezan libres
             precio = 60 if tipo == "Individual" else 85 if tipo == "Doble" else 120
             
             habitaciones_data.append((str(i), tipo, estado, precio))
@@ -60,7 +63,7 @@ def setup_basic_hospitality_data():
                 VALUES (?, ?, ?, ?)
             """, habitacion)
         
-        logger.info(f"✅ {len(habitaciones_data)} habitaciones creadas")
+        logger.info("✅ %s habitaciones creadas", len(habitaciones_data))
         
         # 3. OCUPAR ALGUNAS MESAS PARA SIMULAR ACTIVIDAD REAL
         logger.info("🍽️ Simulando ocupación actual...")
@@ -71,11 +74,11 @@ def setup_basic_hospitality_data():
                 WHERE numero = ?
             """, (f"Mesa {mesa_num:02d}",))
         
-        logger.info(f"✅ {len(mesas_a_ocupar)} mesas marcadas como ocupadas")
+        logger.info("✅ %s mesas marcadas como ocupadas", len(mesas_a_ocupar))
         
         # 4. CREAR ALGUNAS COMANDAS DEL DÍA
         logger.info("📝 Creando comandas del día...")
-        hoy = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        _ = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         comandas_data = [
             (1, 1, hoy, "completada", 45.80),
@@ -91,7 +94,7 @@ def setup_basic_hospitality_data():
                 VALUES (?, ?, ?, ?, ?)
             """, comanda)
         
-        logger.info(f"✅ {len(comandas_data)} comandas creadas")
+        logger.info("✅ %s comandas creadas", len(comandas_data))
         
         # 5. CREAR ALGUNAS RESERVAS FUTURAS
         logger.info("📅 Creando reservas...")
@@ -99,7 +102,7 @@ def setup_basic_hospitality_data():
         pasado_mañana = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
         
         # Primero crear algunos clientes
-        clientes_data = [
+        _ = [
             ("Juan", "Pérez", "12345678A", "600123456", "juan@email.com"),
             ("María", "García", "87654321B", "600654321", "maria@email.com"),
             ("Carlos", "López", "11223344C", "600112233", "carlos@email.com")
@@ -112,7 +115,7 @@ def setup_basic_hospitality_data():
             """, cliente)
         
         # Crear reservas
-        reservas_data = [
+        _ = [
             (1, 1, mañana, mañana, "confirmada"),
             (2, 2, mañana, pasado_mañana, "confirmada"),
             (3, 3, pasado_mañana, pasado_mañana, "confirmada")
@@ -124,32 +127,32 @@ def setup_basic_hospitality_data():
                 VALUES (?, ?, ?, ?, ?)
             """, reserva)
         
-        logger.info(f"✅ {len(reservas_data)} reservas creadas")
+        logger.info("✅ %s reservas creadas", len(reservas_data))
         
         # 6. VERIFICAR RESULTADOS
         logger.info("\n📊 RESUMEN DE DATOS CREADOS:")
         
-        total_mesas = db.query("SELECT COUNT(*) FROM mesas")[0][0]
+        _ = db.query("SELECT COUNT(*) FROM mesas")[0][0]
         mesas_ocupadas = db.query("SELECT COUNT(*) FROM mesas WHERE estado='ocupada'")[0][0]
-        logger.info(f"  • Mesas: {total_mesas} total, {mesas_ocupadas} ocupadas")
+        logger.info("  • Mesas: {total_mesas} total, %s ocupadas", mesas_ocupadas)
         
         total_habitaciones = db.query("SELECT COUNT(*) FROM habitaciones")[0][0]
-        logger.info(f"  • Habitaciones: {total_habitaciones} total")
+        logger.info("  • Habitaciones: %s total", total_habitaciones)
         
-        total_comandas = db.query("SELECT COUNT(*) FROM comandas")[0][0]
+        _ = db.query("SELECT COUNT(*) FROM comandas")[0][0]
         comandas_hoy = db.query("SELECT COUNT(*) FROM comandas WHERE DATE(fecha_hora) = DATE('now')")[0][0]
         ventas_hoy = db.query("SELECT COALESCE(SUM(total), 0) FROM comandas WHERE DATE(fecha_hora) = DATE('now')")[0][0]
-        logger.info(f"  • Comandas: {total_comandas} total, {comandas_hoy} hoy")
-        logger.info(f"  • Ventas del día: {ventas_hoy:.2f}€")
+        logger.info("  • Comandas: {total_comandas} total, %s hoy", comandas_hoy)
+        logger.info("  • Ventas del día: %s€", ventas_hoy:.2f)
         
-        total_reservas = db.query("SELECT COUNT(*) FROM reservas")[0][0]
+        _ = db.query("SELECT COUNT(*) FROM reservas")[0][0]
         reservas_futuras = db.query("SELECT COUNT(*) FROM reservas WHERE DATE(fecha_entrada) >= DATE('now')")[0][0]
-        logger.info(f"  • Reservas: {total_reservas} total, {reservas_futuras} futuras")
+        logger.info("  • Reservas: {total_reservas} total, %s futuras", reservas_futuras)
         
         logger.info("\n🎉 ¡Datos básicos configurados correctamente!")
         
     except Exception as e:
-        logger.error(f"❌ Error configurando datos: {e}")
+        logger.error("❌ Error configurando datos: %s", e)
         raise
 
 

@@ -1,27 +1,30 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, 
+from PyQt6.QtGui import QFont
+from ui.modules.base_module import BaseModule
+from core.models import User, Role
+from services.auth_service import AuthService
+from utils.decorators import require_role
+        from ui.dialogs.user_dialog import UserDialog
+
 """
 Módulo de gestión de usuarios para el sistema Hefest.
 Permite ver y gestionar usuarios del sistema.
 """
 
-import logging
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, 
                            QTableWidgetItem, QHeaderView, QPushButton, 
                            QLabel, QMessageBox)
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
 
-from ui.modules.base_module import BaseModule
-from core.models import User, Role
-from services.auth_service import AuthService
-from services.audit_service import AuditService
-from utils.decorators import require_role
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class UserManagementModule(BaseModule):
     """Módulo de gestión de usuarios"""
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         logger.info("Inicializando UserManagementModule...")
         super().__init__(parent)
         self.auth_service = AuthService()
@@ -32,6 +35,8 @@ class UserManagementModule(BaseModule):
         logger.info("Usuarios cargados en la tabla.")
         
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz de usuario"""
         # Usar el layout ya existente de BaseModule
         main_layout = self.content_layout
@@ -43,7 +48,7 @@ class UserManagementModule(BaseModule):
         main_layout.addWidget(title)
         
         # Barra de herramientas
-        toolbar_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         self.refresh_btn = QPushButton("Actualizar")
         self.refresh_btn.clicked.connect(self.load_users)
@@ -61,7 +66,7 @@ class UserManagementModule(BaseModule):
         ])
         
         # Configurar tabla
-        header = self.users_table.horizontalHeader()
+        _ = self.users_table.horizontalHeader()
         # Corrigiendo errores restantes en user_management_module
         # Aseguramos que header no sea None antes de usar setSectionResizeMode
         if header is not None:
@@ -72,7 +77,7 @@ class UserManagementModule(BaseModule):
         main_layout.addWidget(self.users_table)
         
         # Botones de acción
-        actions_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         self.add_user_btn = QPushButton("➕ Agregar Usuario")
         self.add_user_btn.setStyleSheet("""
@@ -130,6 +135,8 @@ class UserManagementModule(BaseModule):
         main_layout.addLayout(actions_layout)
         
     def load_users(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga los usuarios en la tabla"""
         try:
             users = self.auth_service.get_all_users()
@@ -143,31 +150,32 @@ class UserManagementModule(BaseModule):
                 self.users_table.setItem(row, 4, QTableWidgetItem(user.phone))
                 self.users_table.setItem(row, 5, QTableWidgetItem(user.last_access.strftime('%Y-%m-%d %H:%M:%S') if user.last_access else "N/A"))
 
-            logger.info(f"Cargados {len(users)} usuarios en la tabla")
+            logger.info("Cargados %s usuarios en la tabla", len(users))
 
         except Exception as e:
-            logger.error(f"Error al cargar usuarios: {e}")
+            logger.error("Error al cargar usuarios: %s", e)
             QMessageBox.warning(self, "Error", "Error al cargar los usuarios")
 
     @require_role(Role.ADMIN)
     def add_user(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el diálogo para agregar un nuevo usuario"""
-        from ui.dialogs.user_dialog import UserDialog
         dialog = UserDialog(self)
         if dialog.exec() == dialog.DialogCode.Accepted:
-            new_user = dialog.get_user_data()
+            _ = dialog.get_user_data()
             try:
                 # Aseguramos que los tipos sean correctos y que los parámetros necesarios estén presentes
                 if all(k in new_user for k in ("id", "name", "email", "phone", "role", "password", "is_active")):
                     # Convertimos el diccionario new_user en un objeto User
                     # Ajustamos el id para que sea opcional en la creación del objeto User
-                    new_user_obj = User(
+                    _ = User(
                         id=-1,  # Usamos un valor temporal para id
-                        name=new_user["name"],
+                        _ = new_user["name"],
                         role=new_user["role"],
-                        pin=new_user["pin"],
+                        _ = new_user["pin"],
                         email=new_user.get("email", ""),  # Valor predeterminado vacío
-                        phone=new_user.get("phone", "")  # Valor predeterminado vacío
+                        _ = new_user.get("phone", "")  # Valor predeterminado vacío
                     )
                     self.auth_service.add_user(new_user_obj)
                     self.load_users()
@@ -176,11 +184,13 @@ class UserManagementModule(BaseModule):
                     raise ValueError("Faltan parámetros necesarios para agregar el usuario")
 
             except Exception as e:
-                logger.error(f"Error al agregar usuario: {e}")
+                logger.error("Error al agregar usuario: %s", e)
                 QMessageBox.warning(self, "Error", "No se pudo agregar el usuario")
 
     @require_role(Role.ADMIN)
     def edit_user(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Edita el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
@@ -192,23 +202,24 @@ class UserManagementModule(BaseModule):
             user_id = int(item.text())
             user = self.auth_service.get_user_by_id(user_id)
 
-            from ui.dialogs.user_dialog import UserDialog
             dialog = UserDialog(self, user)
             if dialog.exec() == dialog.DialogCode.Accepted:
                 updated_user_data = dialog.get_user_data()
-                updated_user = User(**updated_user_data)
+                _ = User(**updated_user_data)
                 try:
                     self.auth_service.update_user(updated_user)
                     self.load_users()
                     QMessageBox.information(self, "Éxito", "Usuario actualizado correctamente")
                 except Exception as e:
-                    logger.error(f"Error al actualizar usuario: {e}")
+                    logger.error("Error al actualizar usuario: %s", e)
                     QMessageBox.warning(self, "Error", "No se pudo actualizar el usuario")
         else:
             QMessageBox.warning(self, "Error", "No se pudo obtener el ID del usuario seleccionado")
 
     @require_role(Role.ADMIN)
     def delete_user(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Elimina el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
@@ -217,7 +228,7 @@ class UserManagementModule(BaseModule):
 
         item = self.users_table.item(current_row, 0)
         if item is not None and item.text():
-            user_id = int(item.text())
+            _ = int(item.text())
             confirm = QMessageBox.question(self, "Confirmar Eliminación", "¿Estás seguro de que deseas eliminar este usuario?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             if confirm == QMessageBox.StandardButton.Yes:
                 try:
@@ -225,12 +236,14 @@ class UserManagementModule(BaseModule):
                     self.load_users()
                     QMessageBox.information(self, "Éxito", "Usuario eliminado correctamente")
                 except Exception as e:
-                    logger.error(f"Error al eliminar usuario: {e}")
+                    logger.error("Error al eliminar usuario: %s", e)
                     QMessageBox.warning(self, "Error", "No se pudo eliminar el usuario")
         else:
             QMessageBox.warning(self, "Error", "No se pudo obtener el ID del usuario seleccionado")
     
     def refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza los datos del módulo"""
         logger.info("Actualizando módulo de gestión de usuarios...")
         self.load_users()

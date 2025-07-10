@@ -1,147 +1,93 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Hefest - Sistema Integral de Hostelería y Hospedería
 Punto de entrada principal de la aplicación
-
-Este módulo inicializa los componentes principales y lanza la interfaz gráfica.
 """
 
 import sys
-import re
+import os
 import logging
+from logging.handlers import RotatingFileHandler
 from PyQt6.QtWidgets import QApplication, QDialog, QInputDialog, QLineEdit, QMessageBox
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QLoggingCategory
 from PyQt6.QtGui import QFont
 
-# Configuración avanzada de logging global
-import os
-from logging.handlers import RotatingFileHandler
+from data.db_manager import DatabaseManager
+from ui.windows.hefest_main_window import MainWindow
+from core.hefest_data_models import User
+from services.auth_service import get_auth_service
+from services.audit_service import AuditService
+from ui.windows.authentication_dialog import LoginDialog
+from ui.components.user_selector import UserSelector
 
+# Configuración de logging
 LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.path.join(LOG_DIR, "hefest_app.log")
 
-# Formato detallado para consola y archivo
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 
-# Handler de archivo rotativo (5MB, 3 backups)
 file_handler = RotatingFileHandler(
     LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
 )
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
 
-# Handler de consola
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
 
-
-# Configuración global
 logging.basicConfig(level=logging.DEBUG, handlers=[file_handler, console_handler])
 logger = logging.getLogger(__name__)
 
-# Asegurar propagación y nivel DEBUG para todos los loggers
-logging.captureWarnings(True)
-
-# === Manejo global de excepciones no capturadas ===
-import sys
 def global_exception_hook(exc_type, exc_value, exc_traceback):
+    """Maneja excepciones no capturadas"""
     if issubclass(exc_type, KeyboardInterrupt):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
     logger.critical("Excepción no capturada", exc_info=(exc_type, exc_value, exc_traceback))
-    # Opcional: mostrar mensaje de error al usuario
     try:
-        from PyQt6.QtWidgets import QMessageBox
-        QMessageBox.critical(None, "Error crítico", f"Se ha producido un error inesperado. Revisa el log para más detalles.\n\n{exc_value}")
-    except Exception:
-        pass
-    # Salida explícita para evitar procesos colgados
+        QMessageBox.critical(None, "Error crítico", 
+                           f"Error inesperado. Revisa el log.\n\n{exc_value}")
+    except Exception as e:
+        logging.error("Error mostrando mensaje: %s", e)
     sys.exit(1)
+
 sys.excepthook = global_exception_hook
 
-# Importar componentes necesarios
-from data.db_manager import DatabaseManager
-from ui.windows.hefest_main_window import MainWindow
-from utils.modern_styles import ModernStyles
-
-from services.auth_service import get_auth_service
-from services.audit_service import AuditService
-
-
 class Hefest:
-    """Clase principal que gestiona el ciclo de vida de la aplicación"""
+    """Clase principal de la aplicación"""
 
     def __init__(self):
-        """Inicializa la aplicación y sus componentes principales"""
+        """Inicializa la aplicación"""
         logger.info("Iniciando Hefest v1.0")
 
-        # Inicializar la aplicación Qt
         self.app = QApplication(sys.argv)
-        # Filtro para warnings de CSS backdrop-filter (stdout y stderr)
-        import io
-        import sys as _sys
-        class CSSWarningFilter(io.StringIO):
-            def __init__(self, original):
-                super().__init__()
-                self._original = original
-                self._buffer = ""
-            def write(self, txt):
-                self._buffer += txt
-                while "\n" in self._buffer:
-                    line, self._buffer = self._buffer.split("\n", 1)
-                    if not re.search(r"Unknown property backdrop-filter", line):
-                        if self._original is not None and hasattr(self._original, "write"):
-                            self._original.write(line + "\n")
-            def flush(self):
-                if self._buffer:
-                    if not re.search(r"Unknown property backdrop-filter", self._buffer):
-                        if self._original is not None and hasattr(self._original, "write"):
-                            self._original.write(self._buffer)
-                    self._buffer = ""
-            def writelines(self, lines):
-                for line in lines:
-                    self.write(line)
-        _sys.stderr = CSSWarningFilter(_sys.__stderr__)
-        _sys.stdout = CSSWarningFilter(_sys.__stdout__)
-        # Intentar filtrar también mensajes de Qt (si es posible)
+        
         try:
-            from PyQt6.QtCore import QLoggingCategory
             QLoggingCategory.setFilterRules("*.debug=false;qt.qpa.*=false")
-        except Exception:
-            pass
+        except Exception as e:
+            logging.error("Error configurando Qt logging: %s", e)
+        
         self.app.setApplicationName("Hefest")
         self.app.setApplicationVersion("1.0.0")
-        # Configurar el estilo
+        
         self._setup_style()
-
-        # Inicializar componentes
+        
         self.db = DatabaseManager()
-        # Inicializar servicio de autenticación
         self.auth_service = get_auth_service()
-        # Logging inicial
         AuditService.log("Sistema iniciado", details={"version": "1.0.0"})
-
-        # Ventana principal (se creará después del login)
+        
         self.main_window = None
 
     def _setup_style(self):
-        """Configura el estilo visual moderno de la aplicación"""
-        # Configurar fuente
+        """Configura el estilo visual"""
         font = QFont("Segoe UI", 10)
         self.app.setFont(font)
-
-        # Configurar estilo base
         self.app.setStyle("Fusion")
-
-        # === SISTEMA VISUAL V3 ULTRA-MODERNO ===
-        # NOTA: Filtro CSS destructivo DESHABILITADO para permitir estilos modernos
-        # install_global_stylesheet_filter(self.app)  # DESHABILITADO - Era destructivo
-        logger.info("🎨 Sistema Visual V3: Filtros CSS destructivos deshabilitados")
-
-        # Aplicar estilos base modernos (sin conversión destructiva)
+        
         try:
-            # Usar estilos base simples sin filtros destructivos
             base_styles = """
                 QMainWindow {
                     background-color: #fafafa;
@@ -152,27 +98,22 @@ class Hefest:
                 }
             """
             self.app.setStyleSheet(base_styles)
-            logger.info("✅ Estilos base V3 aplicados sin filtros destructivos")
+            logger.info("Estilos base aplicados")
         except Exception as e:
-            logger.error(f"❌ Error al aplicar estilos base: {e}")
+            logger.error("Error aplicando estilos: %s", e)
 
     def show_login(self):
-        """Muestra primero login básico, luego selector de usuario"""
-        # Paso 1: Login básico para acceso al programa
+        """Muestra login básico y selector de usuario"""
         if not self.show_basic_login():
-            logger.info("Login básico cancelado, cerrando aplicación")
+            logger.info("Login básico cancelado")
             return False
-
-        # Paso 2: Selector de usuario/rol
         return self.show_user_selector()
 
     def show_basic_login(self) -> bool:
-        """Muestra el login básico para acceso al programa"""
-        from ui.windows.authentication_dialog import LoginDialog
-
+        """Muestra login básico"""
         login_dialog = LoginDialog()
         result = login_dialog.exec()
-
+        
         if result == QDialog.DialogCode.Accepted:
             logger.info("Login básico exitoso")
             return True
@@ -181,28 +122,19 @@ class Hefest:
             return False
 
     def show_user_selector(self) -> bool:
-        """Muestra el selector de usuario para autenticación por roles"""
-        # Importar el selector de usuario
-        from ui.components.user_selector import UserSelector
-
-        # Mostrar el selector de usuario
+        """Muestra selector de usuario"""
         user_selector = UserSelector(self.auth_service)
         user_selector.user_selected.connect(self.authenticate_user)
-
-        # Ejecutar el selector
+        
         result = user_selector.exec()
         if result == QDialog.DialogCode.Accepted:
-            # La autenticación se maneja en el método authenticate_user
             return True
         else:
-            logger.info("Selección de usuario cancelada, cerrando aplicación")
+            logger.info("Selección de usuario cancelada")
             return False
 
-    from core.hefest_data_models import User
-
-    def authenticate_user(self, user: "User") -> bool:
-        """Autentica al usuario seleccionado solicitando su PIN"""
-        # Solicitar PIN
+    def authenticate_user(self, user: User) -> bool:
+        """Autentica usuario con PIN"""
         pin, ok = QInputDialog.getText(
             None,
             "Autenticación",
@@ -212,35 +144,28 @@ class Hefest:
 
         if ok and pin:
             if user.id is not None and self.auth_service.login(user.id, pin):
-                # Registro en servicio de auditoría
                 AuditService.log("Inicio de sesión", user)
-                logger.info(f"Inicio de sesión exitoso para {user.name}")
+                logger.info("Inicio de sesión exitoso para %s", user.name)
                 self.show_main_window()
                 return True
             else:
-                QMessageBox.warning(
-                    None, "Error", "PIN incorrecto"
-                )  # Volver a mostrar el selector de usuario
+                QMessageBox.warning(None, "Error", "PIN incorrecto")
                 return self.show_login()
 
-        # Si canceló el diálogo de PIN
         return self.show_login()
 
     def init_main_window(self):
-        """Inicializa la ventana principal"""
+        """Inicializa ventana principal"""
         if not self.main_window:
-            # Pasar la instancia de AuthService a MainWindow
             self.main_window = MainWindow(auth_service=self.auth_service)
-            # Configuración adicional para mantener la ventana activa
             self.main_window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
             self.app.setActiveWindow(self.main_window)
         return self.main_window
 
     def show_main_window(self):
-        """Muestra la ventana principal de la aplicación"""
+        """Muestra ventana principal"""
         main_window = self.init_main_window()
         main_window.showMaximized()
-        # Asegurarse de que la ventana está activa y al frente
         main_window.raise_()
 
     def run(self):
@@ -248,20 +173,16 @@ class Hefest:
         if self.show_login():
             return self.app.exec()
         else:
-            return 1  # Código de error si el login fue cancelado
-
+            return 1
 
 def main():
-    """Función principal de la aplicación"""
+    """Función principal"""
     try:
-        # Crear la instancia principal de la aplicación
         hefest_app = Hefest()
-        # Ejecutar la aplicación
         return hefest_app.run()
     except Exception as e:
-        logger.error(f"Error crítico en la aplicación: {e}")
+        logger.error("Error crítico: %s", e)
         return 1
-
 
 if __name__ == "__main__":
     sys.exit(main())

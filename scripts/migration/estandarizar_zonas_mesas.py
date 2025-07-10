@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python3
 """
 Script para estandarizar las zonas de mesas: 5 zonas con 10 mesas cada una
@@ -10,16 +12,18 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'data'))
 from data.db_manager import DatabaseManager
 
 def estandarizar_zonas_mesas():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Estandariza las zonas de mesas a 5 zonas con 10 mesas cada una"""
     try:
-        db_manager = DatabaseManager()
+        _ = DatabaseManager()
         
         print("=" * 60)
         print("ESTANDARIZACION DE ZONAS DE MESAS")
         print("=" * 60)
         
         # Definir la estructura estándar
-        zonas_estandar = {
+        _ = {
             'Terraza': {'prefijo': 'T', 'capacidades': [2, 2, 2, 4, 4, 4, 6, 6, 6, 8]},
             'Interior': {'prefijo': 'I', 'capacidades': [2, 2, 4, 4, 4, 4, 6, 6, 8, 8]},
             'Barra': {'prefijo': 'B', 'capacidades': [2, 2, 2, 2, 2, 2, 4, 4, 4, 4]},
@@ -34,16 +38,16 @@ def estandarizar_zonas_mesas():
         
         # Crear las mesas estandarizadas
         print("[2/3] Creando mesas estandarizadas...")
-        mesa_id = 1
+        _ = 1
         
         for zona, config in zonas_estandar.items():
-            prefijo = config['prefijo']
+            _ = config['prefijo']
             capacidades = config['capacidades']
             
-            print(f"    - Creando zona {zona}...")
+            print("    - Creando zona %s..." % zona)
             
             for i in range(10):  # 10 mesas por zona
-                numero_mesa = f"{prefijo}{i+1:02d}"  # T01, T02, etc.
+                _ = f"{prefijo}{i+1:02d}"  # T01, T02, etc.
                 capacidad = capacidades[i]
                 
                 db_manager.execute("""
@@ -53,18 +57,18 @@ def estandarizar_zonas_mesas():
                 
                 mesa_id += 1
             
-            print(f"      [OK] {zona}: 10 mesas creadas ({prefijo}01-{prefijo}10)")
+            print("      [OK] {zona}: 10 mesas creadas ({prefijo}01-%s10)" % prefijo)
         
         # Verificar resultado
         print("[3/3] Verificando resultado...")
-        mesas_totales = db_manager.query("SELECT COUNT(*) as total FROM mesas")[0]['total']
+        _ = db_manager.query("SELECT COUNT(*) as total FROM mesas")[0]['total']
         
-        print(f"    - Total de mesas creadas: {mesas_totales}")
+        print("    - Total de mesas creadas: %s" % mesas_totales)
         
         # Mostrar resumen por zona
         for zona in zonas_estandar.keys():
             count = db_manager.query("SELECT COUNT(*) as count FROM mesas WHERE zona = ?", (zona,))[0]['count']
-            print(f"    - {zona}: {count} mesas")
+            print("    - {zona}: %s mesas" % count)
         
         print()
         print("=" * 60)
@@ -75,7 +79,7 @@ def estandarizar_zonas_mesas():
         print("- Capacidades variadas segun el tipo de zona")
         
     except Exception as e:
-        print(f"[ERROR] Error al estandarizar las zonas: {e}")
+    logging.error("[ERROR] Error al estandarizar las zonas: %s", e)
         import traceback
         traceback.print_exc()
 

@@ -7,20 +7,21 @@ from typing import Dict, List, Optional, Any
 from PyQt6.QtCore import QObject, pyqtSignal
 from services.tpv_service import TPVService, Mesa, Comanda, Producto
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class TPVController(QObject):
     """Controlador principal que maneja la lógica de negocio del TPV"""
 
     # Señales para comunicación con la UI
-    mesa_updated = pyqtSignal(Mesa)
+    _ = pyqtSignal(Mesa)
     comanda_updated = pyqtSignal(Comanda)
-    producto_added = pyqtSignal(int, int, int)  # comanda_id, producto_id, cantidad
+    _ = pyqtSignal(int, int, int)  # comanda_id, producto_id, cantidad
     error_occurred = pyqtSignal(str)
-    status_changed = pyqtSignal(str)
+    _ = pyqtSignal(str)
 
     def __init__(self, db_manager=None):
+        """TODO: Add docstring"""
         super().__init__()
         # Siempre inicializar TPVService con db_manager real
         # TODO v0.0.14: Forzar que todas las instancias de TPVController reciban db_manager real. Si detectas un uso sin db_manager, refactorizar y registrar en README.
@@ -28,24 +29,30 @@ class TPVController(QObject):
         self._active_orders: Dict[str, Comanda] = {}
 
     def get_all_mesas(self) -> List[Mesa]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las mesas disponibles"""
         try:
             return self.tpv_service.get_todas_mesas()
         except Exception as e:
-            logger.error(f"Error al obtener mesas: {e}")
+            logger.error("Error al obtener mesas: %s", e)
             self.error_occurred.emit(f"Error al cargar mesas: {str(e)}")
             return []
 
     def get_mesa_by_id(self, mesa_id: str) -> Optional[Mesa]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene una mesa específica por ID"""
         try:
             return self.tpv_service.get_mesa_por_id(mesa_id)
         except Exception as e:
-            logger.error(f"Error al obtener mesa {mesa_id}: {e}")
+            logger.error("Error al obtener mesa {mesa_id}: %s", e)
             self.error_occurred.emit(f"Error al cargar mesa: {str(e)}")
             return None
 
     def open_mesa(self, mesa_id: str) -> Optional[Comanda]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Abre una mesa y retorna la comanda activa o crea una nueva"""
         try:
             mesa = self.get_mesa_by_id(mesa_id)
@@ -56,7 +63,7 @@ class TPVController(QObject):
             comanda = self.tpv_service.get_comanda_activa(mesa.numero)
             if not comanda:
                 # Crear nueva comanda
-                comanda = self.tpv_service.crear_comanda(mesa.numero)
+                _ = self.tpv_service.crear_comanda(mesa.numero)
                 self.status_changed.emit(
                     f"Nueva comanda creada para Mesa {mesa.numero}"
                 )
@@ -73,7 +80,7 @@ class TPVController(QObject):
             return comanda
 
         except Exception as e:
-            logger.error(f"Error al abrir mesa {mesa_id}: {e}")
+            logger.error("Error al abrir mesa {mesa_id}: %s", e)
             self.error_occurred.emit(f"Error al abrir mesa: {str(e)}")
             return None
 
@@ -124,6 +131,8 @@ class TPVController(QObject):
             return False
 
     def remove_product_from_order(self, mesa_id: str, producto_id: int) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Elimina un producto de la comanda"""
         try:
             comanda = self._active_orders.get(mesa_id)
@@ -171,11 +180,13 @@ class TPVController(QObject):
             return True
 
         except Exception as e:
-            logger.error(f"Error al actualizar cantidad en mesa {mesa_id}: {e}")
+            logger.error("Error al actualizar cantidad en mesa {mesa_id}: %s", e)
             self.error_occurred.emit(f"Error al actualizar cantidad: {str(e)}")
             return False
 
     def save_order(self, mesa_id: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Guarda la comanda actual y la persiste en la base de datos"""
         try:
             comanda = self._active_orders.get(mesa_id)
@@ -189,11 +200,13 @@ class TPVController(QObject):
                 self.error_occurred.emit("Error al persistir la comanda en la base de datos")
                 return False
         except Exception as e:
-            logger.error(f"Error al guardar comanda de mesa {mesa_id}: {e}")
+            logger.error("Error al guardar comanda de mesa {mesa_id}: %s", e)
             self.error_occurred.emit(f"Error al guardar comanda: {str(e)}")
             return False
 
     def process_payment(self, mesa_id: str, payment_data: Dict[str, Any]) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Procesa el pago de una comanda"""
         try:
             comanda = self._active_orders.get(mesa_id)
@@ -219,49 +232,59 @@ class TPVController(QObject):
             return True
 
         except Exception as e:
-            logger.error(f"Error al procesar pago de mesa {mesa_id}: {e}")
+            logger.error("Error al procesar pago de mesa {mesa_id}: %s", e)
             self.error_occurred.emit(f"Error al procesar pago: {str(e)}")
             return False
 
     def get_active_comandas(self) -> List[Comanda]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las comandas activas"""
         try:
             return self.tpv_service.get_comandas_activas()
         except Exception as e:
-            logger.error(f"Error al obtener comandas activas: {e}")
+            logger.error("Error al obtener comandas activas: %s", e)
             self.error_occurred.emit(f"Error al cargar comandas: {str(e)}")
             return []
 
     def get_all_productos(self) -> List[Producto]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todos los productos disponibles"""
         try:
             return self.tpv_service.get_todos_productos()
         except Exception as e:
-            logger.error(f"Error al obtener productos: {e}")
+            logger.error("Error al obtener productos: %s", e)
             self.error_occurred.emit(f"Error al cargar productos: {str(e)}")
             return []
 
     def get_productos_by_categoria(self, categoria: str) -> List[Producto]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene productos filtrados por categoría"""
         try:
             if categoria == "Todas":
                 return self.get_all_productos()
             return self.tpv_service.get_productos_por_categoria(categoria)
         except Exception as e:
-            logger.error(f"Error al obtener productos por categoría {categoria}: {e}")
+            logger.error("Error al obtener productos por categoría {categoria}: %s", e)
             self.error_occurred.emit(f"Error al filtrar productos: {str(e)}")
             return []
 
     def get_categorias(self) -> List[str]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las categorías de productos"""
         try:
             return self.tpv_service.get_categorias_productos()
         except Exception as e:
-            logger.error(f"Error al obtener categorías: {e}")
+            logger.error("Error al obtener categorías: %s", e)
             self.error_occurred.emit(f"Error al cargar categorías: {str(e)}")
             return []
 
     def get_order_total(self, mesa_id: str) -> float:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Calcula el total de una comanda"""
         comanda = self._active_orders.get(mesa_id)
         if not comanda or not comanda.lineas:
@@ -269,6 +292,8 @@ class TPVController(QObject):
         return sum(linea.total for linea in comanda.lineas)
 
     def clear_cache(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpia la caché de comandas activas"""
         self._active_orders.clear()
         self.status_changed.emit("Caché limpiada")

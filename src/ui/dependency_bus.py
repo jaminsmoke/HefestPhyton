@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 dependency_bus.py
 Singleton para compartir dependencias críticas (como db_manager) entre componentes UI.
@@ -9,16 +10,22 @@ Si se implementa un sistema de inyección de dependencias más formal, migrar y 
 Revisar todos los puntos de entrada de TPVAvanzado y asegurar que usan el bus o inyección explícita.
 """
 
-_dependency_bus = {}
+_ = {}
 
 
 def set_dependency(key, value):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     _dependency_bus[key] = value
 
 
 def get_dependency(key, default=None):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     return _dependency_bus.get(key, default)
 
 
 def clear_dependencies():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     _dependency_bus.clear()

@@ -34,6 +34,8 @@ from src.utils.modern_styles import ModernStyles
 
 
 def create_subcontenedor_metric_cards(instance: Any) -> Any:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     # EXCEPCIÓN FUNCIONAL: El parámetro 'instance' y los atributos de widgets son dinámicos (PyQt6),
     # por lo que se usa Any y no se puede tipar estrictamente.
     # EXCEPCIÓN FUNCIONAL: 'widget' es un objeto PyQt6 dinámico, no tipable estrictamente.
@@ -60,7 +62,6 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     layout.setContentsMargins(4, 2, 4, 4)
     layout.setSpacing(2)
     # Título compacto
-    from PyQt6.QtWidgets import (
         QPushButton,
         QDialog,
         QVBoxLayout,
@@ -69,7 +70,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
         QHBoxLayout,
     )
 
-    title_row = QHBoxLayout()
+    _ = QHBoxLayout()
     title_label = QLabel(
         "<span style='font-size:11px; font-weight:600; color:#a21caf; vertical-align:middle;'>📊 Estadísticas en Tiempo Real</span>"
     )
@@ -107,11 +108,13 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     from typing import cast
 
     def show_config_dialog():
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         dialog = QDialog(section)
         dialog.setWindowTitle("Configurar métricas visibles")
-        vbox = QVBoxLayout(dialog)
+        _ = QVBoxLayout(dialog)
         checks: dict[str, Any] = {}
-        metric_labels = {
+        _ = {
             "zonas": "Zonas",
             "total": "Total",
             "libres": "Libres",
@@ -124,12 +127,14 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
             cb.setChecked(instance._kpi_visible_metrics.get(key, True))
             checks[key] = cb
             vbox.addWidget(cb)
-        btn_box = QDialogButtonBox(
+        _ = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
         vbox.addWidget(btn_box)
 
         def accept():
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             for key in checks:
                 instance._kpi_visible_metrics[key] = cast(Any, checks[key]).isChecked()  # type: ignore[reportUnknownMemberType]
             dialog.accept()
@@ -143,8 +148,10 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
 
     # ---
     def update_kpi_visibility():
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # Oculta o muestra widgets según selección
-        metric_map = {
+        _ = {
             "zonas": cast(Any, instance).zonas_widget,  # type: ignore[reportUnknownMemberType]
             "total": cast(Any, instance).mesas_total_widget,  # type: ignore[reportUnknownMemberType]
             "libres": cast(Any, instance).mesas_libres_widget,  # type: ignore[reportUnknownMemberType]
@@ -159,6 +166,8 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     from PyQt6.QtCore import QTimer
 
     def do_refresh():
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if hasattr(instance, "refresh_stats_callback") and callable(
             instance.refresh_stats_callback
         ):
@@ -189,7 +198,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
         "0",
         "#8b5cf6",
         "#f3e8ff",
-        tooltip="Total de zonas activas",
+        _ = "Total de zonas activas",
         badge={"text": "Z", "color": "#8b5cf6"},
     )
     instance.mesas_total_widget = KPIWidget(
@@ -198,7 +207,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
         "0",
         "#3b82f6",
         "#dbeafe",
-        tooltip="Total de mesas registradas",
+        _ = "Total de mesas registradas",
         badge={"text": "T", "color": "#3b82f6"},
     )
     instance.mesas_libres_widget = KPIWidget(
@@ -207,7 +216,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
         "0",
         "#22c55e",
         "#dcfce7",
-        tooltip="Mesas libres disponibles",
+        _ = "Mesas libres disponibles",
         badge={"text": "L", "color": "#22c55e"},
     )
     instance.mesas_ocupadas_widget = KPIWidget(
@@ -216,7 +225,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
         "0",
         "#ef4444",
         "#fee2e2",
-        tooltip="Mesas actualmente ocupadas",
+        _ = "Mesas actualmente ocupadas",
         badge={"text": "O", "color": "#ef4444"},
     )
     instance.mesas_reservadas_widget = KPIWidget(
@@ -225,7 +234,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
         "0",
         "#f59e0b",
         "#fef3c7",
-        tooltip="Mesas reservadas",
+        _ = "Mesas reservadas",
         badge={"text": "R", "color": "#f59e0b"},
     )
     instance.porc_ocup_widget = KPIWidget(
@@ -234,7 +243,7 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
         "0%",
         "#0ea5e9",
         "#e0f2fe",
-        tooltip="Porcentaje de ocupación actual",
+        _ = "Porcentaje de ocupación actual",
         badge={"text": "%", "color": "#0ea5e9"},
     )
     grid.addWidget(instance.zonas_widget, 0, 0)
@@ -252,7 +261,6 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     refresh_row = QHBoxLayout()
     refresh_row.addStretch(1)
     from PyQt6.QtWidgets import QLabel
-    from PyQt6.QtCore import Qt
 
     instance.kpi_last_refresh_label = QLabel()  # type: ignore[reportUnknownMemberType]
     instance.kpi_last_refresh_label.setObjectName("KPI_LastRefreshLabel")  # type: ignore[reportUnknownMemberType]
@@ -266,12 +274,10 @@ def create_subcontenedor_metric_cards(instance: Any) -> Any:
     return section
 
 
-from typing import Any
 
 
 def _update_stat_widget(widget: Any, new_value: str) -> None:
     """Actualiza SOLO el valor (tercer QLabel) de un widget de estadística ultra-premium"""
-    from PyQt6.QtWidgets import QLabel
 
     try:
         if not widget or not hasattr(widget, "layout") or not widget.layout():
@@ -295,6 +301,8 @@ def _update_stat_widget(widget: Any, new_value: str) -> None:
 
 
 def update_stats_from_mesas(instance: Any) -> None:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     # EXCEPCIÓN FUNCIONAL: 'instance' es dinámico (PyQt6)
     if not hasattr(instance, "mesas") or not instance.mesas:
         update_ultra_premium_stats(instance)
@@ -315,6 +323,8 @@ def update_stats_from_mesas(instance: Any) -> None:
 
 
 def update_ultra_premium_stats(instance: Any) -> None:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     # EXCEPCIÓN FUNCIONAL: 'instance' es dinámico (PyQt6)
     import datetime
     from typing import Any, cast
@@ -322,11 +332,11 @@ def update_ultra_premium_stats(instance: Any) -> None:
     if not hasattr(instance, "mesas") or not instance.mesas:
         # Si no hay datos, igual actualiza la fecha/hora
         if hasattr(instance, "kpi_last_refresh_label"):
-            now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            _ = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             try:
                 cast(Any, instance.kpi_last_refresh_label).setText(f"Actualizado: {now}")  # type: ignore[reportUnknownMemberType]
-            except RuntimeError:
-                pass  # El label ya fue destruido
+            except Exception as e:
+    logging.error("Error: %s", e)  # El label ya fue destruido
         return
     total_mesas: int = len(instance.mesas)
     mesas_ocupadas: int = len(
@@ -349,7 +359,7 @@ def update_ultra_premium_stats(instance: Any) -> None:
     if not hasattr(instance, "_porc_ocup_history"):
         instance._porc_ocup_history = []  # type: ignore[reportUnknownMemberType]
     if total_mesas > 0:
-        porc_ocup = int(round((mesas_ocupadas / total_mesas) * 100))
+        _ = int(round((mesas_ocupadas / total_mesas) * 100))
     # Actualizar historial para sparkline
     cast(Any, instance._porc_ocup_history).append(porc_ocup)  # type: ignore[reportUnknownMemberType]
     # type: ignore[reportUnknownMemberType]
@@ -376,24 +386,24 @@ def update_ultra_premium_stats(instance: Any) -> None:
             cast(Any, sparkline).setData(cast(Any, instance._porc_ocup_history))  # type: ignore[reportUnknownMemberType]
     # Actualizar fecha/hora de último refresh
     if hasattr(instance, "kpi_last_refresh_label"):
-        now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        _ = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         try:
             cast(Any, instance.kpi_last_refresh_label).setText(f"Actualizado: {now}")  # type: ignore[reportUnknownMemberType]
-        except RuntimeError:
-            pass  # El label ya fue destruido
+        except Exception as e:
+    logging.error("Error: %s", e)  # El label ya fue destruido
 
 
 def create_compact_stats(instance: Any, layout: Any) -> None:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea las estadísticas compactas integradas en el header (idéntico al original)"""
-    from PyQt6.QtWidgets import QLabel
-    from .kpi_widget import KPIWidget
 
     # Separador visual antes de las estadísticas
     separator: Any = QLabel("|")
     separator.setStyleSheet(ModernStyles.get_stats_separator_style())
     layout.addWidget(separator)
     # Configuración de stats compactas
-    stats_config = [
+    _ = [
         ("📍", "Zonas", "0", "#10b981"),
         ("🍽️", "Total", "0", "#2563eb"),
         ("🟢", "Libres", "0", "#059669"),
@@ -419,12 +429,10 @@ def update_compact_stats(
     instance: Any, zonas: Any, total: Any, libres: Any, ocupadas: Any
 ) -> None:
     """Actualiza las estadísticas compactas en el header"""
-    from typing import Any
-    from PyQt6.QtWidgets import QLabel
 
     if not hasattr(instance, "compact_stats_widgets"):
         return
-    values = {
+    _ = {
         "zonas": str(zonas),
         "total": str(total),
         "libres": str(libres),

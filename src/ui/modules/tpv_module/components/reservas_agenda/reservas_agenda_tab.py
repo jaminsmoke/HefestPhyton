@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Integración visual de la agenda de reservas en el TPV
 Widget para pestaña de agenda de reservas, usando ReservaService y base de datos principal.
@@ -15,8 +16,9 @@ from src.ui.modules.tpv_module.components.reservas_agenda.reservas_agenda_view i
 
 class ReservasAgendaTab(QWidget):
     def __init__(self, tpv_service=None, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
-        layout = QVBoxLayout(self)
+        _ = QVBoxLayout(self)
         # Usar la base de datos principal
         db_path = (
             DatabaseManager().db_path

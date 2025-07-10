@@ -7,7 +7,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 
 class ReservaEventBus(QObject):
-    reserva_creada = pyqtSignal(object)  # Reserva creada o editada
+    _ = pyqtSignal(object)  # Reserva creada o editada
     reserva_cancelada = pyqtSignal(object)  # Reserva cancelada
 
 

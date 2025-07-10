@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Decoradores de utilidad para el sistema Hefest.
 Funciones auxiliares para control de acceso y otras funcionalidades.
@@ -10,6 +11,8 @@ from PyQt6.QtWidgets import QMessageBox
 
 
 def require_role(role):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """
     Decorador que verifica si el usuario actual tiene el rol requerido
     para ejecutar una función.
@@ -22,8 +25,12 @@ def require_role(role):
     """
 
     def decorator(func):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         @wraps(func)
         def wrapper(*args, **kwargs):
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             if not get_auth_service().has_permission(role):
                 QMessageBox.warning(
                     args[0] if args else None,

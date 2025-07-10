@@ -1,10 +1,22 @@
+from typing import Optional, Dict, List, Any
+import logging
+import os
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime, QFile, QPropertyAnimation
+from PyQt6.QtGui import QCloseEvent, QAction, QPalette, QColor, QIcon
+from src.__version__ import __version__
+from ..components.main_navigation_sidebar import ModernSidebar
+from ..modules.dashboard_admin_v3.ultra_modern_admin_dashboard import (
+from services.auth_service import get_auth_service
+from services.audit_service import AuditService
+from core.hefest_data_models import Role
+from data.db_manager import DatabaseManager
+        from ui.modules.tpv_module.tpv_module import TPVModule
+
 """
 Ventana principal moderna de la aplicación Hefest.
 """
 
-import logging
-import os
-from PyQt6.QtWidgets import (
     QMainWindow,
     QStatusBar,
     QWidget,
@@ -20,39 +32,28 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QApplication,
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime, QFile, QPropertyAnimation
-from PyQt6.QtGui import QCloseEvent, QAction, QPalette, QColor, QIcon
 
-from src.__version__ import __version__
-from ..components.main_navigation_sidebar import ModernSidebar
-from ..modules.module_base_interface import BaseModule
 
 # === SISTEMA VISUAL V3 ULTRA-MODERNO ===
-from ..modules.dashboard_admin_v3.ultra_modern_admin_dashboard import (
     UltraModernAdminDashboard,
 )
 
-from utils.qt_css_compat import purge_modern_css_from_widget_tree
 
 # Importar servicios de autenticación y auditoría
-from services.auth_service import get_auth_service
-from services.audit_service import AuditService
-from core.hefest_data_models import Role
-from data.db_manager import DatabaseManager
 
 # Importar decorador de roles
-from utils.decorators import require_role
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class MainWindow(QMainWindow):
     """Ventana principal moderna con sidebar animado y efectos visuales"""
 
     # Señales
-    module_changed = pyqtSignal(str)
+    _ = pyqtSignal(str)
 
     def __init__(self, auth_service=None):
+        """TODO: Add docstring"""
         super().__init__()
         logger.info("Initializing MainWindow")
         self.setWindowTitle(f"Hefest v{__version__} - Sistema Integral de Hostelería")
@@ -96,6 +97,8 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(500, self.load_initial_module)
 
     def load_initial_module(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga el módulo inicial después de verificar que el usuario esté autenticado"""
         if not self.auth_service.is_authenticated:
             logger.warning("Usuario no autenticado aún, reintentando en 500ms...")
@@ -106,15 +109,17 @@ class MainWindow(QMainWindow):
         self.show_module("dashboard")
 
     def check_module_permission(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica si el usuario tiene permisos para acceder al módulo"""
         if module_id not in self.module_permissions:
-            logger.warning(f"El módulo {module_id} no tiene permisos configurados.")
+            logger.warning("El módulo %s no tiene permisos configurados.", module_id)
             return False
 
-        required_role = self.module_permissions[module_id]
+        _ = self.module_permissions[module_id]
 
         current_user = self.auth_service.current_user
-        is_authenticated = self.auth_service.is_authenticated
+        _ = self.auth_service.is_authenticated
         current_session = self.auth_service.current_session
 
         has_permission = self.auth_service.has_permission(required_role)
@@ -122,6 +127,8 @@ class MainWindow(QMainWindow):
         return has_permission
 
     def create_permission_denied_widget(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un widget que muestra mensaje de acceso denegado"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -152,6 +159,8 @@ class MainWindow(QMainWindow):
         return widget
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz principal"""
         logger.info("Setting up modern UI components")
 
@@ -216,7 +225,7 @@ class MainWindow(QMainWindow):
             with open(
                 os.path.join(os.path.dirname(__file__), "qt_scrollarea_custom.qss"),
                 "r",
-                encoding="utf-8",
+                _ = "utf-8",
             ) as f:
                 self.setStyleSheet(f.read())
         except Exception as e:
@@ -225,6 +234,8 @@ class MainWindow(QMainWindow):
             )
 
     def setup_status_bar(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la barra de estado moderna con información del usuario"""
         self.status_bar = QStatusBar()
         self.status_bar.setObjectName("modern-statusbar")
@@ -234,7 +245,7 @@ class MainWindow(QMainWindow):
         self.status_label = QLabel("Listo")
 
         # Mostrar usuario actual
-        current_user = self.auth_service.current_user
+        _ = self.auth_service.current_user
         user_text = (
             f"Usuario: {current_user.name} ({current_user.role.value})"
             if current_user
@@ -253,6 +264,8 @@ class MainWindow(QMainWindow):
         self.status_bar.addPermanentWidget(self.user_label)
 
     def setup_connections(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura las conexiones de señales"""
         self.sidebar.module_selected.connect(self.show_module)
         self.module_changed.connect(self.on_module_changed)
@@ -260,6 +273,8 @@ class MainWindow(QMainWindow):
         self.sidebar.logout_requested.connect(self.handle_logout)
 
     def setup_menu(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura el menú de la aplicación"""
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
@@ -300,6 +315,8 @@ class MainWindow(QMainWindow):
         help_menu.addAction(about_action)
 
     def module_action_triggered(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja la activación de acciones de módulo desde el menú"""
         action = self.sender()
         if action:
@@ -307,6 +324,8 @@ class MainWindow(QMainWindow):
             self.show_module(module_id)
 
     def show_module(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el módulo especificado si el usuario tiene permisos"""
         # Guardar posición de scroll del módulo actual
         if self.current_module is not None:
@@ -315,13 +334,13 @@ class MainWindow(QMainWindow):
                 self._module_scroll_positions[self.current_module] = vbar.value()
 
         if not self.check_module_permission(module_id):
-            logger.warning(f"🚨 SHOW_MODULE: Acceso denegado al módulo {module_id}")
+            logger.warning("🚨 SHOW_MODULE: Acceso denegado al módulo %s", module_id)
             denied_widget = self.create_permission_denied_widget(module_id)
             self.module_layout.addWidget(denied_widget)
             return
 
         if module_id in self.module_widgets:
-            widget = self.module_widgets[module_id]
+            _ = self.module_widgets[module_id]
         else:
             widget = self.create_module_widget(module_id)
             self.module_widgets[module_id] = widget
@@ -334,10 +353,10 @@ class MainWindow(QMainWindow):
                 old_widget.setParent(None)
 
         self.module_layout.addWidget(widget)
-        previous_module = self.current_module
+        _ = self.current_module
         self.current_module = module_id
         self.module_changed.emit(module_id)
-        vbar = self.scroll_area.verticalScrollBar()
+        _ = self.scroll_area.verticalScrollBar()
         # Restaurar posición previa si existe y es otro módulo
         if previous_module != module_id and module_id in self._module_scroll_positions:
             if vbar is not None:
@@ -352,6 +371,8 @@ class MainWindow(QMainWindow):
             self._scroll_anim = anim
 
     def create_module_widget(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un widget para el módulo especificado"""
         try:
             module_class = self.get_module_class(module_id)
@@ -359,7 +380,7 @@ class MainWindow(QMainWindow):
             if module_class:
                 # Pasar auth_service y db_manager específicamente al dashboard y advanced_tpv
                 if module_id == "dashboard":
-                    widget = module_class(
+                    _ = module_class(
                         auth_service=self.auth_service, db_manager=self.db_manager
                     )
                     return widget
@@ -374,17 +395,18 @@ class MainWindow(QMainWindow):
                 else:
                     return module_class()
             else:
-                logger.error(f"Clase del módulo {module_id} no encontrada.")
+                logger.error("Clase del módulo %s no encontrada.", module_id)
                 return self.create_permission_denied_widget(module_id)
         except Exception as e:
-            logger.error(f"Error al crear el widget del módulo {module_id}: {e}")
+            logger.error("Error al crear el widget del módulo {module_id}: %s", e)
             return self.create_permission_denied_widget(module_id)
 
     def get_module_class(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene la clase del módulo correspondiente al module_id"""
-        from ui.modules.tpv_module.tpv_module import TPVModule
 
-        module_classes = {
+        _ = {
             # === SISTEMA VISUAL V3 ULTRA-MODERNO ===
             "dashboard": UltraModernAdminDashboard,  # NUEVO: Dashboard V3 Ultra-Moderno
             # Otros módulos (usar sistema antiguo temporalmente)
@@ -409,10 +431,12 @@ class MainWindow(QMainWindow):
             else:
                 return class_path
         else:
-            logger.warning(f"Módulo no encontrado para ID: {module_id}")
+            logger.warning("Módulo no encontrado para ID: %s", module_id)
             return None
 
     def handle_logout(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el cierre de sesión"""
         if self.auth_service.current_user:
             self.auth_service.logout()
@@ -424,6 +448,8 @@ class MainWindow(QMainWindow):
         logger.info("Usuario ha cerrado sesión")
 
     def update_status_bar(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza la información de la barra de estado"""
         current_time = QDateTime.currentDateTime().toString("dd/MM/yyyy hh:mm:ss")
         self.status_bar.showMessage(current_time)
@@ -435,10 +461,14 @@ class MainWindow(QMainWindow):
             self.user_label.setText(user_text)
 
     def on_module_changed(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el cambio de módulo"""
-        logger.info(f"Módulo cambiado a: {module_id}")
+        logger.info("Módulo cambiado a: %s", module_id)
 
     def closeEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el cierre de la ventana"""
         logger.info("Close event triggered")
         if hasattr(self, "timer"):
@@ -447,6 +477,8 @@ class MainWindow(QMainWindow):
             event.accept()
 
     def show_about_dialog(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el diálogo Acerca de"""
         msg = QMessageBox()
         msg.setWindowTitle("Acerca de Hefest")
@@ -457,6 +489,8 @@ class MainWindow(QMainWindow):
         msg.exec()
 
     def keyPressEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         super().keyPressEvent(event)
         # Atajos de scroll para el área principal
         vbar = self.scroll_area.verticalScrollBar()
@@ -510,11 +544,13 @@ class MainWindow(QMainWindow):
             self.show_module("users")
 
     def update_scroll_overflow_indicators(self):
-        vbar = self.scroll_area.verticalScrollBar()
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = self.scroll_area.verticalScrollBar()
         hbar = self.scroll_area.horizontalScrollBar()
-        overflow_top = vbar.value() > 0 if vbar is not None else False
+        _ = vbar.value() > 0 if vbar is not None else False
         overflow_bottom = vbar.value() < vbar.maximum() if vbar is not None else False
-        overflow_left = hbar.value() > 0 if hbar is not None else False
+        _ = hbar.value() > 0 if hbar is not None else False
         overflow_right = hbar.value() < hbar.maximum() if hbar is not None else False
         self.scroll_area.setProperty("overflow-top", overflow_top)
         self.scroll_area.setProperty("overflow-bottom", overflow_bottom)
@@ -526,20 +562,26 @@ class MainWindow(QMainWindow):
             style.polish(self.scroll_area)
 
     def eventFilter(self, obj, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if obj == self.scroll_area and event.type() == event.Type.Resize:
             self.update_scroll_overflow_indicators()
         return super().eventFilter(obj, event)
 
     def resizeEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         super().resizeEvent(event)
         # Posicionar el botón flotante en la esquina inferior derecha de la QScrollArea
         if hasattr(self, "scroll_to_top_btn"):
             area = self.scroll_area.geometry()
-            x = area.x() + area.width() - self.scroll_to_top_btn.width() - 18
+            _ = area.x() + area.width() - self.scroll_to_top_btn.width() - 18
             y = area.y() + area.height() - self.scroll_to_top_btn.height() - 18
             self.scroll_to_top_btn.move(x, y)
 
     def toggle_scroll_to_top_btn(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         vbar = self.scroll_area.verticalScrollBar()
         if vbar is not None and vbar.maximum() > 0 and vbar.value() > 0:
             self.scroll_to_top_btn.show()
@@ -547,6 +589,8 @@ class MainWindow(QMainWindow):
             self.scroll_to_top_btn.hide()
 
     def animate_scroll_to_top(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         vbar = self.scroll_area.verticalScrollBar()
         if vbar is not None:
             anim = QPropertyAnimation(vbar, b"value", self)

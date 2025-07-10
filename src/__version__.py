@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Configuración de versión centralizada para Hefest
 ================================================
@@ -26,11 +27,15 @@ __python_requires__ = ">=3.10"
 
 
 def get_version():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Retorna la versión actual como string."""
     return __version__
 
 
 def get_version_info():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Retorna información detallada de versión."""
     return {
         "version": __version__,

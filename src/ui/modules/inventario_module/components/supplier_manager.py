@@ -1,3 +1,11 @@
+from typing import Optional, Dict, List, Any
+import logging
+from datetime import datetime
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont, QColor
+            import re
+
 """
 Módulo de Gestión de Proveedores para Hefest
 ============================================
@@ -5,11 +13,7 @@ Módulo de Gestión de Proveedores para Hefest
 Interfaz dedicada para la gestión completa de proveedores
 """
 
-import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 
-from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -29,10 +33,8 @@ from PyQt6.QtWidgets import (
     QDialog,
     QTextEdit,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QColor
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class SupplierManagerWidget(QWidget):
@@ -41,7 +43,7 @@ class SupplierManagerWidget(QWidget):
     """
 
     # Señales
-    proveedor_actualizado = pyqtSignal()
+    _ = pyqtSignal()
     proveedor_seleccionado = pyqtSignal(dict)
 
     def __init__(self, inventario_service, parent=None):
@@ -57,6 +59,8 @@ class SupplierManagerWidget(QWidget):
         logger.info("SupplierManagerWidget inicializado correctamente")
 
     def init_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializar la interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -81,10 +85,12 @@ class SupplierManagerWidget(QWidget):
         self.apply_styles()
 
     def create_header(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear el header del módulo"""
         header = QFrame()
         header.setObjectName("HeaderFrame")
-        layout = QHBoxLayout(header)
+        _ = QHBoxLayout(header)
 
         # Título
         title = QLabel("🏢 Gestión de Proveedores")
@@ -101,13 +107,15 @@ class SupplierManagerWidget(QWidget):
         return header
 
     def create_search_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel de búsqueda y acciones"""
         panel = QFrame()
         panel.setObjectName("SearchPanel")
-        layout = QHBoxLayout(panel)
+        _ = QHBoxLayout(panel)
 
         # Búsqueda
-        search_label = QLabel("Buscar:")
+        _ = QLabel("Buscar:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar proveedores...")
         self.search_input.textChanged.connect(self.filter_suppliers)
@@ -135,10 +143,12 @@ class SupplierManagerWidget(QWidget):
         return panel
 
     def create_suppliers_table(self) -> QTableWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear la tabla de proveedores"""
         table = QTableWidget()
         table.setObjectName("SuppliersTable")  # Configurar columnas
-        headers = [
+        _ = [
             "ID",
             "Nombre",
             "Contacto",
@@ -179,10 +189,12 @@ class SupplierManagerWidget(QWidget):
         return table
 
     def create_stats_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel de estadísticas"""
         panel = QFrame()
         panel.setObjectName("StatsPanel")
-        layout = QHBoxLayout(panel)
+        _ = QHBoxLayout(panel)
 
         # Estadísticas básicas
         self.total_suppliers_label = QLabel("Total: 0")
@@ -200,6 +212,8 @@ class SupplierManagerWidget(QWidget):
         return panel
 
     def load_suppliers(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar proveedores desde el servicio"""
         try:
             self.proveedores_cache = self.inventario_service.get_proveedores()
@@ -207,12 +221,14 @@ class SupplierManagerWidget(QWidget):
             self.update_statistics()
 
         except Exception as e:
-            logger.error(f"Error cargando proveedores: {e}")
+            logger.error("Error cargando proveedores: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudieron cargar los proveedores: {str(e)}"
             )
 
     def update_suppliers_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar la tabla de proveedores"""
         try:
             self.suppliers_table.setRowCount(len(self.proveedores_cache))
@@ -248,7 +264,7 @@ class SupplierManagerWidget(QWidget):
 
                 # Categoría
                 categoria = proveedor.get("categoria", "General")
-                categoria_item = QTableWidgetItem(categoria or "General")
+                _ = QTableWidgetItem(categoria or "General")
                 # Colorear según la categoría
                 if categoria == "Bebidas":
                     categoria_item.setBackground(QColor("#e3f2fd"))
@@ -265,7 +281,7 @@ class SupplierManagerWidget(QWidget):
                 # Estado
                 activo = proveedor.get("activo", True)
                 estado_text = "Activo" if activo else "Inactivo"
-                item = QTableWidgetItem(estado_text)
+                _ = QTableWidgetItem(estado_text)
                 if activo:
                     item.setBackground(QColor("#d4edda"))
                 else:
@@ -273,41 +289,47 @@ class SupplierManagerWidget(QWidget):
                 self.suppliers_table.setItem(row, 7, item)
 
         except Exception as e:
-            logger.error(f"Error actualizando tabla de proveedores: {e}")
+            logger.error("Error actualizando tabla de proveedores: %s", e)
 
     def update_statistics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar estadísticas"""
         try:
-            total = len(self.proveedores_cache)
+            _ = len(self.proveedores_cache)
             active = sum(1 for p in self.proveedores_cache if p.get("activo", True))
-            inactive = total - active
+            _ = total - active
 
             self.total_suppliers_label.setText(f"Total: {total}")
             self.active_suppliers_label.setText(f"Activos: {active}")
             self.inactive_suppliers_label.setText(f"Inactivos: {inactive}")
 
         except Exception as e:
-            logger.error(f"Error actualizando estadísticas: {e}")
+            logger.error("Error actualizando estadísticas: %s", e)
 
     def filter_suppliers(self, text: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Filtrar proveedores por texto"""
         try:
             for row in range(self.suppliers_table.rowCount()):
-                show_row = False
+                _ = False
 
                 # Buscar en nombre, contacto, teléfono y email
                 for col in [1, 2, 3, 4]:  # Nombre, Contacto, Teléfono, Email
                     item = self.suppliers_table.item(row, col)
                     if item and text.lower() in item.text().lower():
-                        show_row = True
+                        _ = True
                         break
 
                 self.suppliers_table.setRowHidden(row, not show_row)
 
         except Exception as e:
-            logger.error(f"Error filtrando proveedores: {e}")
+            logger.error("Error filtrando proveedores: %s", e)
 
     def on_supplier_selected(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar selección de proveedor"""
         selected_rows = set(item.row() for item in self.suppliers_table.selectedItems())
         has_selection = bool(selected_rows)
@@ -322,6 +344,8 @@ class SupplierManagerWidget(QWidget):
                 self.proveedor_seleccionado.emit(proveedor)
 
     def add_supplier(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Agregar nuevo proveedor"""
         dialog = SupplierDialog(self.inventario_service, self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -329,9 +353,11 @@ class SupplierManagerWidget(QWidget):
             self.proveedor_actualizado.emit()
 
     def edit_selected_supplier(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Editar proveedor seleccionado"""
         try:
-            selected_rows = set(
+            _ = set(
                 item.row() for item in self.suppliers_table.selectedItems()
             )
             if not selected_rows:
@@ -346,15 +372,17 @@ class SupplierManagerWidget(QWidget):
                     self.proveedor_actualizado.emit()
 
         except Exception as e:
-            logger.error(f"Error editando proveedor: {e}")
+            logger.error("Error editando proveedor: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudo editar el proveedor: {str(e)}"
             )
 
     def delete_selected_supplier(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Eliminar proveedor seleccionado"""
         try:
-            selected_rows = set(
+            _ = set(
                 item.row() for item in self.suppliers_table.selectedItems()
             )
             if not selected_rows:
@@ -362,10 +390,10 @@ class SupplierManagerWidget(QWidget):
 
             row = next(iter(selected_rows))
             if row < len(self.proveedores_cache):
-                proveedor = self.proveedores_cache[row]
+                _ = self.proveedores_cache[row]
 
                 # Confirmar eliminación
-                reply = QMessageBox.question(
+                _ = QMessageBox.question(
                     self,
                     "Confirmar eliminación",
                     f"¿Estás seguro de que deseas eliminar el proveedor '{proveedor.get('nombre', '')}'?",
@@ -385,12 +413,14 @@ class SupplierManagerWidget(QWidget):
                         )
 
         except Exception as e:
-            logger.error(f"Error eliminando proveedor: {e}")
+            logger.error("Error eliminando proveedor: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudo eliminar el proveedor: {str(e)}"
             )
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilos al widget"""
         self.setStyleSheet(
             """
@@ -506,6 +536,7 @@ class SupplierDialog(QDialog):
     """Diálogo mejorado para crear/editar proveedores con validaciones avanzadas"""
 
     def __init__(self, inventario_service, parent=None, proveedor=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
 
         self.inventario_service = inventario_service
@@ -519,6 +550,8 @@ class SupplierDialog(QDialog):
             self.load_supplier_data()
 
     def init_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializar interfaz del diálogo mejorada"""
         self.setWindowTitle(
             "✏️ Editar Proveedor" if self.is_edit_mode else "➕ Nuevo Proveedor"
@@ -592,7 +625,7 @@ class SupplierDialog(QDialog):
         layout.setSpacing(15)
 
         # Header con icono
-        header_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         header_icon = QLabel("🏢")
         header_icon.setFont(QFont("Arial", 24))
         header_text = QLabel("Gestión de Proveedor")
@@ -608,7 +641,7 @@ class SupplierDialog(QDialog):
         form_layout.setVerticalSpacing(15)
         form_layout.setHorizontalSpacing(10)
 
-        row = 0
+        _ = 0
 
         # Nombre (obligatorio)
         name_label = QLabel("* Nombre:")
@@ -711,7 +744,7 @@ class SupplierDialog(QDialog):
         # Información adicional en modo edición
         if self.is_edit_mode:
             info_group = QGroupBox("ℹ️ Información del Sistema")
-            info_layout = QGridLayout(info_group)
+            _ = QGridLayout(info_group)
 
             # ID
             info_layout.addWidget(QLabel("ID:"), 0, 0)
@@ -745,6 +778,8 @@ class SupplierDialog(QDialog):
         layout.addLayout(buttons_layout)
 
     def setup_validations(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar validaciones en tiempo real"""
         # Validación del nombre
         self.name_input.textChanged.connect(self.validate_name)
@@ -762,13 +797,15 @@ class SupplierDialog(QDialog):
         self.load_categories()
 
     def load_categories(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar categorías de proveedores en el combo box"""
         try:
             if hasattr(self.inventario_service, "get_categorias_proveedores"):
-                categorias = self.inventario_service.get_categorias_proveedores()
+                _ = self.inventario_service.get_categorias_proveedores()
             else:
                 # Fallback si el método no existe
-                categorias = [
+                _ = [
                     "General",
                     "Bebidas",
                     "Comida",
@@ -786,9 +823,9 @@ class SupplierDialog(QDialog):
                 self.category_combo.setCurrentText("General")
 
         except Exception as e:
-            logger.error(f"Error cargando categorías: {e}")
+            logger.error("Error cargando categorías: %s", e)
             # Categorías por defecto en caso de error
-            default_categories = [
+            _ = [
                 "General",
                 "Bebidas",
                 "Comida",
@@ -801,6 +838,8 @@ class SupplierDialog(QDialog):
                 self.category_combo.addItem(categoria)
 
     def load_supplier_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar datos del proveedor en edición"""
         if self.proveedor:
             self.name_input.setText(self.proveedor.get("nombre", ""))
@@ -823,12 +862,12 @@ class SupplierDialog(QDialog):
                 created = self.proveedor.get("fecha_creacion", "N/A")
                 if created != "N/A":
                     try:
-                        from datetime import datetime
 
                         if isinstance(created, str):
                             dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                            created = dt.strftime("%d/%m/%Y %H:%M")
-                    except:
+                            _ = dt.strftime("%d/%m/%Y %H:%M")
+                    except Exception as e:
+                        logging.error("Error: %s", e)
                         pass
                 self.created_label.setText(str(created))
 
@@ -839,21 +878,23 @@ class SupplierDialog(QDialog):
             self.update_address_counter()
 
     def save_supplier(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Guardar el proveedor con validaciones completas"""  # Validar formulario completo
         if not self.validate_form():
             return
 
         try:
-            nombre = self.name_input.text().strip()
+            _ = self.name_input.text().strip()
             contacto = self.contact_input.text().strip()
-            telefono = self.phone_input.text().strip()
+            _ = self.phone_input.text().strip()
             email = self.email_input.text().strip()
-            direccion = self.address_input.toPlainText().strip()
+            _ = self.address_input.toPlainText().strip()
             categoria = self.category_combo.currentText().strip() or "General"
 
             if self.is_edit_mode and self.proveedor:
                 # Actualizar proveedor existente
-                success = self.inventario_service.actualizar_proveedor(
+                _ = self.inventario_service.actualizar_proveedor(
                     self.proveedor.get("id"),
                     nombre,
                     contacto,
@@ -862,17 +903,17 @@ class SupplierDialog(QDialog):
                     direccion,
                     categoria,
                 )
-                message = (
+                _ = (
                     "Proveedor actualizado exitosamente"
                     if success
                     else "Error al actualizar el proveedor"
                 )
             else:
                 # Crear nuevo proveedor
-                success = self.inventario_service.crear_proveedor(
+                _ = self.inventario_service.crear_proveedor(
                     nombre, contacto, telefono, email, direccion, categoria
                 )
-                message = (
+                _ = (
                     "Proveedor creado exitosamente"
                     if success
                     else "Error al crear el proveedor"
@@ -885,7 +926,7 @@ class SupplierDialog(QDialog):
                 QMessageBox.warning(self, "⚠️ Error", message)
 
         except Exception as e:
-            logger.error(f"Error al guardar proveedor: {e}")
+            logger.error("Error al guardar proveedor: %s", e)
             QMessageBox.critical(
                 self,
                 "❌ Error Crítico",
@@ -893,13 +934,15 @@ class SupplierDialog(QDialog):
             )
 
     def validate_form(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar todo el formulario antes de guardar"""
-        is_valid = True
+        _ = True
         error_messages = []
 
         # Validar nombre (obligatorio)
         if not self.validate_name():
-            is_valid = False
+            _ = False
             error_messages.append(
                 "• El nombre es obligatorio y debe tener al menos 2 caracteres"
             )
@@ -907,23 +950,23 @@ class SupplierDialog(QDialog):
         # Validar teléfono (opcional pero debe ser válido si se proporciona)
         phone = self.phone_input.text().strip()
         if phone and not self.validate_phone():
-            is_valid = False
+            _ = False
             error_messages.append("• El formato del teléfono no es válido")
 
         # Validar email (opcional pero debe ser válido si se proporciona)
         email = self.email_input.text().strip()
         if email and not self.validate_email():
-            is_valid = False
+            _ = False
             error_messages.append("• El formato del email no es válido")
         # Validar dirección (opcional pero con límite)
         direccion = self.address_input.toPlainText().strip()
         if len(direccion) > 300:
-            is_valid = False
+            _ = False
             error_messages.append("• La dirección no puede exceder 300 caracteres")
 
         # Mostrar errores si los hay
         if not is_valid:
-            error_text = "Por favor, corrija los siguientes errores:\n\n" + "\n".join(
+            _ = "Por favor, corrija los siguientes errores:\n\n" + "\n".join(
                 error_messages
             )
             QMessageBox.warning(self, "⚠️ Errores de Validación", error_text)
@@ -931,6 +974,8 @@ class SupplierDialog(QDialog):
         return is_valid
 
     def validate_name(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar el campo nombre en tiempo real"""
         name = self.name_input.text().strip()
 
@@ -950,12 +995,13 @@ class SupplierDialog(QDialog):
             return True
 
     def validate_phone(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar el campo teléfono en tiempo real"""
         phone = self.phone_input.text().strip()
 
         if phone and len(phone) > 0:
             # Validar formato básico de teléfono (solo números, espacios, guiones, paréntesis y +)
-            import re
 
             phone_pattern = r"^[\+]?[\d\s\-\(\)]+$"
 
@@ -978,12 +1024,13 @@ class SupplierDialog(QDialog):
             return True
 
     def validate_email(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar el campo email en tiempo real"""
         email = self.email_input.text().strip()
 
         if email and len(email) > 0:
             # Validar formato básico de email
-            import re
 
             email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
@@ -1002,6 +1049,8 @@ class SupplierDialog(QDialog):
             return True
 
     def update_address_counter(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar contador de caracteres para dirección"""
         text = self.address_input.toPlainText()
         char_count = len(text)

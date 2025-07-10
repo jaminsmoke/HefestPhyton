@@ -10,20 +10,22 @@ from PyQt6.QtCore import Qt
 
 from services.tpv_service import TPVService, Mesa
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class StatisticsPanel(QFrame):
     """Panel de estadísticas moderno y claro"""
 
     def __init__(self, tpv_service: Optional[TPVService] = None, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.tpv_service = tpv_service
         self.setup_ui()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz del panel de estadísticas"""
-        import logging
 
         self.setStyleSheet(
             """
@@ -50,7 +52,6 @@ class StatisticsPanel(QFrame):
             try:
                 old_layout.deleteLater()
             except Exception as e:
-                import logging
                 logging.getLogger(__name__).warning(f"Error eliminando layout anterior: {e}")
 
         # Crear layout sin padre y asignar con setLayout
@@ -69,6 +70,8 @@ class StatisticsPanel(QFrame):
         self.create_statistics_cards(self.stats_layout)
 
     def create_title_section(self, layout: QHBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la sección del título"""
         title_container = QWidget()
         title_layout = QVBoxLayout(title_container)
@@ -103,6 +106,8 @@ class StatisticsPanel(QFrame):
         layout.addWidget(title_container)
 
     def create_separator(self, layout: QHBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un separador vertical"""
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.VLine)
@@ -110,6 +115,8 @@ class StatisticsPanel(QFrame):
         layout.addWidget(separator)
 
     def create_statistics_cards(self, layout: QHBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea las tarjetas de estadísticas"""
         if not self.tpv_service:
             return
@@ -122,8 +129,10 @@ class StatisticsPanel(QFrame):
             layout.addWidget(card)
 
     def calculate_statistics(self, mesas: List[Mesa]) -> List[tuple]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Calcula las estadísticas de las mesas"""
-        total_mesas = len(mesas)
+        _ = len(mesas)
         mesas_ocupadas = len([m for m in mesas if m.estado == "ocupada"])
         mesas_reservadas = len([m for m in mesas if m.estado == "reservada"])
         mesas_libres = len([m for m in mesas if m.estado == "libre"])
@@ -209,6 +218,8 @@ class StatisticsPanel(QFrame):
         return card
 
     def update_statistics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza las estadísticas"""
         if not self.tpv_service:
             return
@@ -223,9 +234,11 @@ class StatisticsPanel(QFrame):
             # logger.debug("Estadísticas actualizadas")  # Eliminado debug
 
         except Exception as e:
-            logger.error(f"Error actualizando estadísticas: {e}")
+            logger.error("Error actualizando estadísticas: %s", e)
 
     def clear_layout(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpia el layout actual"""
         layout = self.layout()
         if layout:
@@ -237,11 +250,15 @@ class StatisticsPanel(QFrame):
                         widget.deleteLater()
 
     def set_service(self, tpv_service: TPVService):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Establece el servicio TPV"""
         self.tpv_service = tpv_service
         self.update_statistics()
 
     def refresh_statistics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Refresca las estadísticas con datos actualizados"""
         try:
             if not self.tpv_service:
@@ -249,10 +266,10 @@ class StatisticsPanel(QFrame):
                 return
 
             # Obtener datos actualizados
-            mesas = self.tpv_service.get_mesas()
+            _ = self.tpv_service.get_mesas()
 
             # Recalcular estadísticas
-            stats_data = self.calculate_statistics(mesas)
+            _ = self.calculate_statistics(mesas)
             # Limpiar y recrear las tarjetas
             # TODO: En lugar de limpiar todo, actualizar valores existentes
             # Por ahora, simplemente recreamos
@@ -261,4 +278,4 @@ class StatisticsPanel(QFrame):
             # logger.debug("Estadísticas refrescadas")  # Eliminado debug
 
         except Exception as e:
-            logger.error(f"Error refrescando estadísticas: {e}")
+            logger.error("Error refrescando estadísticas: %s", e)

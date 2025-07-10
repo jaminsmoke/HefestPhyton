@@ -1,10 +1,17 @@
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (
+from PyQt6.QtGui import QFont
+from ui.modules.module_base_interface import BaseModule
+from core.hefest_data_models import User, Role
+from services.auth_service import get_auth_service
+        from ui.dialogs.user_management_dialog import UserDialog
+
 """
 Módulo de gestión de usuarios para el sistema Hefest.
 Permite ver y gestionar usuarios del sistema.
 """
 
-import logging
-from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -15,28 +22,24 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
 
-from ui.modules.module_base_interface import BaseModule
-from core.hefest_data_models import User, Role
-from services.auth_service import get_auth_service
-from services.audit_service import AuditService
-from utils.decorators import require_role
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class UserManagementModule(BaseModule):
     """Módulo de gestión de usuarios"""
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.auth_service = get_auth_service()
         self.setup_ui()
         self.load_users()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz de usuario"""
         # Usar el layout ya existente de BaseModule
         main_layout = self.content_layout
@@ -48,7 +51,7 @@ class UserManagementModule(BaseModule):
         main_layout.addWidget(title)
 
         # Barra de herramientas
-        toolbar_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         self.refresh_btn = QPushButton("Actualizar")
         self.refresh_btn.clicked.connect(self.load_users)
@@ -66,7 +69,7 @@ class UserManagementModule(BaseModule):
         )
 
         # Configurar tabla
-        header = self.users_table.horizontalHeader()
+        _ = self.users_table.horizontalHeader()
         # Corrigiendo errores restantes en user_management_module
         # Aseguramos que header no sea None antes de usar setSectionResizeMode
         if header is not None:
@@ -77,7 +80,7 @@ class UserManagementModule(BaseModule):
         main_layout.addWidget(self.users_table)
 
         # Botones de acción
-        actions_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         self.add_user_btn = QPushButton("➕ Agregar Usuario")
         self.add_user_btn.setStyleSheet(
@@ -141,6 +144,8 @@ class UserManagementModule(BaseModule):
         main_layout.addLayout(actions_layout)
 
     def load_users(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga los usuarios en la tabla"""
         try:
             users = self.auth_service.users  # Usar la propiedad users
@@ -163,21 +168,22 @@ class UserManagementModule(BaseModule):
                 )
             # Log solo en modo DEBUG
             if logging.getLogger().isEnabledFor(logging.DEBUG):
-                logger.debug(f"Cargados {len(users)} usuarios en la tabla")
+                logger.debug("Cargados %s usuarios en la tabla", len(users))
         except Exception as e:
-            logger.error(f"Error al cargar usuarios: {e}")
+            logger.error("Error al cargar usuarios: %s", e)
             QMessageBox.warning(self, "Error", "Error al cargar los usuarios")
 
     def add_user(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el diálogo para agregar un nuevo usuario"""
-        from ui.dialogs.user_management_dialog import UserDialog
 
         dialog = UserDialog(self)
         if dialog.exec() == dialog.DialogCode.Accepted:
-            new_user = dialog.get_user_data()
+            _ = dialog.get_user_data()
             try:
                 # Validar campos requeridos
-                required_fields = {
+                _ = {
                     "name",
                     "role",
                     "email",
@@ -187,15 +193,15 @@ class UserManagementModule(BaseModule):
                 }
                 if not required_fields.issubset(new_user):
                     raise ValueError("Faltan campos requeridos para agregar usuario")
-                new_user_obj = User(
+                _ = User(
                     id=-1,
-                    username=new_user["username"],
+                    _ = new_user["username"],
                     name=new_user["name"],
-                    role=new_user["role"],
+                    _ = new_user["role"],
                     password=new_user["password"],
-                    email=new_user.get("email", ""),
+                    _ = new_user.get("email", ""),
                     phone=new_user.get("phone", ""),
-                    is_active=True,
+                    _ = True,
                 )
                 if new_user_obj.id is not None:
                     self.auth_service._users_cache[new_user_obj.id] = (
@@ -204,10 +210,12 @@ class UserManagementModule(BaseModule):
                 self.load_users()
                 QMessageBox.information(self, "Éxito", "Usuario agregado correctamente")
             except Exception as e:
-                logger.error(f"Error al agregar usuario: {e}")
+                logger.error("Error al agregar usuario: %s", e)
                 QMessageBox.warning(self, "Error", "No se pudo agregar el usuario")
 
     def edit_user(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Edita el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
@@ -219,12 +227,11 @@ class UserManagementModule(BaseModule):
         if item is not None and item.text():
             user_id = int(item.text())
             user = self.auth_service.get_user_by_id(user_id)
-            from ui.dialogs.user_management_dialog import UserDialog
 
             dialog = UserDialog(self, user)
             if dialog.exec() == dialog.DialogCode.Accepted:
                 updated_user_data = dialog.get_user_data()
-                updated_user = User(**updated_user_data)
+                _ = User(**updated_user_data)
                 try:
                     if updated_user.id is not None:
                         self.auth_service._users_cache[updated_user.id] = updated_user
@@ -233,7 +240,7 @@ class UserManagementModule(BaseModule):
                         self, "Éxito", "Usuario actualizado correctamente"
                     )
                 except Exception as e:
-                    logger.error(f"Error al actualizar usuario: {e}")
+                    logger.error("Error al actualizar usuario: %s", e)
                     QMessageBox.warning(
                         self, "Error", "No se pudo actualizar el usuario"
                     )
@@ -243,6 +250,8 @@ class UserManagementModule(BaseModule):
             )
 
     def delete_user(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Elimina el usuario seleccionado"""
         current_row = self.users_table.currentRow()
         if current_row < 0:
@@ -252,7 +261,7 @@ class UserManagementModule(BaseModule):
             return
         item = self.users_table.item(current_row, 0)
         if item is not None and item.text():
-            user_id = int(item.text())
+            _ = int(item.text())
             confirm = QMessageBox.question(
                 self,
                 "Confirmar Eliminación",
@@ -268,7 +277,7 @@ class UserManagementModule(BaseModule):
                         self, "Éxito", "Usuario eliminado correctamente"
                     )
                 except Exception as e:
-                    logger.error(f"Error al eliminar usuario: {e}")
+                    logger.error("Error al eliminar usuario: %s", e)
                     QMessageBox.warning(self, "Error", "No se pudo eliminar el usuario")
         else:
             QMessageBox.warning(
@@ -276,6 +285,8 @@ class UserManagementModule(BaseModule):
             )
 
     def refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza los datos del módulo"""
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logger.debug("Actualizando módulo de gestión de usuarios...")

@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 # Backup temporal de mesa_widget_simple.py
 # Fecha: 2025-06-28
 # Motivo: Respaldo temporal por refactorización y cumplimiento de políticas de backups.

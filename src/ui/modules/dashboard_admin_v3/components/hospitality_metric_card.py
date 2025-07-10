@@ -1,36 +1,37 @@
+from typing import Optional, Dict, List, Any
+from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer
+from .dashboard_metric_components import UltraModernMetricCard
+import logging
+
 """
 Tarjeta de métricas especializada para hostelería con datos reales
 COMPLETAMENTE AUTO-GESTIONADA - Se conecta directamente al RealDataManager
 """
 
-from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QProgressBar
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont
 
-from .dashboard_metric_components import UltraModernMetricCard
-import logging
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class HospitalityMetricCard(UltraModernMetricCard):
     """Tarjeta especializada para métricas hosteleras con datos reales - AUTO-GESTIONADA"""
 
     # Señal para cuando se actualiza la métrica
-    metric_updated = pyqtSignal(str, dict)
+    _ = pyqtSignal(str, dict)
 
     def __init__(
         self,
         metric_type,
-        data_manager=None,
+        _ = None,
         title="",
-        value="0",
+        _ = "0",
         unit="",
-        trend="+0.0%",
+        _ = "+0.0%",
         target=None,
-        metric_color=None,
+        _ = None,
         icon="",
-        parent=None,
+        _ = None,
     ):
 
         # Configuración específica por tipo de métrica hostelera
@@ -149,13 +150,13 @@ class HospitalityMetricCard(UltraModernMetricCard):
 
         # Inicializar la tarjeta base con los datos de configuración
         super().__init__(
-            title=self.config["title"],
+            _ = self.config["title"],
             value=value,
-            unit=self.config["unit"],
+            _ = self.config["unit"],
             trend=trend,
-            target=str(self.config.get("target", 0)),
+            _ = str(self.config.get("target", 0)),
             metric_type="info",  # Tipo base
-            icon=self.config["icon"],
+            _ = self.config["icon"],
             parent=parent,
         )
 
@@ -171,7 +172,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         if self.data_manager:
             self.data_manager.metric_updated.connect(self.on_metric_data_updated)
             self.data_manager.data_updated.connect(self.on_all_data_updated)
-            # logger.debug(f"Tarjeta {metric_type} conectada al RealDataManager")
+            # logger.debug("Tarjeta %s conectada al RealDataManager", metric_type)
 
         self.setup_hospitality_features()
 
@@ -184,6 +185,8 @@ class HospitalityMetricCard(UltraModernMetricCard):
         # )
 
     def start_auto_refresh(self, interval_ms=3000):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Iniciar actualización automática de datos"""
         if self.data_manager and not self.refresh_timer.isActive():
             self.refresh_timer.start(interval_ms)
@@ -193,12 +196,16 @@ class HospitalityMetricCard(UltraModernMetricCard):
             # )
 
     def stop_auto_refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Detener actualización automática"""
         if self.refresh_timer.isActive():
             self.refresh_timer.stop()
-            # logger.debug(f"Auto-refresh detenido para {self.metric_type}")
+            # logger.debug("Auto-refresh detenido para %s", self.metric_type)
 
     def auto_refresh_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualización automática de datos desde el RealDataManager"""
         if not self.data_manager or not self.auto_refresh_enabled:
             return
@@ -206,7 +213,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         try:
             # Obtener datos actualizados para esta métrica específica
             self.data_manager.fetch_all_real_data()
-            cache = getattr(self.data_manager, "_data_cache", {})
+            _ = getattr(self.data_manager, "_data_cache", {})
 
             # Buscar datos para esta métrica
             metric_data = cache.get(self.metric_type, {})
@@ -218,25 +225,31 @@ class HospitalityMetricCard(UltraModernMetricCard):
                 # )
 
         except Exception as e:
-            logger.error(f"Error en auto-refresh de {self.metric_type}: {e}")
+            logger.error("Error en auto-refresh de {self.metric_type}: %s", e)
 
     def on_metric_data_updated(self, metric_name, metric_data):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Callback cuando el RealDataManager actualiza datos de métricas"""
         if metric_name == self.metric_type:
             self.update_from_real_data(metric_data)
 
     def on_all_data_updated(self, all_data):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Callback cuando el RealDataManager actualiza todos los datos"""
         metric_data = all_data.get(self.metric_type, {})
         if metric_data:
             self.update_from_real_data(metric_data)
 
     def update_from_real_data(self, metric_data):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar la tarjeta usando datos reales del RealDataManager"""
         try:
-            value = metric_data.get("value", self.value)
+            _ = metric_data.get("value", self.value)
             trend = metric_data.get("trend", self.trend)
-            target = metric_data.get("target", self.target)
+            _ = metric_data.get("target", self.target)
 
             # Actualizar usando el método especializado de hostelería
             self.update_metric_data(value, trend, metric_data)
@@ -253,6 +266,8 @@ class HospitalityMetricCard(UltraModernMetricCard):
         self.setup_hospitality_features()
 
     def setup_hospitality_features(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar características específicas de hostelería"""
 
         # Agregar barra de progreso si hay objetivo
@@ -266,6 +281,8 @@ class HospitalityMetricCard(UltraModernMetricCard):
         self.setToolTip(self.config.get("description", ""))
 
     def add_progress_bar(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Agregar barra de progreso para métricas con objetivo"""
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
@@ -273,7 +290,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
         self.progress_bar.setFixedHeight(6)
 
         # Estilo de la barra de progreso
-        progress_style = f"""
+        _ = f"""
             QProgressBar {{
                 background: #E5E7EB;
                 border-radius: 3px;
@@ -290,9 +307,11 @@ class HospitalityMetricCard(UltraModernMetricCard):
         self.main_layout.addWidget(self.progress_bar)
 
     def apply_hospitality_styling(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilo específico de hostelería"""
         # Borde lateral con color de la métrica
-        hospitality_style = f"""
+        _ = f"""
             HospitalityMetricCard {{
                 border-left: 4px solid {self.config['color']};
                 border-radius: 12px;
@@ -306,6 +325,8 @@ class HospitalityMetricCard(UltraModernMetricCard):
         self.setStyleSheet(hospitality_style)
 
     def update_metric_data(self, value, trend=None, additional_data=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar datos de la métrica con información específica de hostelería"""
         try:
             # Usar el método de la clase base que ya maneja la lógica básica
@@ -323,7 +344,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
                 if target > 0:
                     try:
                         # Convertir valor a float para cálculo
-                        numeric_value = float(
+                        _ = float(
                             str(value).replace(",", "").replace("€", "").strip()
                         )
                         progress_value = min(100, int((numeric_value / target) * 100))
@@ -343,7 +364,7 @@ class HospitalityMetricCard(UltraModernMetricCard):
                 },
             )
 
-            # logger.debug(f"Métrica hostelera {self.metric_type} actualizada: {value}")
+            # logger.debug("Métrica hostelera {self.metric_type} actualizada: %s", value)
 
         except Exception as e:
             logger.error(
@@ -351,6 +372,8 @@ class HospitalityMetricCard(UltraModernMetricCard):
             )
 
     def get_metric_info(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener información completa de la métrica"""
         return {
             "type": self.metric_type,
@@ -370,24 +393,28 @@ class HospitalityMetricCard(UltraModernMetricCard):
         }
 
     def set_target(self, new_target):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar objetivo de la métrica"""
         self.config["target"] = new_target
         if hasattr(self, "progress_bar"):
             # Recalcular progreso con nuevo objetivo
             self.update_metric_data(self.value)
 
-        logger.info(f"Objetivo actualizado para {self.metric_type}: {new_target}")
+        logger.info("Objetivo actualizado para {self.metric_type}: %s", new_target)
 
     def is_target_achieved(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verificar si se ha alcanzado el objetivo"""
         if "target" not in self.config:
             return None
 
         try:
-            numeric_value = float(
+            _ = float(
                 str(self.value).replace(",", "").replace("€", "").strip()
             )
-            target = self.config["target"]
+            _ = self.config["target"]
 
             # Para métricas donde menor es mejor (tiempo_espera)
             if self.metric_type in ["tiempo_espera"]:
@@ -399,12 +426,14 @@ class HospitalityMetricCard(UltraModernMetricCard):
             return False
 
     def get_performance_status(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener estado de rendimiento de la métrica"""
         if not self.is_target_achieved():
             return "below_target"
 
         try:
-            numeric_value = float(
+            _ = float(
                 str(self.value).replace(",", "").replace("€", "").strip()
             )
             target = self.config["target"]
@@ -420,6 +449,8 @@ class HospitalityMetricCard(UltraModernMetricCard):
             return "unknown"
 
     def cleanup(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpiar recursos y desconectar señales"""
         try:
             self.stop_auto_refresh()
@@ -433,11 +464,12 @@ class HospitalityMetricCard(UltraModernMetricCard):
                 # )
 
         except Exception as e:
-            logger.warning(f"Error en cleanup de {self.metric_type}: {e}")
+            logger.warning("Error en cleanup de {self.metric_type}: %s", e)
 
     def __del__(self):
         """Destructor para asegurar limpieza de recursos"""
         try:
             self.cleanup()
-        except:
+        except Exception as e:
+            logging.error("Error: %s", e)
             pass  # Evitar errores en destructor

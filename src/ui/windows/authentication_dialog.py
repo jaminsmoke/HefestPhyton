@@ -1,10 +1,14 @@
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, QTimer
+from services.auth_service import get_auth_service
+
 """
 Módulo de inicio de sesión para la aplicación Hefest.
 Incluye efectos visuales modernos y animaciones.
 """
 
-import logging
-from PyQt6.QtWidgets import (
     QDialog,
     QVBoxLayout,
     QLabel,
@@ -15,19 +19,16 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QCheckBox,
 )
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QIcon, QPixmap, QFont, QPalette, QColor
 
-from utils.animation_helper import AnimationHelper, EffectsHelper
-from services.auth_service import get_auth_service
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class LoginDialog(QDialog):
     """Diálogo de inicio de sesión con diseño corporativo integrado"""
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setWindowTitle("Hefest - Inicio de Sesión")
         self.setFixedSize(440, 520)  # Aumentamos altura para mejor espaciado
@@ -91,6 +92,8 @@ class LoginDialog(QDialog):
         self.setup_ui()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # Layout principal con márgenes amplios
         layout = QVBoxLayout(self)
         layout.setContentsMargins(50, 30, 50, 30)  # Reducimos márgenes superiores
@@ -199,7 +202,9 @@ class LoginDialog(QDialog):
         self.password_input.returnPressed.connect(self.login_btn.click)
 
     def try_login(self):
-        username = self.username_input.text().strip()
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = self.username_input.text().strip()
         password = self.password_input.text().strip()
 
         # Limpiar mensaje de error anterior
@@ -210,21 +215,21 @@ class LoginDialog(QDialog):
             return
 
         try:
-            auth_service = get_auth_service()
-            logger.info(f"Intentando login con usuario: '{username}'")
+            _ = get_auth_service()
+            logger.info("Intentando login con usuario: '%s'", username)
 
             # Usar el método de login básico
             if auth_service.authenticate_basic_login(username, password):
-                logger.info(f"Login básico exitoso para: {username}")
+                logger.info("Login básico exitoso para: %s", username)
                 self.accept()
             else:
-                logger.warning(f"Login básico fallido para: {username}")
+                logger.warning("Login básico fallido para: %s", username)
                 self.error_label.setText(
                     "Usuario o contraseña incorrectos.\nVerifique las credenciales de prueba."
                 )
 
         except Exception as e:
-            logger.error(f"Error durante el login: {e}")
+            logger.error("Error durante el login: %s", e)
             self.error_label.setText(f"Error de conexión: {str(e)}")
 
     # Eliminado keyPressEvent para evitar doble trigger de login

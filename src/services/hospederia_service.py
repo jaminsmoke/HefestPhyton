@@ -9,7 +9,7 @@ from datetime import datetime, date
 
 from .base_service import BaseService
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 @dataclass
@@ -44,11 +44,14 @@ class HospederiaService(BaseService):
     """Servicio para la gestión de hospedería"""
 
     def __init__(self, db_manager=None):
+        """TODO: Add docstring"""
         super().__init__(db_manager)
         self._habitaciones_cache = []
         self._load_habitaciones()
 
     def get_service_name(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna el nombre de este servicio"""
         return "HospederiaService"
 
@@ -71,10 +74,14 @@ class HospederiaService(BaseService):
             ]
 
     def get_habitaciones(self) -> List[Habitacion]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las habitaciones"""
         return self._habitaciones_cache.copy()
 
     def get_habitacion_by_id(self, habitacion_id: int) -> Optional[Habitacion]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene una habitación por su ID"""
         for hab in self._habitaciones_cache:
             if hab.id == habitacion_id:
@@ -82,6 +89,8 @@ class HospederiaService(BaseService):
         return None
 
     def get_habitaciones_by_estado(self, estado: str) -> List[Habitacion]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene habitaciones filtradas por estado"""
         return [hab for hab in self._habitaciones_cache if hab.estado == estado]
 
@@ -92,21 +101,23 @@ class HospederiaService(BaseService):
         estados_validos = ["libre", "ocupada", "limpieza", "mantenimiento", "reservada"]
 
         if nuevo_estado not in estados_validos:
-            logger.error(f"Estado inválido: {nuevo_estado}")
+            logger.error("Estado inválido: %s", nuevo_estado)
             return False
 
         for hab in self._habitaciones_cache:
             if hab.id == habitacion_id:
                 hab.estado = nuevo_estado
-                logger.info(f"Habitación {hab.numero} cambió a estado: {nuevo_estado}")
+                logger.info("Habitación {hab.numero} cambió a estado: %s", nuevo_estado)
                 return True
 
-        logger.error(f"Habitación con ID {habitacion_id} no encontrada")
+        logger.error("Habitación con ID %s no encontrada", habitacion_id)
         return False
 
     def get_estadisticas_ocupacion(self) -> Dict[str, int]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene estadísticas de ocupación"""
-        stats = {
+        _ = {
             "total": len(self._habitaciones_cache),
             "libres": 0,
             "ocupadas": 0,
@@ -122,11 +133,13 @@ class HospederiaService(BaseService):
         return stats
 
     def get_rooms(self) -> List[Dict]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene habitaciones en formato para el módulo UI"""
-        rooms = []
+        _ = []
         for hab in self._habitaciones_cache:
             # Mapear estados a formato UI
-            status_map = {
+            _ = {
                 "libre": "available",
                 "ocupada": "occupied",
                 "limpieza": "cleaning",
@@ -147,9 +160,11 @@ class HospederiaService(BaseService):
         return rooms
 
     def get_reservations(self) -> List[Dict]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene reservas en formato para el módulo UI"""
         # Datos de prueba para reservas
-        reservations = [
+        _ = [
             {
                 "id": 1,
                 "client_name": "Juan Pérez",
@@ -178,10 +193,12 @@ class HospederiaService(BaseService):
         return reservations
 
     def create_reservation(self, reservation_data: Dict) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea una nueva reserva"""
         try:
             # Validar datos requeridos
-            required_fields = [
+            _ = [
                 "client_name",
                 "room_number",
                 "check_in_date",
@@ -189,14 +206,14 @@ class HospederiaService(BaseService):
             ]
             for field in required_fields:
                 if field not in reservation_data:
-                    logger.error(f"Campo requerido faltante: {field}")
+                    logger.error("Campo requerido faltante: %s", field)
                     return False
 
             # Buscar habitación por número
-            room_id = None
+            _ = None
             for hab in self._habitaciones_cache:
                 if hab.numero == reservation_data["room_number"]:
-                    room_id = hab.id
+                    _ = hab.id
                     break
 
             if not room_id:
@@ -221,10 +238,12 @@ class HospederiaService(BaseService):
             return True
 
         except Exception as e:
-            logger.error(f"Error al crear reserva: {e}")
+            logger.error("Error al crear reserva: %s", e)
             return False
 
     def perform_checkin(self, checkin_data: Dict) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Realiza check-in de una reserva"""
         try:
             room_number = checkin_data.get("room_number")
@@ -236,20 +255,22 @@ class HospederiaService(BaseService):
                 if hab.numero == room_number:
                     if hab.estado == "reservada":
                         self.actualizar_estado_habitacion(hab.id, "ocupada")
-                        logger.info(f"Check-in realizado en habitación {room_number}")
+                        logger.info("Check-in realizado en habitación %s", room_number)
                         return True
                     break
 
             return False
 
         except Exception as e:
-            logger.error(f"Error en check-in: {e}")
+            logger.error("Error en check-in: %s", e)
             return False
 
     def perform_checkout(self, checkout_data: Dict) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Realiza check-out de una habitación"""
         try:
-            room_number = checkout_data.get("room_number")
+            _ = checkout_data.get("room_number")
             cleaning_required = checkout_data.get("cleaning_required", True)
 
             if not room_number:
@@ -261,12 +282,12 @@ class HospederiaService(BaseService):
                     if hab.estado == "ocupada":
                         new_status = "limpieza" if cleaning_required else "libre"
                         self.actualizar_estado_habitacion(hab.id, new_status)
-                        logger.info(f"Check-out realizado en habitación {room_number}")
+                        logger.info("Check-out realizado en habitación %s", room_number)
                         return True
                     break
 
             return False
 
         except Exception as e:
-            logger.error(f"Error en check-out: {e}")
+            logger.error("Error en check-out: %s", e)
             return False

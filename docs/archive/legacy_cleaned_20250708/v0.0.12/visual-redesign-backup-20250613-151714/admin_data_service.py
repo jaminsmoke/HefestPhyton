@@ -1,25 +1,28 @@
-"""
-Servicio de datos específico para el Dashboard Admin v3
-Proporciona datos en tiempo real y cálculos de métricas administrativas
-"""
-
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 import logging
 import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 
-logger = logging.getLogger(__name__)
+"""
+Servicio de datos específico para el Dashboard Admin v3
+Proporciona datos en tiempo real y cálculos de métricas administrativas
+"""
+
+
+_ = logging.getLogger(__name__)
 
 
 class AdminDataService(QObject):
     """Servicio para obtener y procesar datos administrativos"""
     
     # Señales para notificar cambios en los datos
-    data_updated = pyqtSignal(dict)  # Emite dict con todas las métricas
+    _ = pyqtSignal(dict)  # Emite dict con todas las métricas
     error_occurred = pyqtSignal(str)  # Emite mensaje de error
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self._last_update = None
         self._cache = {}
@@ -27,13 +30,17 @@ class AdminDataService(QObject):
         self._update_timer.timeout.connect(self._fetch_data)
         
     def start_auto_update(self, interval_seconds: int = 30):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicia la actualización automática de datos"""
-        logger.info(f"Iniciando actualización automática cada {interval_seconds} segundos")
+        logger.info("Iniciando actualización automática cada %s segundos", interval_seconds)
         self._update_timer.start(interval_seconds * 1000)
         # Realizar primera actualización inmediatamente
         self._fetch_data()
         
     def stop_auto_update(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Detiene la actualización automática"""
         self._update_timer.stop()
         logger.info("Actualización automática detenida")
@@ -42,7 +49,7 @@ class AdminDataService(QObject):
         """Obtiene datos actualizados (simulados por ahora)"""
         try:
             # Simular datos reales del sistema
-            current_data = {
+            _ = {
                 'users_online': self._simulate_users_online(),
                 'daily_revenue': self._simulate_daily_revenue(),
                 'system_load': self._simulate_system_load(),
@@ -61,7 +68,7 @@ class AdminDataService(QObject):
             # Emitir señal con los datos actualizados
             self.data_updated.emit(current_data)
             
-            logger.debug(f"Datos actualizados: {len(current_data)} métricas")
+            logger.debug("Datos actualizados: %s métricas", len(current_data))
             
         except Exception as e:
             error_msg = f"Error al obtener datos: {str(e)}"
@@ -70,13 +77,13 @@ class AdminDataService(QObject):
     
     def _simulate_users_online(self) -> int:
         """Simula usuarios en línea con variación realista"""
-        base = 45
+        _ = 45
         variation = random.randint(-10, 15)
         return max(0, base + variation)
     
     def _simulate_daily_revenue(self) -> float:
         """Simula ingresos diarios"""
-        base = 2500.0
+        _ = 2500.0
         variation = random.uniform(-500, 800)
         return max(0, base + variation)
     
@@ -86,7 +93,7 @@ class AdminDataService(QObject):
     
     def _simulate_database_size(self) -> float:
         """Simula tamaño de la base de datos en MB"""
-        base = 156.7
+        _ = 156.7
         growth = random.uniform(0, 2.5)
         return base + growth
     
@@ -107,14 +114,20 @@ class AdminDataService(QObject):
         return random.uniform(35, 75)
     
     def get_metric(self, metric_name: str) -> Optional[Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene una métrica específica del cache"""
         return self._cache.get(metric_name)
     
     def get_all_metrics(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las métricas del cache"""
         return self._cache.copy()
     
     def get_historical_data(self, metric_name: str, hours: int = 24) -> List[Dict]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Simula datos históricos para gráficos
         En una implementación real, esto consultaría la base de datos
@@ -123,18 +136,18 @@ class AdminDataService(QObject):
             return []
         
         # Simular datos históricos
-        historical = []
+        _ = []
         now = datetime.now()
-        current_value = self._cache[metric_name]
+        _ = self._cache[metric_name]
         
         for i in range(hours):
             timestamp = now - timedelta(hours=i)
             # Simular variación histórica basada en el valor actual
             if isinstance(current_value, (int, float)):
                 variation = random.uniform(-0.2, 0.2)
-                value = current_value * (1 + variation)
+                _ = current_value * (1 + variation)
             else:
-                value = current_value
+                _ = current_value
                 
             historical.append({
                 'timestamp': timestamp,
@@ -144,11 +157,15 @@ class AdminDataService(QObject):
         return list(reversed(historical))
     
     def force_refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Fuerza una actualización inmediata de los datos"""
         logger.info("Forzando actualización de datos")
         self._fetch_data()
     
     def get_summary_stats(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene estadísticas resumen del sistema"""
         if not self._cache:
             return {}

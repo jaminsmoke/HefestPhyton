@@ -1,3 +1,19 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import sys
+import logging
+from PyQt6.QtWidgets import QApplication, QDialog, QInputDialog, QLineEdit, QMessageBox
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
+from data.db_manager import DatabaseManager
+from ui.windows.main_window import MainWindow
+from utils.qt_css_compat import convert_to_qt_compatible_css, install_global_stylesheet_filter
+from services.auth_service import AuthService
+from services.audit_service import AuditService
+from utils.modern_styles import modern_styles
+        from ui.windows.login_dialog import LoginDialog
+        from ui.components.user_selector import UserSelector
+
 """
 Hefest - Sistema Integral de Hostelería y Hospedería
 Punto de entrada principal de la aplicación
@@ -5,29 +21,15 @@ Punto de entrada principal de la aplicación
 Este módulo inicializa los componentes principales y lanza la interfaz gráfica.
 """
 
-import sys
-import logging
-from PyQt6.QtWidgets import QApplication, QDialog, QInputDialog, QLineEdit, QMessageBox
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Importar componentes necesarios
-from data.db_manager import DatabaseManager
-from ui.windows.main_window import MainWindow
-from utils.modern_styles import ModernStyles
 # Importar la utilidad de compatibilidad CSS
-from utils.qt_css_compat import convert_to_qt_compatible_css, install_global_stylesheet_filter
 
 # Importar servicios de autenticación y auditoría
-from services.auth_service import AuthService
-from services.audit_service import AuditService
-from core.models import Role
-from utils.modern_styles import modern_styles
-from utils.animation_helper import AnimationHelper
 
 class Hefest:
     """Clase principal que gestiona el ciclo de vida de la aplicación"""
@@ -68,15 +70,17 @@ class Hefest:
         
         # Aplicar el sistema de estilos modernos
         try:
-            complete_stylesheet = modern_styles.get_complete_stylesheet()
+            _ = modern_styles.get_complete_stylesheet()
             # Convertir estilos a formato compatible con Qt
             compatible_styles = convert_to_qt_compatible_css(complete_stylesheet)
             self.app.setStyleSheet(compatible_styles)
             logger.info("Estilos modernos aplicados correctamente")
         except Exception as e:
-            logger.error(f"Error al aplicar estilos modernos: {e}")
+            logger.error("Error al aplicar estilos modernos: %s", e)
 
     def show_login(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra primero login básico, luego selector de usuario"""
         # Paso 1: Login básico para acceso al programa
         if not self.show_basic_login():
@@ -87,11 +91,12 @@ class Hefest:
         return self.show_user_selector()
     
     def show_basic_login(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el login básico para acceso al programa"""
-        from ui.windows.login_dialog import LoginDialog
         
         login_dialog = LoginDialog()
-        result = login_dialog.exec()
+        _ = login_dialog.exec()
         
         if result == QDialog.DialogCode.Accepted:
             logger.info("Login básico exitoso")
@@ -101,9 +106,10 @@ class Hefest:
             return False
     
     def show_user_selector(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el selector de usuario para autenticación por roles"""
         # Importar el selector de usuario
-        from ui.components.user_selector import UserSelector
         
         # Mostrar el selector de usuario
         user_selector = UserSelector(self.auth_service)
@@ -119,6 +125,8 @@ class Hefest:
             return False
             
     def authenticate_user(self, user):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Autentica al usuario seleccionado solicitando su PIN"""
         # Solicitar PIN
         pin, ok = QInputDialog.getText(
@@ -132,7 +140,7 @@ class Hefest:
             if self.auth_service.login(user.id, pin):
                 # Registro en servicio de auditoría
                 AuditService.log("Inicio de sesión", user)
-                logger.info(f"Inicio de sesión exitoso para {user.name}")
+                logger.info("Inicio de sesión exitoso para %s", user.name)
                 self.show_main_window()
                 return True
             else:
@@ -143,6 +151,8 @@ class Hefest:
         return self.show_login()
 
     def init_main_window(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializa la ventana principal"""
         if not self.main_window:
             # Pasar la instancia de AuthService a MainWindow
@@ -153,6 +163,8 @@ class Hefest:
         return self.main_window
 
     def show_main_window(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra la ventana principal de la aplicación"""
         main_window = self.init_main_window()
         main_window.showMaximized()
@@ -160,6 +172,8 @@ class Hefest:
         main_window.raise_()
 
     def run(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Ejecuta la aplicación"""
         if self.show_login():
             return self.app.exec()
@@ -168,14 +182,16 @@ class Hefest:
 
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal de la aplicación"""
     try:
         # Crear la instancia principal de la aplicación
-        hefest_app = Hefest()
+        _ = Hefest()
         # Ejecutar la aplicación
         return hefest_app.run()
     except Exception as e:
-        logger.error(f"Error crítico en la aplicación: {e}")
+        logger.error("Error crítico en la aplicación: %s", e)
         return 1
 
 

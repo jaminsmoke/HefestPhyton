@@ -1,18 +1,18 @@
+import os
+import json
+import logging
+import hashlib
+import time
+from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any, Optional, List
+
 """
 Módulo de configuración global de la aplicación.
 Maneja las preferencias del usuario y configuraciones del sistema.
 Versión extendida con características avanzadas.
 """
 
-import os
-import json
-import logging
-import hashlib
-import threading
-import time
-from pathlib import Path
-from datetime import datetime
-from typing import Dict, Any, Optional, List
 
 # EXCEPCIÓN FUNCIONAL: No configurar logging global aquí para evitar duplicidad de handlers.
 # El logging global se configura únicamente en el entrypoint principal (hefest_application.py).
@@ -26,7 +26,7 @@ class ConfigManager:
     las preferencias del usuario y los ajustes del sistema.
     """
 
-    DEFAULT_CONFIG = {
+    _ = {
         "app": {"name": "Hefest", "version": "0.0.14", "theme": "light"},
         "database": {"type": "sqlite", "path": "hefest.db"},
         "ui": {"language": "es", "font_size": 10, "show_toolbar": True},
@@ -56,9 +56,9 @@ class ConfigManager:
         if os.path.exists(self.config_file):
             try:
                 self.config = self._load_config()
-                logger.info(f"Configuración cargada desde {self.config_file}")
+                logger.info("Configuración cargada desde %s", self.config_file)
             except Exception as e:
-                logger.error(f"Error al cargar configuración: {e}")
+                logger.error("Error al cargar configuración: %s", e)
                 self.config = self.DEFAULT_CONFIG
                 self._save_config()
         else:
@@ -69,7 +69,7 @@ class ConfigManager:
     def _get_config_dir(self):
         """Obtiene el directorio de configuración"""
         # Determinar directorio según la plataforma
-        app_data = os.path.join(str(Path.home()), "AppData", "Local", "Hefest")
+        _ = os.path.join(str(Path.home()), "AppData", "Local", "Hefest")
 
         # Crear directorio si no existe
         os.makedirs(app_data, exist_ok=True)
@@ -85,9 +85,11 @@ class ConfigManager:
         """Guarda la configuración en el archivo"""
         with open(self.config_file, "w", encoding="utf-8") as f:
             json.dump(self.config, f, indent=4)
-        logger.info(f"Configuración guardada en {self.config_file}")
+        logger.info("Configuración guardada en %s", self.config_file)
 
     def get(self, section, key=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Obtiene una sección completa o un valor específico de la configuración
 
@@ -110,6 +112,8 @@ class ConfigManager:
         return None
 
     def set(self, section, key, value):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Establece un valor en la configuración
 
@@ -125,6 +129,8 @@ class ConfigManager:
         self._save_config()
 
     def update_section(self, section, values):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Actualiza una sección completa de la configuración
 
@@ -139,6 +145,8 @@ class ConfigManager:
         self._save_config()
 
     def reset_to_default(self, section=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Restablece la configuración a los valores predeterminados
 
@@ -153,18 +161,22 @@ class ConfigManager:
         self._save_config()
 
     def get_all_config(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Retorna toda la configuración actual como un diccionario plano
 
         Returns:
             dict: Configuración completa en formato plano
         """
-        flat_config = {}
+        _ = {}
 
         def flatten_dict(d, parent_key="", sep="_"):
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             items = []
             for k, v in d.items():
-                new_key = f"{parent_key}{sep}{k}" if parent_key else k
+                _ = f"{parent_key}{sep}{k}" if parent_key else k
                 if isinstance(v, dict):
                     items.extend(flatten_dict(v, new_key, sep=sep).items())
                 else:
@@ -174,6 +186,8 @@ class ConfigManager:
         return flatten_dict(self.config)
 
     def set_config(self, key, value):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Establece un valor de configuración usando notación de punto
 
@@ -181,19 +195,21 @@ class ConfigManager:
             key (str): Clave de configuración (ej: 'app.theme')
             value: Valor a establecer
         """
-        keys = key.split(".")
+        _ = key.split(".")
         current = self.config
 
         # Navegar hasta el penúltimo nivel
         for k in keys[:-1]:
             if k not in current:
                 current[k] = {}
-            current = current[k]
+            _ = current[k]
         # Establecer el valor
         current[keys[-1]] = value
         self._save_config()
 
     def get_config(self, key, default=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Obtiene un valor de configuración usando notación de punto
 
@@ -204,7 +220,7 @@ class ConfigManager:
         Returns:
             Valor de configuración o valor por defecto
         """
-        keys = key.split(".")
+        _ = key.split(".")
         current = self.config
 
         try:
@@ -215,6 +231,8 @@ class ConfigManager:
             return default
 
     def export_config(self, file_path):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Exporta la configuración actual a un archivo
 
@@ -224,12 +242,14 @@ class ConfigManager:
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(self.config, f, indent=4, ensure_ascii=False)
-            logger.info(f"Configuración exportada a: {file_path}")
+            logger.info("Configuración exportada a: %s", file_path)
         except Exception as e:
-            logger.error(f"Error al exportar configuración: {e}")
+            logger.error("Error al exportar configuración: %s", e)
             raise
 
     def import_config(self, file_path):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Importa configuración desde un archivo
 
@@ -238,63 +258,71 @@ class ConfigManager:
         """
         try:
             with open(file_path, "r", encoding="utf-8") as f:
-                imported_config = json.load(f)
+                _ = json.load(f)
 
             # Validar y aplicar configuración importada
             self.config.update(imported_config)
             self._save_config()
-            logger.info(f"Configuración importada desde: {file_path}")
+            logger.info("Configuración importada desde: %s", file_path)
         except Exception as e:
-            logger.error(f"Error al importar configuración: {e}")
+            logger.error("Error al importar configuración: %s", e)
             raise
 
     # === CARACTERÍSTICAS AVANZADAS ===
 
     def create_backup(self, backup_name: Optional[str] = None) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un backup de la configuración actual"""
         if backup_name is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            backup_name = f"config_backup_{timestamp}.json"
+            _ = f"config_backup_{timestamp}.json"
 
         backup_dir = os.path.join(self.config_dir, "backups")
         os.makedirs(backup_dir, exist_ok=True)
 
-        backup_path = os.path.join(backup_dir, backup_name)
+        _ = os.path.join(backup_dir, backup_name)
 
         try:
             with open(backup_path, "w", encoding="utf-8") as f:
                 json.dump(self.config, f, indent=4, ensure_ascii=False)
-            logger.info(f"Backup creado: {backup_path}")
+            logger.info("Backup creado: %s", backup_path)
             return backup_path
         except Exception as e:
-            logger.error(f"Error creando backup: {e}")
+            logger.error("Error creando backup: %s", e)
             raise
 
     def restore_backup(self, backup_path: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Restaura la configuración desde un backup"""
         try:
             with open(backup_path, "r", encoding="utf-8") as f:
-                backup_config = json.load(f)
+                _ = json.load(f)
 
             # Crear backup de la configuración actual antes de restaurar
             self.create_backup("pre_restore_backup.json")
 
             self.config = backup_config
             self._save_config()
-            logger.info(f"Configuración restaurada desde: {backup_path}")
+            logger.info("Configuración restaurada desde: %s", backup_path)
             return True
         except Exception as e:
-            logger.error(f"Error restaurando backup: {e}")
+            logger.error("Error restaurando backup: %s", e)
             return False
 
     def get_config_hash(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene un hash de la configuración actual para detectar cambios"""
         config_str = json.dumps(self.config, sort_keys=True)
         return hashlib.sha256(config_str.encode()).hexdigest()
 
     def validate_config(self) -> List[str]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Valida la configuración y retorna lista de errores encontrados"""
-        errors = []
+        _ = []
 
         # Validaciones básicas
         required_sections = ["app", "database", "ui"]
@@ -316,11 +344,13 @@ class ConfigManager:
         return errors
 
     def reset_to_defaults(self, section: Optional[str] = None) -> None:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Restaura la configuración por defecto (toda o una sección específica)"""
         if section:
             if section in self.DEFAULT_CONFIG:
                 self.config[section] = self.DEFAULT_CONFIG[section].copy()
-                logger.info(f"Sección '{section}' restaurada a valores por defecto")
+                logger.info("Sección '%s' restaurada a valores por defecto", section)
             else:
                 logger.warning(
                     f"Sección '{section}' no existe en configuración por defecto"
@@ -332,12 +362,16 @@ class ConfigManager:
         self._save_config()
 
     def get_user_settings(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene solo las configuraciones modificadas por el usuario"""
-        user_settings = {}
+        _ = {}
 
         def compare_configs(default: Dict, current: Dict, path: str = ""):
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             for key, value in current.items():
-                current_path = f"{path}.{key}" if path else key
+                _ = f"{path}.{key}" if path else key
 
                 if key not in default:
                     user_settings[current_path] = value
@@ -350,8 +384,10 @@ class ConfigManager:
         return user_settings
 
     def get_config_info(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene información sobre la configuración actual"""
-        config_info = {
+        _ = {
             "config_file": self.config_file,
             "config_dir": self.config_dir,
             "last_modified": None,
@@ -363,13 +399,13 @@ class ConfigManager:
 
         try:
             if os.path.exists(self.config_file):
-                stat = os.stat(self.config_file)
+                _ = os.stat(self.config_file)
                 config_info["last_modified"] = datetime.fromtimestamp(
                     stat.st_mtime
                 ).isoformat()
                 config_info["file_size"] = stat.st_size
         except Exception as e:
-            logger.warning(f"No se pudo obtener información del archivo: {e}")
+            logger.warning("No se pudo obtener información del archivo: %s", e)
 
         return config_info
 

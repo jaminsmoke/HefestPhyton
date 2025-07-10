@@ -1,3 +1,15 @@
+from typing import Optional, Dict, List, Any
+import logging
+import os
+import sys
+import subprocess
+import platform
+import shutil
+from pathlib import Path
+            import pip
+            import winshell
+            from win32com.client import Dispatch
+
 #!/usr/bin/env python3
 """
 Instalador Avanzado para Hefest
@@ -11,25 +23,18 @@ Instalador inteligente que detecta el sistema y configura automáticamente:
 - Iconos del sistema
 """
 
-import os
-import sys
-import subprocess
-import platform
-import shutil
-import json
-import sqlite3
-from pathlib import Path
-import requests
-import zipfile
 
 class HefestInstaller:
     def __init__(self):
+        """TODO: Add docstring"""
         self.system = platform.system()
         self.python_version = sys.version_info
         self.install_dir = Path.home() / "HEFEST"
         self.errors = []
         
     def check_requirements(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica requisitos del sistema."""
         print("🔍 Verificando requisitos del sistema...")
         
@@ -41,12 +46,12 @@ class HefestInstaller:
         try:
             subprocess.run(["git", "--version"], capture_output=True, check=True)
             print("✅ Git disponible")
-        except:
+        except Exception as e:
+            logging.error("Error: %s", e)
             print("⚠️ Git no encontrado (opcional)")
             
         # Pip
         try:
-            import pip
             print("✅ Pip disponible")
         except ImportError:
             self.errors.append("pip no está instalado")
@@ -54,40 +59,44 @@ class HefestInstaller:
         return len(self.errors) == 0
     
     def create_virtual_environment(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea entorno virtual dedicado."""
-        venv_path = self.install_dir / ".venv"
+        _ = self.install_dir / ".venv"
         
-        print(f"🐍 Creando entorno virtual en {venv_path}")
+        print("🐍 Creando entorno virtual en %s" % venv_path)
         subprocess.run([sys.executable, "-m", "venv", str(venv_path)])
         
         # Activar venv y actualizar pip
         if self.system == "Windows":
-            python_exe = venv_path / "Scripts" / "python.exe"
+            _ = venv_path / "Scripts" / "python.exe"
             pip_exe = venv_path / "Scripts" / "pip.exe"
         else:
-            python_exe = venv_path / "bin" / "python"
+            _ = venv_path / "bin" / "python"
             pip_exe = venv_path / "bin" / "pip"
             
         subprocess.run([str(pip_exe), "install", "--upgrade", "pip"])
         return python_exe, pip_exe
         
     def download_hefest(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Descarga la última versión de Hefest."""
         print("📥 Descargando Hefest...")
         
         # Para desarrollo, copiar archivos locales
         # En producción, descargar desde GitHub releases
-        source_dir = Path(__file__).parent.parent
+        _ = Path(__file__).parent.parent
         
         # Copiar archivos esenciales
-        essential_files = [
+        _ = [
             "src/", "data/", "config/", "assets/",
             "main.py", "pyproject.toml", "requirements.txt",
             "README.md", "LICENSE"
         ]
         
         for item in essential_files:
-            src = source_dir / item
+            _ = source_dir / item
             dst = self.install_dir / item
             
             if src.is_dir():
@@ -99,6 +108,8 @@ class HefestInstaller:
         print("✅ Archivos copiados")
         
     def install_dependencies(self, pip_exe):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Instala dependencias de Python."""
         print("📦 Instalando dependencias...")
         
@@ -108,19 +119,23 @@ class HefestInstaller:
         print("✅ Dependencias instaladas")
         
     def setup_database(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la base de datos inicial."""
         print("🗃️ Configurando base de datos...")
         
-        db_path = self.install_dir / "data" / "hefest.db"
+        _ = self.install_dir / "data" / "hefest.db"
         init_script = self.install_dir / "data" / "init_db.py"
         
         if init_script.exists():
             subprocess.run([sys.executable, str(init_script)], 
-                         cwd=str(self.install_dir))
+                         _ = str(self.install_dir))
             
         print("✅ Base de datos configurada")
         
     def create_shortcuts(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea accesos directos del sistema."""
         print("🔗 Creando accesos directos...")
         
@@ -134,12 +149,10 @@ class HefestInstaller:
     def _create_windows_shortcuts(self):
         """Crea shortcuts en Windows."""
         try:
-            import winshell
-            from win32com.client import Dispatch
             
             # Desktop shortcut
             desktop = winshell.desktop()
-            shortcut_path = os.path.join(desktop, "HEFEST.lnk")
+            _ = os.path.join(desktop, "HEFEST.lnk")
             
             shell = Dispatch('WScript.Shell')
             shortcut = shell.CreateShortCut(shortcut_path)
@@ -150,8 +163,8 @@ class HefestInstaller:
             
             print("✅ Acceso directo en escritorio creado")
             
-        except ImportError:
-            print("⚠️ No se pudieron crear accesos directos (winshell no disponible)")
+        except Exception as e:
+    logging.error("⚠️ No se pudieron crear accesos directos (winshell no disponible)")
             
     def _create_linux_shortcuts(self):
         """Crea .desktop file en Linux."""
@@ -177,14 +190,13 @@ Categories=Office;
         print("⚠️ Shortcuts en macOS no implementados aún")
         
     def create_uninstaller(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea script de desinstalación."""
-        uninstaller_content = f"""#!/usr/bin/env python3
-import shutil
-import os
-from pathlib import Path
+        _ = f"""#!/usr/bin/env python3
 
 install_dir = Path("{self.install_dir}")
-print(f"Desinstalando HEFEST de {{install_dir}}")
+print("Desinstalando HEFEST de {%s}" % install_dir)
 
 # Eliminar directorio completo
 if install_dir.exists():
@@ -203,16 +215,18 @@ input("Presiona Enter para continuar...")
         print("✅ Desinstalador creado")
         
     def run_installation(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Ejecuta proceso completo de instalación."""
         print("🚀 Iniciando instalación de HEFEST...")
-        print(f"📁 Directorio de instalación: {self.install_dir}")
+        print("📁 Directorio de instalación: %s" % self.install_dir)
         
         try:
             # Verificar requisitos
             if not self.check_requirements():
                 print("❌ Requisitos no cumplidos:")
                 for error in self.errors:
-                    print(f"  - {error}")
+                    print("  - %s" % error)
                 return False
                 
             # Crear directorio
@@ -237,22 +251,24 @@ input("Presiona Enter para continuar...")
             self.create_uninstaller()
             
             print("🎉 ¡Instalación completada exitosamente!")
-            print(f"📍 HEFEST instalado en: {self.install_dir}")
+            print("📍 HEFEST instalado en: %s" % self.install_dir)
             print("🖥️ Busca el icono 'HEFEST' en tu escritorio o menú de aplicaciones")
             
             return True
             
         except Exception as e:
-            print(f"❌ Error durante la instalación: {e}")
+    logging.error("❌ Error durante la instalación: %s", e)
             return False
             
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     print("=" * 50)
     print("  HEFEST - Instalador Automático v0.0.10")
     print("  Sistema Integral de Hostelería")
     print("=" * 50)
     
-    installer = HefestInstaller()
+    _ = HefestInstaller()
     
     # Confirmar instalación
     response = input(f"¿Instalar HEFEST en {installer.install_dir}? (s/N): ")
@@ -260,7 +276,7 @@ def main():
         print("Instalación cancelada")
         return
         
-    success = installer.run_installation()
+    _ = installer.run_installation()
     
     if success:
         # Preguntar si ejecutar ahora
@@ -268,7 +284,7 @@ def main():
         if run_now.lower() in ['s', 'sí', 'si', 'y', 'yes']:
             main_script = installer.install_dir / "main.py"
             subprocess.run([sys.executable, str(main_script)], 
-                         cwd=str(installer.install_dir))
+                         _ = str(installer.install_dir))
     
 if __name__ == "__main__":
     main()

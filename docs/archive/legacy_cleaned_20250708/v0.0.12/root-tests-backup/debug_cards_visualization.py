@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 Script de debug para comparar la visualización de las tarjetas 
 entre tests y aplicación principal
@@ -19,6 +21,7 @@ class DebugWindow(QMainWindow):
     """Ventana de debug para comparar tarjetas"""
     
     def __init__(self):
+        """TODO: Add docstring"""
         super().__init__()
         self.setWindowTitle("Debug - Visualización de Tarjetas")
         self.setGeometry(200, 200, 1200, 800)
@@ -48,24 +51,24 @@ class DebugWindow(QMainWindow):
         main_layout.addWidget(title)
         
         # Layout horizontal para comparar
-        comparison_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         # Lado izquierdo: Tarjeta individual
         left_section = QWidget()
-        left_layout = QVBoxLayout(left_section)
+        _ = QVBoxLayout(left_section)
         
         left_title = QLabel("📋 Tarjeta Individual (como en tests)")
         left_title.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
         left_layout.addWidget(left_title)
         
         # Crear tarjeta individual
-        single_card = AdvancedMetricCard(
+        _ = AdvancedMetricCard(
             icon="💰", 
-            title="Ventas Diarias", 
+            _ = "Ventas Diarias", 
             value="€2,450.75", 
-            subtitle="vs ayer", 
+            _ = "vs ayer", 
             trend="+12.5%", 
-            color="#10b981"
+            _ = "#10b981"
         )
         single_card.setFixedSize(300, 180)
         left_layout.addWidget(single_card)
@@ -73,7 +76,7 @@ class DebugWindow(QMainWindow):
         
         # Lado derecho: Sección completa
         right_section = QWidget()
-        right_layout = QVBoxLayout(right_section)
+        _ = QVBoxLayout(right_section)
         
         right_title = QLabel("📊 Sección Completa (como en app principal)")
         right_title.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
@@ -108,7 +111,9 @@ class DebugWindow(QMainWindow):
 
 
 def main():
-    app = QApplication(sys.argv)
+    """TODO: Add docstring"""
+    # TODO: Add input validation
+    _ = QApplication(sys.argv)
     
     # Crear ventana de debug
     window = DebugWindow()

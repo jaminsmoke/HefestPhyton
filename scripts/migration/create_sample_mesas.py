@@ -1,3 +1,4 @@
+import logging
 """
 Script para agregar mesas de ejemplo a la base de datos
 """
@@ -9,10 +10,10 @@ from data.db_manager import DatabaseManager
 try:
     print("=== AGREGANDO MESAS DE EJEMPLO A LA BD ===\n")
     
-    db_manager = DatabaseManager()
+    _ = DatabaseManager()
     
     # Mesas de ejemplo para probar la funcionalidad
-    mesas_ejemplo = [
+    _ = [
         ("M01", "Comedor", "libre", 4),
         ("M02", "Comedor", "libre", 2),
         ("M03", "Comedor", "libre", 6),
@@ -30,7 +31,7 @@ try:
             # Verificar si ya existe
             existing = db_manager.query("SELECT id FROM mesas WHERE numero = ?", (numero,))
             if existing:
-                print(f"   ⚠️ Mesa {numero} ya existe, saltando...")
+                print("   ⚠️ Mesa %s ya existe, saltando..." % numero)
                 continue
                 
             # Insertar nueva mesa
@@ -38,22 +39,22 @@ try:
                 "INSERT INTO mesas (numero, zona, estado, capacidad) VALUES (?, ?, ?, ?)",
                 (numero, zona, estado, capacidad)
             )
-            print(f"   ✅ Mesa {numero} creada ({zona}, {capacidad} personas)")
+            print("   ✅ Mesa {numero} creada ({zona}, %s personas)" % capacidad)
             
         except Exception as e:
-            print(f"   ❌ Error creando mesa {numero}: {e}")
+    logging.error("   ❌ Error creando mesa {numero}: %s", e)
     
     # Verificar resultados
-    result = db_manager.query("SELECT numero, zona, estado, capacidad FROM mesas ORDER BY numero")
+    _ = db_manager.query("SELECT numero, zona, estado, capacidad FROM mesas ORDER BY numero")
     
-    print(f"\n📊 MESAS EN LA BASE DE DATOS ({len(result)}):")
+    print("\n📊 MESAS EN LA BASE DE DATOS (%s):" % len(result))
     for mesa in result:
-        print(f"   🍽️ Mesa {mesa[0]}: {mesa[2]} en {mesa[1]} ({mesa[3]} personas)")
+        print("   🍽️ Mesa {mesa[0]}: {mesa[2]} en {mesa[1]} (%s personas)" % mesa[3])
     
     print(f"\n✅ Mesas de ejemplo agregadas correctamente")
     print(f"🎯 Ahora el módulo TPV mostrará mesas reales en lugar del mensaje vacío")
     
 except Exception as e:
-    print(f"❌ Error: {e}")
+    logging.error("❌ Error: %s", e)
     import traceback
     traceback.print_exc()

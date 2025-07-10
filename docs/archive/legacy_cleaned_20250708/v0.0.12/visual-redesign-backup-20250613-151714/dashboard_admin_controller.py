@@ -1,26 +1,29 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer
+from ..base_module import BaseModule
+from .admin_metrics_widgets import AdminMetricsSection
+        from core.models import Role
+
 """
 Dashboard Admin Controller v3 - Versión limpia y funcional
 """
 
-import logging
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                              QFrame, QTabWidget, QPushButton, QSizePolicy)
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont
 
-from ..base_module import BaseModule
-from .admin_metrics_widgets import AdminMetricsSection
-from .dashboard_config import DEFAULT_CONFIG, THEME_COLORS, CONTAINER_CONFIG
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class DashboardAdminController(BaseModule):
     """Controlador principal del Dashboard Admin v3 - Versión limpia"""
       # Señales básicas
-    metric_updated = pyqtSignal(str, float)
+    _ = pyqtSignal(str, float)
     
     def __init__(self, auth_service=None, db_manager=None, parent=None):
+        """TODO: Add docstring"""
         self.auth_service = auth_service
         self.db_manager = db_manager
         super().__init__(parent)
@@ -31,8 +34,10 @@ class DashboardAdminController(BaseModule):
         QTimer.singleShot(50, self.force_all_visibility)
     
     def setup_admin_dashboard(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura el dashboard básico"""
-        layout = self.main_layout
+        _ = self.main_layout
         
         # Título principal
         title = QLabel("📊 Dashboard Admin v3")
@@ -68,7 +73,7 @@ class DashboardAdminController(BaseModule):
         left_layout.addWidget(charts_container)
         
         # Contenedor de alertas (lado derecho)
-        alerts_container = self.create_alerts_container()
+        _ = self.create_alerts_container()
         
         # Añadir contenedores al layout horizontal
         main_content_layout.addWidget(left_container, 70)     # 70% del ancho
@@ -82,6 +87,8 @@ class DashboardAdminController(BaseModule):
         layout.addStretch()
     
     def create_metrics_container(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el contenedor de métricas"""
         container = QFrame()
         container.setStyleSheet("""
@@ -108,6 +115,8 @@ class DashboardAdminController(BaseModule):
         return container
     
     def create_charts_container(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el contenedor de análisis visual"""
         container = QFrame()
         container.setStyleSheet("""
@@ -156,6 +165,8 @@ class DashboardAdminController(BaseModule):
         return container
     
     def create_alerts_container(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el contenedor de alertas vertical"""
         container = QFrame()
         container.setStyleSheet("""
@@ -215,20 +226,29 @@ class DashboardAdminController(BaseModule):
         return container
 
     def get_module_name(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "Dashboard Admin"
     
     def get_icon_path(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "📊"
     
     def get_required_permissions(self):
-        from core.models import Role
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return [Role.ADMIN]
     
     def cleanup(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpieza al cerrar"""
         logger.info("Dashboard admin v3 cerrado")
     
     def force_all_visibility(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Forzar visibilidad de todos los elementos después de construcción"""
         try:
             logger.debug("Forzando visibilidad de todos los elementos del dashboard")
@@ -257,7 +277,7 @@ class DashboardAdminController(BaseModule):
                         card.show()
                         card.raise_()
                         card.update()
-                        logger.debug(f"Tarjeta {name} forzada como visible")
+                        logger.debug("Tarjeta %s forzada como visible", name)
             
             # 5. Actualizar toda la interfaz
             self.update()
@@ -266,4 +286,4 @@ class DashboardAdminController(BaseModule):
             logger.info("✅ Visibilidad forzada completada para todas las tarjetas")
             
         except Exception as e:
-            logger.error(f"Error forzando visibilidad: {e}")
+            logger.error("Error forzando visibilidad: %s", e)

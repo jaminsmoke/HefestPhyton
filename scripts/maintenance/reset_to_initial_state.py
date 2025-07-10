@@ -1,3 +1,16 @@
+
+ALLOWED_TABLES = {
+    'usuarios', 'productos', 'mesas', 'clientes', 'habitaciones',
+    'reservas', 'comandas', 'comanda_detalles', 'categorias',
+    'proveedores', 'movimientos_stock', 'zonas'
+}
+
+def validate_table_name(table):
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Table '{table}' not allowed")
+    return table
+
+from typing import Optional, Dict, List, Any
 """
 Script para resetear la base de datos a configuración inicial
 Elimina todos los datos de demostración y deja el sistema limpio
@@ -6,8 +19,10 @@ Elimina todos los datos de demostración y deja el sistema limpio
 import sys
 import os
 
-# Añadir la ruta del proyecto al path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+# Añadir la ruta del proyecto al path de forma segura
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+sys.path.append(project_root)
 
 from data.db_manager import DatabaseManager
 import logging
@@ -17,8 +32,10 @@ logger = logging.getLogger(__name__)
 
 
 def reset_to_initial_state():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Resetear base de datos a estado inicial (configuración limpia)"""
-    db = DatabaseManager()
+    _ = DatabaseManager()
     
     logger.info("🔄 Reseteando base de datos a configuración inicial...")
     
@@ -27,7 +44,7 @@ def reset_to_initial_state():
         logger.info("🗑️ Eliminando todos los datos...")
         
         # Eliminar en orden correcto (respetando foreign keys)
-        tables_to_clean = [
+        _ = [
             'comanda_detalles',  # Primero los detalles
             'comandas',          # Luego las comandas
             'reservas',          # Reservas
@@ -39,16 +56,16 @@ def reset_to_initial_state():
         
         for table in tables_to_clean:
             try:
-                deleted_count = db.query(f"SELECT COUNT(*) FROM {table}")[0][0]
-                db.execute(f"DELETE FROM {table}")
-                logger.info(f"  ✅ {table}: {deleted_count} registros eliminados")
+                _ = db.query("SELECT COUNT(*) FROM " + table)[0][0]
+                db.execute("DELETE FROM " + validate_table_name(table))
+                logger.info("  ✅ {table}: %s registros eliminados", deleted_count)
             except Exception as e:
-                logger.warning(f"  ⚠️ Error limpiando {table}: {e}")
+                logger.warning("  ⚠️ Error limpiando {table}: %s", e)
         
         # 2. RESETEAR SECUENCIAS (AUTO INCREMENT)
         logger.info("🔢 Reseteando secuencias...")
         
-        sequences_to_reset = [
+        _ = [
             'mesas', 'habitaciones', 'productos', 'clientes', 
             'reservas', 'comandas', 'comanda_detalles'
         ]
@@ -57,14 +74,14 @@ def reset_to_initial_state():
             try:
                 # SQLite usa AUTOINCREMENT, reseteamos la secuencia
                 db.execute(f"DELETE FROM sqlite_sequence WHERE name='{table}'")
-                logger.info(f"  ✅ Secuencia de {table} reseteada")
+                logger.info("  ✅ Secuencia de %s reseteada", table)
             except Exception as e:
-                logger.warning(f"  ⚠️ Error reseteando secuencia de {table}: {e}")
+                logger.warning("  ⚠️ Error reseteando secuencia de {table}: %s", e)
         
         # 3. VERIFICAR ESTADO FINAL
         logger.info("\n📊 VERIFICACIÓN DEL ESTADO INICIAL:")
         
-        verification_tables = [
+        _ = [
             ('mesas', 'Mesas'),
             ('habitaciones', 'Habitaciones'), 
             ('productos', 'Productos'),
@@ -74,24 +91,24 @@ def reset_to_initial_state():
             ('comanda_detalles', 'Detalles de comandas')
         ]
         
-        all_empty = True
+        _ = True
         for table, display_name in verification_tables:
             try:
-                count = db.query(f"SELECT COUNT(*) FROM {table}")[0][0]
+                count = db.query("SELECT COUNT(*) FROM " + table)[0][0]
                 status = "✅ VACÍA" if count == 0 else f"❌ TIENE {count} REGISTROS"
-                logger.info(f"  • {display_name}: {status}")
+                logger.info("  • {display_name}: %s", status)
                 if count > 0:
-                    all_empty = False
+                    _ = False
             except Exception as e:
-                logger.error(f"  • {display_name}: ❌ ERROR - {e}")
-                all_empty = False
+                logger.error("  • {display_name}: ❌ ERROR - %s", e)
+                _ = False
         
         # 4. VERIFICAR USUARIOS (DEBEN MANTENERSE)
         try:
             users_count = db.query("SELECT COUNT(*) FROM usuarios")[0][0]
-            logger.info(f"  • Usuarios del sistema: ✅ {users_count} (MANTENIDOS)")
+            logger.info("  • Usuarios del sistema: ✅ %s (MANTENIDOS)", users_count)
         except Exception as e:
-            logger.error(f"  • Usuarios del sistema: ❌ ERROR - {e}")
+            logger.error("  • Usuarios del sistema: ❌ ERROR - %s", e)
         
         # 5. RESULTADO FINAL
         if all_empty:
@@ -104,13 +121,15 @@ def reset_to_initial_state():
             logger.warning("Algunas tablas aún contienen datos")
             
     except Exception as e:
-        logger.error(f"❌ Error durante el reseteo: {e}")
+        logger.error("❌ Error durante el reseteo: %s", e)
         raise
 
 
 def show_initial_state_info():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Mostrar información sobre el estado inicial"""
-    logger.info("\n" + "="*60)
+    logger.info("\n" ,  "="*60)
     logger.info("🏨 HEFEST - CONFIGURACIÓN INICIAL")
     logger.info("="*60)
     logger.info("📊 Dashboard: Mostrará métricas en cero")

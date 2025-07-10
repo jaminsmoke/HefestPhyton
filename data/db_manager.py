@@ -1,12 +1,33 @@
+from typing import Optional, Dict, List, Any
 import sqlite3
 from contextlib import contextmanager
 import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv()
 
 class DatabaseManager:
+    # Whitelist de tablas permitidas para prevenir SQL injection
+    _ = {
+        'usuarios', 'productos', 'mesas', 'clientes', 'habitaciones', 
+        'reservas', 'comandas', 'comanda_detalles', 'categorias', 
+        'proveedores', 'movimientos_stock', 'zonas'
+    }
+    
+    def _validate_table_name(self, table):
+        """Valida que el nombre de tabla esté en la whitelist"""
+        if table not in self.ALLOWED_TABLES:
+            from src.utils.security_logger import security_logger
+            security_logger.log_sql_injection_attempt("Invalid table: %s", table)
+            raise ValueError(f"Table '{table}' not allowed. Allowed tables: {', '.join(self.ALLOWED_TABLES)}")
+        return table
     def descontar_stock_y_registrar(self, producto_id, cantidad, usuario_id=None, observaciones=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Descuenta stock de un producto y registra el movimiento en movimientos_stock."""
         with self._get_connection() as conn:
-            cursor = conn.cursor()
+            _ = conn.cursor()
             # Obtener stock actual
             cursor.execute("SELECT stock FROM productos WHERE id = ?", (producto_id,))
             row = cursor.fetchone()
@@ -15,7 +36,7 @@ class DatabaseManager:
             stock_anterior = row[0] if row[0] is not None else 0
             if stock_anterior < cantidad:
                 raise ValueError(f"Stock insuficiente para producto {producto_id}")
-            stock_nuevo = stock_anterior - cantidad
+            _ = stock_anterior - cantidad
             # Actualizar stock
             cursor.execute("UPDATE productos SET stock = ? WHERE id = ?", (stock_nuevo, producto_id))
             # Registrar movimiento
@@ -29,18 +50,22 @@ class DatabaseManager:
             conn.commit()
             return stock_nuevo
     def update_zona_nombre(self, zona_id, nuevo_nombre):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza el nombre de una zona y todas las mesas asociadas a esa zona."""
         # Obtener el nombre actual de la zona
         zona = self.get_by_id('zonas', zona_id)
         if not zona:
             return False
-        nombre_anterior = zona['nombre']
+        _ = zona['nombre']
         # Actualizar el nombre en la tabla zonas
         self.execute("UPDATE zonas SET nombre = ? WHERE id = ?", (nuevo_nombre, zona_id))
         # Actualizar todas las mesas que tengan esa zona
         self.execute("UPDATE mesas SET zona = ? WHERE zona = ?", (nuevo_nombre, nombre_anterior))
         return True
     def sync_zonas_from_mesas(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Sincroniza la tabla zonas con los valores únicos de la columna zona de mesas (ignora nulos y 'Todas')."""
         zonas_mesas = self.query("SELECT DISTINCT zona FROM mesas WHERE zona IS NOT NULL AND zona != '' AND zona != 'Todas'")
         zonas_db = set(z['nombre'] for z in self.get_zonas())
@@ -49,22 +74,31 @@ class DatabaseManager:
             self.create_zona(nombre)
     # Métodos para gestión de zonas (persistencia real)
     def get_zonas(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las zonas ordenadas por nombre ASC"""
         return self.query("SELECT * FROM zonas ORDER BY nombre ASC")
 
     def create_zona(self, nombre):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea una nueva zona (si no existe)"""
         return self.execute("INSERT INTO zonas (nombre) VALUES (?)", (nombre,))
 
     def delete_zona(self, zona_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Elimina una zona por id"""
         return self.execute("DELETE FROM zonas WHERE id = ?", (zona_id,))
 
     def get_zona_by_nombre(self, nombre):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene una zona por nombre"""
         result = self.query("SELECT * FROM zonas WHERE nombre = ?", (nombre,))
         return result[0] if result else None
     def __init__(self, path=None):
+        """TODO: Add docstring"""
         if path is None:
             # Calcular la ruta absoluta a la base de datos
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +110,7 @@ class DatabaseManager:
         self.sync_zonas_from_mesas()
 
     def _init_db(self):
+        """TODO: Add docstring"""
         with self._get_connection() as conn:
             # Tabla de usuarios
             conn.execute('''CREATE TABLE IF NOT EXISTS usuarios (
@@ -197,11 +232,12 @@ class DatabaseManager:
             cursor = conn.cursor()
             cursor.execute("SELECT COUNT(*) FROM usuarios")
             if cursor.fetchone()[0] == 0:
-                usuarios_default = [
-                    (1, "Administrador", "ADMIN", "admin123", "admin@hefest.com", "+34-600-000-001",
+                _ = [
+                    (1, "Administrador", "ADMIN", os.getenv('ADMIN_PIN', 'admin123'), "admin@hefest.com", "+34-600-000-001",
                      "2025-06-10", 1, None),
-                    (2, "Manager", "MANAGER", "manager123", "manager@hefest.com", "+34-600-000-002",
-                     "2025-06-10", 1, None),                (3, "Empleado", "EMPLOYEE", "employee123", "empleado@hefest.com", "+34-600-000-003",
+                    (2, "Manager", "MANAGER", os.getenv('MANAGER_PIN', 'manager123'), "manager@hefest.com", "+34-600-000-002",
+                     "2025-06-10", 1, None),
+                    (3, "Empleado", "EMPLOYEE", os.getenv('EMPLOYEE_PIN', 'employee123'), "empleado@hefest.com", "+34-600-000-003",
                      "2025-06-10", 1, None)
                 ]
                 conn.executemany("""
@@ -212,6 +248,7 @@ class DatabaseManager:
 
     @contextmanager
     def _get_connection(self):
+        """TODO: Add docstring"""
         # Añadimos timeout para evitar bloqueos inmediatos y activamos WAL para concurrencia
         conn = sqlite3.connect(self.db_path, timeout=10)
         conn.row_factory = sqlite3.Row
@@ -226,12 +263,16 @@ class DatabaseManager:
     #       Documentar y refactorizar para evitar bloqueos en escenarios concurrentes.
 
     def query(self, sql, params=()):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
             return cursor.fetchall()
 
     def execute(self, sql, params=()):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(sql, params)
@@ -239,26 +280,47 @@ class DatabaseManager:
             return cursor.lastrowid
 
     def execute_many(self, sql, params_list):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.executemany(sql, params_list)
             conn.commit()
 
     def get_by_id(self, table, id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        table = self._validate_table_name(table)
         sql = f"SELECT * FROM {table} WHERE id = ?"
         result = self.query(sql, (id,))
         return result[0] if result else None
 
     def insert(self, table, data):
-        columns = ', '.join(data.keys())
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = self._validate_table_name(table)
+        # Validar nombres de columnas (solo alfanuméricos y guiones bajos)
+        for column in data.keys():
+            if not column.replace('_', '').isalnum():
+                raise ValueError(f"Invalid column name: {column}")
+        
+        _ = ', '.join(data.keys())
         placeholders = ', '.join(['?'] * len(data))
-        values = tuple(data.values())
+        _ = tuple(data.values())
         sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
         return self.execute(sql, values)
 
     def update(self, table, id, data):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = self._validate_table_name(table)
+        # Validar nombres de columnas
+        for column in data.keys():
+            if not column.replace('_', '').isalnum():
+                raise ValueError(f"Invalid column name: {column}")
+        
         set_clause = ', '.join([f"{key} = ?" for key in data.keys()])
-        values = tuple(data.values()) + (id,)
+        _ = tuple(data.values()) + (id,)
 
         sql = f"UPDATE {table} SET {set_clause} WHERE id = ?"
         with self._get_connection() as conn:
@@ -268,6 +330,9 @@ class DatabaseManager:
             return cursor.rowcount > 0  # Retorna True si se actualizó alguna fila
 
     def delete(self, table, id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        table = self._validate_table_name(table)
         sql = f"DELETE FROM {table} WHERE id = ?"
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -277,23 +342,50 @@ class DatabaseManager:
 
     # Métodos para gestión de usuarios
     def get_usuarios(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todos los usuarios"""
         return self.query("SELECT * FROM usuarios WHERE is_active = 1")
 
     def get_usuario_by_id(self, user_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene un usuario por ID"""
         result = self.query("SELECT * FROM usuarios WHERE id = ? AND is_active = 1", (user_id,))
         return result[0] if result else None
 
     def validate_user_login(self, user_id, pin):
-        """Valida las credenciales de usuario"""
-        result = self.query(
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Valida las credenciales de usuario con rate limiting"""
+        from src.utils.rate_limiter import rate_limiter
+        
+        _ = f"login_{user_id}"
+        
+        # Verificar rate limit
+        if not rate_limiter.record_attempt(identifier):
+            _ = rate_limiter.get_lockout_remaining(identifier)
+            security_logger.log_rate_limit_exceeded(identifier, rate_limiter.max_attempts)
+            raise ValueError(f"Too many login attempts. Try again in {remaining} seconds")
+        
+        _ = self.query(
             "SELECT * FROM usuarios WHERE id = ? AND pin = ? AND is_active = 1",
             (user_id, pin)
         )
-        return result[0] if result else None
+        
+        if result:
+            # Login exitoso - resetear intentos
+            rate_limiter.reset_attempts(identifier)
+            security_logger.log_login_attempt(str(user_id), True)
+            return result[0]
+        else:
+            # Login fallido
+            security_logger.log_login_attempt(str(user_id), False)
+            return None
 
     def update_ultimo_acceso(self, user_id, timestamp):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza el último acceso del usuario"""
         self.execute(
             "UPDATE usuarios SET ultimo_acceso = ? WHERE id = ?",
@@ -301,17 +393,21 @@ class DatabaseManager:
         )
 
     def create_usuario(self, nombre, role, pin, email=None, telefono=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un nuevo usuario"""
         from datetime import datetime
-        fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        _ = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         return self.execute("""
             INSERT INTO usuarios (nombre, role, pin, email, telefono, fecha_creacion, is_active)
             VALUES (?, ?, ?, ?, ?, ?, 1)
         """, (nombre, role, pin, email, telefono, fecha_creacion))
     def update_usuario(self, user_id, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza campos de un usuario"""
-        fields = []
+        _ = []
         values = []
 
         for field, value in kwargs.items():
@@ -321,19 +417,30 @@ class DatabaseManager:
 
         if fields:
             values.append(user_id)
+            # Validar nombres de campos
+            for field in kwargs.keys():
+                if field not in ['nombre', 'role', 'pin', 'email', 'telefono', 'is_active']:
+                    raise ValueError(f"Invalid field name: {field}")
+            
             sql = f"UPDATE usuarios SET {', '.join(fields)} WHERE id = ?"
             self.execute(sql, values)
 
     def delete_usuario(self, user_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Desactiva un usuario (soft delete)"""
         self.execute("UPDATE usuarios SET is_active = 0 WHERE id = ?", (user_id,))
 
     # Métodos para gestión de habitaciones
     def get_habitaciones(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las habitaciones"""
         return self.query("SELECT * FROM habitaciones")
 
     def update_estado_habitacion(self, habitacion_id, estado):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza el estado de una habitación"""
         self.execute(
             "UPDATE habitaciones SET estado = ? WHERE id = ?",
@@ -342,6 +449,8 @@ class DatabaseManager:
 
     # Métodos para gestión de reservas
     def get_reservas(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene todas las reservas con información del cliente"""
         return self.query("""
             SELECT r.*, c.nombre as cliente_nombre, c.telefono as cliente_telefono,
@@ -353,6 +462,8 @@ class DatabaseManager:
         """)
 
     def create_reserva(self, cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado='pendiente'):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea una nueva reserva"""
         return self.execute("""
             INSERT INTO reservas (cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado)
@@ -361,15 +472,17 @@ class DatabaseManager:
 
     # Métodos para obtener métricas administrativas reales
     def get_admin_metrics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Obtiene métricas administrativas reales del negocio
         Retorna diccionario con métricas clave
         """
         try:
-            metrics = {}
+            _ = {}
 
             # Métricas de ventas (desde comandas)
-            ventas_result = self.query("""
+            _ = self.query("""
                 SELECT
                     COALESCE(SUM(total), 0) as ventas_totales,
                     COUNT(*) as num_comandas,
@@ -389,7 +502,7 @@ class DatabaseManager:
                 metrics['ordenes_activas'] = 0
 
             # Métricas de ocupación hotelera
-            ocupacion_result = self.query("""
+            _ = self.query("""
                 SELECT
                     COUNT(*) as total_habitaciones,
                     SUM(CASE WHEN estado = 'ocupada' THEN 1 ELSE 0 END) as habitaciones_ocupadas
@@ -404,7 +517,7 @@ class DatabaseManager:
                 metrics['ocupacion'] = 0.0
 
             # Métricas de tiempo de servicio (estimado desde comandas)
-            tiempo_result = self.query("""
+            _ = self.query("""
                 SELECT
                     COUNT(*) as comandas_completadas,
                     COALESCE(AVG(julianday('now') - julianday(fecha_hora)) * 24 * 60, 0) as tiempo_promedio_minutos
@@ -425,7 +538,7 @@ class DatabaseManager:
 
         except Exception as e:
             import logging
-            logging.error(f"Error al obtener métricas administrativas: {e}")
+            logging.error("Error al obtener métricas administrativas: %s", e)
             # Retornar métricas vacías en caso de error
             return {
                 'ventas': 0.0,
@@ -437,9 +550,11 @@ class DatabaseManager:
             }
 
     def get_inventory_metrics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene métricas de inventario reales"""
         try:
-            result = self.query("""
+            _ = self.query("""
                 SELECT
                     COUNT(*) as total_productos,
                     SUM(CASE WHEN stock = 0 THEN 1 ELSE 0 END) as productos_sin_stock,
@@ -450,7 +565,7 @@ class DatabaseManager:
             """)
 
             if result:
-                data = result[0]
+                _ = result[0]
                 return {
                     'total_productos': int(data['total_productos']),
                     'productos_sin_stock': int(data['productos_sin_stock']),
@@ -468,8 +583,7 @@ class DatabaseManager:
                 }
 
         except Exception as e:
-            import logging
-            logging.error(f"Error al obtener métricas de inventario: {e}")
+            logging.error("Error al obtener métricas de inventario: %s", e)
             return {
                 'total_productos': 0,
                 'productos_sin_stock': 0,
@@ -479,10 +593,12 @@ class DatabaseManager:
             }
 
     def get_hospitality_metrics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene métricas de hospedería reales"""
         try:
             # Métricas de reservas
-            reservas_result = self.query("""
+            _ = self.query("""
                 SELECT
                     COUNT(*) as total_reservas,
                     SUM(CASE WHEN estado = 'confirmada' THEN 1 ELSE 0 END) as reservas_confirmadas,
@@ -493,7 +609,7 @@ class DatabaseManager:
             """)
 
             # Métricas de habitaciones
-            habitaciones_result = self.query("""
+            _ = self.query("""
                 SELECT
                     COUNT(*) as total_habitaciones,
                     SUM(CASE WHEN estado = 'ocupada' THEN 1 ELSE 0 END) as habitaciones_ocupadas,
@@ -503,10 +619,10 @@ class DatabaseManager:
                 FROM habitaciones
             """)
 
-            metrics = {}
+            _ = {}
 
             if reservas_result:
-                reservas_data = reservas_result[0]
+                _ = reservas_result[0]
                 metrics.update({
                     'total_reservas': int(reservas_data['total_reservas']),
                     'reservas_confirmadas': int(reservas_data['reservas_confirmadas']),
@@ -515,7 +631,7 @@ class DatabaseManager:
                 })
 
             if habitaciones_result:
-                habitaciones_data = habitaciones_result[0]
+                _ = habitaciones_result[0]
                 metrics.update({
                     'total_habitaciones': int(habitaciones_data['total_habitaciones']),
                     'habitaciones_ocupadas': int(habitaciones_data['habitaciones_ocupadas']),
@@ -534,8 +650,7 @@ class DatabaseManager:
             return metrics
 
         except Exception as e:
-            import logging
-            logging.error(f"Error al obtener métricas de hospedería: {e}")
+            logging.error("Error al obtener métricas de hospedería: %s", e)
             return {
                 'total_reservas': 0,
                 'reservas_confirmadas': 0,

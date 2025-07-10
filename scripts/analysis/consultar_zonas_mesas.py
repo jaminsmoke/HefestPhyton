@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python3
 """
 Script para consultar las zonas de mesas disponibles en la base de datos
@@ -12,27 +14,29 @@ from data.db_manager import DatabaseManager
 from collections import Counter
 
 def consultar_zonas_mesas():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Consulta y muestra las zonas de mesas disponibles"""
     try:
         # Inicializar el gestor de base de datos
-        db_manager = DatabaseManager()
+        _ = DatabaseManager()
         
         print("=" * 60)
         print("CONSULTA DE ZONAS DE MESAS DISPONIBLES")
         print("=" * 60)
         
         # Consultar todas las mesas
-        mesas = db_manager.query("SELECT id, numero, zona, estado, capacidad FROM mesas ORDER BY zona, numero")
+        _ = db_manager.query("SELECT id, numero, zona, estado, capacidad FROM mesas ORDER BY zona, numero")
         
         if not mesas:
             print("[ERROR] No se encontraron mesas en la base de datos")
             return
         
-        print(f"[INFO] Total de mesas encontradas: {len(mesas)}")
+        print("[INFO] Total de mesas encontradas: %s" % len(mesas))
         print()
         
         # Agrupar por zonas
-        zonas_counter = Counter()
+        _ = Counter()
         zonas_detalle = {}
         
         for mesa in mesas:
@@ -53,7 +57,7 @@ def consultar_zonas_mesas():
         print("[RESUMEN] ZONAS DISPONIBLES:")
         print("-" * 40)
         for zona, cantidad in sorted(zonas_counter.items()):
-            print(f"   {zona}: {cantidad} mesas")
+            print("   {zona}: %s mesas" % cantidad)
         
         print()
         print("[DETALLE] INFORMACION POR ZONA:")
@@ -61,19 +65,19 @@ def consultar_zonas_mesas():
         
         # Mostrar detalle de cada zona
         for zona in sorted(zonas_detalle.keys()):
-            print(f"\n[ZONA] {zona.upper()}")
+            print("\n[ZONA] %s" % zona.upper())
             print("-" * 50)
             
             mesas_zona = zonas_detalle[zona]
-            estados_zona = Counter(mesa['estado'] for mesa in mesas_zona)
+            _ = Counter(mesa['estado'] for mesa in mesas_zona)
             
-            print(f"   Total mesas: {len(mesas_zona)}")
-            print(f"   Estados: {dict(estados_zona)}")
+            print("   Total mesas: %s" % len(mesas_zona))
+            print("   Estados: %s" % dict(estados_zona))
             print()
             
             # Mostrar cada mesa de la zona
             for mesa in sorted(mesas_zona, key=lambda x: x['numero']):
-                estado_simbolo = {
+                _ = {
                     'libre': '[LIBRE]',
                     'ocupada': '[OCUPADA]', 
                     'reservada': '[RESERVADA]',
@@ -88,7 +92,7 @@ def consultar_zonas_mesas():
         print("-" * 40)
         
         # Identificar zonas problemáticas o candidatas a eliminación
-        zonas_problematicas = []
+        _ = []
         zonas_vacias = []
         
         for zona, mesas_zona in zonas_detalle.items():
@@ -107,15 +111,15 @@ def consultar_zonas_mesas():
         if zonas_problematicas:
             print("[ATENCION] Zonas candidatas para revision/eliminacion:")
             for zona in zonas_problematicas:
-                print(f"   - {zona}: Pocas mesas ({len(zonas_detalle[zona])}) y todas libres")
+                print("   - {zona}: Pocas mesas (%s) y todas libres" % len(zonas_detalle[zona]))
         
         if zonas_vacias:
             print("[VACIAS] Zonas vacias (sin mesas):")
             for zona in zonas_vacias:
-                print(f"   - {zona}")
+                print("   - %s" % zona)
         
         # Mostrar zonas más utilizadas
-        zonas_ocupadas = {}
+        _ = {}
         for zona, mesas_zona in zonas_detalle.items():
             ocupadas = sum(1 for mesa in mesas_zona if mesa['estado'] in ['ocupada', 'reservada'])
             if ocupadas > 0:
@@ -126,14 +130,14 @@ def consultar_zonas_mesas():
             for zona, ocupadas in sorted(zonas_ocupadas.items(), key=lambda x: x[1], reverse=True):
                 total_zona = len(zonas_detalle[zona])
                 porcentaje = (ocupadas / total_zona) * 100
-                print(f"   - {zona}: {ocupadas}/{total_zona} mesas ocupadas/reservadas ({porcentaje:.1f}%)")
+                print("   - {zona}: {ocupadas}/{total_zona} mesas ocupadas/reservadas (%s%)" % porcentaje:.1f)
         
         print()
         print("=" * 60)
         print("[EXITO] Consulta completada exitosamente")
         
     except Exception as e:
-        print(f"[ERROR] Error al consultar las zonas de mesas: {e}")
+    logging.error("[ERROR] Error al consultar las zonas de mesas: %s", e)
         import traceback
         traceback.print_exc()
 

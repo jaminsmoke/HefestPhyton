@@ -1,3 +1,10 @@
+from typing import Optional, Dict, List, Any
+import logging
+from datetime import datetime
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont, QColor
+
 """
 Módulo de Gestión de Categorías para Hefest
 ==========================================
@@ -5,11 +12,7 @@ Módulo de Gestión de Categorías para Hefest
 Interfaz dedicada para la gestión completa de categorías de productos
 """
 
-import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 
-from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -28,10 +31,8 @@ from PyQt6.QtWidgets import (
     QDialog,
     QTextEdit,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QColor
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class CategoryManagerWidget(QWidget):
@@ -40,7 +41,7 @@ class CategoryManagerWidget(QWidget):
     """
 
     # Señales
-    categoria_actualizada = pyqtSignal()
+    _ = pyqtSignal()
     categoria_seleccionada = pyqtSignal(dict)
 
     def __init__(self, inventario_service, parent=None):
@@ -56,6 +57,8 @@ class CategoryManagerWidget(QWidget):
         logger.info("CategoryManagerWidget inicializado correctamente")
 
     def init_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializar la interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -80,10 +83,12 @@ class CategoryManagerWidget(QWidget):
         self.apply_styles()
 
     def create_header(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear el header del módulo"""
         header = QFrame()
         header.setObjectName("HeaderFrame")
-        layout = QHBoxLayout(header)
+        _ = QHBoxLayout(header)
 
         # Título
         title = QLabel("🏷️ Gestión de Categorías")
@@ -100,13 +105,15 @@ class CategoryManagerWidget(QWidget):
         return header
 
     def create_search_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel de búsqueda y acciones"""
         panel = QFrame()
         panel.setObjectName("SearchPanel")
-        layout = QHBoxLayout(panel)
+        _ = QHBoxLayout(panel)
 
         # Búsqueda
-        search_label = QLabel("Buscar:")
+        _ = QLabel("Buscar:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar categorías...")
         self.search_input.textChanged.connect(self.filter_categories)
@@ -134,6 +141,8 @@ class CategoryManagerWidget(QWidget):
         return panel
 
     def create_categories_table(self) -> QTableWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear la tabla de categorías"""
         table = QTableWidget()
         table.setObjectName("CategoriesTable")
@@ -169,10 +178,12 @@ class CategoryManagerWidget(QWidget):
         return table
 
     def create_stats_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel de estadísticas"""
         panel = QFrame()
         panel.setObjectName("StatsPanel")
-        layout = QHBoxLayout(panel)
+        _ = QHBoxLayout(panel)
 
         # Estadísticas básicas
         self.total_categories_label = QLabel("Total: 0")
@@ -190,18 +201,22 @@ class CategoryManagerWidget(QWidget):
         return panel
 
     def load_categories(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar categorías desde el servicio"""
         try:
             self.categorias_cache = self.inventario_service.get_categorias_completas()
             self.update_categories_table()
             self.update_statistics()
         except Exception as e:
-            logger.error(f"Error cargando categorías: {e}")
+            logger.error("Error cargando categorías: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudieron cargar las categorías: {str(e)}"
             )
 
     def update_categories_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar la tabla de categorías"""
         try:
             # Las categorías ahora son objetos completos con todos los campos
@@ -226,7 +241,7 @@ class CategoryManagerWidget(QWidget):
                 self.categories_table.setItem(row, 2, QTableWidgetItem(descripcion))
 
                 # Número de productos
-                productos_count = self.get_products_count_for_category(
+                _ = self.get_products_count_for_category(
                     categoria.get("nombre", "")
                 )
                 self.categories_table.setItem(
@@ -239,9 +254,10 @@ class CategoryManagerWidget(QWidget):
                     try:
                         # Formatear fecha si es necesario
                         if len(str(fecha_creada)) > 16:
-                            fecha_creada = str(fecha_creada)[:16]
-                    except:
-                        fecha_creada = "N/A"
+                            _ = str(fecha_creada)[:16]
+                    except Exception as e:
+                        logging.error("Error: %s", e)
+                        _ = "N/A"
                 self.categories_table.setItem(
                     row, 4, QTableWidgetItem(str(fecha_creada))
                 )
@@ -252,32 +268,38 @@ class CategoryManagerWidget(QWidget):
                     try:
                         # Formatear fecha si es necesario
                         if len(str(fecha_modificada)) > 16:
-                            fecha_modificada = str(fecha_modificada)[:16]
-                    except:
-                        fecha_modificada = "N/A"
+                            _ = str(fecha_modificada)[:16]
+                    except Exception as e:
+                        logging.error("Error: %s", e)
+                        _ = "N/A"
                 self.categories_table.setItem(
                     row, 5, QTableWidgetItem(str(fecha_modificada))
                 )
 
         except Exception as e:
-            logger.error(f"Error actualizando tabla de categorías: {e}")
+            logger.error("Error actualizando tabla de categorías: %s", e)
 
     def get_products_count_for_category(self, categoria_nombre: str) -> int:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener el número de productos para una categoría"""
         try:
-            productos = self.inventario_service.get_productos(
+            _ = self.inventario_service.get_productos(
                 categoria=categoria_nombre
             )
             return len(productos)
-        except:
+        except Exception as e:
+            logging.error("Error: %s", e)
             return 0
 
     def update_statistics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar estadísticas"""
         try:
-            total = len(self.categorias_cache)
+            _ = len(self.categorias_cache)
             used = 0
-            empty = 0
+            _ = 0
 
             # Las categorías ahora son objetos completos
             for categoria in self.categorias_cache:
@@ -292,29 +314,33 @@ class CategoryManagerWidget(QWidget):
             self.used_categories_label.setText(f"En uso: {used}")
             self.empty_categories_label.setText(f"Vacías: {empty}")
         except Exception as e:
-            logger.error(f"Error actualizando estadísticas: {e}")
+            logger.error("Error actualizando estadísticas: %s", e)
 
     def filter_categories(self, text: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Filtrar categorías por texto"""
         try:
             for row in range(self.categories_table.rowCount()):
-                nombre_item = self.categories_table.item(row, 1)
+                _ = self.categories_table.item(row, 1)
                 desc_item = self.categories_table.item(row, 2)
 
-                show_row = False
+                _ = False
                 if nombre_item and text.lower() in nombre_item.text().lower():
-                    show_row = True
+                    _ = True
                 elif desc_item and text.lower() in desc_item.text().lower():
                     show_row = True
 
                 self.categories_table.setRowHidden(row, not show_row)
 
         except Exception as e:
-            logger.error(f"Error filtrando categorías: {e}")
+            logger.error("Error filtrando categorías: %s", e)
 
     def on_category_selected(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar selección de categoría"""
-        selected_rows = set(
+        _ = set(
             item.row() for item in self.categories_table.selectedItems()
         )
         has_selection = bool(selected_rows)
@@ -325,12 +351,14 @@ class CategoryManagerWidget(QWidget):
         if has_selection:
             row = next(iter(selected_rows))
             if row < len(self.categorias_cache):
-                categoria = self.categorias_cache[
+                _ = self.categorias_cache[
                     row
                 ]  # Ya es un objeto completo                # Emitir la categoría completa
                 self.categoria_seleccionada.emit(categoria)
 
     def add_category(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Agregar nueva categoría"""
         # Limpiar selección de la tabla para evitar conflictos
         self.categories_table.clearSelection()
@@ -347,9 +375,11 @@ class CategoryManagerWidget(QWidget):
             self.delete_btn.setEnabled(False)
 
     def edit_selected_category(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Editar categoría seleccionada"""
         try:
-            selected_rows = set(
+            _ = set(
                 item.row() for item in self.categories_table.selectedItems()
             )
             if not selected_rows:
@@ -364,15 +394,17 @@ class CategoryManagerWidget(QWidget):
                     self.categoria_actualizada.emit()
 
         except Exception as e:
-            logger.error(f"Error editando categoría: {e}")
+            logger.error("Error editando categoría: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudo editar la categoría: {str(e)}"
             )
 
     def delete_selected_category(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Eliminar categoría seleccionada"""
         try:
-            selected_rows = set(
+            _ = set(
                 item.row() for item in self.categories_table.selectedItems()
             )
             if not selected_rows:
@@ -381,7 +413,7 @@ class CategoryManagerWidget(QWidget):
             row = next(iter(selected_rows))
             if row < len(self.categorias_cache):
                 categoria = self.categorias_cache[row]  # Ya es un objeto completo
-                categoria_nombre = categoria.get("nombre", "")
+                _ = categoria.get("nombre", "")
                 categoria_id = categoria.get("id", None)
 
                 if not categoria_nombre:
@@ -403,7 +435,7 @@ class CategoryManagerWidget(QWidget):
                     return
 
                 # Confirmar eliminación
-                reply = QMessageBox.question(
+                _ = QMessageBox.question(
                     self,
                     "Confirmar eliminación",
                     f"¿Estás seguro de que deseas eliminar la categoría '{categoria_nombre}'?",
@@ -412,16 +444,16 @@ class CategoryManagerWidget(QWidget):
 
                 if reply == QMessageBox.StandardButton.Yes:
                     # Usar el ID de la categoría para eliminar (más seguro)
-                    success = False
+                    _ = False
                     if categoria_id:
                         # Intentar eliminar por ID primero
-                        success = self.inventario_service.eliminar_categoria_por_id(
+                        _ = self.inventario_service.eliminar_categoria_por_id(
                             categoria_id
                         )
 
                     if not success:
                         # Fallback: eliminar por nombre
-                        success = self.inventario_service.eliminar_categoria(
+                        _ = self.inventario_service.eliminar_categoria(
                             categoria_nombre
                         )
 
@@ -437,12 +469,14 @@ class CategoryManagerWidget(QWidget):
                         )
 
         except Exception as e:
-            logger.error(f"Error eliminando categoría: {e}")
+            logger.error("Error eliminando categoría: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudo eliminar la categoría: {str(e)}"
             )
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilos al widget"""
         self.setStyleSheet(
             """
@@ -558,6 +592,7 @@ class CategoryDialog(QDialog):
     """Diálogo mejorado para crear/editar categorías con validaciones avanzadas"""
 
     def __init__(self, inventario_service, parent=None, categoria=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
 
         self.inventario_service = inventario_service
@@ -582,6 +617,8 @@ class CategoryDialog(QDialog):
             self.load_category_data()
 
     def init_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializar interfaz del diálogo mejorada"""
         self.setWindowTitle(
             "✏️ Editar Categoría" if self.is_edit_mode else "➕ Nueva Categoría"
@@ -656,7 +693,7 @@ class CategoryDialog(QDialog):
         layout.setSpacing(15)
 
         # Header con icono
-        header_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         header_icon = QLabel("📂")
         header_icon.setFont(QFont("Arial", 24))
         header_text = QLabel("Gestión de Categoría")
@@ -712,7 +749,7 @@ class CategoryDialog(QDialog):
         # Información adicional en modo edición
         if self.is_edit_mode:
             info_group = QGroupBox("ℹ️ Información del Sistema")
-            info_layout = QGridLayout(info_group)
+            _ = QGridLayout(info_group)
 
             # ID
             info_layout.addWidget(QLabel("ID:"), 0, 0)
@@ -752,6 +789,8 @@ class CategoryDialog(QDialog):
         layout.addLayout(buttons_layout)
 
     def setup_validations(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar validaciones en tiempo real"""
         # Validación del nombre
         self.name_input.textChanged.connect(self.validate_name)
@@ -760,6 +799,8 @@ class CategoryDialog(QDialog):
         self.description_input.textChanged.connect(self.update_char_counter)
 
     def validate_name(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar el campo nombre en tiempo real"""
         name = self.name_input.text().strip()
 
@@ -782,6 +823,8 @@ class CategoryDialog(QDialog):
             return True
 
     def update_char_counter(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar contador de caracteres para descripción"""
         text = self.description_input.toPlainText()
         char_count = len(text)
@@ -805,6 +848,8 @@ class CategoryDialog(QDialog):
             self.char_counter.setStyleSheet("color: #6c757d; font-size: 11px;")
 
     def load_category_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar datos de la categoría en edición"""
         if self.categoria:
             self.name_input.setText(self.categoria.get("nombre", ""))
@@ -817,12 +862,12 @@ class CategoryDialog(QDialog):
                 created = self.categoria.get("fecha_creacion", "N/A")
                 if created != "N/A":
                     try:
-                        from datetime import datetime
 
                         if isinstance(created, str):
                             dt = datetime.fromisoformat(created.replace("Z", "+00:00"))
-                            created = dt.strftime("%d/%m/%Y %H:%M")
-                    except:
+                            _ = dt.strftime("%d/%m/%Y %H:%M")
+                    except Exception as e:
+                        logging.error("Error: %s", e)
                         pass
                 self.created_label.setText(str(created))
             # Actualizar contador de caracteres
@@ -830,13 +875,15 @@ class CategoryDialog(QDialog):
             self.validate_name()
 
     def save_category(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Guardar la categoría con validaciones completas"""
         # Validar formulario completo
         if not self.validate_form():
             return
 
         try:
-            nombre = self.name_input.text().strip()
+            _ = self.name_input.text().strip()
             descripcion = self.description_input.toPlainText().strip()
 
             # Log detallado para debugging
@@ -850,12 +897,12 @@ class CategoryDialog(QDialog):
             if self.is_edit_mode and self.categoria:
                 # Actualizar categoría existente
                 categoria_id = self.categoria.get("id")
-                logger.info(f"Actualizando categoría existente ID: {categoria_id}")
+                logger.info("Actualizando categoría existente ID: %s", categoria_id)
 
-                success = self.inventario_service.actualizar_categoria(
+                _ = self.inventario_service.actualizar_categoria(
                     categoria_id, nombre, descripcion
                 )
-                message = (
+                _ = (
                     "Categoría actualizada exitosamente"
                     if success
                     else "Error al actualizar la categoría"
@@ -863,7 +910,7 @@ class CategoryDialog(QDialog):
             else:
                 # Crear nueva categoría
                 logger.info("Creando nueva categoría")
-                success = self.inventario_service.crear_categoria(nombre, descripcion)
+                _ = self.inventario_service.crear_categoria(nombre, descripcion)
                 message = (
                     "Categoría creada exitosamente"
                     if success
@@ -877,7 +924,7 @@ class CategoryDialog(QDialog):
                 QMessageBox.warning(self, "⚠️ Error", message)
 
         except Exception as e:
-            logger.error(f"Error al guardar categoría: {e}")
+            logger.error("Error al guardar categoría: %s", e)
             QMessageBox.critical(
                 self,
                 "❌ Error Crítico",
@@ -885,13 +932,15 @@ class CategoryDialog(QDialog):
             )
 
     def validate_form(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar todo el formulario antes de guardar"""
-        is_valid = True
+        _ = True
         error_messages = []
 
         # Validar nombre
         if not self.validate_name():
-            is_valid = False
+            _ = False
             error_messages.append(
                 "• El nombre es obligatorio y debe tener al menos 2 caracteres"
             )
@@ -899,12 +948,12 @@ class CategoryDialog(QDialog):
         # Validar descripción (opcional pero con límite)
         description = self.description_input.toPlainText().strip()
         if len(description) > 500:
-            is_valid = False
+            _ = False
             error_messages.append("• La descripción no puede exceder 500 caracteres")
 
         # Mostrar errores si los hay
         if not is_valid:
-            error_text = "Por favor, corrija los siguientes errores:\n\n" + "\n".join(
+            _ = "Por favor, corrija los siguientes errores:\n\n" + "\n".join(
                 error_messages
             )
             QMessageBox.warning(self, "⚠️ Errores de Validación", error_text)

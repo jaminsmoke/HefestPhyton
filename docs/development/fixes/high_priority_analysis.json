@@ -1,0 +1,888 @@
+{
+  "total_found": 140,
+  "issues_by_category": {
+    "unsafe_file_operations": [
+      {
+        "file": "scripts\\build_exe.py",
+        "line": 214,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(version_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "scripts\\build_exe.py",
+        "line": 215,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\build_exe.py",
+        "line": 171,
+        "pattern": "subprocess\\.call",
+        "code": "subprocess.Call"
+      },
+      {
+        "file": "scripts\\quality_analysis.py",
+        "line": 67,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.reports_dir / \"complexity.json\", \"w\")"
+      },
+      {
+        "file": "scripts\\quality_analysis.py",
+        "line": 124,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.reports_dir / \"maintainability.json\", \"w\")"
+      },
+      {
+        "file": "scripts\\quality_analysis.py",
+        "line": 209,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.reports_dir / \"quality_summary.json\", \"w\")"
+      },
+      {
+        "file": "scripts\\quality_analysis.py",
+        "line": 68,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\quality_analysis.py",
+        "line": 125,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "src\\utils\\application_config_manager.py",
+        "line": 86,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.config_file, \"w\", encoding=\"utf-8\")"
+      },
+      {
+        "file": "src\\utils\\application_config_manager.py",
+        "line": 225,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(file_path, \"w\", encoding=\"utf-8\")"
+      },
+      {
+        "file": "src\\utils\\application_config_manager.py",
+        "line": 265,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(backup_path, \"w\", encoding=\"utf-8\")"
+      },
+      {
+        "file": "src\\ui\\modules\\inventario_module\\components\\products_manager.py",
+        "line": 632,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(file_path, \"w\", newline=\"\", encoding=\"utf-8\")"
+      },
+      {
+        "file": "scripts\\analysis\\comprehensive_security_analysis.py",
+        "line": 161,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(tracking_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 188,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(report_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 189,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 190,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 193,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 194,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 195,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 196,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 197,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "scripts\\analysis\\identify_high_priority_issues.py",
+        "line": 149,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(output_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "scripts\\migration\\migrar_nomenclatura_contextualizada.py",
+        "line": 43,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(backup_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "scripts\\testing\\fix_path_traversal.py",
+        "line": 106,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(full_path, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "scripts\\testing\\fix_path_traversal.py",
+        "line": 107,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\migrate_proveedores_categoria_v0_0_12.py",
+        "line": 41,
+        "pattern": "\\.write\\(",
+        "code": ".write("
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\visual-redesign-backup-20250613-152304\\utils-backup\\advanced_config.py",
+        "line": 205,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(backup_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\visual-redesign-backup-20250613-152304\\utils-backup\\advanced_config.py",
+        "line": 275,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.config_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\visual-redesign-backup-20250613-152304\\utils-backup\\advanced_config.py",
+        "line": 373,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(file_path, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\visual-redesign-backup-20250613-152304\\utils-backup\\config.py",
+        "line": 92,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.config_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\visual-redesign-backup-20250613-152304\\utils-backup\\config.py",
+        "line": 240,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(file_path, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\utils-cleanup-backup\\utils-pre-cleanup\\advanced_config.py",
+        "line": 205,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(backup_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\utils-cleanup-backup\\utils-pre-cleanup\\advanced_config.py",
+        "line": 275,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.config_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\utils-cleanup-backup\\utils-pre-cleanup\\advanced_config.py",
+        "line": 373,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(file_path, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\utils-cleanup-backup\\utils-pre-cleanup\\config.py",
+        "line": 92,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(self.config_file, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\utils-cleanup-backup\\utils-pre-cleanup\\config.py",
+        "line": 240,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(file_path, 'w', encoding='utf-8')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\src\\ui\\modules\\inventario_module\\products_manager_root_backup.py",
+        "line": 557,
+        "pattern": "open\\([^)]*[\"\\']w[\"\\'][^)]*\\)",
+        "code": "open(file_path, 'w', newline='', encoding='utf-8')"
+      }
+    ],
+    "log_injection": [
+      {
+        "file": "scripts\\quality_analysis.py",
+        "line": 230,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*50)"
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_clean.py",
+        "line": 219,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 70)"
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 263,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 70)"
+      },
+      {
+        "file": "tests\\integration\\test_inventario_complete.py",
+        "line": 14,
+        "pattern": "logging\\.\\w+\\(.*%.*\\)",
+        "code": "logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')"
+      },
+      {
+        "file": "src\\utils\\common_helpers.py",
+        "line": 118,
+        "pattern": "logger\\.\\w+\\(.*\\+.*\\)",
+        "code": "logger.debug(f\"Retry {attempt + 1}/{max_retries} for {func.__name__}: {e}\")"
+      },
+      {
+        "file": "scripts\\analysis\\amazon_q_security_analysis.py",
+        "line": 181,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 80)"
+      },
+      {
+        "file": "scripts\\analysis\\amazon_q_security_analysis.py",
+        "line": 212,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 80)"
+      },
+      {
+        "file": "scripts\\analysis\\comprehensive_security_analysis.py",
+        "line": 66,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 80)"
+      },
+      {
+        "file": "scripts\\analysis\\comprehensive_security_analysis.py",
+        "line": 124,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 80)"
+      },
+      {
+        "file": "scripts\\analysis\\comprehensive_security_analysis.py",
+        "line": 174,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 80)"
+      },
+      {
+        "file": "scripts\\analysis\\debug_profundo_tarjetas.py",
+        "line": 37,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n📊 TARJETA {i+1}: {stat_info.get('type', 'N/A')}\")"
+      },
+      {
+        "file": "scripts\\analysis\\diagnose_random_trends.py",
+        "line": 40,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n--- Iteración {i+1} ---\")"
+      },
+      {
+        "file": "scripts\\analysis\\diagnose_random_trends.py",
+        "line": 63,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "scripts\\analysis\\diagnose_random_trends.py",
+        "line": 107,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"  Consulta {i+1}: {historical_value}\")"
+      },
+      {
+        "file": "scripts\\analysis\\factory_state_analysis.py",
+        "line": 158,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 84,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 128,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 163,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "scripts\\analysis\\identify_critical_security.py",
+        "line": 210,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "scripts\\analysis\\inventory_connections_analysis.py",
+        "line": 185,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 50)"
+      },
+      {
+        "file": "scripts\\analysis\\root_cleanup_analysis.py",
+        "line": 73,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 80)"
+      },
+      {
+        "file": "scripts\\analysis\\utils_cleanup_analysis.py",
+        "line": 65,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 80)"
+      },
+      {
+        "file": "scripts\\analysis\\utils_cleanup_analysis.py",
+        "line": 100,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"  • Total archivos analizados: {len(result['active']) + len(result['obsolete']) + len(result['review'])}\")"
+      },
+      {
+        "file": "scripts\\analysis\\verify_real_trends.py",
+        "line": 63,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"📈 Tendencias con lógica económica: +0.0% sin datos históricos (CORRECTO)\")"
+      },
+      {
+        "file": "scripts\\analysis\\verify_system_state.py",
+        "line": 101,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "scripts\\demos\\demo_v3_arquitectura.py",
+        "line": 102,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "scripts\\demos\\demo_v3_arquitectura.py",
+        "line": 103,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"🎯 ARQUITECTURA VISUAL V3 + DATOS REALES - DEMOSTRACIÓN\")"
+      },
+      {
+        "file": "scripts\\demos\\demo_v3_arquitectura.py",
+        "line": 17,
+        "pattern": "logging\\.\\w+\\(.*%.*\\)",
+        "code": "logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')"
+      },
+      {
+        "file": "scripts\\maintenance\\complete_initial_reset.py",
+        "line": 151,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "scripts\\maintenance\\reset_to_initial_state.py",
+        "line": 115,
+        "pattern": "logger\\.\\w+\\(.*\\+.*\\)",
+        "code": "logger.info(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "scripts\\migration\\limpiar_modulo_inventario.py",
+        "line": 120,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 55)"
+      },
+      {
+        "file": "scripts\\migration\\limpiar_y_estandarizar_mesas.py",
+        "line": 99,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"      ❌ Error en mesa {i+1}\")"
+      },
+      {
+        "file": "scripts\\migration\\limpiar_y_estandarizar_mesas.py",
+        "line": 155,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 55)"
+      },
+      {
+        "file": "scripts\\migration\\migrar_a_datos_reales.py",
+        "line": 17,
+        "pattern": "logging\\.\\w+\\(.*%.*\\)",
+        "code": "logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')"
+      },
+      {
+        "file": "scripts\\migration\\migrar_nomenclatura_contextualizada.py",
+        "line": 132,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"      ❌ Error creando mesa {i+1}\")"
+      },
+      {
+        "file": "scripts\\migration\\migrar_nomenclatura_contextualizada.py",
+        "line": 215,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "scripts\\testing\\security_validation.py",
+        "line": 184,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"ERROR: Intento {i+1} bloqueado prematuramente\")"
+      },
+      {
+        "file": "scripts\\testing\\security_validation.py",
+        "line": 231,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 50)"
+      },
+      {
+        "file": "scripts\\testing\\test_css_compatibility.py",
+        "line": 70,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"Caso {i+1}: {repr(css)}\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.13\\tests-obsoletos-backup\\test_dashboard_debug.py",
+        "line": 61,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"Presiona Ctrl+C para cerrar.\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.13\\tests-obsoletos-backup\\test_stats_ultra_simple.py",
+        "line": 60,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"  • Solo QFrame.StyledPanel + QLabel\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.13\\tests-obsoletos-backup\\test_title_final_optimization.py",
+        "line": 374,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"⚡ Presiona Ctrl+C para cerrar\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\cleanup_analysis.py",
+        "line": 87,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\debug_labels_inspection.py",
+        "line": 60,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"  Label {i+1}:\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_architecture_v2.py",
+        "line": 206,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_dashboard_admin_v3_integration.py",
+        "line": 160,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*70)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_dashboard_admin_v3_integration.py",
+        "line": 163,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"=\"*70 + \"\\n\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_dashboard_admin_v3_simple.py",
+        "line": 82,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_dashboard_admin_v3_simple.py",
+        "line": 85,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"=\"*60 + \"\\n\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_final_validation.py",
+        "line": 203,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*80)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_final_validation.py",
+        "line": 231,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*80)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_final_validation.py",
+        "line": 19,
+        "pattern": "logging\\.\\w+\\(.*%.*\\)",
+        "code": "logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_ultra_modern_v3_complete.py",
+        "line": 315,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\root-tests-backup\\test_ultra_modern_v3_complete.py",
+        "line": 318,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"=\"*60 + \"\\n\")"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\migrate_productos_v0_0_12.py",
+        "line": 20,
+        "pattern": "logging\\.\\w+\\(.*%.*\\)",
+        "code": "logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\migrate_proveedores_categoria_v0_0_12.py",
+        "line": 19,
+        "pattern": "logging\\.\\w+\\(.*%.*\\)",
+        "code": "logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_categorias_frontend.py",
+        "line": 155,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_dialogo_edicion.py",
+        "line": 73,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_dialogo_mejorado.py",
+        "line": 96,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_eliminacion_productos.py",
+        "line": 80,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\"*60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_inventario_completo_v0_0_12.py",
+        "line": 187,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_inventario_completo_v0_0_12.py",
+        "line": 15,
+        "pattern": "logging\\.\\w+\\(.*%.*\\)",
+        "code": "logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\verificacion_inventario_final.py",
+        "line": 104,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(\"\\n\" + \"=\" * 60)"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\verificacion_visual_inventario.py",
+        "line": 88,
+        "pattern": "print\\(.*\\+.*\\)",
+        "code": "print(f\"\\n\" + \"=\" * 60)"
+      }
+    ],
+    "hardcoded_secrets": [
+      {
+        "file": "tests\\integration\\test_dashboard_access_clean.py",
+        "line": 90,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"admin\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_clean.py",
+        "line": 91,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"manager\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_clean.py",
+        "line": 92,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"employee\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_clean.py",
+        "line": 172,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"admin\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 106,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"admin\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 107,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"manager\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 108,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"employee\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 141,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"admin\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 142,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"manager\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 143,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"employee\""
+      },
+      {
+        "file": "tests\\integration\\test_dashboard_access_integration.py",
+        "line": 222,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"admin\""
+      },
+      {
+        "file": "tests\\ui\\test_user_management_dialog.py",
+        "line": 31,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"1234\""
+      },
+      {
+        "file": "tests\\ui\\test_user_selector.py",
+        "line": 24,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"1234\""
+      },
+      {
+        "file": "tests\\ui\\test_user_selector.py",
+        "line": 25,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"5678\""
+      },
+      {
+        "file": "tests\\ui\\test_user_selector.py",
+        "line": 36,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"1234\""
+      },
+      {
+        "file": "tests\\unit\\test_models.py",
+        "line": 45,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password='test_pass'"
+      },
+      {
+        "file": "tests\\unit\\test_models.py",
+        "line": 61,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password='pass'"
+      },
+      {
+        "file": "tests\\unit\\test_models_basic.py",
+        "line": 21,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"123\""
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 99,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"1234\""
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 109,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"1234\""
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 119,
+        "pattern": "password\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "password=\"1234\""
+      },
+      {
+        "file": "src\\ui\\modules\\dashboard_admin_v3\\components\\dashboard_metric_components.py",
+        "line": 324,
+        "pattern": "key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "key=\"text_base\""
+      },
+      {
+        "file": "src\\ui\\modules\\dashboard_admin_v3\\components\\dashboard_metric_components.py",
+        "line": 324,
+        "pattern": "key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "key=\"font_normal\""
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\cleanup-backup-20250613-154512\\ui-pre-cleanup\\components\\ultra_modern_system_v3.py",
+        "line": 197,
+        "pattern": "key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "key='text_base'"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\cleanup-backup-20250613-154512\\ui-pre-cleanup\\components\\ultra_modern_system_v3.py",
+        "line": 197,
+        "pattern": "key\\s*=\\s*[\"\\'][^\"\\']+[\"\\']",
+        "code": "key='font_normal'"
+      }
+    ],
+    "weak_crypto": [
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 55,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 59,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 246,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 278,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 310,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\services\\auth_service.py",
+        "line": 339,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\utils\\common_helpers.py",
+        "line": 168,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\utils\\common_helpers.py",
+        "line": 188,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\utils\\rate_limiter.py",
+        "line": 28,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\utils\\rate_limiter.py",
+        "line": 41,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\utils\\rate_limiter.py",
+        "line": 68,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "src\\utils\\rate_limiter.py",
+        "line": 80,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_categorias_frontend.py",
+        "line": 54,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      },
+      {
+        "file": "docs\\archive\\legacy_cleaned_20250708\\v0.0.12\\scripts_tests_obsoletos\\test_eliminacion_productos.py",
+        "line": 33,
+        "pattern": "time\\.time\\(\\)",
+        "code": "time.time()"
+      }
+    ]
+  },
+  "fix_plan": [
+    {
+      "category": "hardcoded_secrets",
+      "count": 25,
+      "priority": 1,
+      "auto_fix": false,
+      "solution": "Move to environment variables",
+      "estimated_hours": 50
+    },
+    {
+      "category": "log_injection",
+      "count": 64,
+      "priority": 2,
+      "auto_fix": true,
+      "solution": "Use parameterized logging",
+      "estimated_hours": 32.0
+    },
+    {
+      "category": "weak_crypto",
+      "count": 14,
+      "priority": 2,
+      "auto_fix": true,
+      "solution": "Replace with secure alternatives",
+      "estimated_hours": 7.0
+    },
+    {
+      "category": "unsafe_file_operations",
+      "count": 37,
+      "priority": 3,
+      "auto_fix": false,
+      "solution": "Add path validation and error handling",
+      "estimated_hours": 74
+    }
+  ],
+  "timestamp": "2025-06-28"
+}

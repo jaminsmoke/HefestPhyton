@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python3
 """
 Script de Release Automático para Hefest
@@ -19,6 +21,8 @@ from pathlib import Path
 from datetime import datetime
 
 def get_current_version():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Obtiene la versión actual del proyecto."""
     pyproject_path = Path("pyproject.toml")
     content = pyproject_path.read_text(encoding='utf-8')
@@ -26,8 +30,10 @@ def get_current_version():
     return match.group(1) if match else "0.0.0"
 
 def update_version_files(new_version):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Actualiza la versión en todos los archivos relevantes."""
-    files_to_update = [
+    _ = [
         ("pyproject.toml", r'version = "[^"]+"', f'version = "{new_version}"'),
         ("src/main.py", r'Hefest v[\d.]+', f'Hefest v{new_version}'),
         ("scripts/build_exe.py", r'VERSION = "[^"]+"', f'VERSION = "{new_version}"'),
@@ -40,22 +46,25 @@ def update_version_files(new_version):
             content = path.read_text(encoding='utf-8')
             updated = re.sub(pattern, replacement, content)
             path.write_text(updated, encoding='utf-8')
-            print(f"✅ Actualizado {file_path}")
+            print("✅ Actualizado %s" % file_path)
 
 def generate_changelog_entry(version):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Genera entrada automática en CHANGELOG.md."""
-    changelog_path = Path("CHANGELOG.md")
+    _ = Path("CHANGELOG.md")
     date_str = datetime.now().strftime("%Y-%m-%d")
     
     # Obtener commits desde último tag
     try:
-        result = subprocess.run(
+        _ = subprocess.run(
             ["git", "log", "--oneline", "--since=1 month ago"],
             capture_output=True, text=True
         )
-        commits = result.stdout.strip().split('\n') if result.stdout else []
-    except:
-        commits = []
+        _ = result.stdout.strip().split('\n') if result.stdout else []
+    except Exception as e:
+        logging.error("Error: %s", e)
+        _ = []
     
     # Generar entrada
     entry = f"""
@@ -82,12 +91,12 @@ def generate_changelog_entry(version):
     # Insertar al inicio del changelog
     if changelog_path.exists():
         content = changelog_path.read_text(encoding='utf-8')
-        lines = content.split('\n')
+        _ = content.split('\n')
         # Encontrar donde insertar (después del header)
-        insert_line = 0
+        _ = 0
         for i, line in enumerate(lines):
             if line.startswith('## [v'):
-                insert_line = i
+                _ = i
                 break
         
         lines.insert(insert_line, entry.strip())
@@ -95,6 +104,8 @@ def generate_changelog_entry(version):
         print(f"✅ CHANGELOG.md actualizado")
 
 def build_executables():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Construye ejecutables para distribución."""
     print("🔨 Construyendo ejecutables...")
     
@@ -110,8 +121,10 @@ def build_executables():
     print("✅ Build completado")
 
 def create_git_tag(version):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea tag de Git y pushea."""
-    tag_name = f"v{version}"
+    _ = f"v{version}"
     
     subprocess.run(["git", "add", "."])
     subprocess.run(["git", "commit", "-m", f"Release v{version}"])
@@ -119,20 +132,22 @@ def create_git_tag(version):
     subprocess.run(["git", "push", "origin", "main"])
     subprocess.run(["git", "push", "origin", tag_name])
     
-    print(f"✅ Tag {tag_name} creado y pusheado")
+    print("✅ Tag %s creado y pusheado" % tag_name)
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     parser = argparse.ArgumentParser(description="Script de release automático")
     parser.add_argument("version", help="Nueva versión (ej: 0.0.11)")
     parser.add_argument("--dry-run", action="store_true", help="Solo mostrar cambios")
     parser.add_argument("--skip-build", action="store_true", help="Omitir build")
     parser.add_argument("--skip-git", action="store_true", help="Omitir Git operations")
     
-    args = parser.parse_args()
+    _ = parser.parse_args()
     
     current_version = get_current_version()
-    print(f"📋 Versión actual: {current_version}")
-    print(f"📋 Nueva versión: {args.version}")
+    print("📋 Versión actual: %s" % current_version)
+    print("📋 Nueva versión: %s" % args.version)
     
     if args.dry_run:
         print("🔍 Modo dry-run - no se realizarán cambios")
@@ -152,7 +167,7 @@ def main():
     if not args.skip_git:
         create_git_tag(args.version)
     
-    print(f"🎉 Release v{args.version} completado!")
+    print("🎉 Release v%s completado!" % args.version)
     print("📦 Archivos generados en dist/")
     print("🔗 Tag pusheado a repositorio")
 

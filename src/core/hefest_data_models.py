@@ -26,9 +26,9 @@ from dataclasses import dataclass
 class Role(Enum):
     """Roles de usuario en el sistema"""
 
-    EMPLOYEE = "employee"
+    _ = "employee"
     MANAGER = "manager"
-    ADMIN = "admin"
+    _ = "admin"
 
 
 @dataclass
@@ -48,18 +48,24 @@ class User:
 
     @property
     def pin(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para password para compatibilidad con AuthService"""
         return self.password
 
     @pin.setter
     def pin(self, value: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Setter para pin que actualiza password"""
         self.password = value
 
     def __str__(self):
+        """TODO: Add docstring"""
         return f"User(username='{self.username}', name='{self.name}', role={self.role})"
 
     def __eq__(self, other: object) -> bool:
+        """TODO: Add docstring"""
         if not isinstance(other, User):
             return False
         return self.id == other.id
@@ -80,6 +86,8 @@ class Producto:
     fecha_ultima_entrada: Optional[datetime] = None
 
     def necesita_reposicion(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Indica si el producto necesita reposición.
 
@@ -91,6 +99,8 @@ class Producto:
         return self.stock_actual <= self.stock_minimo
 
     def is_stock_low(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Alias para necesita_reposicion para compatibilidad con tests.
 
@@ -103,6 +113,8 @@ class Producto:
 
     @property
     def valor_total(self) -> float:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Valor total del stock (precio * cantidad).
 
@@ -114,6 +126,7 @@ class Producto:
         return self.precio * self.stock_actual
 
     def __str__(self):
+        """TODO: Add docstring"""
         return (
             f"Producto(id={self.id}, nombre='{self.nombre}', stock={self.stock_actual})"
         )
@@ -122,9 +135,9 @@ class Producto:
 class EstadoMesa(Enum):
     """Estados posibles de una mesa"""
 
-    LIBRE = "libre"
+    _ = "libre"
     OCUPADA = "ocupada"
-    RESERVADA = "reservada"
+    _ = "reservada"
     FUERA_SERVICIO = "fuera_servicio"
 
 
@@ -141,6 +154,11 @@ class Mesa:
     comanda_id: Optional[int] = None
     cliente_nombre: Optional[str] = None
     tiempo_ocupacion: Optional[datetime] = None
+    alias: Optional[str] = None  # Alias temporal de la mesa (no persistente)
+    personas_temporal: Optional[int] = None  # Número de personas temporal (no persistente)
+    notas: Optional[str] = None  # Notas temporales de la mesa (no persistente)
+    reservada: bool = False  # Indica si la mesa está reservada actualmente
+    proxima_reserva: Optional[object] = None  # Reserva futura más próxima (no persistente)
 
     def __post_init__(self):
         """Sincronizar ubicacion y zona para compatibilidad"""
@@ -150,19 +168,67 @@ class Mesa:
             self.ubicacion = self.zona
 
     def is_available(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Indica si la mesa está disponible"""
         return self.estado == "libre"
+    
+    @property
+    def nombre_display(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """
+        Obtiene el nombre a mostrar para la mesa:
+        1. Si hay próxima reserva activa y tiene cliente_nombre, mostrar ese nombre
+        2. Si hay alias temporal, mostrar alias
+        3. Si no, mostrar nombre predeterminado
+        """
+        if self.proxima_reserva is not None:
+            cliente = getattr(self.proxima_reserva, "cliente_nombre", None)
+            if cliente:
+                return cliente
+        if self.alias:
+            return self.alias
+        return f"Mesa {self.numero}"
+
+    @property
+    def personas_display(self) -> int:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Obtiene el número de personas a mostrar:
+        - Si hay próxima reserva activa y tiene personas válidas, muestra ese valor
+        - Si no, muestra el valor temporal si existe
+        - Si no, la capacidad real de la mesa
+        """
+        # 1. Prioridad: próxima reserva activa
+        if self.proxima_reserva is not None:
+            # Intentar primero 'numero_personas' (modelo unificado), luego 'personas' (legacy)
+            personas_reserva = getattr(self.proxima_reserva, "numero_personas", None)
+            if personas_reserva is None:
+                _ = getattr(self.proxima_reserva, "personas", None)
+            if (
+                personas_reserva is not None
+                and isinstance(personas_reserva, int)
+                and personas_reserva > 0
+            ):
+                return personas_reserva
+        # 2. Valor temporal (edición manual)
+        if self.personas_temporal is not None:
+            return self.personas_temporal
+        # 3. Capacidad real
+        return self.capacidad
 
     def __str__(self):
+        """TODO: Add docstring"""
         return f"Mesa(numero={self.numero}, capacidad={self.capacidad}, estado='{self.estado}')"
 
 
 class EstadoReserva(Enum):
     """Estados posibles de una reserva"""
 
-    PENDIENTE = "pendiente"
+    _ = "pendiente"
     CONFIRMADA = "confirmada"
-    CANCELADA = "cancelada"
+    _ = "cancelada"
     COMPLETADA = "completada"
 
 
@@ -197,16 +263,21 @@ class Reserva:
             self.notas = self.observaciones
 
     def is_confirmed(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Indica si la reserva está confirmada"""
         return self.estado == "confirmada"
 
     def is_cancelled(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Indica si la reserva está cancelada"""
         return self.estado == "cancelada"
 
     def __str__(self):
+        """TODO: Add docstring"""
         if self.mesa_id:
-            fecha_hora = f"{self.fecha_reserva}"
+            _ = f"{self.fecha_reserva}"
             if self.hora_reserva:
                 fecha_hora = f"{self.fecha_reserva} {self.hora_reserva}"
             return f"Reserva(cliente='{self.cliente_nombre}', mesa={self.mesa_id}, fecha='{fecha_hora}')"

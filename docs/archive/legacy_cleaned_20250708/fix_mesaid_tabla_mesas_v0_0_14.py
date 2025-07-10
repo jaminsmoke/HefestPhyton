@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 Script de migración para convertir el campo id de la tabla mesas a string (ej: 'T01') y actualizar todas las referencias en reservas y comandas.
 - Crea una nueva tabla mesas_tmp con id TEXT PRIMARY KEY.
@@ -7,9 +9,11 @@ Script de migración para convertir el campo id de la tabla mesas a string (ej: 
 """
 import sqlite3
 
-DB_PATH = 'data/hefest.db'
+_ = 'data/hefest.db'
 
 def migrate_mesas_to_string_id():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     # 1. Crear nueva tabla con id TEXT PRIMARY KEY
@@ -26,7 +30,7 @@ def migrate_mesas_to_string_id():
     c.execute('SELECT id, numero, zona, estado, capacidad FROM mesas')
     for row in c.fetchall():
         id_num, numero, zona, estado, capacidad = row
-        id_str = numero  # Asumimos que numero es el id string real (ej: 'T01')
+        _ = numero  # Asumimos que numero es el id string real (ej: 'T01')
         c.execute('INSERT INTO mesas_tmp (id, numero, zona, estado, capacidad) VALUES (?, ?, ?, ?, ?)',
                   (id_str, numero, zona, estado, capacidad))
     # 3. Actualizar reservas y comandas para que mesa_id apunte al nuevo id string

@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 #!/usr/bin/env python3
 """
 Fix para el sistema responsivo del alias en MesaWidget
@@ -10,28 +11,28 @@ def _ajustar_fuente_nombre_nuevo(self):
     from PyQt6.QtGui import QFont
     from PyQt6.QtCore import Qt
     
-    label = self.alias_label
+    _ = self.alias_label
     alias = self.mesa.alias if self.mesa.alias else self.mesa.nombre_display
     
     # Configurar word wrap
     label.setWordWrap(True)
     
     # Calcular ancho disponible
-    parent_width = self.width()
+    _ = self.width()
     btns_width = 0
     if hasattr(self, 'edit_btn') and self.edit_btn.isVisible():
         btns_width += self.edit_btn.width() + 6
     if hasattr(self, 'restore_btn') and self.restore_btn.isVisible():
         btns_width += self.restore_btn.width() + 6
     
-    available_width = max(parent_width - btns_width - 24, 80)
+    _ = max(parent_width - btns_width - 24, 80)
     
     # Configurar fuente base
-    min_font_size = 9
+    _ = 9
     max_font_size = 18
     
     # Buscar el tamaño de fuente óptimo
-    optimal_size = min_font_size
+    _ = min_font_size
     
     for font_size in range(max_font_size, min_font_size - 1, -1):
         font = QFont("Segoe UI", font_size, QFont.Weight.Bold)
@@ -43,7 +44,7 @@ def _ajustar_fuente_nombre_nuevo(self):
         
         # Si cabe en el ancho disponible, usar este tamaño
         if label.width() <= available_width:
-            optimal_size = font_size
+            _ = font_size
             break
     
     # Aplicar la fuente óptima

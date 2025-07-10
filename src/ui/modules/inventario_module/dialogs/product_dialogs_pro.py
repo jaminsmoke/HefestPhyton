@@ -62,13 +62,14 @@ from PyQt6.QtGui import QFont, QIcon
 
 from services.inventario_service_real import Producto
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ProductDialog(QDialog):
     """Diálogo base profesional para productos con diseño moderno"""
 
     def __init__(self, parent=None, title="Producto", inventario_service=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setObjectName("ProductDialog")
         self.inventario_service = inventario_service
@@ -81,6 +82,8 @@ class ProductDialog(QDialog):
         self.load_initial_data()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar la interfaz de usuario profesional"""
         self.setFixedSize(750, 850)
         self.setModal(True)
@@ -133,6 +136,8 @@ class ProductDialog(QDialog):
         layout.addWidget(footer)
 
     def create_header(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear header profesional"""
         header = QFrame()
         header.setObjectName("DialogHeader")
@@ -166,6 +171,8 @@ class ProductDialog(QDialog):
         return header
 
     def create_basic_info_group(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear grupo de información básica usando QFrame simple"""
         frame = QFrame()
         frame.setObjectName("BasicInfoFrame")
@@ -252,6 +259,8 @@ class ProductDialog(QDialog):
         return frame
 
     def create_commercial_info_group(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear sección de información comercial"""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
@@ -354,6 +363,8 @@ class ProductDialog(QDialog):
         return frame
 
     def create_inventory_info_group(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear sección de gestión de inventario"""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
@@ -470,6 +481,8 @@ class ProductDialog(QDialog):
         return frame
 
     def create_additional_info_group(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear sección de información adicional"""
         frame = QFrame()
         frame.setFrameStyle(QFrame.Shape.StyledPanel)
@@ -550,6 +563,8 @@ class ProductDialog(QDialog):
         return frame
 
     def create_footer(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear footer con botones de acción"""
         footer = QFrame()
         footer.setObjectName("DialogFooter")
@@ -581,6 +596,8 @@ class ProductDialog(QDialog):
         return footer
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilos al diálogo"""
         self.setStyleSheet(
             """
@@ -750,22 +767,28 @@ class ProductDialog(QDialog):
         )
 
     def set_categories(self, categories: list):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Establecer las categorías disponibles"""
         self.categoria_combo.clear()
         self.categoria_combo.addItems(categories)
 
     def accept_product(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar y aceptar el producto"""
         if not self.validate_form():
             return
         self.accept()
 
     def load_initial_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar datos iniciales (categorías, proveedores)"""
         try:
             if self.inventario_service:
                 # Cargar categorías
-                categorias = self.inventario_service.get_categorias()
+                _ = self.inventario_service.get_categorias()
                 categoria_names = [
                     cat.get("nombre", cat) if isinstance(cat, dict) else str(cat)
                     for cat in categorias
@@ -773,7 +796,7 @@ class ProductDialog(QDialog):
                 self.categoria_combo.addItems(categoria_names)
 
                 # Cargar proveedores
-                proveedores = self.inventario_service.get_proveedores()
+                _ = self.inventario_service.get_proveedores()
                 proveedor_names = [
                     (
                         prov.get("nombre", str(prov))
@@ -785,12 +808,14 @@ class ProductDialog(QDialog):
                 self.proveedor_combo.addItems(proveedor_names)
 
         except Exception as e:
-            logger.error(f"Error cargando datos iniciales: {e}")
+            logger.error("Error cargando datos iniciales: %s", e)
 
     def calculate_margin(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Calcular margen de beneficio automáticamente"""
         try:
-            precio_compra = self.precio_compra_input.value()
+            _ = self.precio_compra_input.value()
             precio_venta = self.precio_input.value()
 
             if precio_compra > 0 and precio_venta > 0:
@@ -799,19 +824,21 @@ class ProductDialog(QDialog):
 
                 # Cambiar color según el margen
                 if margen < 10:
-                    color = "#ef4444"  # Rojo
+                    _ = "#ef4444"  # Rojo
                 elif margen < 30:
-                    color = "#f59e0b"  # Amarillo
+                    _ = "#f59e0b"  # Amarillo
                 else:
-                    color = "#10b981"  # Verde                self.margen_label.setStyleSheet(f"color: {color}; font-weight: bold;")
+                    _ = "#10b981"  # Verde                self.margen_label.setStyleSheet(f"color: {color}; font-weight: bold;")
             else:
                 self.margen_label.setText("0.00%")
                 self.margen_label.setStyleSheet("color: #6b7280;")
 
         except Exception as e:
-            logger.error(f"Error calculando margen: {e}")
+            logger.error("Error calculando margen: %s", e)
 
     def on_perecedero_changed(self, state):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar cambio en checkbox de producto perecedero"""
         is_perecedero = state == Qt.CheckState.Checked.value
         self.caducidad_input.setEnabled(is_perecedero)
@@ -821,27 +848,29 @@ class ProductDialog(QDialog):
             self.caducidad_input.setDate(QDate.currentDate().addYears(10))
 
     def validate_form(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar formulario en tiempo real"""
-        is_valid = True
+        _ = True
         errors = []
 
         # Validar nombre
         nombre = self.nombre_input.text().strip()
         if not nombre:
             errors.append("El nombre es obligatorio")
-            is_valid = False
+            _ = False
 
         # Validar categoría
         categoria = self.categoria_combo.currentText().strip()
         if not categoria:
             errors.append("La categoría es obligatoria")
-            is_valid = False
+            _ = False
 
         # Validar precio
         precio = self.precio_input.value()
         if precio <= 0:
             errors.append("El precio debe ser mayor a 0")
-            is_valid = False
+            _ = False
 
         # Actualizar UI
         self.accept_btn.setEnabled(is_valid)
@@ -856,6 +885,8 @@ class ProductDialog(QDialog):
         return is_valid
 
     def get_product_data(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener los datos completos del producto"""
         return {
             "nombre": self.nombre_input.text().strip(),
@@ -882,6 +913,7 @@ class NewProductDialog(ProductDialog):
     """Diálogo para crear un nuevo producto"""
 
     def __init__(self, parent=None, categories=None, inventario_service=None):
+        """TODO: Add docstring"""
         super().__init__(parent, "Nuevo Producto", inventario_service)
 
         if categories:
@@ -889,22 +921,24 @@ class NewProductDialog(ProductDialog):
         self.nombre_input.setFocus()
 
     def accept_product(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar y guardar el nuevo producto"""
         if not self.validate_form():
             return
 
         try:
             # Obtener datos del formulario
-            product_data = self.get_product_data()
+            _ = self.get_product_data()
 
             # Guardar producto usando el servicio de inventario
             if self.inventario_service:
                 # Crear producto usando los parámetros correctos del servicio
-                nuevo_producto = self.inventario_service.crear_producto(
+                _ = self.inventario_service.crear_producto(
                     nombre=product_data["nombre"],
-                    categoria=product_data["categoria"],
+                    _ = product_data["categoria"],
                     precio=product_data["precio"],
-                    stock_inicial=product_data["stock_actual"],
+                    _ = product_data["stock_actual"],
                     stock_minimo=product_data["stock_minimo"],
                 )
 
@@ -930,7 +964,6 @@ class NewProductDialog(ProductDialog):
                     self.accept()
                 else:
                     logger.error("Error al crear producto en la base de datos")
-                    from PyQt6.QtWidgets import QMessageBox
 
                     QMessageBox.warning(
                         self,
@@ -944,7 +977,6 @@ class NewProductDialog(ProductDialog):
                     )
             else:
                 logger.error("No hay servicio de inventario disponible")
-                from PyQt6.QtWidgets import QMessageBox
 
                 QMessageBox.warning(
                     self,
@@ -955,8 +987,7 @@ class NewProductDialog(ProductDialog):
                 )
 
         except Exception as e:
-            logger.error(f"Error al guardar producto: {e}")
-            from PyQt6.QtWidgets import QMessageBox
+            logger.error("Error al guardar producto: %s", e)
 
             QMessageBox.critical(
                 self,
@@ -972,9 +1003,9 @@ class EditProductDialog(ProductDialog):
 
     def __init__(
         self,
-        parent=None,
+        _ = None,
         producto: Optional[Producto] = None,
-        categories=None,
+        _ = None,
         inventario_service=None,
     ):
         super().__init__(parent, "Editar Producto", inventario_service)
@@ -989,6 +1020,8 @@ class EditProductDialog(ProductDialog):
         self.nombre_input.selectAll()
 
     def load_product_data(self, producto: Producto):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar datos del producto en el formulario"""
         # Guardar referencia al producto original para el método accept_product
         self._original_producto = producto
@@ -1008,24 +1041,26 @@ class EditProductDialog(ProductDialog):
         self.stock_min_input.setValue(producto.stock_minimo)
 
     def accept_product(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar y guardar cambios en el producto existente"""
         if not self.validate_form():
             return
 
         try:
             # Obtener datos del formulario
-            product_data = self.get_product_data()
+            _ = self.get_product_data()
             # Actualizar producto usando el servicio de inventario
             if self.inventario_service and hasattr(
                 self, "_original_producto"
             ):  # Usar el método actualizar_producto del servicio
-                success = self.inventario_service.actualizar_producto(
+                _ = self.inventario_service.actualizar_producto(
                     producto_id=self._original_producto.id,
-                    nombre=product_data["nombre"],
+                    _ = product_data["nombre"],
                     categoria=product_data["categoria"],
-                    precio=product_data["precio"],
+                    _ = product_data["precio"],
                     stock=product_data["stock_actual"],
-                    stock_minimo=product_data["stock_minimo"],
+                    _ = product_data["stock_minimo"],
                 )
 
                 if success:
@@ -1034,7 +1069,6 @@ class EditProductDialog(ProductDialog):
                     )
 
                     # Mostrar mensaje de éxito
-                    from PyQt6.QtWidgets import QMessageBox
 
                     QMessageBox.information(
                         self,
@@ -1045,7 +1079,6 @@ class EditProductDialog(ProductDialog):
                     # Cerrar diálogo con código de aceptación
                     self.accept()
                 else:
-                    from PyQt6.QtWidgets import QMessageBox
 
                     QMessageBox.warning(
                         self,
@@ -1053,15 +1086,13 @@ class EditProductDialog(ProductDialog):
                         "No se pudo actualizar el producto. Por favor, inténtelo de nuevo.",
                     )
             else:
-                from PyQt6.QtWidgets import QMessageBox
 
                 QMessageBox.warning(
                     self, "❌ Error", "Servicio de inventario no disponible."
                 )
 
         except Exception as e:
-            logger.error(f"Error actualizando producto: {e}")
-            from PyQt6.QtWidgets import QMessageBox
+            logger.error("Error actualizando producto: %s", e)
 
             QMessageBox.critical(
                 self,
@@ -1074,6 +1105,7 @@ class StockAdjustmentDialog(QDialog):
     """Diálogo para ajustar el stock de un producto"""
 
     def __init__(self, parent=None, producto: Optional[Producto] = None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.producto = producto
         self.setWindowTitle("Ajustar Stock")
@@ -1087,6 +1119,8 @@ class StockAdjustmentDialog(QDialog):
             self.load_product_info(producto)
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setSpacing(20)
@@ -1111,7 +1145,7 @@ class StockAdjustmentDialog(QDialog):
 
         # Información del producto
         info_group = QGroupBox("Información del Producto")
-        info_layout = QFormLayout(info_group)
+        _ = QFormLayout(info_group)
 
         self.producto_label = QLabel("N/A")
         self.producto_label.setStyleSheet("font-weight: bold; color: #1f2937;")
@@ -1129,7 +1163,7 @@ class StockAdjustmentDialog(QDialog):
 
         # Ajuste de stock
         adjust_group = QGroupBox("Ajuste de Stock")
-        adjust_layout = QFormLayout(adjust_group)
+        _ = QFormLayout(adjust_group)
 
         self.tipo_combo = QComboBox()
         self.tipo_combo.addItems(["Entrada", "Salida", "Ajuste Manual"])
@@ -1172,6 +1206,8 @@ class StockAdjustmentDialog(QDialog):
         layout.addLayout(button_layout)
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilos al diálogo"""
         self.setStyleSheet(
             """
@@ -1242,6 +1278,8 @@ class StockAdjustmentDialog(QDialog):
         )
 
     def load_product_info(self, producto: Producto):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar información del producto"""
         self.producto_label.setText(producto.nombre)
         self.stock_actual_label.setText(str(producto.stock_actual))
@@ -1249,6 +1287,8 @@ class StockAdjustmentDialog(QDialog):
         self.update_preview()
 
     def on_tipo_changed(self, tipo: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar cambio de tipo de movimiento"""
         if tipo == "Entrada":
             self.cantidad_input.setPrefix("+ ")
@@ -1263,18 +1303,20 @@ class StockAdjustmentDialog(QDialog):
         self.update_preview()
 
     def update_preview(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar vista previa del nuevo stock"""
         if not self.producto:
             return
 
-        tipo = self.tipo_combo.currentText()
+        _ = self.tipo_combo.currentText()
         cantidad = self.cantidad_input.value()
-        stock_actual = self.producto.stock_actual
+        _ = self.producto.stock_actual
 
         if tipo == "Entrada":
-            nuevo_stock = stock_actual + cantidad
+            _ = stock_actual + cantidad
         elif tipo == "Salida":
-            nuevo_stock = max(0, stock_actual - cantidad)
+            _ = max(0, stock_actual - cantidad)
         else:  # Ajuste Manual
             nuevo_stock = cantidad
 
@@ -1282,28 +1324,32 @@ class StockAdjustmentDialog(QDialog):
 
         # Cambiar color según el estado
         if nuevo_stock == 0:
-            color = "#ef4444"  # Rojo
+            _ = "#ef4444"  # Rojo
         elif nuevo_stock <= self.producto.stock_minimo:
-            color = "#f59e0b"  # Amarillo
+            _ = "#f59e0b"  # Amarillo
         else:
-            color = "#059669"  # Verde
+            _ = "#059669"  # Verde
 
         self.nuevo_stock_label.setStyleSheet(
             f"font-weight: bold; font-size: 14px; color: {color};"
         )
 
     def accept_adjustment(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar y aceptar el ajuste"""
         if not self.validate_adjustment():
             return
         self.accept()
 
     def validate_adjustment(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Validar el ajuste de stock"""
         if not self.producto:
             return False
 
-        tipo = self.tipo_combo.currentText()
+        _ = self.tipo_combo.currentText()
         cantidad = self.cantidad_input.value()
 
         if cantidad <= 0:
@@ -1312,7 +1358,7 @@ class StockAdjustmentDialog(QDialog):
             return False
 
         if tipo == "Salida" and cantidad > self.producto.stock_actual:
-            reply = QMessageBox.question(
+            _ = QMessageBox.question(
                 self,
                 "Stock insuficiente",
                 f"La cantidad a retirar ({cantidad}) es mayor al stock actual ({self.producto.stock_actual}).\n"
@@ -1325,20 +1371,22 @@ class StockAdjustmentDialog(QDialog):
         return True
 
     def get_adjustment_data(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener los datos del ajuste"""
         if not self.producto:
             return {}
 
-        tipo = self.tipo_combo.currentText()
+        _ = self.tipo_combo.currentText()
         cantidad = self.cantidad_input.value()
-        stock_actual = self.producto.stock_actual
+        _ = self.producto.stock_actual
 
         if tipo == "Entrada":
-            nuevo_stock = stock_actual + cantidad
+            _ = stock_actual + cantidad
         elif tipo == "Salida":
-            nuevo_stock = max(0, stock_actual - cantidad)
+            _ = max(0, stock_actual - cantidad)
         else:  # Ajuste Manual
-            nuevo_stock = cantidad
+            _ = cantidad
 
         return {
             "tipo": tipo.lower().replace(" ", "_"),
@@ -1353,6 +1401,7 @@ class DeleteConfirmationDialog(QDialog):
     """Diálogo de confirmación para eliminar producto"""
 
     def __init__(self, parent=None, producto: Optional[Producto] = None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.producto = producto
         self.setWindowTitle("Confirmar Eliminación")
@@ -1363,6 +1412,8 @@ class DeleteConfirmationDialog(QDialog):
         self.apply_styles()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setSpacing(20)
@@ -1386,7 +1437,7 @@ class DeleteConfirmationDialog(QDialog):
         layout.addWidget(header)
 
         # Mensaje de advertencia
-        warning_label = QLabel()
+        _ = QLabel()
         if self.producto:
             warning_label.setText(
                 f"¿Estás seguro de que deseas eliminar el producto '{self.producto.nombre}'?\n\n"
@@ -1444,6 +1495,8 @@ class DeleteConfirmationDialog(QDialog):
         layout.addLayout(button_layout)
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilos al diálogo"""
         self.setStyleSheet(
             """
@@ -1526,5 +1579,7 @@ class DeleteConfirmationDialog(QDialog):
         )
 
     def on_confirm_changed(self, state):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar cambio en el checkbox de confirmación"""
         self.delete_btn.setEnabled(state == Qt.CheckState.Checked.value)

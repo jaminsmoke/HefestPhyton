@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 #!/usr/bin/env python3
 """
 Análisis de archivos de test obsoletos en la carpeta raíz
@@ -6,6 +7,8 @@ Análisis de archivos de test obsoletos en la carpeta raíz
 import os
 
 def analyze_root_test_files():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Analiza archivos de test en la carpeta raíz y determina cuáles son obsoletos"""
     
     print("=" * 80)
@@ -13,7 +16,7 @@ def analyze_root_test_files():
     print("=" * 80)
     
     # Archivos de test encontrados en la raíz
-    test_files = [
+    _ = [
         "test_architecture_v2.py",              # ❌ OBSOLETO - Arquitectura V2
         "test_dashboard_admin_direct.py",       # ❌ OBSOLETO - Tests directos antiguos
         "test_dashboard_admin_robust.py",       # ❌ OBSOLETO - Tests robustos antiguos
@@ -31,7 +34,7 @@ def analyze_root_test_files():
     ]
     
     # Archivos de análisis/debug también a revisar
-    analysis_files = [
+    _ = [
         "debug_advanced_vs_basic.py",           # ❌ OBSOLETO - Debug comparaciones
         "debug_cards_visualization.py",         # ❌ OBSOLETO - Debug visualización cards
         "debug_labels_inspection.py",           # ❌ OBSOLETO - Debug inspección labels
@@ -42,24 +45,24 @@ def analyze_root_test_files():
     
     print("\n🗑️  ARCHIVOS DE TEST OBSOLETOS (ELIMINAR):")
     for file in test_files:
-        print(f"  ❌ {file}")
+        print("  ❌ %s" % file)
     
-    print(f"\n📊 Total archivos de test obsoletos: {len(test_files)}")
+    print("\n📊 Total archivos de test obsoletos: %s" % len(test_files))
     
     print("\n🗑️  ARCHIVOS DE ANÁLISIS/DEBUG OBSOLETOS (ELIMINAR):")
     for file in analysis_files[:-1]:  # Excluir el actual
-        print(f"  ❌ {file}")
+        print("  ❌ %s" % file)
     
-    print(f"\n📊 Total archivos de análisis obsoletos: {len(analysis_files)-1}")
+    print("\n📊 Total archivos de análisis obsoletos: %s" % len(analysis_files)-1)
     
     print("\n🔄 ARCHIVO ACTUAL (REVISAR DESPUÉS):")
-    print(f"  🔄 {analysis_files[-1]}")
+    print("  🔄 %s" % analysis_files[-1])
     
     print("\n✅ CARPETA DE TESTS OFICIAL (MANTENER):")
     print("  ✅ tests/ (carpeta con tests oficiales)")
     
     total_obsolete = len(test_files) + len(analysis_files) - 1
-    print(f"\n📊 TOTAL ARCHIVOS OBSOLETOS A ELIMINAR: {total_obsolete}")
+    print("\n📊 TOTAL ARCHIVOS OBSOLETOS A ELIMINAR: %s" % total_obsolete)
     
     return {
         'test_files': test_files,
@@ -68,9 +71,9 @@ def analyze_root_test_files():
     }
 
 if __name__ == "__main__":
-    result = analyze_root_test_files()
+    _ = analyze_root_test_files()
     
-    print("\n" + "=" * 80)
+    print("\n"  %  "=" * 80)
     print("PLAN DE LIMPIEZA - ARCHIVOS DE TEST RAÍZ")
     print("=" * 80)
     
@@ -80,11 +83,11 @@ if __name__ == "__main__":
     
     print("\n🗑️ FASE 2: Eliminar archivos de test obsoletos")
     for file in result['test_files']:
-        print(f"  • Eliminar {file}")
+        print("  • Eliminar %s" % file)
     
     print("\n🗑️ FASE 3: Eliminar archivos de análisis obsoletos")
     for file in result['analysis_files']:
-        print(f"  • Eliminar {file}")
+        print("  • Eliminar %s" % file)
     
     print("\n📝 FASE 4: Actualizar CHANGELOG.md")
     print("  • Limpiar referencias a mejoras V3 que no funcionaron")

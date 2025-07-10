@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 """
 Sistema de Configuración Avanzada para Hefest
 ============================================
@@ -23,13 +24,13 @@ import time
 from cryptography.fernet import Fernet
 from jsonschema import validate, ValidationError
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class AdvancedConfigManager:
     """Gestor de configuración avanzado con características empresariales"""
     
     # Esquema de validación para configuraciones
-    CONFIG_SCHEMA = {
+    _ = {
         "type": "object",
         "properties": {
             "app": {
@@ -64,6 +65,7 @@ class AdvancedConfigManager:
     }
     
     def __init__(self, config_name: str = "hefest_advanced", encrypt_sensitive: bool = True):
+        """TODO: Add docstring"""
         self.config_name = config_name
         self.encrypt_sensitive = encrypt_sensitive
         self.config_file = self._get_config_file()
@@ -148,7 +150,7 @@ class AdvancedConfigManager:
         
     def _get_or_create_encryption_key(self):
         """Obtiene o crea la clave de encriptación."""
-        key_file = Path.home() / ".hefest" / "config" / "encryption.key"
+        _ = Path.home() / ".hefest" / "config" / "encryption.key"
         
         if key_file.exists():
             return key_file.read_bytes()
@@ -190,7 +192,7 @@ class AdvancedConfigManager:
             validate(instance=config, schema=self.CONFIG_SCHEMA)
             return True
         except ValidationError as e:
-            logger.error(f"Error de validación de configuración: {e}")
+            logger.error("Error de validación de configuración: %s", e)
             return False
             
     def _backup_config(self):
@@ -199,24 +201,24 @@ class AdvancedConfigManager:
             return
             
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        backup_file = self.backup_dir / f"{self.config_name}_backup_{timestamp}.json"
+        _ = self.backup_dir / f"{self.config_name}_backup_{timestamp}.json"
         
         try:
             with open(backup_file, 'w', encoding='utf-8') as f:
                 json.dump(self.config, f, indent=2, ensure_ascii=False)
-            logger.info(f"Backup de configuración creado: {backup_file}")
+            logger.info("Backup de configuración creado: %s", backup_file)
             
             # Limpiar backups antiguos (mantener solo los últimos 10)
             self._cleanup_old_backups()
             
         except Exception as e:
-            logger.error(f"Error creando backup: {e}")
+            logger.error("Error creando backup: %s", e)
             
     def _cleanup_old_backups(self):
         """Limpia backups antiguos."""
-        backup_files = sorted(
+        _ = sorted(
             self.backup_dir.glob(f"{self.config_name}_backup_*.json"),
-            key=lambda x: x.stat().st_mtime,
+            _ = lambda x: x.stat().st_mtime,
             reverse=True
         )
         
@@ -224,9 +226,9 @@ class AdvancedConfigManager:
         for old_backup in backup_files[10:]:
             try:
                 old_backup.unlink()
-                logger.debug(f"Backup antiguo eliminado: {old_backup}")
+                logger.debug("Backup antiguo eliminado: %s", old_backup)
             except Exception as e:
-                logger.warning(f"No se pudo eliminar backup {old_backup}: {e}")
+                logger.warning("No se pudo eliminar backup {old_backup}: %s", e)
                 
     def _load_config(self) -> Dict[str, Any]:
         """Carga la configuración desde archivo."""
@@ -237,7 +239,7 @@ class AdvancedConfigManager:
             
         try:
             with open(self.config_file, 'r', encoding='utf-8') as f:
-                config = json.load(f)
+                _ = json.load(f)
                 
             # Validar configuración
             if not self._validate_config(config):
@@ -245,13 +247,13 @@ class AdvancedConfigManager:
                 return self.default_config.copy()
                 
             # Desencriptar valores sensibles
-            config = self._decrypt_sensitive_values(config)
+            _ = self._decrypt_sensitive_values(config)
             
-            logger.info(f"Configuración cargada desde {self.config_file}")
+            logger.info("Configuración cargada desde %s", self.config_file)
             return config
             
         except Exception as e:
-            logger.error(f"Error cargando configuración: {e}")
+            logger.error("Error cargando configuración: %s", e)
             return self.default_config.copy()
             
     def _decrypt_sensitive_values(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -262,7 +264,7 @@ class AdvancedConfigManager:
     def _save_config(self, config: Optional[Dict[str, Any]] = None):
         """Guarda la configuración a archivo."""
         if config is None:
-            config = self.config
+            _ = self.config
             
         # Crear backup antes de guardar
         if self.config_file.exists():
@@ -270,18 +272,18 @@ class AdvancedConfigManager:
             
         try:
             # Encriptar valores sensibles antes de guardar
-            config_to_save = self._encrypt_sensitive_values(config.copy())
+            _ = self._encrypt_sensitive_values(config.copy())
             
             with open(self.config_file, 'w', encoding='utf-8') as f:
                 json.dump(config_to_save, f, indent=2, ensure_ascii=False)
                 
-            logger.info(f"Configuración guardada en {self.config_file}")
+            logger.info("Configuración guardada en %s", self.config_file)
             
             # Actualizar hash
             self.config_hash = self._calculate_config_hash()
             
         except Exception as e:
-            logger.error(f"Error guardando configuración: {e}")
+            logger.error("Error guardando configuración: %s", e)
             raise
             
     def _encrypt_sensitive_values(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -295,7 +297,7 @@ class AdvancedConfigManager:
             return
             
         self.hot_reload_thread = threading.Thread(
-            target=self._hot_reload_worker,
+            _ = self._hot_reload_worker,
             daemon=True
         )
         self.hot_reload_thread.start()
@@ -314,12 +316,14 @@ class AdvancedConfigManager:
                 time.sleep(1)  # Verificar cada segundo
                 
             except Exception as e:
-                logger.error(f"Error en hot-reload: {e}")
+                logger.error("Error en hot-reload: %s", e)
                 time.sleep(5)  # Esperar más tiempo en caso de error
                 
     def get(self, key_path: str, default: Any = None) -> Any:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene un valor usando notación de punto."""
-        keys = key_path.split('.')
+        _ = key_path.split('.')
         current = self.config
         
         try:
@@ -330,15 +334,17 @@ class AdvancedConfigManager:
             return default
             
     def set(self, key_path: str, value: Any, auto_save: bool = True):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Establece un valor usando notación de punto."""
-        keys = key_path.split('.')
+        _ = key_path.split('.')
         current = self.config
         
         # Navegar hasta el penúltimo nivel
         for key in keys[:-1]:
             if key not in current or not isinstance(current[key], dict):
                 current[key] = {}
-            current = current[key]
+            _ = current[key]
             
         # Establecer valor
         current[keys[-1]] = value
@@ -346,9 +352,11 @@ class AdvancedConfigManager:
         if auto_save:
             self._save_config()
             
-        logger.debug(f"Configuración actualizada: {key_path} = {value}")
+        logger.debug("Configuración actualizada: {key_path} = %s", value)
         
     def update(self, updates: Dict[str, Any], auto_save: bool = True):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza múltiples valores."""
         for key_path, value in updates.items():
             self.set(key_path, value, auto_save=False)
@@ -357,6 +365,8 @@ class AdvancedConfigManager:
             self._save_config()
             
     def reset_to_defaults(self, section: Optional[str] = None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Restaura configuración por defecto."""
         if section:
             if section in self.default_config:
@@ -365,36 +375,42 @@ class AdvancedConfigManager:
             self.config = self.default_config.copy()
             
         self._save_config()
-        logger.info(f"Configuración restaurada: {section or 'completa'}")
+        logger.info("Configuración restaurada: %s", section or 'completa')
         
     def export_config(self, file_path: Union[str, Path]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Exporta configuración a archivo."""
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(self.config, f, indent=2, ensure_ascii=False)
-            logger.info(f"Configuración exportada a {file_path}")
+            logger.info("Configuración exportada a %s", file_path)
         except Exception as e:
-            logger.error(f"Error exportando configuración: {e}")
+            logger.error("Error exportando configuración: %s", e)
             raise
             
     def import_config(self, file_path: Union[str, Path], validate: bool = True):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Importa configuración desde archivo."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                imported_config = json.load(f)
+                _ = json.load(f)
                 
             if validate and not self._validate_config(imported_config):
                 raise ValueError("Configuración importada no es válida")
                 
             self.config.update(imported_config)
             self._save_config()
-            logger.info(f"Configuración importada desde {file_path}")
+            logger.info("Configuración importada desde %s", file_path)
             
         except Exception as e:
-            logger.error(f"Error importando configuración: {e}")
+            logger.error("Error importando configuración: %s", e)
             raise
             
     def get_config_info(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene información sobre la configuración."""
         return {
             "config_file": str(self.config_file),

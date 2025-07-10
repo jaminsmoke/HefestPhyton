@@ -65,12 +65,15 @@ class KPIWidget(QFrame):
         # Etiqueta
         class AliasLabel(QLabel):
             def __init__(self, text):
+                """TODO: Add docstring"""
                 super().__init__(text)
                 self.setStyleSheet(ModernStyles.get_kpi_alias_label_style())
                 self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
                 self.setWordWrap(False)
 
             def resizeEvent(self, event):
+                """TODO: Add docstring"""
+                # TODO: Add input validation
                 fm = self.fontMetrics()
                 if self.height() < 22 or fm.horizontalAdvance(self.text()) > 160:
                     self.setStyleSheet(

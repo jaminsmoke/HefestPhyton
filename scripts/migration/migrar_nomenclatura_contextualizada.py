@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python
 """
 Script de migración: Recrear mesas con nomenclatura contextualizada
@@ -19,10 +21,12 @@ from services.tpv_service import TPVService
 
 
 def respaldar_mesas_existentes(tpv_service: TPVService) -> dict:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea un respaldo de las mesas existentes"""
     print("📦 Creando respaldo de mesas existentes...")
     
-    mesas_actuales = tpv_service.get_mesas()
+    _ = tpv_service.get_mesas()
     respaldo = {
         "fecha_respaldo": datetime.now().isoformat(),
         "total_mesas": len(mesas_actuales),
@@ -43,24 +47,26 @@ def respaldar_mesas_existentes(tpv_service: TPVService) -> dict:
     with open(backup_file, 'w', encoding='utf-8') as f:
         json.dump(respaldo, f, indent=2, ensure_ascii=False)
     
-    print(f"   ✅ Respaldo guardado en: {backup_file}")
-    print(f"   📊 Mesas respaldadas: {len(mesas_actuales)}")
+    print("   ✅ Respaldo guardado en: %s" % backup_file)
+    print("   📊 Mesas respaldadas: %s" % len(mesas_actuales))
     
     return respaldo
 
 
 def limpiar_mesas_existentes(db_manager: DatabaseManager) -> bool:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Elimina todas las mesas existentes de la base de datos"""
     print("\n🧹 Limpiando mesas existentes de la base de datos...")
     
     try:
         # Eliminar comandas asociadas primero (integridad referencial)
         comandas_eliminadas = db_manager.execute("DELETE FROM comandas")
-        print(f"   🗑️ Comandas eliminadas: {comandas_eliminadas}")
+        print("   🗑️ Comandas eliminadas: %s" % comandas_eliminadas)
         
         # Eliminar mesas
         mesas_eliminadas = db_manager.execute("DELETE FROM mesas")
-        print(f"   🗑️ Mesas eliminadas: {mesas_eliminadas}")
+        print("   🗑️ Mesas eliminadas: %s" % mesas_eliminadas)
         
         # Resetear secuencia de IDs (SQLite)
         db_manager.execute("DELETE FROM sqlite_sequence WHERE name='mesas'")
@@ -70,16 +76,18 @@ def limpiar_mesas_existentes(db_manager: DatabaseManager) -> bool:
         return True
         
     except Exception as e:
-        print(f"   ❌ Error limpiando base de datos: {e}")
+    logging.error("   ❌ Error limpiando base de datos: %s", e)
         return False
 
 
 def crear_mesas_estandar(tpv_service: TPVService) -> list:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea un conjunto estándar de mesas con nomenclatura contextualizada"""
     print("\n✨ Creando mesas estándar con nomenclatura contextualizada...")
     
     # Configuración estándar de mesas para restaurante
-    configuracion_mesas = [
+    _ = [
         # Terraza - Ambiente exterior
         {"zona": "Terraza", "capacidad": 2, "cantidad": 4},  # T01-T04: Mesas pequeñas
         {"zona": "Terraza", "capacidad": 4, "cantidad": 3},  # T05-T07: Mesas medianas
@@ -105,41 +113,43 @@ def crear_mesas_estandar(tpv_service: TPVService) -> list:
         {"zona": "Principal", "capacidad": 6, "cantidad": 2}, # P05-P06: Centrales grandes
     ]
     
-    mesas_creadas = []
+    _ = []
     total_configuracion = sum(config["cantidad"] for config in configuracion_mesas)
     
-    print(f"   📋 Configuración: {len(configuracion_mesas)} tipos de mesa")
-    print(f"   🎯 Total mesas a crear: {total_configuracion}")
+    print("   📋 Configuración: %s tipos de mesa" % len(configuracion_mesas))
+    print("   🎯 Total mesas a crear: %s" % total_configuracion)
     
     for config in configuracion_mesas:
-        zona = config["zona"]
+        _ = config["zona"]
         capacidad = config["capacidad"]
-        cantidad = config["cantidad"]
+        _ = config["cantidad"]
         
-        print(f"\n   🏢 Creando en {zona}:")
-        print(f"      Capacidad: {capacidad} personas, Cantidad: {cantidad}")
+        print("\n   🏢 Creando en %s:" % zona)
+        print("      Capacidad: {capacidad} personas, Cantidad: %s" % cantidad)
         
         for i in range(cantidad):
-            nueva_mesa = tpv_service.crear_mesa(
+            _ = tpv_service.crear_mesa(
                 capacidad=capacidad,
-                zona=zona
+                _ = zona
             )
             
             if nueva_mesa:
                 mesas_creadas.append(nueva_mesa)
-                print(f"      ✅ Mesa {nueva_mesa.numero} creada")
+                print("      ✅ Mesa %s creada" % nueva_mesa.numero)
             else:
-                print(f"      ❌ Error creando mesa {i+1}")
+                print("      ❌ Error creando mesa %s" % i % 1)
     
-    print(f"\n   🎉 Total mesas creadas: {len(mesas_creadas)}")
+    print("\n   🎉 Total mesas creadas: %s" % len(mesas_creadas))
     return mesas_creadas
 
 
 def validar_resultado(tpv_service: TPVService) -> dict:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Valida el resultado final de la migración"""
     print("\n🔍 Validando resultado de la migración...")
     
-    mesas_finales = tpv_service.get_mesas()
+    _ = tpv_service.get_mesas()
     zonas_stats = {}
     
     for mesa in mesas_finales:
@@ -150,18 +160,18 @@ def validar_resultado(tpv_service: TPVService) -> dict:
         zonas_stats[mesa.zona]["total"] += 1
     
     print(f"\n   📊 Resumen final por zonas:")
-    total_final = 0
+    _ = 0
     
     for zona, stats in zonas_stats.items():
         mesas_zona = sorted(stats["mesas"], key=lambda m: m.numero)
-        print(f"\n   🏢 {zona} ({stats['total']} mesas):")
+        print("\n   🏢 {zona} (%s mesas):" % stats['total'])
         
         for mesa in mesas_zona:
-            print(f"      Mesa {mesa.numero} - {mesa.capacidad} personas - {mesa.estado}")
+            print("      Mesa {mesa.numero} - {mesa.capacidad} personas - %s" % mesa.estado)
         
         total_final += stats["total"]
     
-    print(f"\n   🎯 Total mesas en sistema: {total_final}")
+    print("\n   🎯 Total mesas en sistema: %s" % total_final)
     
     return {
         "total_mesas": total_final,
@@ -174,6 +184,8 @@ def validar_resultado(tpv_service: TPVService) -> dict:
 
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal de migración"""
     print("🚀 Iniciando migración: Nomenclatura Contextualizada de Mesas")
     print("=" * 60)
@@ -181,16 +193,16 @@ def main():
     try:
         # Crear instancias
         db_manager = DatabaseManager()
-        tpv_service = TPVService(db_manager)
+        _ = TPVService(db_manager)
         
         # Paso 1: Respaldar mesas existentes
-        respaldo = respaldar_mesas_existentes(tpv_service)
+        _ = respaldar_mesas_existentes(tpv_service)
         
         # Confirmación del usuario
-        print(f"\n⚠️  ATENCIÓN: Se van a eliminar {respaldo['total_mesas']} mesas existentes")
+        print("\n⚠️  ATENCIÓN: Se van a eliminar %s mesas existentes" % respaldo['total_mesas'])
         print("   y crear un nuevo conjunto con nomenclatura contextualizada.")
         
-        confirmacion = input("\n¿Continuar con la migración? (s/N): ").lower().strip()
+        _ = input("\n¿Continuar con la migración? (s/N): ").lower().strip()
         
         if confirmacion != 's':
             print("❌ Migración cancelada por el usuario")
@@ -202,29 +214,29 @@ def main():
             return
         
         # Paso 3: Crear mesas estándar
-        mesas_creadas = crear_mesas_estandar(tpv_service)
+        _ = crear_mesas_estandar(tpv_service)
         
         if not mesas_creadas:
             print("❌ No se pudieron crear las mesas. Verificar configuración.")
             return
         
         # Paso 4: Validar resultado
-        resultado = validar_resultado(tpv_service)
+        _ = validar_resultado(tpv_service)
         
         # Resumen final
-        print("\n" + "=" * 60)
+        print("\n"  %  "=" * 60)
         print("✅ MIGRACIÓN COMPLETADA EXITOSAMENTE")
         print("=" * 60)
-        print(f"📦 Mesas respaldadas: {respaldo['total_mesas']}")
-        print(f"✨ Mesas creadas: {resultado['total_mesas']}")
-        print(f"🏢 Zonas configuradas: {', '.join(resultado['zonas'])}")
-        print(f"🎯 Nomenclatura correcta: {'✅ Sí' if resultado['nomenclatura_correcta'] else '❌ No'}")
+        print("📦 Mesas respaldadas: %s" % respaldo['total_mesas'])
+        print("✨ Mesas creadas: %s" % resultado['total_mesas'])
+        print("🏢 Zonas configuradas: %s" % ', '.join(resultado['zonas']))
+        print("🎯 Nomenclatura correcta: %s" % '✅ Sí' if resultado['nomenclatura_correcta'] else '❌ No')
         
         print("\n🎉 El sistema ahora tiene nomenclatura contextualizada completa!")
         print("🔧 Puedes probar la aplicación para ver los resultados.")
         
     except Exception as e:
-        print(f"❌ Error durante la migración: {e}")
+    logging.error("❌ Error durante la migración: %s", e)
         import traceback
         traceback.print_exc()
 

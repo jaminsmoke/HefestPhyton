@@ -5,8 +5,9 @@
 PyQt6>=6.5.0
 PyQt6-Charts>=6.5.0
 
-# Base de datos
+# Base de datos y configuración
 # SQLite viene incorporado con Python
+python-dotenv>=1.0.0     # Variables de entorno
 
 # Procesamiento de datos y análisis (v0.0.12)
 numpy>=1.24.0

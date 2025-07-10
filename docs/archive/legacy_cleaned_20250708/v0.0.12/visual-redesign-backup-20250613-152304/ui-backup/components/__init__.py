@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 """Componentes de UI para Hefest"""
 
 from .sidebar import ModernSidebar

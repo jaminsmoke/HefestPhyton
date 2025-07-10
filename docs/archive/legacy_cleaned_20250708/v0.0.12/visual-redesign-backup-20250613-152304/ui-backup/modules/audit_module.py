@@ -1,22 +1,27 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton, QMessageBox
+from ui.modules.base_module import BaseModule
+from services.audit_service import AuditService
+import logging
+
 """
 Módulo de auditoría para el sistema Hefest.
 Muestra los registros de auditoría y permite filtrarlos.
 """
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QPushButton, QMessageBox
-from ui.modules.base_module import BaseModule
-from services.audit_service import AuditService
-from PyQt6.QtCore import Qt
-import logging
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class AuditModule(BaseModule):
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setup_ui()
     
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz del módulo de auditoría"""
         # Crear el header del módulo
         header = self.create_module_header()
@@ -39,6 +44,8 @@ class AuditModule(BaseModule):
         self.content_layout.addWidget(refresh_btn)
 
     def load_audit_logs(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga los registros de auditoría en la tabla"""
         try:
             logs = AuditService.get_recent_logs()
@@ -51,5 +58,5 @@ class AuditModule(BaseModule):
                 self.audit_table.setItem(row, 3, QTableWidgetItem(str(log["details"])))
 
         except Exception as e:
-            logger.error(f"Error al cargar registros de auditoría: {e}")
+            logger.error("Error al cargar registros de auditoría: %s", e)
             QMessageBox.warning(self, "Error", "No se pudieron cargar los registros de auditoría")

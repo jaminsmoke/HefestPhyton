@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 #!/usr/bin/env python3
 """
 Debug específico del momento de creación de las tarjetas
@@ -15,13 +16,15 @@ from PyQt6.QtWidgets import QApplication, QLabel
 from ui.modules.tpv_module.components.mesas_area import MesasArea
 
 def debug_creacion():
-    app = QApplication(sys.argv)
+    """TODO: Add docstring"""
+    # TODO: Add input validation
+    _ = QApplication(sys.argv)
     
     print("🔍 DEBUG CREACIÓN DE TARJETAS")
     print("=" * 40)
     
     # Crear MesasArea
-    mesas_area = MesasArea()
+    _ = MesasArea()
     
     # Probar crear una tarjeta manualmente
     print("\n🎯 CREANDO TARJETA MANUAL:")
@@ -29,18 +32,18 @@ def debug_creacion():
     
     # Analizar la tarjeta creada
     layout = test_widget.layout()
-    print(f"Layout items: {layout.count()}")
+    print("Layout items: %s" % layout.count())
     
     for i in range(layout.count()):
         item = layout.itemAt(i)
         if item and item.widget() and isinstance(item.widget(), QLabel):
             label = item.widget()
-            print(f"  [{i}] QLabel: '{label.text()}'")
+            print("  [{i}] QLabel: '%s'" % label.text())
     
     print("\n🔍 ANALIZANDO TARJETAS EXISTENTES:")
     
     # Verificar las tarjetas ya creadas
-    widgets_to_check = [
+    _ = [
         ('zonas_widget', 'Zonas'),
         ('mesas_total_widget', 'Total'),
         ('mesas_libres_widget', 'Libres'),
@@ -51,7 +54,7 @@ def debug_creacion():
     for widget_name, expected_label in widgets_to_check:
         if hasattr(mesas_area, widget_name):
             widget = getattr(mesas_area, widget_name)
-            print(f"\n📊 {widget_name}:")
+            print("\n📊 %s:" % widget_name)
             
             layout = widget.layout()
             if layout:
@@ -60,13 +63,13 @@ def debug_creacion():
                     if item and item.widget() and isinstance(item.widget(), QLabel):
                         label = item.widget()
                         text = label.text()
-                        print(f"  [{i}] '{text}'")
+                        print("  [{i}] '%s'" % text)
                         
                         if i == 1:  # El segundo debería ser el nombre
                             if text == expected_label:
-                                print(f"      ✅ Correcto: '{expected_label}'")
+                                print("      ✅ Correcto: '%s'" % expected_label)
                             else:
-                                print(f"      ❌ Incorrecto: esperaba '{expected_label}', obtuvo '{text}'")
+                                print("      ❌ Incorrecto: esperaba '{expected_label}', obtuvo '%s'" % text)
     
     return 0
 

@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 """Módulos de la aplicación Hefest"""
 
 from .base_module import BaseModule

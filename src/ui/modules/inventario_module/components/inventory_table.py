@@ -33,7 +33,7 @@ from src.utils.modern_styles import ModernStyles
 # Usar Any para tipado genérico y evitar conflictos
 ProductoType = Any
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class InventoryTableWidget(QTableWidget):
@@ -49,12 +49,13 @@ class InventoryTableWidget(QTableWidget):
     """
 
     # Señales personalizadas
-    product_selected = pyqtSignal(object)  # ProductoType seleccionado
+    _ = pyqtSignal(object)  # ProductoType seleccionado
     product_edit_requested = pyqtSignal(object)  # Solicitud de edición
-    product_delete_requested = pyqtSignal(object)  # Solicitud de eliminación
+    _ = pyqtSignal(object)  # Solicitud de eliminación
     stock_update_requested = pyqtSignal(object, int)  # Actualización de stock
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.modern_styles = ModernStyles()
         self.products_data: List[Any] = []
@@ -65,7 +66,7 @@ class InventoryTableWidget(QTableWidget):
     def _setup_table(self):
         """Configura la tabla con las columnas necesarias"""
         # Configurar columnas
-        columns = [
+        _ = [
             "ID",
             "Código",
             "Nombre",
@@ -112,7 +113,7 @@ class InventoryTableWidget(QTableWidget):
 
     def _apply_styles(self):
         """Aplica estilos modernos a la tabla"""
-        colors = self.modern_styles.COLORS
+        _ = self.modern_styles.COLORS
         styles = f"""
         QTableWidget {{
             gridline-color: {colors['border']};
@@ -148,6 +149,8 @@ class InventoryTableWidget(QTableWidget):
         self.setStyleSheet(styles)
 
     def load_products(self, products: List[Any]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Carga los productos en la tabla.
 
@@ -186,7 +189,7 @@ class InventoryTableWidget(QTableWidget):
         self.setItem(row, 3, categoria_item)
 
         # Stock (con indicador visual)
-        stock_actual = getattr(product, "stock", 0)
+        _ = getattr(product, "stock", 0)
         stock_minimo = getattr(product, "stock_minimo", 0)
         stock_item = QTableWidgetItem(str(stock_actual))
         stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -241,21 +244,21 @@ class InventoryTableWidget(QTableWidget):
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(4, 4, 4, 4)
 
-        stock_actual = getattr(product, "stock", 0)
+        _ = getattr(product, "stock", 0)
         stock_minimo = getattr(product, "stock_minimo", 0)
 
         # Determinar estado y color
         if stock_actual <= 0:
-            status_text = "Agotado"
+            _ = "Agotado"
             color = "#dc3545"  # Rojo
         elif stock_actual <= stock_minimo:
-            status_text = "Bajo"
+            _ = "Bajo"
             color = "#ffc107"  # Amarillo
         elif stock_actual <= stock_minimo * 2:
-            status_text = "Medio"
+            _ = "Medio"
             color = "#fd7e14"  # Naranja
         else:
-            status_text = "Bueno"
+            _ = "Bueno"
             color = "#28a745"  # Verde
 
         # Crear etiqueta de estado
@@ -364,7 +367,7 @@ class InventoryTableWidget(QTableWidget):
         """
         from PyQt6.QtWidgets import QInputDialog
 
-        stock_actual = getattr(product, "stock", 0)
+        _ = getattr(product, "stock", 0)
         nombre = getattr(product, "nombre", "ProductoType")
 
         new_stock, ok = QInputDialog.getInt(
@@ -405,10 +408,10 @@ class InventoryTableWidget(QTableWidget):
         if not (0 <= row < len(self.products_data)):
             return
 
-        product = self.products_data[row]
+        _ = self.products_data[row]
 
         # Crear menú contextual
-        menu = QMenu(self)
+        _ = QMenu(self)
 
         # Acciones
         edit_action = QAction("Editar ProductoType", self)
@@ -432,18 +435,22 @@ class InventoryTableWidget(QTableWidget):
         menu.exec(self.mapToGlobal(position))
 
     def _match_search_text(self, product, search_text: str) -> bool:
+        """TODO: Add docstring"""
         if not search_text:
             return True
         nombre = getattr(product, "nombre", "")
         return search_text.lower() in nombre.lower()
 
     def _match_category(self, product, category: str) -> bool:
+        """TODO: Add docstring"""
         if not category or category == "Todas":
             return True
         categoria = getattr(product, "categoria", "")
         return categoria == category
 
     def filter_products(self, search_text: str = "", category: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Filtra los productos mostrados en la tabla.
 
@@ -452,15 +459,17 @@ class InventoryTableWidget(QTableWidget):
             category: Categoría a filtrar
         """
         for row in range(self.rowCount()):
-            show_row = True
+            _ = True
             if row < len(self.products_data):
-                product = self.products_data[row]
+                _ = self.products_data[row]
                 show_row = self._match_search_text(
                     product, search_text
                 ) and self._match_category(product, category)
             self.setRowHidden(row, not show_row)
 
     def get_selected_product(self) -> Optional[ProductoType]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Obtiene el ProductoType actualmente seleccionado.
 
@@ -473,6 +482,8 @@ class InventoryTableWidget(QTableWidget):
         return None
 
     def refresh_product(self, updated_product: ProductoType):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Actualiza un ProductoType específico en la tabla.
 
@@ -502,9 +513,10 @@ class StockAlertWidget(QWidget):
     """
 
     # Señales
-    order_requested = pyqtSignal(object)  # Solicitud de pedido
+    _ = pyqtSignal(object)  # Solicitud de pedido
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.modern_styles = ModernStyles()
         self.alert_products: List[ProductoType] = []
@@ -518,7 +530,7 @@ class StockAlertWidget(QWidget):
         main_layout.setContentsMargins(12, 12, 12, 12)
 
         # Header
-        header_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         title_label = QLabel("🚨 Alertas de Stock")
         title_label.setStyleSheet("font-size: 14px; font-weight: bold; color: #dc3545;")
@@ -543,7 +555,7 @@ class StockAlertWidget(QWidget):
 
     def _apply_styles(self):
         """Aplica estilos al widget"""
-        colors = self.modern_styles.COLORS
+        _ = self.modern_styles.COLORS
         self.setStyleSheet(
             f"""
             StockAlertWidget {{
@@ -555,6 +567,8 @@ class StockAlertWidget(QWidget):
         )
 
     def load_alerts(self, products: List[ProductoType]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Carga las alertas de stock.
 
@@ -613,14 +627,14 @@ class StockAlertWidget(QWidget):
         layout.setContentsMargins(8, 4, 8, 4)
 
         # Información del ProductoType
-        info_layout = QVBoxLayout()
+        _ = QVBoxLayout()
 
         nombre = getattr(product, "nombre", "ProductoType desconocido")
         name_label = QLabel(nombre)
         name_label.setStyleSheet("font-weight: bold; font-size: 12px;")
         info_layout.addWidget(name_label)
 
-        stock_actual = getattr(product, "stock", 0)
+        _ = getattr(product, "stock", 0)
         stock_minimo = getattr(product, "stock_minimo", 0)
         stock_label = QLabel(f"Stock: {stock_actual} / {stock_minimo}")
         stock_label.setStyleSheet("font-size: 11px; color: #856404;")
@@ -665,6 +679,7 @@ class InventoryStatsWidget(QWidget):
     """
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.modern_styles = ModernStyles()
         self._setup_ui()
@@ -681,7 +696,7 @@ class InventoryStatsWidget(QWidget):
         layout.addWidget(title_label)
 
         # Métricas principales
-        metrics_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         # Total productos
         total_widget = self._create_metric_widget("Total productos", "0", "#007bff")
@@ -758,7 +773,7 @@ class InventoryStatsWidget(QWidget):
 
     def _apply_styles(self):
         """Aplica estilos al widget"""
-        colors = self.modern_styles.COLORS
+        _ = self.modern_styles.COLORS
         self.setStyleSheet(
             f"""
             InventoryStatsWidget {{
@@ -771,6 +786,8 @@ class InventoryStatsWidget(QWidget):
         )
 
     def update_stats(self, stats: Dict[str, Any]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Actualiza las estadísticas mostradas.
 
@@ -805,7 +822,7 @@ class InventoryStatsWidget(QWidget):
                     widget.deleteLater()
 
         # Crear nuevas barras
-        max_value = max(categories.values()) if categories else 1
+        _ = max(categories.values()) if categories else 1
 
         for category, count in categories.items():
             bar_widget = QWidget()

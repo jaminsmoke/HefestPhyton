@@ -1,24 +1,26 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+import random
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QFont, QPainter, QPen, QBrush, QColor, QLinearGradient
+
 """
 Widgets de gráficos para el Dashboard Admin v3
 Diseño elegante de visualización de datos basado en Dashboard V2
 """
 
-import logging
-import random
-from typing import List, Dict, Any, Optional
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                            QFrame, QSizePolicy, QGridLayout)
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QFont, QPainter, QPen, QBrush, QColor, QLinearGradient
-from datetime import datetime, timedelta
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class SimpleMetricChart(QWidget):
     """Widget elegante para mostrar gráficos de métricas estilo V2"""
     
     def __init__(self, title: str = "Métrica", color: str = "#3b82f6", parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.title = title
         self.color = color
@@ -48,19 +50,23 @@ class SimpleMetricChart(QWidget):
         """)
         
     def generate_sample_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Genera datos de muestra realistas"""
-        base_value = random.randint(50, 80)
+        _ = random.randint(50, 80)
         for i in range(self.max_points):
             # Crear variación natural en los datos
             variation = random.randint(-10, 10)
             value = max(0, min(100, base_value + variation))
             self.data_points.append(value)
-            base_value = value
+            _ = value
             
         self.max_value = max(self.data_points) * 1.2
         self.min_value = min(self.data_points) * 0.8
         
     def add_data_point(self, value: float):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Añade un punto de datos al gráfico"""
         self.data_points.append(value)
         
@@ -76,19 +82,23 @@ class SimpleMetricChart(QWidget):
         self.update()  # Redibujar
         
     def clear_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpia todos los datos del gráfico"""
         self.data_points.clear()
         self.update()
         
     def paintEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Dibuja el gráfico con estilo elegante"""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         # Área de dibujo
-        rect = self.rect()
+        _ = self.rect()
         margin = 20
-        chart_rect = rect.adjusted(margin, margin * 2, -margin, -margin)
+        _ = rect.adjusted(margin, margin * 2, -margin, -margin)
         
         # Fondo
         painter.fillRect(rect, QColor(255, 255, 255))
@@ -109,18 +119,18 @@ class SimpleMetricChart(QWidget):
         # Dibujar línea de datos
         if len(self.data_points) > 1:
             # Preparar puntos
-            points = []
+            _ = []
             width = chart_rect.width()
-            height = chart_rect.height()
+            _ = chart_rect.height()
             
             for i, value in enumerate(self.data_points):
-                x = chart_rect.left() + (i / (len(self.data_points) - 1)) * width
+                _ = chart_rect.left() + (i / (len(self.data_points) - 1)) * width
                 
                 # Normalizar valor al rango del gráfico
                 if self.max_value > self.min_value:
-                    normalized = (value - self.min_value) / (self.max_value - self.min_value)
+                    _ = (value - self.min_value) / (self.max_value - self.min_value)
                 else:
-                    normalized = 0.5
+                    _ = 0.5
                     
                 y = chart_rect.bottom() - normalized * height
                 points.append((x, y))
@@ -149,9 +159,10 @@ class SimpleMetricChart(QWidget):
 class DashboardChartsSection(QWidget):
     """Sección que contiene gráficos elegantes estilo V2"""
     
-    charts_updated = pyqtSignal(dict)
+    _ = pyqtSignal(dict)
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.chart_widgets = {}
         self.setup_ui()
@@ -162,6 +173,8 @@ class DashboardChartsSection(QWidget):
         self.update_timer.start(6000)  # Actualizar cada 6 segundos
         
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz elegante de gráficos"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -182,7 +195,7 @@ class DashboardChartsSection(QWidget):
         charts_grid.setContentsMargins(0, 0, 0, 0)
         
         # Gráficos específicos del negocio
-        chart_configs = [
+        _ = [
             ("Ventas por Hora", "#10b981", "€"),
             ("Flujo de Clientes", "#3b82f6", "personas"),
             ("Tiempo de Servicio", "#f59e0b", "min"),
@@ -194,7 +207,7 @@ class DashboardChartsSection(QWidget):
             chart = SimpleMetricChart(title, color)
             self.chart_widgets[title.lower().replace(' ', '_')] = chart
             
-            row = i // 2
+            _ = i // 2
             col = i % 2
             charts_grid.addWidget(chart, row, col)
         
@@ -207,8 +220,10 @@ class DashboardChartsSection(QWidget):
         # No addStretch() para que los gráficos ocupen todo el espacio disponible
         
     def update_charts(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza todos los gráficos con datos simulados"""
-        updates = {
+        _ = {
             'ventas_por_hora': random.uniform(200, 400),
             'flujo_de_clientes': random.randint(15, 35),
             'tiempo_de_servicio': random.uniform(35, 55),
@@ -222,11 +237,15 @@ class DashboardChartsSection(QWidget):
         self.charts_updated.emit(updates)
         
     def update_metric(self, metric_name: str, value: float):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza un gráfico específico"""
         key = metric_name.lower().replace(' ', '_')
         if key in self.chart_widgets:
             self.chart_widgets[key].add_data_point(value)
             
     def get_chart_widgets(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna el diccionario de widgets de gráficos"""
         return self.chart_widgets

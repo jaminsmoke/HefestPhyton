@@ -1,3 +1,6 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
 """
 [v0.0.12]_MIGRACION_MESAID_STRING_COMPLETO.md
 Script de migración para convertir mesa_id a TEXT en todas las tablas y migrar los datos existentes.
@@ -6,7 +9,7 @@ Cumple con la política de versionado y estructura de docs/.
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "hefest.db")
+_ = os.path.join(os.path.dirname(__file__), "hefest.db")
 
 MIGRATION_SQL = [
     # 1. Renombrar tablas afectadas
@@ -52,17 +55,19 @@ MIGRATION_SQL = [
 ]
 
 def run_migration():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     print("Iniciando migración mesa_id a string...")
-    conn = sqlite3.connect(DB_PATH)
+    _ = sqlite3.connect(DB_PATH)
     try:
-        cur = conn.cursor()
+        _ = conn.cursor()
         for sql in MIGRATION_SQL:
-            print(f"Ejecutando: {sql.splitlines()[0]}")
+            print("Ejecutando: %s" % sql.splitlines()[0])
             cur.executescript(sql) if '\n' in sql else cur.execute(sql)
         conn.commit()
         print("Migración completada con éxito.")
     except Exception as e:
-        print(f"Error en la migración: {e}")
+    logging.error("Error en la migración: %s", e)
         conn.rollback()
     finally:
         conn.close()

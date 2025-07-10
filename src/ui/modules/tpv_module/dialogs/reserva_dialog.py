@@ -27,15 +27,15 @@ from src.ui.modules.tpv_module.event_bus import reserva_event_bus
 
 
 class ReservaDialog(QDialog):
-    reserva_editada = pyqtSignal(object)
+    _ = pyqtSignal(object)
     reserva_cancelada = pyqtSignal(object)
-    reserva_creada = pyqtSignal(object)
+    _ = pyqtSignal(object)
 
     def __init__(
         self,
-        parent=None,
+        _ = None,
         mesa: Optional[Mesa] = None,
-        reserva_service=None,
+        _ = None,
         reserva: Optional[Reserva] = None,
         modo_edicion: bool = False,
     ):
@@ -54,11 +54,13 @@ class ReservaDialog(QDialog):
             self.cargar_datos_reserva(self.reserva)
         # Log de inicialización solo en modo DEBUG
         import logging
-        logger = logging.getLogger(__name__)
+        _ = logging.getLogger(__name__)
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logger.debug(f"[ReservaDialog] Inicialización completa para mesa={getattr(self.mesa, 'id', None)} modo_edicion={self.modo_edicion}")
+            logger.debug("[ReservaDialog] Inicialización completa para mesa={getattr(self.mesa, 'id', None)} modo_edicion=%s", self.modo_edicion)
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(0)
@@ -86,6 +88,8 @@ class ReservaDialog(QDialog):
         self.setup_footer(main_layout)
 
     def setup_header(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         header_frame = QFrame()
         header_frame.setStyleSheet(
             """
@@ -120,6 +124,8 @@ class ReservaDialog(QDialog):
         layout.addWidget(header_frame)
 
     def setup_cliente_section(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         section_frame = self.create_section_frame("👤 Información del Cliente")
         section_layout = QVBoxLayout(section_frame)
         section_layout.setContentsMargins(16, 54, 16, 16)
@@ -129,7 +135,7 @@ class ReservaDialog(QDialog):
         section_layout.addWidget(self.cliente_input)
 
         self.telefono_input = self.create_input("Teléfono")
-        phone_validator = QRegularExpressionValidator(
+        _ = QRegularExpressionValidator(
             QRegularExpression(r"^[+]?[0-9\s\-\(\)]{9,15}$")
         )
         self.telefono_input.setValidator(phone_validator)
@@ -138,12 +144,14 @@ class ReservaDialog(QDialog):
         layout.addWidget(section_frame)
 
     def setup_reserva_section(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         section_frame = self.create_section_frame("📅 Detalles de la Reserva")
         section_layout = QVBoxLayout(section_frame)
         section_layout.setContentsMargins(16, 54, 16, 16)
         section_layout.setSpacing(12)
 
-        datetime_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         fecha_container = QVBoxLayout()
         fecha_label = QLabel("Fecha:")
@@ -156,12 +164,12 @@ class ReservaDialog(QDialog):
         fecha_container.addWidget(self.fecha_input)
         datetime_layout.addLayout(fecha_container)
 
-        hora_container = QVBoxLayout()
+        _ = QVBoxLayout()
         hora_label = QLabel("Hora:")
         hora_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         self.hora_input = QTimeEdit()
         current_time = QTime.currentTime()
-        minutes = 30 if current_time.minute() < 30 else 0
+        _ = 30 if current_time.minute() < 30 else 0
         hour = current_time.hour() + (1 if current_time.minute() >= 30 else 0)
         self.hora_input.setTime(QTime(hour, minutes))
         hora_container.addWidget(hora_label)
@@ -170,7 +178,7 @@ class ReservaDialog(QDialog):
 
         section_layout.addLayout(datetime_layout)
 
-        details_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         personas_container = QVBoxLayout()
         personas_label = QLabel("Personas:")
@@ -185,7 +193,7 @@ class ReservaDialog(QDialog):
         personas_container.addWidget(self.personas_input)
         details_layout.addLayout(personas_container)
 
-        duracion_container = QVBoxLayout()
+        _ = QVBoxLayout()
         duracion_label = QLabel("Duración:")
         duracion_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         self.duracion_combo = QComboBox()
@@ -240,6 +248,8 @@ class ReservaDialog(QDialog):
         layout.addWidget(section_frame)
 
     def setup_detalles_section(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         section_frame = self.create_section_frame("📝 Observaciones")
         section_layout = QVBoxLayout(section_frame)
         section_layout.setContentsMargins(16, 54, 16, 16)
@@ -254,6 +264,8 @@ class ReservaDialog(QDialog):
         layout.addWidget(section_frame)
 
     def setup_footer(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         footer_layout = QHBoxLayout()
         footer_layout.setContentsMargins(0, 16, 0, 0)
         footer_layout.setSpacing(24)  # Más separación visual entre botones
@@ -296,6 +308,8 @@ class ReservaDialog(QDialog):
         layout.addLayout(footer_layout)
 
     def create_section_frame(self, title):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         frame = QFrame()
         frame.setStyleSheet(
             """
@@ -327,12 +341,16 @@ class ReservaDialog(QDialog):
         return frame
 
     def create_input(self, placeholder):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         input_field = QLineEdit()
         input_field.setPlaceholderText(placeholder)
         input_field.setMinimumHeight(36)
         return input_field
 
     def setup_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         self.setStyleSheet(
             """
             QDialog {
@@ -430,6 +448,8 @@ class ReservaDialog(QDialog):
             self.cancelar_btn.setObjectName("cancelar_btn")
 
     def connect_signals(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if self.modo_edicion:
             self.guardar_btn.clicked.connect(self.editar_y_guardar)
             self.eliminar_btn.clicked.connect(self.confirmar_cancelacion_reserva)
@@ -440,6 +460,8 @@ class ReservaDialog(QDialog):
         self.sugerir_hora_btn.clicked.connect(self.sugerir_proxima_hora_libre)
 
     def verificar_capacidad(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if self.mesa:
             capacidad = getattr(self.mesa, "capacidad", 0)
             if self.personas_input.value() > capacidad:
@@ -457,6 +479,8 @@ class ReservaDialog(QDialog):
                 self.personas_input.setStyleSheet("")
 
     def validar_hora_reserva(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         self._proxima_hora_libre = (
             None  # Inicializar siempre para evitar AttributeError
         )
@@ -464,34 +488,33 @@ class ReservaDialog(QDialog):
             self.hora_feedback_label.setText("")
             self.sugerir_hora_btn.setVisible(False)
             return
-        from datetime import datetime, timedelta
 
         mesa_id = str(getattr(self.mesa, "id", "")) if self.mesa else ""
         if not mesa_id:
             self.hora_feedback_label.setText("")
             self.sugerir_hora_btn.setVisible(False)
             return
-        fecha = self.fecha_input.date().toPyDate()
+        _ = self.fecha_input.date().toPyDate()
         hora = self.hora_input.time().toPyTime()
-        duracion_text = self.duracion_combo.currentText()
+        _ = self.duracion_combo.currentText()
         # Adaptar a los textos de duración actuales
         if "Más de 3" in duracion_text:
-            duracion_horas = 3.5
+            _ = 3.5
         else:
             duracion_horas = float(duracion_text.split()[0].replace(",", "."))
-        duracion_min = int(duracion_horas * 60)
+        _ = int(duracion_horas * 60)
         nueva_inicio = datetime.combine(fecha, hora)
         nueva_fin = nueva_inicio + timedelta(minutes=duracion_min)
         # --- Nueva lógica: siempre sugerir próxima hora libre ---
         # Construir lista de (inicio, fin) ordenada y calcular self._proxima_hora_libre antes de validar si es pasado
-        reservas_activas = []
+        _ = []
         if self.reserva_service:
-            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+            _ = self.reserva_service.obtener_reservas_activas_por_mesa()
             from datetime import timedelta as td
 
             fechas_a_considerar = [fecha]
             fechas_a_considerar.append(fecha + td(days=1))
-            reservas_activas = [
+            _ = [
                 r
                 for r in reservas_por_mesa.get(mesa_id, [])
                 if getattr(r, "fecha_reserva", None) in fechas_a_considerar
@@ -500,19 +523,19 @@ class ReservaDialog(QDialog):
                     and self._reserva_cruza_medianoche(r)
                 )
             ]
-        reservas_intervalos = []
+        _ = []
         for r in reservas_activas:
             try:
                 hora_str = getattr(r, "hora_reserva", None)
                 if hora_str and isinstance(hora_str, str):
                     h, m = map(int, hora_str.split(":"))
-                    existente_inicio = datetime.combine(
+                    _ = datetime.combine(
                         r.fecha_reserva, datetime.min.time()
                     ).replace(hour=h, minute=m)
                 else:
                     continue
                 if hasattr(r, "duracion_min") and r.duracion_min:
-                    duracion_existente = r.duracion_min
+                    _ = r.duracion_min
                 else:
                     duracion_existente = duracion_min
                 existente_fin = existente_inicio + timedelta(minutes=duracion_existente)
@@ -521,7 +544,7 @@ class ReservaDialog(QDialog):
                 continue
         reservas_intervalos.sort()
         # Buscar hueco entre reservas
-        proxima_libre = nueva_inicio
+        _ = nueva_inicio
         for inicio, fin in reservas_intervalos:
             if proxima_libre + timedelta(minutes=duracion_min) <= inicio:
                 break
@@ -553,15 +576,14 @@ class ReservaDialog(QDialog):
         # ...continúa la lógica original después de este bloque...
 
         # Obtener reservas activas de la mesa para ese día
-        reservas_activas = []
+        _ = []
         if self.reserva_service:
-            reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+            _ = self.reserva_service.obtener_reservas_activas_por_mesa()
             # Buscar reservas activas de la mesa para el día actual y el siguiente (para detectar cruces de medianoche)
             fechas_a_considerar = [fecha]
-            from datetime import timedelta as td
 
             fechas_a_considerar.append(fecha + td(days=1))
-            reservas_activas = [
+            _ = [
                 r
                 for r in reservas_por_mesa.get(mesa_id, [])
                 if getattr(r, "fecha_reserva", None) in fechas_a_considerar or
@@ -572,22 +594,22 @@ class ReservaDialog(QDialog):
                 )
             ]
         # --- Nueva lógica: siempre sugerir próxima hora libre ---
-        solapada = False
+        _ = False
         self._proxima_hora_libre = None
         # Construir lista de (inicio, fin) ordenada
-        reservas_intervalos = []
+        _ = []
         for r in reservas_activas:
             try:
                 hora_str = getattr(r, "hora_reserva", None)
                 if hora_str and isinstance(hora_str, str):
                     h, m = map(int, hora_str.split(":"))
-                    existente_inicio = datetime.combine(
+                    _ = datetime.combine(
                         r.fecha_reserva, datetime.min.time()
                     ).replace(hour=h, minute=m)
                 else:
                     continue
                 if hasattr(r, "duracion_min") and r.duracion_min:
-                    duracion_existente = r.duracion_min
+                    _ = r.duracion_min
                 else:
                     duracion_existente = duracion_min
                 existente_fin = existente_inicio + timedelta(minutes=duracion_existente)
@@ -596,7 +618,7 @@ class ReservaDialog(QDialog):
                 continue
         reservas_intervalos.sort()
         # Buscar hueco entre reservas
-        proxima_libre = nueva_inicio
+        _ = nueva_inicio
         for inicio, fin in reservas_intervalos:
             if proxima_libre + timedelta(minutes=duracion_min) <= inicio:
                 # Hay hueco antes de esta reserva
@@ -606,13 +628,13 @@ class ReservaDialog(QDialog):
                 proxima_libre = fin
         self._proxima_hora_libre = proxima_libre.time()
         # Comprobar si la hora solicitada está disponible
-        disponible = True
+        _ = True
         for inicio, fin in reservas_intervalos:
             if (nueva_inicio < fin) and (nueva_fin > inicio):
-                disponible = False
+                _ = False
                 break
         if not disponible:
-            texto = f"Hora no disponible. Próxima hora libre: {self._proxima_hora_libre.strftime('%H:%M')}"
+            _ = f"Hora no disponible. Próxima hora libre: {self._proxima_hora_libre.strftime('%H:%M')}"
             self.sugerir_hora_btn.setVisible(True)
             self.sugerir_hora_btn.setEnabled(True)
             self.hora_feedback_label.setText(texto)
@@ -624,6 +646,8 @@ class ReservaDialog(QDialog):
             self.sugerir_hora_btn.setEnabled(False)
 
     def sugerir_proxima_hora_libre(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Ajusta la hora de la reserva a la próxima hora libre sugerida y muestra feedback llamativo, sin mover el scroll ni expandir el contenido. Si la sugerencia es en el pasado, muestra advertencia y no ajusta la hora."""
         from datetime import datetime, date
 
@@ -632,9 +656,9 @@ class ReservaDialog(QDialog):
         if scroll_bar is not None:
             scroll_bar = scroll_bar.verticalScrollBar()
         if scroll_bar is not None:
-            scroll_pos = scroll_bar.value()
+            _ = scroll_bar.value()
         else:
-            scroll_pos = None
+            _ = None
         if self._proxima_hora_libre is not None:
             # Validar que la sugerencia no sea en el pasado
             fecha = self.fecha_input.date().toPyDate()
@@ -677,16 +701,17 @@ class ReservaDialog(QDialog):
                     from PyQt6.QtCore import QTimer
 
                     def reset_feedback_style():
+                        """TODO: Add docstring"""
+                        # TODO: Add input validation
                         self.hora_feedback_label.setStyleSheet(
                             "color: #1976d2; font-size: 15px; font-weight: bold;"
                         )
 
                     QTimer.singleShot(1200, reset_feedback_style)
                 except Exception as e:
-                    import logging
-                    logger = logging.getLogger(__name__)
+                    _ = logging.getLogger(__name__)
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logger.debug(f"[ReservaDialog] Error al sugerir próxima hora libre: {e}")
+                        logger.debug("[ReservaDialog] Error al sugerir próxima hora libre: %s", e)
                     icono = "⚠️"
                     texto = f"{icono} Error al ajustar la próxima hora libre."
                     self.hora_feedback_label.setText(texto)
@@ -694,8 +719,7 @@ class ReservaDialog(QDialog):
                         "color: #b71c1c; font-size: 13px; font-weight: bold;"
                     )
         else:
-            import logging
-            logger = logging.getLogger(__name__)
+            _ = logging.getLogger(__name__)
             if logging.getLogger().isEnabledFor(logging.DEBUG):
                 logger.debug("[ReservaDialog] self._proxima_hora_libre es None al sugerir hora.")
             icono = "⚠️"
@@ -709,8 +733,9 @@ class ReservaDialog(QDialog):
             scroll_bar.setValue(scroll_pos)
 
     def validar_y_aceptar(self):
-        import logging
-        logger = logging.getLogger(__name__)
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = logging.getLogger(__name__)
         if logging.getLogger().isEnabledFor(logging.DEBUG):
             logger.debug("[ReservaDialog] validar_y_aceptar llamado")
         if not self.cliente_input.text().strip():
@@ -727,7 +752,7 @@ class ReservaDialog(QDialog):
             self.telefono_input.setFocus()
             return
 
-        fecha_seleccionada = self.fecha_input.date().toPyDate()
+        _ = self.fecha_input.date().toPyDate()
         hora_seleccionada = self.hora_input.time().toPyTime()
         from datetime import datetime
 
@@ -743,7 +768,7 @@ class ReservaDialog(QDialog):
         if self.mesa:
             capacidad = getattr(self.mesa, "capacidad", 0)
             if self.personas_input.value() > capacidad:
-                respuesta = QMessageBox.question(
+                _ = QMessageBox.question(
                     self,
                     "Capacidad excedida",
                     f"La mesa tiene capacidad para {capacidad} personas, pero has seleccionado {self.personas_input.value()}.\n¿Deseas continuar?",
@@ -752,39 +777,39 @@ class ReservaDialog(QDialog):
                 if respuesta == QMessageBox.StandardButton.No:
                     return
 
-        datos_reserva = self.get_data()
-        import logging
+        _ = self.get_data()
         logger = logging.getLogger(__name__)
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logger.debug(f"[ReservaDialog] Datos recogidos para crear reserva: {datos_reserva}")
+            logger.debug("[ReservaDialog] Datos recogidos para crear reserva: %s", datos_reserva)
         # Crear objeto Reserva unificado
-        reserva = Reserva(
+        _ = Reserva(
             id=None,
-            mesa_id=str(datos_reserva["mesa_id"]),
+            _ = str(datos_reserva["mesa_id"]),
             cliente_nombre=datos_reserva["cliente"],
-            cliente_telefono=datos_reserva["telefono"],
+            _ = datos_reserva["telefono"],
             fecha_reserva=datos_reserva["fecha"],
-            hora_reserva=datos_reserva["hora"].strftime("%H:%M"),
+            _ = datos_reserva["hora"].strftime("%H:%M"),
             numero_personas=datos_reserva["personas"],
-            estado="confirmada",  # o datos_reserva["estado"] si se requiere
+            _ = "confirmada",  # o datos_reserva["estado"] si se requiere
             notas=datos_reserva["notas"],
         )
-        import logging
-        logger = logging.getLogger(__name__)
+        _ = logging.getLogger(__name__)
         if logging.getLogger().isEnabledFor(logging.DEBUG):
-            logger.debug(f"[ReservaDialog] Emitiendo señal reserva_creada con reserva: {reserva}")
+            logger.debug("[ReservaDialog] Emitiendo señal reserva_creada con reserva: %s", reserva)
         self.reserva_creada.emit(reserva)
         self.accept()
 
     def get_data(self):
-        duracion_text = self.duracion_combo.currentText()
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = self.duracion_combo.currentText()
         duracion_horas = (
             float(duracion_text.split()[0])
             if duracion_text != "Más de 3 horas"
             else 3.5
         )
 
-        mesa_id = str(getattr(self.mesa, "id", "")) if self.mesa else ""
+        _ = str(getattr(self.mesa, "id", "")) if self.mesa else ""
         mesa_numero = getattr(self.mesa, "numero", None) if self.mesa else None
 
         return {
@@ -803,14 +828,13 @@ class ReservaDialog(QDialog):
     def _reserva_cruza_medianoche(self, reserva):
         """Devuelve True si la reserva termina después de medianoche (cruza de un día a otro)."""
         try:
-            from datetime import datetime, timedelta
 
-            fecha = getattr(reserva, "fecha_reserva", None)
+            _ = getattr(reserva, "fecha_reserva", None)
             hora_str = getattr(reserva, "hora_reserva", None)
             if not fecha or not hora_str:
                 return False
             h, m = map(int, hora_str.split(":"))
-            inicio = datetime.combine(fecha, datetime.min.time()).replace(
+            _ = datetime.combine(fecha, datetime.min.time()).replace(
                 hour=h, minute=m
             )
             # Duración: si no existe, asumir 2h
@@ -823,9 +847,10 @@ class ReservaDialog(QDialog):
             return False
 
     def cargar_datos_reserva(self, reserva):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga los datos de una reserva existente en el formulario para edición."""
         from PyQt6.QtCore import QDate, QTime
-        from datetime import datetime
 
         if reserva.fecha_reserva:
             self.fecha_input.setDate(
@@ -839,8 +864,8 @@ class ReservaDialog(QDialog):
             try:
                 hora_dt = datetime.strptime(reserva.hora_reserva, "%H:%M")
                 self.hora_input.setTime(QTime(hora_dt.hour, hora_dt.minute))
-            except Exception:
-                pass
+            except Exception as e:
+    logging.error("Error: %s", e)
         self.cliente_input.setText(reserva.cliente_nombre or "")
         self.telefono_input.setText(reserva.cliente_telefono or "")
         self.personas_input.setValue(reserva.numero_personas or 1)
@@ -852,8 +877,10 @@ class ReservaDialog(QDialog):
                 self.estado_combo.setCurrentIndex(idx)
 
     def editar_y_guardar(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Valida y guarda los cambios de la reserva editada."""
-        datos = self.get_data()
+        _ = self.get_data()
         if self.reserva_service and self.reserva:
             exito = self.reserva_service.editar_reserva(self.reserva.id, datos)
             if exito:
@@ -864,18 +891,19 @@ class ReservaDialog(QDialog):
                 )
                 self.reserva_editada.emit(self.reserva)
                 try:
-                    from src.ui.modules.tpv_module.event_bus import reserva_event_bus
 
                     reserva_event_bus.reserva_creada.emit(self.reserva)
-                except ImportError:
-                    pass
+                except Exception as e:
+    logging.error("Error: %s", e)
                 self.accept()
             else:
                 QMessageBox.warning(self, "Error", "No se pudo actualizar la reserva.")
 
     def confirmar_cancelacion_reserva(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra un diálogo de confirmación antes de cancelar la reserva."""
-        resp = QMessageBox.question(
+        _ = QMessageBox.question(
             self,
             "Cancelar Reserva",
             "¿Seguro que deseas cancelar esta reserva?",
@@ -885,6 +913,8 @@ class ReservaDialog(QDialog):
             self.cancelar_reserva()
 
     def cancelar_reserva(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cancela la reserva editada."""
         if self.reserva_service and self.reserva:
             exito = self.reserva_service.cancelar_reserva(self.reserva.id)

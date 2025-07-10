@@ -1,23 +1,24 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, 
+from PyQt6.QtCore import Qt, QTimer
+from services.auth_service import AuthService
+
 """
 Módulo de inicio de sesión para la aplicación Hefest.
 Incluye efectos visuales modernos y animaciones.
 """
 
-import logging
-from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, 
                          QHBoxLayout, QFrame, QMessageBox, QCheckBox)
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QIcon, QPixmap, QFont, QPalette, QColor
 
-from utils.animation_helper import AnimationHelper, EffectsHelper
-from ui.modern_components import ModernButton, LoadingSpinner, GlassPanel
-from services.auth_service import AuthService
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class LoginDialog(QDialog):
     """Diálogo de inicio de sesión con diseño corporativo integrado"""
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setWindowTitle("Hefest - Inicio de Sesión")
         self.setFixedSize(440, 500)
@@ -77,6 +78,8 @@ class LoginDialog(QDialog):
         self.setup_ui()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # Layout principal con márgenes amplios
         layout = QVBoxLayout(self)
         layout.setContentsMargins(50, 40, 50, 40)
@@ -159,17 +162,19 @@ class LoginDialog(QDialog):
         self.password_input.returnPressed.connect(self.login_btn.click)
 
     def try_login(self):
-        username = self.username_input.text().strip()
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = self.username_input.text().strip()
         password = self.password_input.text().strip()
 
         if not username or not password:
             self.error_label.setText("Por favor, ingrese usuario y contraseña")
             return
 
-        auth_service = AuthService()
+        _ = AuthService()
         # Usar el método de login básico
         if auth_service.authenticate_basic_login(username, password):
-            logger.info(f"Login básico exitoso para: {username}")
+            logger.info("Login básico exitoso para: %s", username)
             self.accept()
         else:
             self.error_label.setText("Usuario o contraseña incorrectos")

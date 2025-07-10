@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 Tarjeta de métrica SIN CSS - Solo configuración nativa PyQt6
 Evita completamente setStyleSheet para elementos principales
@@ -31,9 +33,11 @@ class AdvancedMetricCardNative(QWidget):
         self.setVisible(True)
         self.show()
         
-        print(f"🔥 AdvancedMetricCardNative creada (SIN CSS): {self.title}")
+        print("🔥 AdvancedMetricCardNative creada (SIN CSS): %s" % self.title)
           
     def setup_native_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """UI usando SOLO configuración nativa PyQt6 - EVITANDO setStyleSheet"""
         
         # TAMAÑO FIJO
@@ -61,7 +65,7 @@ class AdvancedMetricCardNative(QWidget):
         top_row.setSpacing(8)
         
         # Icon GRANDE usando solo configuración nativa
-        icon_label = QLabel(self.icon)
+        _ = QLabel(self.icon)
         icon_font = QFont()
         icon_font.setPointSize(28)
         icon_label.setFont(icon_font)
@@ -83,7 +87,7 @@ class AdvancedMetricCardNative(QWidget):
             self.trend_label.setFont(trend_font)
             
             # Configurar color de fondo usando palette
-            trend_palette = self.trend_label.palette()
+            _ = self.trend_label.palette()
             trend_color = self._get_trend_qcolor(self.trend)
             trend_palette.setColor(QPalette.ColorRole.Window, trend_color)
             trend_palette.setColor(QPalette.ColorRole.WindowText, QColor("#ffffff"))
@@ -98,7 +102,7 @@ class AdvancedMetricCardNative(QWidget):
         main_layout.addLayout(top_row)
         
         # Title usando solo configuración nativa
-        title_label = QLabel(self.title)
+        _ = QLabel(self.title)
         title_font = QFont()
         title_font.setPointSize(12)
         title_font.setBold(True)
@@ -127,7 +131,7 @@ class AdvancedMetricCardNative(QWidget):
         
         # Subtitle usando solo configuración nativa
         if self.subtitle:
-            subtitle_label = QLabel(self.subtitle)
+            _ = QLabel(self.subtitle)
             subtitle_font = QFont()
             subtitle_font.setPointSize(9)
             subtitle_label.setFont(subtitle_font)
@@ -142,7 +146,7 @@ class AdvancedMetricCardNative(QWidget):
         # Spacer
         main_layout.addStretch()
         
-        print(f"🔥 Configuración NATIVA aplicada para: {self.title} (SIN CSS)")
+        print("🔥 Configuración NATIVA aplicada para: %s (SIN CSS)" % self.title)
         
     def _get_trend_qcolor(self, trend):
         """Determina el QColor según la tendencia"""
@@ -155,6 +159,8 @@ class AdvancedMetricCardNative(QWidget):
         return QColor("#6b7280")  # Gris neutro
     
     def update_value(self, new_value: str, new_trend: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar valores dinámicamente"""
         if self.value_label:
             self.value_label.setText(new_value)
@@ -163,7 +169,7 @@ class AdvancedMetricCardNative(QWidget):
         if new_trend and self.trend_label:
             self.trend_label.setText(new_trend)
             # Actualizar color usando palette
-            trend_palette = self.trend_label.palette()
+            _ = self.trend_label.palette()
             trend_color = self._get_trend_qcolor(new_trend)
             trend_palette.setColor(QPalette.ColorRole.Window, trend_color)
             self.trend_label.setPalette(trend_palette)

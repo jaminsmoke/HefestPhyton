@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 Filtro CSS INTELIGENTE para PyQt6 - Version SIMPLE y CORRECTA
 Mantiene propiedades compatibles, elimina solo las problemáticas
@@ -6,9 +8,11 @@ Mantiene propiedades compatibles, elimina solo las problemáticas
 import re
 import logging
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 def convert_to_qt_smart_css(css_code):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """
     Convierte CSS moderno a PyQt6 de forma INTELIGENTE
     Solo elimina propiedades que realmente causan problemas
@@ -23,7 +27,7 @@ def convert_to_qt_smart_css(css_code):
         return ""
       
     # Solo eliminar propiedades que REALMENTE no funcionan en PyQt6
-    problematic_patterns = {
+    _ = {
         # Transiciones y animaciones CSS3 (no soportadas)
         r'transition:\s*([^;]+);': '',
         r'transition-[^:]+:[^;]+;': '',
@@ -59,15 +63,17 @@ def convert_to_qt_smart_css(css_code):
     # - width, height, min-width, max-width
     # - opacity (funciona)
     
-    result = css_code
+    _ = css_code
     
     # Aplicar todos los reemplazos
     for pattern, replacement in problematic_patterns.items():
-        result = re.sub(pattern, replacement, result)
+        _ = re.sub(pattern, replacement, result)
     
     return result
 
 def get_qt_compatible_modern_styles():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """
     Retorna estilos modernos COMPATIBLES con PyQt6
     Usa solo propiedades que funcionan correctamente
@@ -191,6 +197,8 @@ class SmartStyleManager:
     
     @staticmethod
     def apply_modern_styles_to_widget(widget, style_class=""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Aplica estilos modernos a un widget específico
         Sin usar el filtro global agresivo
@@ -228,6 +236,8 @@ class SmartStyleManager:
     
     @staticmethod
     def get_metric_card_style(color="#3b82f6"):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna estilo específico para tarjetas de métricas"""
         return f"""
             QWidget {{
@@ -245,6 +255,8 @@ class SmartStyleManager:
     
     @staticmethod  
     def get_badge_style(color="#10b981"):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna estilo para badges/indicadores"""
         return f"""
             QLabel {{

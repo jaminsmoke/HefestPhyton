@@ -1,11 +1,13 @@
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal
+
 """
 Widget FiltersPanel - Panel de filtros para gestión de mesas
 Versión: v0.0.14
 """
 
-import logging
-from typing import Callable, Optional
-from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -13,24 +15,24 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFrame,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class FiltersPanel(QFrame):
     """Panel de filtros moderno y organizado para el TPV"""
 
     # Señales
-    zone_changed = pyqtSignal(str)  # Zona seleccionada
+    _ = pyqtSignal(str)  # Zona seleccionada
     status_changed = pyqtSignal(str)  # Estado seleccionado
-    view_changed = pyqtSignal(str)  # Modo de vista
+    _ = pyqtSignal(str)  # Modo de vista
     refresh_requested = pyqtSignal()  # Solicitud de actualización
 
     # Señal consolidada para cambios de filtros
-    filters_changed = pyqtSignal(dict)  # Todos los filtros como dict
+    _ = pyqtSignal(dict)  # Todos los filtros como dict
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.selected_zone = "Todas"
         self.selected_status = "Todos"
@@ -42,8 +44,9 @@ class FiltersPanel(QFrame):
         self.setup_ui()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz del panel de filtros"""
-        import logging
 
         self.setStyleSheet(
             """
@@ -69,7 +72,7 @@ class FiltersPanel(QFrame):
             try:
                 old_layout.deleteLater()
             except Exception as e:
-                logger.warning(f"Error eliminando layout anterior: {e}")
+                logger.warning("Error eliminando layout anterior: %s", e)
         main_layout = QVBoxLayout()
         main_layout.setSpacing(16)
         self.setLayout(main_layout)
@@ -79,8 +82,10 @@ class FiltersPanel(QFrame):
         self.create_filters_content(main_layout)
 
     def create_title(self, layout: QVBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el título del panel"""
-        title_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         title_icon = QLabel("🎛️")
         title_icon.setStyleSheet("font-size: 18px;")
@@ -104,6 +109,8 @@ class FiltersPanel(QFrame):
         layout.addLayout(title_layout)
 
     def create_filters_content(self, layout: QVBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el contenido principal de filtros"""
         filters_content = QHBoxLayout()
         filters_content.setSpacing(24)
@@ -131,6 +138,8 @@ class FiltersPanel(QFrame):
         layout.addLayout(filters_content)
 
     def create_separator(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un separador vertical"""
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.VLine)
@@ -138,6 +147,8 @@ class FiltersPanel(QFrame):
         return separator
 
     def create_zone_filters(self, layout: QHBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea filtros por zona con botones toggle"""
         zone_container = QWidget()
         zone_layout = QVBoxLayout(zone_container)
@@ -176,6 +187,8 @@ class FiltersPanel(QFrame):
         layout.addWidget(zone_container)
 
     def create_status_filters(self, layout: QHBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea filtros por estado con botones toggle"""
         status_container = QWidget()
         status_layout = QVBoxLayout(status_container)
@@ -199,7 +212,7 @@ class FiltersPanel(QFrame):
         buttons_layout = QHBoxLayout()
         buttons_layout.setSpacing(6)
 
-        status_info = [
+        _ = [
             ("Todos", "#6c757d"),
             ("Libre", "#28a745"),
             ("Ocupada", "#dc3545"),
@@ -219,6 +232,8 @@ class FiltersPanel(QFrame):
         layout.addWidget(status_container)
 
     def create_view_controls(self, layout: QHBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea controles de vista"""
         view_container = QWidget()
         view_layout = QVBoxLayout(view_container)
@@ -253,7 +268,7 @@ class FiltersPanel(QFrame):
         self.list_view_btn.setCheckable(True)
         self.list_view_btn.setToolTip("Vista en lista")
 
-        view_style = """
+        _ = """
             QPushButton {
                 background-color: #e9ecef;
                 border: 2px solid #dee2e6;
@@ -282,6 +297,8 @@ class FiltersPanel(QFrame):
         layout.addWidget(view_container)
 
     def create_filter_button(self, text: str, color: str) -> QPushButton:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un botón de filtro estándar"""
         btn = QPushButton(text)
         btn.setFixedSize(70, 28)
@@ -308,6 +325,8 @@ class FiltersPanel(QFrame):
         return btn
 
     def create_refresh_button(self, layout: QHBoxLayout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el botón de actualización"""
         refresh_btn = QPushButton("🔄 Actualizar")
         refresh_btn.setFixedSize(120, 36)
@@ -329,6 +348,8 @@ class FiltersPanel(QFrame):
         layout.addWidget(refresh_btn)
 
     def on_zone_selected(self, zone: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja la selección de zona"""
         try:
             # Desmarcar otros botones de zona
@@ -342,9 +363,11 @@ class FiltersPanel(QFrame):
             self._emit_filters_changed()
 
         except Exception as e:
-            logger.error(f"Error seleccionando zona: {e}")
+            logger.error("Error seleccionando zona: %s", e)
 
     def on_status_selected(self, status: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja la selección de estado"""
         try:
             # Desmarcar otros botones de estado
@@ -358,9 +381,11 @@ class FiltersPanel(QFrame):
             self._emit_filters_changed()
 
         except Exception as e:
-            logger.error(f"Error seleccionando estado: {e}")
+            logger.error("Error seleccionando estado: %s", e)
 
     def on_view_changed(self, mode: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el cambio de modo de vista"""
         try:
             self.view_mode = mode
@@ -371,7 +396,7 @@ class FiltersPanel(QFrame):
 
             self.view_changed.emit(mode)
         except Exception as e:
-            logger.error(f"Error cambiando vista: {e}")
+            logger.error("Error cambiando vista: %s", e)
 
     def _emit_filters_changed(self):
         """Emite la señal consolidada con todos los filtros"""
@@ -379,6 +404,8 @@ class FiltersPanel(QFrame):
         self.filters_changed.emit(filters)
 
     def get_current_filters(self) -> dict:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene los filtros actuales"""
         return {
             "zone": self.selected_zone,

@@ -78,7 +78,7 @@ from ..dialogs.product_dialogs_pro import (
     DeleteConfirmationDialog,
 )
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ProductsManagerWidget(QWidget):
@@ -87,7 +87,7 @@ class ProductsManagerWidget(QWidget):
     """
 
     # Señales
-    producto_seleccionado = pyqtSignal(dict)
+    _ = pyqtSignal(dict)
     producto_actualizado = pyqtSignal()
 
     def __init__(self, inventario_service, parent=None):
@@ -110,6 +110,8 @@ class ProductsManagerWidget(QWidget):
         logger.info("ProductsManagerWidget inicializado correctamente")
 
     def init_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializar la interfaz de usuario"""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 20, 20, 20)
@@ -134,10 +136,12 @@ class ProductsManagerWidget(QWidget):
         self.apply_styles()
 
     def create_header(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear el header del módulo"""
         header = QFrame()
         header.setObjectName("HeaderFrame")
-        layout = QHBoxLayout(header)
+        _ = QHBoxLayout(header)
 
         # Título
         title = QLabel("📦 Gestión de Productos")
@@ -159,19 +163,21 @@ class ProductsManagerWidget(QWidget):
         return header
 
     def create_search_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel de búsqueda y filtros"""
         panel = QFrame()
         panel.setObjectName("SearchPanel")
-        layout = QHBoxLayout(panel)
+        _ = QHBoxLayout(panel)
 
         # Búsqueda por texto
-        search_label = QLabel("Buscar:")
+        _ = QLabel("Buscar:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Buscar productos...")
         self.search_input.textChanged.connect(self.on_search_changed)
 
         # Filtro por categoría
-        category_label = QLabel("Categoría:")
+        _ = QLabel("Categoría:")
         self.category_combo = QComboBox()
         self.category_combo.addItem("Todas las categorías", "")
         self.category_combo.currentTextChanged.connect(self.on_category_changed)
@@ -202,12 +208,14 @@ class ProductsManagerWidget(QWidget):
         return panel
 
     def create_products_table(self) -> QTableWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear la tabla de productos"""
         table = QTableWidget()
         table.setObjectName("ProductsTable")
 
         # Configurar columnas
-        headers = [
+        _ = [
             "ID",
             "Nombre",
             "Categoría",
@@ -248,9 +256,11 @@ class ProductsManagerWidget(QWidget):
         return table
 
     def create_bottom_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel inferior con estadísticas y alertas"""
         panel = QFrame()
-        layout = QHBoxLayout(panel)
+        _ = QHBoxLayout(panel)
 
         # Panel de estadísticas
         stats_panel = self.create_stats_panel()
@@ -263,10 +273,12 @@ class ProductsManagerWidget(QWidget):
         return panel
 
     def create_stats_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel de estadísticas"""
         panel = QFrame()
         panel.setObjectName("StatsPanel")
-        layout = QVBoxLayout(panel)
+        _ = QVBoxLayout(panel)
 
         # Título
         title = QLabel("📊 Estadísticas")
@@ -287,10 +299,12 @@ class ProductsManagerWidget(QWidget):
         return panel
 
     def create_alerts_panel(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear panel de alertas"""
         panel = QFrame()
         panel.setObjectName("AlertsPanel")
-        layout = QVBoxLayout(panel)
+        _ = QVBoxLayout(panel)
 
         # Título
         title = QLabel("⚠️ Alertas")
@@ -304,6 +318,8 @@ class ProductsManagerWidget(QWidget):
         return panel
 
     def load_products(self, search_text: str = "", category: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar productos desde el servicio"""
         try:
             self.productos_cache = self.inventario_service.get_productos(
@@ -314,15 +330,17 @@ class ProductsManagerWidget(QWidget):
             self.update_alerts()
 
         except Exception as e:
-            logger.error(f"Error cargando productos: {e}")
+            logger.error("Error cargando productos: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudieron cargar los productos: {str(e)}"
             )
 
     def load_categories(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cargar categorías desde el servicio"""
         try:
-            categorias = self.inventario_service.get_categorias()
+            _ = self.inventario_service.get_categorias()
 
             # Limpiar combo
             self.category_combo.clear()
@@ -335,9 +353,11 @@ class ProductsManagerWidget(QWidget):
             self.categorias_cache = categorias
 
         except Exception as e:
-            logger.error(f"Error cargando categorías: {e}")
+            logger.error("Error cargando categorías: %s", e)
 
     def update_products_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar la tabla de productos"""
         try:
             self.products_table.setRowCount(len(self.productos_cache))
@@ -382,13 +402,13 @@ class ProductsManagerWidget(QWidget):
 
                 # Estado
                 if producto.stock == 0:
-                    estado = "Sin Stock"
+                    _ = "Sin Stock"
                     color = QColor("#fca5a5")
                 elif producto.necesita_reposicion():
-                    estado = "Stock Bajo"
+                    _ = "Stock Bajo"
                     color = QColor("#fbbf24")
                 else:
-                    estado = "Disponible"
+                    _ = "Disponible"
                     color = QColor("#86efac")
 
                 estado_item = QTableWidgetItem(estado)
@@ -397,14 +417,16 @@ class ProductsManagerWidget(QWidget):
                 self.products_table.setItem(row, 6, estado_item)
 
         except Exception as e:
-            logger.error(f"Error actualizando tabla de productos: {e}")
+            logger.error("Error actualizando tabla de productos: %s", e)
 
     def update_statistics(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar estadísticas"""
         try:
-            total_products = len(self.productos_cache)
+            _ = len(self.productos_cache)
             total_value = sum(p.precio * p.stock for p in self.productos_cache)
-            low_stock = sum(
+            _ = sum(
                 1
                 for p in self.productos_cache
                 if p.necesita_reposicion() and p.stock > 0
@@ -417,12 +439,14 @@ class ProductsManagerWidget(QWidget):
             self.out_of_stock_label.setText(f"Sin stock: {out_of_stock}")
 
         except Exception as e:
-            logger.error(f"Error actualizando estadísticas: {e}")
+            logger.error("Error actualizando estadísticas: %s", e)
 
     def update_alerts(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar alertas"""
         try:
-            alertas = []
+            _ = []
 
             # Productos sin stock
             sin_stock = [p for p in self.productos_cache if p.stock == 0]
@@ -430,7 +454,7 @@ class ProductsManagerWidget(QWidget):
                 alertas.append(f"⚠️ {len(sin_stock)} producto(s) sin stock")
 
             # Productos con stock bajo
-            stock_bajo = [
+            _ = [
                 p
                 for p in self.productos_cache
                 if p.necesita_reposicion() and p.stock > 0
@@ -444,20 +468,26 @@ class ProductsManagerWidget(QWidget):
                 self.alerts_label.setText("✅ No hay alertas")
 
         except Exception as e:
-            logger.error(f"Error actualizando alertas: {e}")
+            logger.error("Error actualizando alertas: %s", e)
 
     def on_search_changed(self, text: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar cambio en búsqueda"""
         category = self.category_combo.currentData() or ""
         self.load_products(text, category)
 
     def on_category_changed(self, category: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar cambio en filtro de categoría"""
-        search_text = self.search_input.text()
+        _ = self.search_input.text()
         category_data = self.category_combo.currentData() or ""
         self.load_products(search_text, category_data)
 
     def on_product_selected(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar selección de producto"""
         selected_rows = set(item.row() for item in self.products_table.selectedItems())
         has_selection = bool(selected_rows)
@@ -482,12 +512,14 @@ class ProductsManagerWidget(QWidget):
                 )
 
     def add_product(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Agregar nuevo producto usando diálogo profesional"""
         try:
             # Crear diálogo con categorías disponibles y servicio de inventario
-            dialog = NewProductDialog(
+            _ = NewProductDialog(
                 parent=self,
-                categories=self.categorias_cache,
+                _ = self.categorias_cache,
                 inventario_service=self.inventario_service,
             )
 
@@ -498,15 +530,17 @@ class ProductsManagerWidget(QWidget):
                 self.producto_actualizado.emit()
 
         except Exception as e:
-            logger.error(f"Error creando producto: {e}")
+            logger.error("Error creando producto: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudo crear el producto: {str(e)}"
             )
 
     def edit_selected_product(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Editar producto seleccionado usando diálogo profesional"""
         try:
-            selected_rows = set(
+            _ = set(
                 item.row() for item in self.products_table.selectedItems()
             )
             if not selected_rows:
@@ -514,13 +548,13 @@ class ProductsManagerWidget(QWidget):
 
             row = next(iter(selected_rows))
             if row < len(self.productos_cache):
-                producto = self.productos_cache[row]
+                _ = self.productos_cache[row]
                 # Usar el diálogo profesional de edición
-                dialog = EditProductDialog(
+                _ = EditProductDialog(
                     parent=self,
-                    producto=producto,
+                    _ = producto,
                     categories=self.categorias_cache,
-                    inventario_service=self.inventario_service,
+                    _ = self.inventario_service,
                 )
 
                 if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -532,15 +566,17 @@ class ProductsManagerWidget(QWidget):
                     self.producto_actualizado.emit()
 
         except Exception as e:
-            logger.error(f"Error editando producto: {e}")
+            logger.error("Error editando producto: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudo editar el producto: {str(e)}"
             )
 
     def adjust_stock(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Ajustar stock del producto seleccionado"""
         try:
-            selected_rows = set(
+            _ = set(
                 item.row() for item in self.products_table.selectedItems()
             )
             if not selected_rows:
@@ -548,7 +584,7 @@ class ProductsManagerWidget(QWidget):
 
             row = next(iter(selected_rows))
             if row < len(self.productos_cache):
-                producto = self.productos_cache[row]
+                _ = self.productos_cache[row]
                 # Usar diálogo simple
                 from PyQt6.QtWidgets import QInputDialog
 
@@ -575,13 +611,15 @@ class ProductsManagerWidget(QWidget):
                         )
 
         except Exception as e:
-            logger.error(f"Error ajustando stock: {e}")
+            logger.error("Error ajustando stock: %s", e)
             QMessageBox.warning(self, "Error", f"No se pudo ajustar el stock: {str(e)}")
 
     def delete_selected_product(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Eliminar producto seleccionado"""
         try:
-            selected_rows = set(
+            _ = set(
                 item.row() for item in self.products_table.selectedItems()
             )
             if not selected_rows:
@@ -589,7 +627,7 @@ class ProductsManagerWidget(QWidget):
 
             row = next(iter(selected_rows))
             if row < len(self.productos_cache):
-                producto = self.productos_cache[row]
+                _ = self.productos_cache[row]
 
                 reply = QMessageBox.question(
                     self,
@@ -611,12 +649,14 @@ class ProductsManagerWidget(QWidget):
                         )
 
         except Exception as e:
-            logger.error(f"Error eliminando producto: {e}")
+            logger.error("Error eliminando producto: %s", e)
             QMessageBox.warning(
                 self, "Error", f"No se pudo eliminar el producto: {str(e)}"
             )
 
     def export_to_csv(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Exportar productos a CSV"""
         try:
             file_path, _ = QFileDialog.getSaveFileName(
@@ -630,7 +670,7 @@ class ProductsManagerWidget(QWidget):
                 import csv
 
                 with open(file_path, "w", newline="", encoding="utf-8") as file:
-                    writer = csv.writer(file)
+                    _ = csv.writer(file)
 
                     # Header
                     writer.writerow(
@@ -655,29 +695,35 @@ class ProductsManagerWidget(QWidget):
                 )
 
         except Exception as e:
-            logger.error(f"Error exportando productos: {e}")
+            logger.error("Error exportando productos: %s", e)
             QMessageBox.warning(self, "Error", f"Error exportando productos: {str(e)}")
 
     def refresh_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar datos automáticamente"""
         try:
-            search_text = self.search_input.text()
+            _ = self.search_input.text()
             category = self.category_combo.currentData() or ""
             self.load_products(search_text, category)
 
         except Exception as e:
-            logger.error(f"Error en actualización automática: {e}")
+            logger.error("Error en actualización automática: %s", e)
 
     def cleanup(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpiar recursos"""
         try:
             if hasattr(self, "refresh_timer"):
                 self.refresh_timer.stop()
 
         except Exception as e:
-            logger.error(f"Error en cleanup: {e}")
+            logger.error("Error en cleanup: %s", e)
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilos al widget"""
         self.setStyleSheet(
             """

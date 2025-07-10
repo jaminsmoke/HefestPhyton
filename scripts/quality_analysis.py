@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python3
 """
 Analizador de Calidad del Código para Hefest
@@ -19,6 +21,7 @@ from pathlib import Path
 
 class QualityAnalyzer:
     def __init__(self):
+        """TODO: Add docstring"""
         self.project_root = Path(__file__).parent.parent
         self.src_dir = self.project_root / "src"
         self.tests_dir = self.project_root / "tests"
@@ -28,10 +31,12 @@ class QualityAnalyzer:
         self.reports_dir.mkdir(exist_ok=True)
         
     def run_tests_with_coverage(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Ejecuta tests con análisis de cobertura."""
         print("🧪 Ejecutando tests con cobertura...")
         
-        cmd = [
+        _ = [
             sys.executable, "-m", "pytest",
             str(self.tests_dir),
             "--cov=src",
@@ -45,16 +50,18 @@ class QualityAnalyzer:
         return result.returncode == 0
         
     def analyze_complexity(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Analiza complejidad ciclomática."""
         print("📊 Analizando complejidad ciclomática...")
         
         try:
             # Instalar radon si no está disponible
             subprocess.run([sys.executable, "-m", "pip", "install", "radon"], 
-                         capture_output=True)
+                         _ = True)
             
             # Ejecutar análisis
-            cmd = [
+            _ = [
                 sys.executable, "-m", "radon", "cc", 
                 str(self.src_dir), 
                 "--json",
@@ -69,21 +76,23 @@ class QualityAnalyzer:
                 print("✅ Análisis de complejidad completado")
                 return True
             else:
-                print(f"❌ Error en análisis de complejidad: {result.stderr}")
+                print("❌ Error en análisis de complejidad: %s" % result.stderr)
                 return False
                 
         except Exception as e:
-            print(f"❌ Error instalando/ejecutando radon: {e}")
+    logging.error("❌ Error instalando/ejecutando radon: %s", e)
             return False
             
     def check_code_duplication(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica duplicación de código."""
         print("🔍 Verificando duplicación de código...")
         
         try:
             # Instalar jscpd si no está disponible
             subprocess.run(["npm", "install", "-g", "jscpd"], 
-                         capture_output=True)
+                         _ = True)
             
             cmd = [
                 "jscpd",
@@ -104,15 +113,17 @@ class QualityAnalyzer:
                 return False
                 
         except Exception as e:
-            print(f"⚠️ Error en análisis de duplicación: {e}")
+    logging.error("⚠️ Error en análisis de duplicación: %s", e)
             return False
             
     def analyze_maintainability(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Analiza índice de mantenibilidad."""
         print("🔧 Analizando mantenibilidad...")
         
         try:
-            cmd = [
+            _ = [
                 sys.executable, "-m", "radon", "mi",
                 str(self.src_dir),
                 "--json"
@@ -126,21 +137,23 @@ class QualityAnalyzer:
                 print("✅ Análisis de mantenibilidad completado")
                 return True
             else:
-                print(f"❌ Error en análisis de mantenibilidad: {result.stderr}")
+                print("❌ Error en análisis de mantenibilidad: %s" % result.stderr)
                 return False
                 
         except Exception as e:
-            print(f"❌ Error en análisis de mantenibilidad: {e}")
+    logging.error("❌ Error en análisis de mantenibilidad: %s", e)
             return False
             
     def security_scan(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Ejecuta análisis de seguridad."""
         print("🔒 Ejecutando análisis de seguridad...")
         
         try:
             # Instalar bandit si no está disponible
             subprocess.run([sys.executable, "-m", "pip", "install", "bandit"], 
-                         capture_output=True)
+                         _ = True)
             
             cmd = [
                 sys.executable, "-m", "bandit",
@@ -159,14 +172,16 @@ class QualityAnalyzer:
                 return False
                 
         except Exception as e:
-            print(f"❌ Error en análisis de seguridad: {e}")
+    logging.error("❌ Error en análisis de seguridad: %s", e)
             return False
             
     def generate_summary_report(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Genera reporte resumen."""
         print("📋 Generando reporte resumen...")
         
-        summary = {
+        _ = {
             "timestamp": str(subprocess.run(["date"], capture_output=True, text=True).stdout.strip()),
             "project": "Hefest v0.0.10",
             "analysis": {}
@@ -176,7 +191,7 @@ class QualityAnalyzer:
         coverage_file = self.reports_dir / "coverage.json"
         if coverage_file.exists():
             with open(coverage_file) as f:
-                coverage_data = json.load(f)
+                _ = json.load(f)
                 summary["analysis"]["coverage"] = {
                     "total_coverage": coverage_data.get("totals", {}).get("percent_covered", 0),
                     "lines_covered": coverage_data.get("totals", {}).get("covered_lines", 0),
@@ -187,9 +202,9 @@ class QualityAnalyzer:
         complexity_file = self.reports_dir / "complexity.json"
         if complexity_file.exists():
             with open(complexity_file) as f:
-                complexity_data = json.load(f)
+                _ = json.load(f)
                 # Calcular promedio de complejidad
-                total_complexity = 0
+                _ = 0
                 total_functions = 0
                 for file_data in complexity_data.values():
                     if isinstance(file_data, list):
@@ -198,7 +213,7 @@ class QualityAnalyzer:
                                 total_complexity += item["complexity"]
                                 total_functions += 1
                 
-                avg_complexity = total_complexity / total_functions if total_functions > 0 else 0
+                _ = total_complexity / total_functions if total_functions > 0 else 0
                 summary["analysis"]["complexity"] = {
                     "average_complexity": round(avg_complexity, 2),
                     "total_functions": total_functions,
@@ -227,29 +242,31 @@ class QualityAnalyzer:
             
     def _print_summary(self, summary):
         """Imprime resumen formateado."""
-        print("\n" + "="*50)
+        print("\n"  %  "="*50)
         print("📊 REPORTE DE CALIDAD - HEFEST v0.0.10")
         print("="*50)
         
         if "coverage" in summary["analysis"]:
             cov = summary["analysis"]["coverage"]
-            print(f"🧪 Cobertura de Tests: {cov['total_coverage']:.1f}%")
-            print(f"   Líneas cubiertas: {cov['lines_covered']}/{cov['total_lines']}")
+            print("🧪 Cobertura de Tests: %s%" % cov['total_coverage']:.1f)
+            print("   Líneas cubiertas: {cov['lines_covered']}/%s" % cov['total_lines'])
             
         if "complexity" in summary["analysis"]:
             comp = summary["analysis"]["complexity"]
-            print(f"📊 Complejidad Promedio: {comp['average_complexity']}")
-            print(f"   Grado de Calidad: {comp['quality_grade']}")
-            print(f"   Total Funciones: {comp['total_functions']}")
+            print("📊 Complejidad Promedio: %s" % comp['average_complexity'])
+            print("   Grado de Calidad: %s" % comp['quality_grade'])
+            print("   Total Funciones: %s" % comp['total_functions'])
             
-        print(f"\n📁 Reportes detallados en: {self.reports_dir}")
+        print("\n📁 Reportes detallados en: %s" % self.reports_dir)
         print("="*50)
         
     def run_full_analysis(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Ejecuta análisis completo."""
         print("🚀 Iniciando análisis completo de calidad...")
         
-        results = {
+        _ = {
             "tests_coverage": self.run_tests_with_coverage(),
             "complexity": self.analyze_complexity(),
             "duplication": self.check_code_duplication(),
@@ -264,7 +281,7 @@ class QualityAnalyzer:
         print("\n🎯 Resultados del Análisis:")
         for check, passed in results.items():
             status = "✅" if passed else "❌"
-            print(f"  {status} {check.replace('_', ' ').title()}")
+            print("  {status} %s" % check.replace('_', ' ').title())
             
         all_passed = all(results.values())
         if all_passed:
@@ -275,8 +292,10 @@ class QualityAnalyzer:
         return all_passed
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     analyzer = QualityAnalyzer()
-    success = analyzer.run_full_analysis()
+    _ = analyzer.run_full_analysis()
     
     # Código de salida para CI/CD
     sys.exit(0 if success else 1)

@@ -1,0 +1,398 @@
+PROBLEMAS CRÍTICOS DE SEGURIDAD IDENTIFICADOS
+==================================================
+
+1. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\database_analysis.py:40:        cursor.execute("SELECT COUNT(*) as total, COUNT(CASE WHEN nombre LIKE '%admin%' OR nombre LIKE '%test%' OR nombre LIKE '%demo%' THEN 1 END) as factory FROM usuarios")
+--------------------------------------------------
+2. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\database_analysis_simple.py:38:        cursor.execute("SELECT COUNT(*) as total, COUNT(CASE WHEN nombre LIKE '%admin%' OR nombre LIKE '%test%' OR nombre LIKE '%demo%' THEN 1 END) as factory FROM usuarios")
+--------------------------------------------------
+3. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\identify_critical_security.py:20:            "execute.*%.*%",
+--------------------------------------------------
+4. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\identify_critical_security.py:109:                    "execute(f\"", "execute(\"", ".format(", "% (", "%s"
+--------------------------------------------------
+5. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\identify_critical_security.py:21:            "query.*format",
+--------------------------------------------------
+6. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: data\db_manager.py:248:        sql = f"SELECT * FROM {table} WHERE id = ?"
+--------------------------------------------------
+7. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\verify_system_state.py:67:                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+--------------------------------------------------
+8. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\complete_initial_reset.py:76:                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+--------------------------------------------------
+9. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\complete_initial_reset.py:111:                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+--------------------------------------------------
+10. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\reset_to_initial_state.py:42:                deleted_count = db.query(f"SELECT COUNT(*) FROM {table}")[0][0]
+--------------------------------------------------
+11. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\reset_to_initial_state.py:80:                count = db.query(f"SELECT COUNT(*) FROM {table}")[0][0]
+--------------------------------------------------
+12. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: data\db_manager.py:256:        sql = f"INSERT INTO {table} ({columns}) VALUES ({placeholders})"
+--------------------------------------------------
+13. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\services\inventario_service_real.py:292:            query = f"UPDATE productos SET {', '.join(set_clauses)} WHERE id = ?"
+--------------------------------------------------
+14. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\reservas_agenda\reserva_service.py:41:            sql = f"UPDATE reservas SET {', '.join(campos)} WHERE id = ?"
+--------------------------------------------------
+15. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\reservas_agenda\reserva_service.py:153:            # logger.debug(f"[CANCELAR_RESERVA] UPDATE reservas: filas afectadas={c.rowcount}")
+--------------------------------------------------
+16. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\reservas_agenda\reserva_service.py:157:                # logger.debug(f"[CANCELAR_RESERVA] UPDATE mesas: filas afectadas={c.rowcount}")
+--------------------------------------------------
+17. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: data\db_manager.py:263:        sql = f"UPDATE {table} SET {set_clause} WHERE id = ?"
+--------------------------------------------------
+18. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: data\db_manager.py:324:            sql = f"UPDATE usuarios SET {', '.join(fields)} WHERE id = ?"
+--------------------------------------------------
+19. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: data\db_manager.py:271:        sql = f"DELETE FROM {table} WHERE id = ?"
+--------------------------------------------------
+20. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\complete_initial_reset.py:54:                cursor.execute(f"DELETE FROM {table}")
+--------------------------------------------------
+21. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\reset_to_initial_state.py:43:                db.execute(f"DELETE FROM {table}")
+--------------------------------------------------
+22. SQL Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\reset_to_initial_state.py:59:                db.execute(f"DELETE FROM sqlite_sequence WHERE name='{table}'")
+--------------------------------------------------
+23. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\database_analysis.py:15:        self.db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'hefest.db')
+--------------------------------------------------
+24. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\database_analysis_simple.py:16:        self.db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'hefest.db')
+--------------------------------------------------
+25. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\factory_state_analysis.py:17:    db_path = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'hefest.db')
+--------------------------------------------------
+26. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\inventory_connections_analysis.py:14:project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+--------------------------------------------------
+27. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\verify_real_trends.py:8:sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+--------------------------------------------------
+28. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\maintenance\reset_to_initial_state.py:10:sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+--------------------------------------------------
+29. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\migration\migrar_a_datos_reales.py:12:sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+--------------------------------------------------
+30. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\migration\setup_hospitality_data.py:10:sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+--------------------------------------------------
+31. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\testing\test_css_compatibility.py:9:sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+--------------------------------------------------
+32. Path Traversal
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\testing\test_tpv_avanzado_import.py:8:sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
+--------------------------------------------------
+33. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\hefest_application.py:151:        result = login_dialog.exec()
+--------------------------------------------------
+34. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\hefest_application.py:170:        result = user_selector.exec()
+--------------------------------------------------
+35. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\hefest_application.py:224:            return self.app.exec()
+--------------------------------------------------
+36. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\dashboard_admin_v3\components\administrative_alerts_component.py:586:            msg_box.exec()
+--------------------------------------------------
+37. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\dashboard_admin_v3\components\dashboard_metric_components.py:883:    app.exec()
+--------------------------------------------------
+38. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\hospederia_module.py:324:        if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+39. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\hospederia_module.py:330:        if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+40. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\hospederia_module.py:336:        if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+41. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\inventario_module\components\category_manager.py:341:        if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+42. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\inventario_module\components\category_manager.py:362:                if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+43. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\inventario_module\components\inventory_table.py:432:        menu.exec(self.mapToGlobal(position))
+--------------------------------------------------
+44. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\inventario_module\components\products_manager.py:494:            if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+45. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\inventario_module\components\products_manager.py:526:                if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+46. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\inventario_module\components\supplier_manager.py:327:        if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+47. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\inventario_module\components\supplier_manager.py:344:                if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+48. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\mesas_area\mesas_area_grid.py:263:            logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Ejecutando dialog.exec() para dialog")
+--------------------------------------------------
+49. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\mesas_area\mesas_area_grid.py:264:            dialog.exec()
+--------------------------------------------------
+50. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\mesas_area\mesas_area_grid.py:265:            logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] dialog.exec() finalizado para dialog")
+--------------------------------------------------
+51. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\mesas_area\mesas_area_grid.py:311:            dialog.exec()
+--------------------------------------------------
+52. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\mesas_area\mesas_area_main.py:717:            if dlg.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+53. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\mesas_area\mesas_area_stats.py:140:        dialog.exec()
+--------------------------------------------------
+54. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\components\reservas_agenda\reservas_agenda_view.py:144:        if dialog.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+55. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\dialogs\mesa_dialog.py:456:        reserva_dialog.exec()
+--------------------------------------------------
+56. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\dialogs\mesa_dialog.py:505:        dialog.exec()
+--------------------------------------------------
+57. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\tpv_module.py:577:            dialog.exec()
+--------------------------------------------------
+58. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\tpv_module.py:782:                dialog.exec()
+--------------------------------------------------
+59. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\tpv_module.py:1043:    sys.exit(app.exec())
+--------------------------------------------------
+60. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\widgets\mesa_widget_simple.py:793:            menu.exec(event.globalPosition().toPoint())
+--------------------------------------------------
+61. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\widgets\mesa_widget_simple.py:813:            dialog.exec()
+--------------------------------------------------
+62. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\widgets\mesa_widget_simple.py:978:        if dlg.exec() == QDialog.DialogCode.Accepted:
+--------------------------------------------------
+63. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\tpv_module\widgets\product_selector.py:434:    sys.exit(app.exec())
+--------------------------------------------------
+64. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\user_management_module.py:176:        if dialog.exec() == dialog.DialogCode.Accepted:
+--------------------------------------------------
+65. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\modules\user_management_module.py:225:            if dialog.exec() == dialog.DialogCode.Accepted:
+--------------------------------------------------
+66. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: src\ui\windows\hefest_main_window.py:457:        msg.exec()
+--------------------------------------------------
+67. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\fix_tarjetas_metricas.py:105:    return app.exec()
+--------------------------------------------------
+68. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\investigacion_profunda.py:58:    return app.exec()
+--------------------------------------------------
+69. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\demos\demo_v3_arquitectura.py:122:    sys.exit(app.exec())
+--------------------------------------------------
+70. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\testing\test_mesas_area_fix.py:54:        # return app.exec()
+--------------------------------------------------
+71. Code Injection
+   Archivo: N/A
+   Línea: N/A
+   Código: scripts\analysis\identify_critical_security.py:42:            "subprocess.*shell=True",
+--------------------------------------------------
+72. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 11
+   Código: cursor.execute("SELECT stock FROM productos WHERE id = ?", (producto_id,))
+--------------------------------------------------
+73. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 20
+   Código: cursor.execute("UPDATE productos SET stock = ? WHERE id = ?", (stock_nuevo, producto_id))
+--------------------------------------------------
+74. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 39
+   Código: self.execute("UPDATE zonas SET nombre = ? WHERE id = ?", (nuevo_nombre, zona_id))
+--------------------------------------------------
+75. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 41
+   Código: self.execute("UPDATE mesas SET zona = ? WHERE zona = ?", (nuevo_nombre, nombre_anterior))
+--------------------------------------------------
+76. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 57
+   Código: return self.execute("INSERT INTO zonas (nombre) VALUES (?)", (nombre,))
+--------------------------------------------------
+77. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 61
+   Código: return self.execute("DELETE FROM zonas WHERE id = ?", (zona_id,))
+--------------------------------------------------
+78. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 198
+   Código: cursor.execute("SELECT COUNT(*) FROM usuarios")
+--------------------------------------------------
+79. SQL Injection
+   Archivo: data/db_manager.py
+   Línea: 329
+   Código: self.execute("UPDATE usuarios SET is_active = 0 WHERE id = ?", (user_id,))
+--------------------------------------------------

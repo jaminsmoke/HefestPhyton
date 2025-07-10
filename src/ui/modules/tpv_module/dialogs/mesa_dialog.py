@@ -1,11 +1,22 @@
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (
+from PyQt6.QtWidgets import QScrollArea
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QFont
+from services.tpv_service import Mesa
+from .reserva_dialog import ReservaDialog
+from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+from ....components.TabbedDialog import TabbedDialog
+from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+            from src.ui.modules.tpv_module.mesa_event_bus import get_mesa_event_bus
+            from datetime import datetime
+
 """
 MesaDialog con Pestañas - Versión mejorada usando TabbedDialog
 Diálogo moderno y organizado para gestión completa de mesas
 """
 
-import logging
-from typing import Optional
-from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QWidget,
@@ -20,21 +31,14 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
 )
-from PyQt6.QtWidgets import QScrollArea
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
 
-from services.tpv_service import Mesa
-from .reserva_dialog import ReservaDialog
-from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
-from ....components.TabbedDialog import TabbedDialog
-from src.ui.modules.tpv_module.event_bus import reserva_event_bus
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class MesaDialog(TabbedDialog):
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
+        """TODO: Add docstring"""
         # Si la actualización es para esta mesa, refrescar datos y UI
         if str(getattr(mesa_actualizada, "numero", None)) == str(
             getattr(self.mesa, "numero", None)
@@ -55,114 +59,87 @@ class MesaDialog(TabbedDialog):
             self.update_ui()
 
     def _on_reserva_event_bus_creada(self, reserva):
-        # Si la reserva es para esta mesa, refrescar UI y recargar reservas
+        """Maneja evento de reserva creada - Refactorizado"""
         mesa_numero = str(getattr(self.mesa, "numero", None))
-        reserva_mesa_numero = str(getattr(reserva, "mesa_id", None))
+        _ = str(getattr(reserva, "mesa_id", None))
+        
         if mesa_numero == reserva_mesa_numero:
             self.mesa.estado = "reservada"
-            # Recargar reservas activas en la lista
-            if hasattr(self, "cargar_reservas_en_lista"):
-                self.cargar_reservas_en_lista()
-            # Si existe un método para refrescar la mesa desde el servicio, usarlo (mejor consistencia)
-            if self.reserva_service and hasattr(
-                self.reserva_service, "actualizar_estado_mesa"
-            ):
-                try:
-                    self.reserva_service.actualizar_estado_mesa(self.mesa.numero)
-                except Exception as e:
-                    import logging
-                    logger = logging.getLogger(__name__)
-                    if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logger.debug(f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}")
+            self.cargar_reservas_en_lista()
             self.update_ui()
 
     """Diálogo de mesa con pestañas horizontales modernas"""
 
-    mesa_updated = pyqtSignal(Mesa)
+    _ = pyqtSignal(Mesa)
     iniciar_tpv_requested = pyqtSignal(int)
-    crear_reserva_requested = pyqtSignal(int)
+    _ = pyqtSignal(int)
     cambiar_estado_requested = pyqtSignal(int, str)
-    reserva_cancelada = pyqtSignal()
+    _ = pyqtSignal()
     reserva_creada = pyqtSignal()
 
-    def __init__(self, mesa: Mesa, parent=None, reserva_service=None):
+    def __init__(self, mesa: Mesa, parent=None, mesa_controller=None):
+        """TODO: Add docstring"""
         self.mesa = mesa
-        self.reserva_service = reserva_service
+        self.mesa_controller = mesa_controller  # Controller pattern en lugar de acceso directo a servicios
+        self._reservas_data = []  # Cache local de reservas
+        
         # Inicializar diálogo base
         super().__init__(f"Mesa {mesa.numero}", parent)
-        # Mejor visualización: tamaño mínimo recomendado
         self.setMinimumSize(600, 520)
         self.setMaximumWidth(800)
-        # --- SINCRONIZACIÓN Y PERSISTENCIA REAL AL INICIALIZAR ---
-        # Refrescar estado real de la mesa desde el servicio si existe
-        mesa_actualizada = None
-        if self.reserva_service and hasattr(
-            self.reserva_service, "refrescar_mesa_desde_bd"
-        ):
+        
+        # Inicializar datos a través del controller
+        self._initialize_data()
+        
+        # Configurar UI
+        self._setup_ui_components()
+        
+        # Configurar eventos
+        self._setup_event_handlers()
+    
+    def _initialize_data(self):
+        """Inicializa los datos a través del controller"""
+        if self.mesa_controller:
             try:
-                mesa_actualizada = self.reserva_service.refrescar_mesa_desde_bd(
-                    self.mesa.numero
-                )
-                if mesa_actualizada:
-                    for attr in [
-                        "estado",
-                        "capacidad",
-                        "alias",
-                        "nombre_display",
-                        "personas_display",
-                        "notas",
-                    ]:
-                        if hasattr(mesa_actualizada, attr):
-                            setattr(self.mesa, attr, getattr(mesa_actualizada, attr))
+                # Obtener datos actualizados a través del controller
+                mesa_data = self.mesa_controller.get_mesa_data(self.mesa.numero)
+                if mesa_data:
+                    self._update_mesa_from_data(mesa_data)
+                    
+                # Obtener reservas a través del controller
+                self._reservas_data = self.mesa_controller.get_mesa_reservas(self.mesa.numero)
+                
             except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    logger.debug(f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}")
-        # Refrescar reservas activas de la mesa desde el servicio si existe
-        if self.reserva_service and hasattr(
-            self.reserva_service, "obtener_reservas_activas_por_mesa"
-        ):
-            try:
-                reservas_por_mesa = (
-                    self.reserva_service.obtener_reservas_activas_por_mesa()
-                )
-                self._reservas_activas_inicial = reservas_por_mesa.get(
-                    self.mesa.numero, []
-                )
-            except Exception as e:
-                import logging
-                logger = logging.getLogger(__name__)
-                if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    logger.debug(f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}")
-        # Configurar header específico
+                logger.warning("Error inicializando datos: %s", e)
+    
+    def _update_mesa_from_data(self, mesa_data):
+        """Actualiza la mesa con datos del controller"""
+        for attr in ["estado", "capacidad", "alias", "notas"]:
+            if attr in mesa_data:
+                setattr(self.mesa, attr, mesa_data[attr])
+    
+    def _setup_ui_components(self):
+        """Configura los componentes de UI"""
         self.set_header_title(
             f"Mesa {self.mesa.numero} - {self.mesa.zona}",
             f"Capacidad: {self.mesa.capacidad} personas • Estado: {self.mesa.estado.title()}",
         )
-        # Crear pestañas
         self.setup_tabs()
-        # Conectar señales
+    
+    def _setup_event_handlers(self):
+        """Configura los manejadores de eventos"""
         self.connect_signals()
-
-        # Suscribirse al event bus de mesas para sincronización global
+        
+        # Event bus connections con manejo de errores
         try:
-            mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
+            event_bus = get_mesa_event_bus('dialog')
+            event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
         except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"[MesaDialog][ERROR] No se pudo conectar a mesa_event_bus: {e}")
-
-        # Suscribirse al event bus de reservas
-        try:
-            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
-            reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"[MesaDialog][ERROR] No se pudo conectar a reserva_event_bus: {e}")
+            logger.error("Error conectando a mesa_event_bus: %s", e)
 
     def setup_tabs(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura las pestañas del diálogo"""
         # Pestaña 1: Información
         info_page = self.create_info_page()
@@ -181,6 +158,8 @@ class MesaDialog(TabbedDialog):
         self.add_tab(history_page, "Historial", "📊")
 
     def create_info_page(self) -> QWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la página de información"""
         # Usar solo la importación global de QVBoxLayout y QScrollArea
         page = QWidget()
@@ -202,7 +181,7 @@ class MesaDialog(TabbedDialog):
         info_layout = QGridLayout(info_frame)
         info_layout.setSpacing(15)
         # Estado
-        estado_color = {
+        _ = {
             "libre": "#28a745",
             "ocupada": "#dc3545",
             "reservada": "#ffc107",
@@ -243,7 +222,7 @@ class MesaDialog(TabbedDialog):
                 }
             """
             )
-            reservas_layout = QVBoxLayout(reservas_frame)
+            _ = QVBoxLayout(reservas_frame)
             reservas_label = QLabel("Reservas Activas:")
             reservas_label.setWordWrap(True)
             reservas_layout.addWidget(reservas_label)
@@ -260,6 +239,8 @@ class MesaDialog(TabbedDialog):
         return scroll
 
     def create_actions_page(self) -> QWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la página de acciones (botones en columna para mejor visualización)"""
         # QVBoxLayout y QScrollArea ya están importados globalmente
         page = QWidget()
@@ -301,6 +282,8 @@ class MesaDialog(TabbedDialog):
         return scroll
 
     def create_config_page(self) -> QWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la página de configuración"""
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -349,6 +332,8 @@ class MesaDialog(TabbedDialog):
         return page
 
     def create_history_page(self) -> QWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la página de historial"""
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -356,7 +341,7 @@ class MesaDialog(TabbedDialog):
         layout.setSpacing(20)
 
         # Historial simulado
-        history_items = [
+        _ = [
             "🕐 14:30 - Mesa liberada",
             "🍽️ 12:00 - Pedido completado (€45.50)",
             "👥 11:30 - Mesa ocupada (3 personas)",
@@ -384,6 +369,8 @@ class MesaDialog(TabbedDialog):
         return page
 
     def create_action_button(self, text: str, color: str, tooltip: str) -> QPushButton:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un botón de acción estilizado"""
         btn = QPushButton(text)
         btn.setMinimumHeight(60)
@@ -410,6 +397,8 @@ class MesaDialog(TabbedDialog):
         return btn
 
     def get_input_style(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilo para campos de entrada"""
         return """
             QLineEdit, QSpinBox, QTextEdit {
@@ -426,21 +415,43 @@ class MesaDialog(TabbedDialog):
         """
 
     def cargar_reservas_en_lista(self):
-        """Carga las reservas en la lista y asegura consistencia de datos"""
-        if not hasattr(self, "reservas_list") or not self.reserva_service:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Carga las reservas en la lista - Refactorizado para usar controller"""
+        if not hasattr(self, "reservas_list"):
             return
+            
         self.reservas_list.clear()
-        reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
-        reservas = reservas_por_mesa.get(self.mesa.numero, [])
-        for r in reservas:
-            texto = f"{r.fecha_reserva.strftime('%d/%m/%Y')} {r.hora_reserva} - {r.cliente_nombre} ({r.numero_personas}p)"
+        
+        # Obtener reservas a través del controller
+        if self.mesa_controller:
+            try:
+                self._reservas_data = self.mesa_controller.get_mesa_reservas(self.mesa.numero)
+            except Exception as e:
+                logger.error("Error obteniendo reservas: %s", e)
+                self._reservas_data = []
+        
+        # Poblar lista con datos locales
+        for reserva in self._reservas_data:
+            texto = self._format_reserva_text(reserva)
             item = QListWidgetItem(texto)
-            item.setData(32, r)
+            item.setData(32, reserva)
             self.reservas_list.addItem(item)
-        # Forzar refresco visual
+            
         self.reservas_list.repaint()
+    
+    def _format_reserva_text(self, reserva):
+        """Formatea el texto de una reserva para mostrar"""
+        try:
+            fecha_str = reserva.fecha_reserva.strftime('%d/%m/%Y')
+            return f"{fecha_str} {reserva.hora_reserva} - {reserva.cliente_nombre} ({reserva.numero_personas}p)"
+        except Exception as e:
+            logger.warning("Error formateando reserva: %s", e)
+            return "Reserva - Error en formato"
 
     def connect_signals(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Conecta las señales"""
         self.tpv_btn.clicked.connect(
             lambda: self.iniciar_tpv_requested.emit(self.mesa.numero)
@@ -455,32 +466,67 @@ class MesaDialog(TabbedDialog):
             self.reservas_list.itemClicked.connect(self.on_reserva_seleccionada)
 
     def on_reserva_clicked(self):
-        """Maneja clic en botón de reserva"""
-        reserva_dialog = ReservaDialog(
-            self, self.mesa, reserva_service=self.reserva_service
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Maneja clic en botón de reserva - Refactorizado para usar controller"""
+        if not self.mesa_controller:
+            QMessageBox.warning(self, "Error", "No se puede crear reserva: controlador no disponible")
+            return
+            
+        _ = ReservaDialog(
+            self, self.mesa, mesa_controller=self.mesa_controller
         )
-        reserva_dialog.reserva_creada.connect(self.procesar_reserva)
+        reserva_dialog.reserva_creada.connect(self._handle_reserva_created)
         reserva_dialog.exec()
-        self.cargar_reservas_en_lista()
+    
+    def _handle_reserva_created(self, reserva_data):
+        """Maneja la creación de una nueva reserva"""
+        try:
+            if self.mesa_controller:
+                success = self.mesa_controller.create_reserva(self.mesa.numero, reserva_data)
+                if success:
+                    self.cargar_reservas_en_lista()
+                    self.mesa.estado = "reservada"
+                    self.update_ui()
+                    self.reserva_creada.emit()
+                else:
+                    QMessageBox.warning(self, "Error", "No se pudo crear la reserva")
+        except Exception as e:
+            logger.error("Error creando reserva: %s", e)
+            QMessageBox.critical(self, "Error", f"Error creando reserva: {str(e)}")
 
     def on_liberar_clicked(self):
-        """Maneja liberación de mesa"""
-        self.mesa.estado = "libre"
-        self.mesa.personas_temporal = 0
-        self.mesa.alias = ""
-        self.mesa_updated.emit(self.mesa)
-        mesa_event_bus.mesa_actualizada.emit(self.mesa)
-        self.update_ui()
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Maneja liberación de mesa - Refactorizado para usar controller"""
+        try:
+            if self.mesa_controller:
+                success = self.mesa_controller.liberar_mesa(self.mesa.numero)
+                if success:
+                    self.mesa.estado = "libre"
+                    self.mesa.personas_temporal = 0
+                    self.mesa.alias = ""
+                    self.mesa_updated.emit(self.mesa)
+                    self.update_ui()
+                else:
+                    QMessageBox.warning(self, "Error", "No se pudo liberar la mesa")
+            else:
+                QMessageBox.warning(self, "Error", "Controlador no disponible")
+        except Exception as e:
+            logger.error("Error liberando mesa: %s", e)
+            QMessageBox.critical(self, "Error", f"Error liberando mesa: {str(e)}")
 
     def on_reserva_seleccionada(self, item):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja selección de reserva"""
-        reserva = item.data(32)
+        _ = item.data(32)
         dialog = ReservaDialog(
             self,
             self.mesa,
-            reserva_service=self.reserva_service,
+            _ = self.reserva_service,
             reserva=reserva,
-            modo_edicion=True,
+            _ = True,
         )
         dialog.reserva_cancelada.connect(self._on_reserva_cancelada)
         dialog.reserva_editada.connect(lambda r: self.cargar_reservas_en_lista())
@@ -492,19 +538,19 @@ class MesaDialog(TabbedDialog):
         self.cargar_reservas_en_lista()
         # Refuerzo: emitir señal global para refresco visual de mesas
         try:
-            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
             reserva_event_bus.reserva_cancelada.emit(reserva)
         except Exception as e:
             logger = logging.getLogger(__name__)
-            logger.error(f"[MesaDialog][ERROR] No se pudo emitir reserva_cancelada global: {e}")
+            logger.error("[MesaDialog][ERROR] No se pudo emitir reserva_cancelada global: %s", e)
 
     def procesar_reserva(self, reserva):
-        print(f"[MesaDialog] procesar_reserva llamado con reserva: {reserva}")
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        print("[MesaDialog] procesar_reserva llamado con reserva: %s" % reserva)
         if self.mesa and self.reserva_service and reserva:
-            from datetime import datetime
 
             # Asegurar que la reserva se crea con estado 'activa' y todos los campos requeridos
-            fecha_hora = datetime.combine(
+            _ = datetime.combine(
                 reserva.fecha_reserva,
                 datetime.strptime(reserva.hora_reserva, "%H:%M").time(),
             )
@@ -512,18 +558,18 @@ class MesaDialog(TabbedDialog):
         print(
             f"[MesaDialog] Llamando a crear_reserva forzando mesa_numero={self.mesa.numero} (ignorando reserva.mesa_id={reserva.mesa_id})"
         )
-        reserva_db = None
+        _ = None
         if self.reserva_service is not None:
-            reserva_db = self.reserva_service.crear_reserva(
+            _ = self.reserva_service.crear_reserva(
                 mesa_id=str(self.mesa.numero) if self.mesa.numero is not None else "",
-                cliente=reserva.cliente_nombre,
+                _ = reserva.cliente_nombre,
                 fecha_hora=fecha_hora,
-                duracion_min=getattr(reserva, "duracion_min", 120),
+                _ = getattr(reserva, "duracion_min", 120),
                 telefono=getattr(reserva, "cliente_telefono", None),
-                personas=getattr(reserva, "numero_personas", None),
+                _ = getattr(reserva, "numero_personas", None),
                 notas=getattr(reserva, "notas", None),
             )
-            print(f"[MesaDialog] Reserva creada: {reserva_db}")
+            print("[MesaDialog] Reserva creada: %s" % reserva_db)
             # Forzar estado 'activa' en la base de datos si el modelo lo requiere
             if hasattr(reserva_db, "estado"):
                 reserva_db.estado = "activa"
@@ -541,6 +587,8 @@ class MesaDialog(TabbedDialog):
             )
 
     def collect_data(self) -> dict:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Recolecta datos del formulario"""
         return {
             "alias": self.alias_input.text(),
@@ -549,6 +597,8 @@ class MesaDialog(TabbedDialog):
         }
 
     def validate_data(self, data: dict) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Valida los datos"""
         if not data["alias"].strip():
             QMessageBox.warning(self, "Validación", "El alias no puede estar vacío")
@@ -556,25 +606,38 @@ class MesaDialog(TabbedDialog):
         return True
 
     def handle_accept(self):
-        """Maneja aceptación del diálogo"""
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Maneja aceptación del diálogo - Refactorizado para usar controller"""
         data = self.collect_data()
-        if self.validate_data(data):
-            # Aplicar cambios temporales (alias, capacidad, notas)
-            self.mesa.alias = data["alias"]
-            self.mesa.capacidad = data["capacidad"]
-            self.mesa.notas = data["notas"]
-
-            # Persistencia y sincronización global: solo emitir evento global, sin dependencias directas
-            mesa_event_bus.mesa_actualizada.emit(self.mesa)
-
-            # Emitir señal local para listeners directos (si existen)
-            self.mesa_updated.emit(self.mesa)
-
-            self.accept()
+        if not self.validate_data(data):
+            return
+            
+        try:
+            if self.mesa_controller:
+                success = self.mesa_controller.update_mesa(self.mesa.numero, data)
+                if success:
+                    # Actualizar modelo local
+                    self.mesa.alias = data["alias"]
+                    self.mesa.capacidad = data["capacidad"]
+                    self.mesa.notas = data["notas"]
+                    
+                    # Emitir señales
+                    self.mesa_updated.emit(self.mesa)
+                    self.accept()
+                else:
+                    QMessageBox.warning(self, "Error", "No se pudieron guardar los cambios")
+            else:
+                QMessageBox.warning(self, "Error", "Controlador no disponible")
+        except Exception as e:
+            logger.error("Error guardando cambios: %s", e)
+            QMessageBox.critical(self, "Error", f"Error guardando cambios: {str(e)}")
 
     def update_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza la interfaz"""
-        estado_color = {
+        _ = {
             "libre": "#28a745",
             "ocupada": "#dc3545",
             "reservada": "#ffc107",

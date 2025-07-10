@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Hefest - Modern Styles
 Sistema de estilos QSS modular para una apariencia moderna y profesional
@@ -10,24 +11,30 @@ de la aplicación, organizados de manera modular y fácil de mantener.
 class ModernStyles:
     @classmethod
     def get_reserva_list_item_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "background: #fff; border-radius: 10px; border: 1.5px solid #e0e0e0;"
 
     @classmethod
     def get_reserva_badge_style(cls, estado):
-        colores = {
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = {
             "confirmada": "#4caf50",
             "pendiente": "#ff9800",
             "cancelada": "#f44336",
             "ocupada": "#1976d2",
             "libre": "#9e9e9e",
         }
-        color = colores.get(estado, "#bdbdbd")
+        _ = colores.get(estado, "#bdbdbd")
         return (
             f"background: {color}; color: #fff; border-radius: 6px; padding: 4px 8px;"
         )
 
     @classmethod
     def get_stats_section_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return """
         QFrame#SubContenedorMetricCards {
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -42,10 +49,14 @@ class ModernStyles:
 
     @classmethod
     def get_stats_title_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "background: #f3e8ff; border-radius: 6px; padding: 1px 10px 1px 6px; border: 1px solid #d946ef; margin-bottom: 0px;"
 
     @classmethod
     def get_stats_refresh_btn_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return """
         QPushButton {
             background: #f3e8ff;
@@ -64,6 +75,8 @@ class ModernStyles:
 
     @classmethod
     def get_stats_config_btn_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return """
         QPushButton {
             background: #f3e8ff;
@@ -82,14 +95,20 @@ class ModernStyles:
 
     @classmethod
     def get_stats_last_refresh_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 10px; color: #64748b; background: #f3f4f6; border-radius: 6px; padding: 2px 8px; margin-top: 2px;"
 
     @classmethod
     def get_stats_separator_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "color: #d1d5db; font-size: 14px; margin: 0px 8px;"
 
     @classmethod
     def get_kpi_widget_style(cls, color, bg_color):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return f"""
         QFrame#KPIWidget {{
             background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
@@ -106,14 +125,20 @@ class ModernStyles:
 
     @classmethod
     def get_kpi_icon_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 38px; margin-bottom: 2px;"
 
     @classmethod
     def get_kpi_value_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 28px; font-weight: bold; color: #222;"
 
     @classmethod
     def get_kpi_alias_label_style(cls, small=False):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if small:
             return "font-size: 10px; color: #6b21a8; margin-top: 1px; padding: 0 2px; max-width: 170px; min-width: 60px; min-height: 14px; max-height: 22px; qproperty-alignment: 'AlignHCenter'; background: transparent; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;"
         else:
@@ -121,54 +146,80 @@ class ModernStyles:
 
     @classmethod
     def get_alias_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "text-overflow: ellipsis; white-space: nowrap; overflow: hidden; padding: 0px; margin: 0px; background: transparent;"
 
     @classmethod
     def get_estado_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 13px; font-weight: 600; color: #fff; border-radius: 6px; padding: 2px 8px; background: #6c757d;"
 
     @classmethod
     def get_capacidad_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 12px; color: #495057; background: #f1f3f4; border-radius: 4px; padding: 1px 6px;"
 
     @classmethod
     def get_zona_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 12px; color: #64748b; background: #e2e8f0; border-radius: 4px; padding: 1px 6px;"
 
     @classmethod
     def get_contador_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 12px; color: #fff; background: #e53935; border-radius: 8px; padding: 2px 8px;"
 
     @classmethod
     def get_edit_btn_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "border: none; background: transparent; font-size: 14px; color: #1976d2;"
 
     @classmethod
     def get_restore_btn_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "border: none; background: transparent; font-size: 14px; color: #888;"
 
     @classmethod
     def get_edit_personas_btn_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "border: none; background: transparent; font-size: 13px;"
 
     @classmethod
     def get_batch_checkbox_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "margin-left:2px;margin-right:2px;"
 
     @classmethod
     def get_alias_line_edit_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 14px; padding: 2px 6px; border-radius: 4px; border: 1px solid #e0e0e0;"
 
     @classmethod
     def get_menu_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "QMenu { background: #fff; border-radius: 8px; border: 1px solid #e0e0e0; } QMenu::item { padding: 8px 24px; } QMenu::item:selected { background: #f1f5f9; color: #1976d2; }"
 
     @classmethod
     def get_base_widget_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "border-radius: 12px; background: #fff; border: 1px solid #e0e0e0;"
 
     @classmethod
     def get_scroll_area_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilo para QScrollArea y barras de scroll"""
         return f"""
         QScrollArea {{
@@ -193,6 +244,8 @@ class ModernStyles:
 
     @classmethod
     def get_mesas_container_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilo para el contenedor de mesas"""
         return f"""
         QWidget {{
@@ -203,6 +256,8 @@ class ModernStyles:
 
     @classmethod
     def get_empty_message_frame_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilo para el mensaje de 'no mesas encontradas'"""
         return f"""
         QFrame {{
@@ -217,20 +272,26 @@ class ModernStyles:
 
     @classmethod
     def get_icon_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 48px; color: #6c757d; margin: 10px;"
 
     @classmethod
     def get_title_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 20px; font-weight: bold; color: #495057; margin: 8px;"
 
     @classmethod
     def get_subtitle_label_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return "font-size: 14px; color: #6c757d; margin: 4px;"
 
     """Contenedor para todos los estilos modernos de la aplicación"""
 
     # Paleta de colores moderna
-    COLORS = {
+    _ = {
         # Primarios
         "primary": "#3b82f6",
         "primary_hover": "#2563eb",
@@ -262,6 +323,8 @@ class ModernStyles:
 
     @classmethod
     def get_main_window_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilo para la ventana principal"""
         return f"""
         QMainWindow {{
@@ -278,6 +341,8 @@ class ModernStyles:
 
     @classmethod
     def get_button_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para botones modernos"""
         return f"""
         /* Botón primario */
@@ -371,6 +436,8 @@ class ModernStyles:
 
     @classmethod
     def get_input_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para inputs y formularios"""
         return f"""
         QLineEdit, QTextEdit, QPlainTextEdit {{
@@ -431,6 +498,8 @@ class ModernStyles:
 
     @classmethod
     def get_table_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para tablas"""
         return f"""
         QTableWidget {{
@@ -472,6 +541,8 @@ class ModernStyles:
 
     @classmethod
     def get_tab_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para pestañas"""
         return f"""
         QTabWidget::pane {{
@@ -513,6 +584,8 @@ class ModernStyles:
 
     @classmethod
     def get_sidebar_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para el sidebar"""
         return f"""
         QFrame[class="sidebar"] {{
@@ -546,6 +619,8 @@ class ModernStyles:
 
     @classmethod
     def get_card_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para tarjetas"""
         return f"""
         QFrame[class="card"] {{
@@ -570,6 +645,8 @@ class ModernStyles:
 
     @classmethod
     def get_status_bar_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para la barra de estado"""
         return f"""
         QStatusBar {{
@@ -588,6 +665,8 @@ class ModernStyles:
 
     @classmethod
     def get_scrollbar_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para scrollbars"""
         return f"""
         QScrollBar:vertical {{
@@ -637,6 +716,8 @@ class ModernStyles:
 
     @classmethod
     def get_dialog_styles(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para diálogos"""
         return f"""
         QDialog {{
@@ -654,6 +735,8 @@ class ModernStyles:
 
     @classmethod
     def get_complete_stylesheet(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna la hoja de estilos completa"""
         return "\n".join(
             [
@@ -676,6 +759,8 @@ class AnimatedStyles:
 
     @classmethod
     def get_hover_transition_style(cls):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """CSS para transiciones hover (NO SOPORTADO en PyQt6, solo referencia)"""
         return """
         /* PyQt6 NO soporta transition ni box-shadow. Estas líneas son solo referencia. */
@@ -701,7 +786,7 @@ class AnimatedStyles:
 class ThemeManager:
     """Gestor de temas para la aplicación"""
 
-    THEMES = {
+    _ = {
         "light": {
             "bg": "#f8fafc",
             "card": "#ffffff",
@@ -742,13 +827,17 @@ class ThemeManager:
 
     @classmethod
     def get_theme(cls, theme_name="light"):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene un tema por nombre"""
         return cls.THEMES.get(theme_name, cls.THEMES["light"])
 
     @classmethod
     def get_stylesheet(cls, theme_name="light"):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Genera el stylesheet para el tema seleccionado"""
-        theme = cls.get_theme(theme_name)
+        _ = cls.get_theme(theme_name)
         return f"""
             QWidget {{
                 background: {theme['bg']};

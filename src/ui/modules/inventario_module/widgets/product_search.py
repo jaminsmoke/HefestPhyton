@@ -58,7 +58,7 @@ from PyQt6.QtGui import QFont, QColor
 
 from src.utils.modern_styles import ModernStyles
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ProductSearchWidget(QWidget):
@@ -74,11 +74,12 @@ class ProductSearchWidget(QWidget):
     """
 
     # Señales
-    search_changed = pyqtSignal(str)  # Cambio en búsqueda
+    _ = pyqtSignal(str)  # Cambio en búsqueda
     product_selected = pyqtSignal(dict)  # Producto seleccionado
-    filter_applied = pyqtSignal(str, str)  # Filtro aplicado (tipo, valor)
+    _ = pyqtSignal(str, str)  # Filtro aplicado (tipo, valor)
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.modern_styles = ModernStyles()
         self.search_history: List[str] = []
@@ -126,7 +127,7 @@ class ProductSearchWidget(QWidget):
         layout.setSpacing(8)
 
         # Campo de búsqueda
-        search_input_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText(
@@ -159,7 +160,7 @@ class ProductSearchWidget(QWidget):
 
     def _create_quick_filters(self) -> QHBoxLayout:
         """Crea los filtros rápidos"""
-        layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         # Etiqueta
         filters_label = QLabel("Filtros rápidos:")
@@ -169,7 +170,7 @@ class ProductSearchWidget(QWidget):
         # Botones de filtro
         self.filter_buttons = {}
 
-        filter_options = [
+        _ = [
             ("stock_bajo", "📉 Stock Bajo", "#ffc107"),
             ("agotado", "🚫 Agotados", "#dc3545"),
             ("mas_vendidos", "⭐ Más Vendidos", "#28a745"),
@@ -284,7 +285,7 @@ class ProductSearchWidget(QWidget):
         layout.setContentsMargins(12, 8, 12, 8)
 
         # Header del historial
-        history_header = QHBoxLayout()
+        _ = QHBoxLayout()
 
         history_title = QLabel("📝 Búsquedas recientes")
         history_title.setStyleSheet(
@@ -366,7 +367,7 @@ class ProductSearchWidget(QWidget):
 
     def _apply_styles(self):
         """Aplica estilos modernos"""
-        colors = self.modern_styles.COLORS
+        _ = self.modern_styles.COLORS
 
         self.setStyleSheet(
             f"""
@@ -490,6 +491,8 @@ class ProductSearchWidget(QWidget):
         self.history_list.clear()
 
     def update_search_results(self, products: List[Dict[str, Any]]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Actualiza los resultados de búsqueda.
 
@@ -512,12 +515,12 @@ class ProductSearchWidget(QWidget):
 
     def _create_result_item(self, product: Dict[str, Any]) -> QListWidgetItem:
         """Crea un item de resultado"""
-        nombre = product.get("nombre", "Sin nombre")
+        _ = product.get("nombre", "Sin nombre")
         codigo = product.get("codigo", "")
-        categoria = product.get("categoria", "")
+        _ = product.get("categoria", "")
         stock = product.get("stock", 0)
         # Formato del texto
-        text = f"{nombre}"
+        _ = f"{nombre}"
         if codigo:
             text += f" ({codigo})"
         if categoria:
@@ -536,6 +539,8 @@ class ProductSearchWidget(QWidget):
         return item
 
     def update_suggestions(self, suggestions: List[str]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Actualiza las sugerencias de autocompletado.
 
@@ -546,16 +551,22 @@ class ProductSearchWidget(QWidget):
         self.completer.setModel(model)
 
     def set_search_text(self, text: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Establece el texto de búsqueda"""
         self.search_input.setText(text)
 
     def get_search_text(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene el texto de búsqueda actual"""
         return self.search_input.text().strip()
 
     def get_active_filters(self) -> List[str]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene los filtros activos"""
-        active_filters = []
+        _ = []
         for filter_key, btn in self.filter_buttons.items():
             if btn.isChecked():
                 active_filters.append(filter_key)

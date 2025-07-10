@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python3
 """
 Script de limpieza y mantenimiento de base de datos - Hefest v0.0.13
@@ -13,11 +15,13 @@ import os
 from datetime import datetime
 
 def verificar_base_datos():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verifica el estado actual de la base de datos"""
     # Obtener la ruta del script y construir la ruta de la base de datos
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    db_path = os.path.join(project_root, 'data', 'hefest.db')
+    _ = os.path.join(project_root, 'data', 'hefest.db')
     
     if not os.path.exists(db_path):
         print("❌ Base de datos no encontrada")
@@ -25,38 +29,38 @@ def verificar_base_datos():
     
     try:
         conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         print("=== VERIFICACIÓN INICIAL DE BASE DE DATOS ===")
-        print(f"📍 Ruta: {os.path.abspath(db_path)}")
+        print("📍 Ruta: %s" % os.path.abspath(db_path))
         
         # Verificar tablas
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
         tablas = [t[0] for t in cursor.fetchall()]
-        print(f"📋 Tablas disponibles: {tablas}")
+        print("📋 Tablas disponibles: %s" % tablas)
         
         # Verificar categorías
         if 'categorias' in tablas:
             cursor.execute("SELECT COUNT(*) FROM categorias")
-            total_cat = cursor.fetchone()[0]
+            _ = cursor.fetchone()[0]
             cursor.execute("SELECT COUNT(*) FROM categorias WHERE activa = 1")
             activas_cat = cursor.fetchone()[0]
-            print(f"📂 Categorías: {total_cat} total, {activas_cat} activas, {total_cat - activas_cat} inactivas")
+            print("📂 Categorías: {total_cat} total, {activas_cat} activas, %s inactivas" % total_cat - activas_cat)
               # Mostrar categorías inactivas
             cursor.execute("SELECT id, nombre, activa FROM categorias WHERE activa = 0")
             inactivas = cursor.fetchall()
             if inactivas:
                 print("   ❌ Categorías inactivas encontradas:")
                 for cat in inactivas:
-                    print(f"      ID: {cat[0]} | Nombre: '{cat[1]}'")
+                    print("      ID: {cat[0]} | Nombre: '%s'" % cat[1])
         
         # Verificar proveedores
         if 'proveedores' in tablas:
             cursor.execute("SELECT COUNT(*) FROM proveedores")
-            total_prov = cursor.fetchone()[0]
+            _ = cursor.fetchone()[0]
             cursor.execute("SELECT COUNT(*) FROM proveedores WHERE activo = 1")
             activos_prov = cursor.fetchone()[0]
-            print(f"🏢 Proveedores: {total_prov} total, {activos_prov} activos, {total_prov - activos_prov} inactivos")
+            print("🏢 Proveedores: {total_prov} total, {activos_prov} activos, %s inactivos" % total_prov - activos_prov)
             
             # Mostrar todos los proveedores
             cursor.execute("SELECT id, nombre, activo FROM proveedores")
@@ -65,107 +69,112 @@ def verificar_base_datos():
                 print("   📋 Proveedores encontrados:")
                 for prov in todos_prov:
                     status = "✅ ACTIVO" if prov[2] else "❌ INACTIVO"
-                    print(f"      ID: {prov[0]} | Nombre: '{prov[1]}' | Estado: {status}")
+                    print("      ID: {prov[0]} | Nombre: '{prov[1]}' | Estado: %s" % status)
         
         conn.close()
         return True
         
     except Exception as e:
-        print(f"❌ Error al verificar base de datos: {e}")
+    logging.error("❌ Error al verificar base de datos: %s", e)
         return False
 
 def limpiar_categorias():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Elimina categorías inactivas y de prueba"""
     # Obtener la ruta del script y construir la ruta de la base de datos
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    db_path = os.path.join(project_root, 'data', 'hefest.db')
+    _ = os.path.join(project_root, 'data', 'hefest.db')
     
     try:
         conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         print("\n=== LIMPIEZA DE CATEGORÍAS ===")
         
         # Obtener categorías inactivas
         cursor.execute("SELECT id, nombre FROM categorias WHERE activa = 0")
-        categorias_inactivas = cursor.fetchall()
+        _ = cursor.fetchall()
         
         if not categorias_inactivas:
             print("✅ No hay categorías inactivas para eliminar")
             conn.close()
             return
         
-        print(f"🗑️ Eliminando {len(categorias_inactivas)} categorías inactivas:")
+        print("🗑️ Eliminando %s categorías inactivas:" % len(categorias_inactivas))
         for cat in categorias_inactivas:
-            print(f"   - ID: {cat[0]} | Nombre: '{cat[1]}'")
+            print("   - ID: {cat[0]} | Nombre: '%s'" % cat[1])
         
         # Como no hay productos en la base de datos, proceder directo a eliminar
         print("   📝 No hay productos que verificar (tabla productos vacía)")
         
         # Eliminar categorías inactivas
         cursor.execute("DELETE FROM categorias WHERE activa = 0")
-        eliminadas = cursor.rowcount
+        _ = cursor.rowcount
         
         conn.commit()
         conn.close()
         
-        print(f"✅ Eliminadas {eliminadas} categorías inactivas correctamente")
+        print("✅ Eliminadas %s categorías inactivas correctamente" % eliminadas)
         
     except Exception as e:
-        print(f"❌ Error al limpiar categorías: {e}")
+    logging.error("❌ Error al limpiar categorías: %s", e)
 
 def limpiar_proveedores():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Elimina todos los proveedores (tabla debe estar vacía)"""
     # Obtener la ruta del script y construir la ruta de la base de datos
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    db_path = os.path.join(project_root, 'data', 'hefest.db')
+    _ = os.path.join(project_root, 'data', 'hefest.db')
     
     try:
         conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         print("\n=== LIMPIEZA DE PROVEEDORES ===")
         
         # Obtener todos los proveedores
         cursor.execute("SELECT id, nombre, activo FROM proveedores")
-        todos_proveedores = cursor.fetchall()
+        _ = cursor.fetchall()
         
         if not todos_proveedores:
             print("✅ Tabla de proveedores ya está vacía")
             conn.close()
             return
         
-        print(f"🗑️ Eliminando {len(todos_proveedores)} proveedores:")
+        print("🗑️ Eliminando %s proveedores:" % len(todos_proveedores))
         for prov in todos_proveedores:
             status = "ACTIVO" if prov[2] else "INACTIVO"
-            print(f"   - ID: {prov[0]} | Nombre: '{prov[1]}' | Estado: {status}")
+            print("   - ID: {prov[0]} | Nombre: '{prov[1]}' | Estado: %s" % status)
           # Como no hay productos en la base de datos, proceder directo a eliminar
         print("   📝 No hay productos que verificar (tabla productos vacía)")
         
         # Eliminar todos los proveedores
         cursor.execute("DELETE FROM proveedores")
-        eliminados = cursor.rowcount
+        _ = cursor.rowcount
         
         conn.commit()
         conn.close()
         
-        print(f"✅ Eliminados {eliminados} proveedores correctamente")
+        print("✅ Eliminados %s proveedores correctamente" % eliminados)
         
     except Exception as e:
-        print(f"❌ Error al limpiar proveedores: {e}")
+    logging.error("❌ Error al limpiar proveedores: %s", e)
 
 def crear_backup():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea un backup antes de la limpieza"""
     import shutil
-    from datetime import datetime
       # Obtener la ruta del script y construir la ruta de la base de datos
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    db_path = os.path.join(project_root, 'data', 'hefest.db')
+    _ = os.path.join(project_root, 'data', 'hefest.db')
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    backup_path = os.path.join(project_root, 'version-backups', 'v0.0.13', f'hefest_backup_limpieza_{timestamp}.db')
+    _ = os.path.join(project_root, 'version-backups', 'v0.0.13', f'hefest_backup_limpieza_{timestamp}.db')
     
     try:
         # Crear directorio si no existe
@@ -173,13 +182,15 @@ def crear_backup():
         
         # Copiar base de datos
         shutil.copy2(db_path, backup_path)
-        print(f"💾 Backup creado: {backup_path}")
+        print("💾 Backup creado: %s" % backup_path)
         return True
     except Exception as e:
-        print(f"❌ Error al crear backup: {e}")
+    logging.error("❌ Error al crear backup: %s", e)
         return False
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal de limpieza"""
     print("🧹 LIMPIEZA Y MANTENIMIENTO DE BASE DE DATOS - HEFEST v0.0.13")
     print("=" * 60)
@@ -214,7 +225,7 @@ def main():
     verificar_base_datos()
     
     print(f"\n✅ LIMPIEZA COMPLETADA EXITOSAMENTE")
-    print(f"📅 Fecha: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("📅 Fecha: %s" % datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 if __name__ == "__main__":
     main()

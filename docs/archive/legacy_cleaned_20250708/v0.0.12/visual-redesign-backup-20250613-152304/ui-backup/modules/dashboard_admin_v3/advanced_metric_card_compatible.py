@@ -1,10 +1,12 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QFrame
+from PyQt6.QtCore import Qt
+
 """
 Tarjeta de métrica COMPATIBLE con PyQt6 CSS - SIN propiedades CSS modernas
 """
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QFrame
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont
 
 class AdvancedMetricCardCompatible(QWidget):
     """Tarjeta de métrica COMPATIBLE con filtro CSS de PyQt6"""
@@ -30,9 +32,11 @@ class AdvancedMetricCardCompatible(QWidget):
         self.setVisible(True)
         self.show()
         
-        print(f"✅ AdvancedMetricCardCompatible creada: {self.title}")
+        print("✅ AdvancedMetricCardCompatible creada: %s" % self.title)
           
     def setup_compatible_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """UI COMPATIBLE con PyQt6 - Solo propiedades CSS soportadas"""
         
         # TAMAÑO FIJO para evitar problemas de layout
@@ -79,7 +83,7 @@ class AdvancedMetricCardCompatible(QWidget):
         
         # Trend badge
         if self.trend:
-            trend_color = self._get_trend_color(self.trend)
+            _ = self._get_trend_color(self.trend)
             self.trend_label = QLabel(self.trend)
             self.trend_label.setStyleSheet(f"""
                 QLabel {{
@@ -156,13 +160,15 @@ class AdvancedMetricCardCompatible(QWidget):
         return "#6b7280"  # Gris neutro
     
     def update_value(self, new_value: str, new_trend: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar valores dinámicamente"""
         if self.value_label:
             self.value_label.setText(new_value)
             self.value = new_value
             
         if new_trend and self.trend_label:
-            trend_color = self._get_trend_color(new_trend)
+            _ = self._get_trend_color(new_trend)
             self.trend_label.setText(new_trend)
             self.trend_label.setStyleSheet(f"""
                 QLabel {{

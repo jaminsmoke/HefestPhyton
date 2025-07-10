@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Dashboard Metric Components - Sistema de Componentes Base para Dashboard
 
@@ -50,15 +51,16 @@ from datetime import datetime
 # Importar utilidad de compatibilidad CSS
 from utils.qt_css_compat import convert_to_qt_compatible_css
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class AnimatedProgressBar(QFrame):
     """Barra de progreso animada con gradientes y efectos modernos"""
 
-    valueChanged = pyqtSignal(float)
+    _ = pyqtSignal(float)
 
     def __init__(self, color="#3B82F6", height=6, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.color = QColor(color)
         self.setFixedHeight(height)
@@ -77,9 +79,13 @@ class AnimatedProgressBar(QFrame):
         self.setStyleSheet("background: transparent;")
 
     def value(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return self._value
 
     def paintEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
@@ -113,6 +119,8 @@ class AnimatedProgressBar(QFrame):
             )
 
     def setValue(self, value, animated=True):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Establecer valor con opción de animación"""
         value = max(0.0, min(1.0, value))
         if animated and abs(value - self._value) > 0.01:
@@ -131,9 +139,9 @@ class AnimatedProgressBar(QFrame):
             self.animation.stop()
             self._value = self.animation_target_value
         else:
-            progress = self.animation_current_step / self.animation_steps
+            _ = self.animation_current_step / self.animation_steps
             # Easing out cubic
-            progress = 1 - pow(1 - progress, 3)
+            _ = 1 - pow(1 - progress, 3)
             self._value = (
                 self.animation_start_value
                 + (self.animation_target_value - self.animation_start_value) * progress
@@ -148,7 +156,7 @@ class UltraModernTheme:
     """Tema ultra-moderno con paleta sofisticada y valores de diseño"""
 
     # === PALETA DE COLORES ULTRA-MODERNA ===
-    COLORS = {
+    _ = {
         # Colores base
         "white": "#ffffff",
         "black": "#000000",  # Color principal del sistema
@@ -227,7 +235,7 @@ class UltraModernTheme:
     }
 
     # === ESPACIADO Y DIMENSIONES ===
-    SPACING = {
+    _ = {
         "xs": 4,
         "sm": 8,
         "md": 16,
@@ -238,7 +246,7 @@ class UltraModernTheme:
     }
 
     # === BORDES Y RADIOS ===
-    RADIUS = {
+    _ = {
         "none": 0,
         "sm": 4,
         "md": 8,
@@ -249,7 +257,7 @@ class UltraModernTheme:
     }
 
     # === TIPOGRAFÍA ===
-    TYPOGRAPHY = {
+    _ = {
         "font_family": "Segoe UI",
         "font_family_mono": "Consolas",
         # Tamaños
@@ -277,7 +285,7 @@ class UltraModernTheme:
     }
 
     # === SOMBRAS ===
-    SHADOWS = {
+    _ = {
         "sm": {"blur": 6, "offset": (0, 1), "color": QColor(0, 0, 0, 25)},
         "md": {"blur": 10, "offset": (0, 4), "color": QColor(0, 0, 0, 30)},
         "lg": {"blur": 15, "offset": (0, 10), "color": QColor(0, 0, 0, 35)},
@@ -290,17 +298,22 @@ class UltraModernBaseWidget(QFrame):
     """Widget base ultra-moderno con funcionalidades avanzadas"""
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.theme = UltraModernTheme()
         self.setup_base_properties()
         self.setup_base_styling()
 
     def setup_base_properties(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar propiedades base"""
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
 
     def setup_base_styling(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar estilos base"""
         self.setStyleSheet(
             f"""
@@ -312,16 +325,20 @@ class UltraModernBaseWidget(QFrame):
         )
 
     def add_shadow(self, level="md"):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Añadir sombra al widget"""
         if level in self.theme.SHADOWS:
-            shadow_config = self.theme.SHADOWS[level]
+            _ = self.theme.SHADOWS[level]
             shadow = QGraphicsDropShadowEffect()
             shadow.setBlurRadius(shadow_config["blur"])
             shadow.setOffset(*shadow_config["offset"])
             shadow.setColor(shadow_config["color"])
             self.setGraphicsEffect(shadow)
 
-    def create_font(self, size_key="text_base", weight_key="font_normal"):
+    def create_font(self, size_ui_key="text_base"  # UI key, not a secret, weight_ui_key="font_normal"  # UI key, not a secret):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear fuente con el tema"""
         font = QFont(self.theme.TYPOGRAPHY["font_family"])
         font.setPointSize(self.theme.TYPOGRAPHY[size_key])
@@ -332,9 +349,10 @@ class UltraModernBaseWidget(QFrame):
 class UltraModernCard(UltraModernBaseWidget):
     """Tarjeta ultra-moderna con efectos avanzados"""
 
-    clicked = pyqtSignal()
+    _ = pyqtSignal()
 
     def __init__(self, padding=16, elevation="md", parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.padding = padding
         self.elevation = elevation
@@ -345,6 +363,8 @@ class UltraModernCard(UltraModernBaseWidget):
         self.setup_animations()
 
     def setup_card(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar la tarjeta"""
         # Layout principal
         self.main_layout = QVBoxLayout(self)
@@ -370,12 +390,16 @@ class UltraModernCard(UltraModernBaseWidget):
         self.add_shadow(self.elevation)
 
     def setup_animations(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar animaciones"""
         self.hover_animation = QPropertyAnimation(self, b"geometry")
         self.hover_animation.setDuration(200)
         self.hover_animation.setEasingCurve(QEasingCurve.Type.OutCubic)
 
     def add_content(self, widget):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Añadir contenido a la tarjeta"""
         self.main_layout.addWidget(widget)
 
@@ -383,17 +407,17 @@ class UltraModernCard(UltraModernBaseWidget):
 class UltraModernMetricCard(UltraModernCard):
     """Tarjeta de métrica ultra-moderna optimizada para gestión hostelera"""
 
-    clicked = pyqtSignal(dict)  # Señal para clics en la tarjeta
+    _ = pyqtSignal(dict)  # Señal para clics en la tarjeta
 
     def __init__(
         self,
-        title="Métrica",
+        _ = "Métrica",
         value="0",
-        unit="",
+        _ = "",
         trend="+5.2%",
-        metric_type="primary",
+        _ = "primary",
         icon="⭐",
-        target="100",
+        _ = "100",
         parent=None,
     ):
         super().__init__(padding=20, elevation="md", parent=parent)
@@ -421,7 +445,7 @@ class UltraModernMetricCard(UltraModernCard):
         """Parsear valor string a numérico para cálculos"""
         try:
             # Remover comas, puntos de miles y otros caracteres
-            clean_value = str(value_str).replace(",", "").replace(".", "")
+            _ = str(value_str).replace(",", "").replace(".", "")
             # Buscar números en la cadena
             import re
 
@@ -429,10 +453,13 @@ class UltraModernMetricCard(UltraModernCard):
             if numbers:
                 return float(numbers[0])
             return 0.0
-        except:
+        except Exception as e:
+            logging.error("Error: %s", e)
             return 0.0
 
     def setup_metric_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar UI específica de métricas hosteleras"""
         # Limpiar layout
         for i in reversed(range(self.main_layout.count())):
@@ -449,7 +476,7 @@ class UltraModernMetricCard(UltraModernCard):
         self.title_label = QLabel(f"{self.icon} {self.title}")
         title_font = self.create_font("text_sm", "font_medium")
         self.title_label.setFont(title_font)
-        title_style = f"""
+        _ = f"""
             QLabel {{
                 color: {self.theme.COLORS['gray_700']};
                 background: transparent;
@@ -466,16 +493,16 @@ class UltraModernMetricCard(UltraModernCard):
 
         # Colores mejorados según tendencia
         if self.trend.startswith("+"):
-            trend_color = self.theme.COLORS["green_600"]
+            _ = self.theme.COLORS["green_600"]
             trend_bg = self.theme.COLORS["green_50"]
         elif self.trend.startswith("-"):
-            trend_color = self.theme.COLORS["red_600"]
+            _ = self.theme.COLORS["red_600"]
             trend_bg = self.theme.COLORS["red_50"]
         else:
-            trend_color = self.theme.COLORS["blue_600"]
+            _ = self.theme.COLORS["blue_600"]
             trend_bg = self.theme.COLORS["blue_50"]
 
-        trend_style = f"""
+        _ = f"""
             QLabel {{
                 color: {trend_color};
                 background-color: {trend_bg};
@@ -498,11 +525,11 @@ class UltraModernMetricCard(UltraModernCard):
             0, 8, 0, 6
         )  # Valor principal - OPTIMIZADO para máxima visibilidad
         self.value_label = QLabel(self.value)
-        value_font = self.create_font(
+        _ = self.create_font(
             "text_4xl", "font_black"
         )  # Tamaño XL y peso máximo
         self.value_label.setFont(value_font)
-        value_style = f"""
+        _ = f"""
             QLabel {{
                 color: {self.theme.COLORS['gray_900']};
                 background: transparent;
@@ -516,7 +543,7 @@ class UltraModernMetricCard(UltraModernCard):
         self.unit_label = QLabel(self.unit)
         unit_font = self.create_font("text_base", "font_medium")
         self.unit_label.setFont(unit_font)
-        unit_style = f"""
+        _ = f"""
             QLabel {{
                 color: {self.theme.COLORS['gray_500']};
                 background: transparent;
@@ -533,13 +560,13 @@ class UltraModernMetricCard(UltraModernCard):
         if self.unit:
             value_layout.addWidget(self.unit_label)
         value_layout.addStretch()  # Barra de progreso animada con mejor visibilidad
-        progress_color = self.get_type_color()
+        _ = self.get_type_color()
         self.progress_indicator = AnimatedProgressBar(
             color=progress_color, height=10  # Aumentado para mejor visibilidad
         )
 
         # Calcular progreso vs objetivo
-        target_numeric = self._parse_value(self.target)
+        _ = self._parse_value(self.target)
         progress_value = (
             min(1.0, self.current_numeric_value / target_numeric)
             if target_numeric > 0
@@ -554,8 +581,10 @@ class UltraModernMetricCard(UltraModernCard):
         self.main_layout.addWidget(self.progress_indicator)
 
     def get_type_color(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Colores semánticos para métricas hosteleras"""
-        type_colors = {
+        _ = {
             "ocupacion": self.theme.COLORS["primary"],
             "ventas": self.theme.COLORS["success"],
             "costes": self.theme.COLORS["warning"],
@@ -567,6 +596,8 @@ class UltraModernMetricCard(UltraModernCard):
         return type_colors.get(self.metric_type, self.theme.COLORS["primary"])
 
     def setup_data_simulation(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """DESACTIVADO - Solo datos reales, sin simulación"""
         # Eliminada simulación de datos - Solo usar datos reales del RealDataManager
         # La clase base no debe simular datos, solo mostrar datos reales
@@ -582,7 +613,7 @@ class UltraModernMetricCard(UltraModernCard):
                 self.value = str(value)
                 self.current_numeric_value = self._parse_value(value)
                 self.value_label.setText(str(value))
-                # logger.debug(f"📊 Valor actualizado: {value} para {self.title}")
+                # logger.debug("📊 Valor actualizado: {value} para %s", self.title)
 
             # Actualizar tendencia si se proporciona
             if trend is not None:
@@ -591,16 +622,16 @@ class UltraModernMetricCard(UltraModernCard):
 
                 # Actualizar colores de tendencia con CSS compatible
                 if trend.startswith("+"):
-                    trend_color = self.theme.COLORS["green_600"]
+                    _ = self.theme.COLORS["green_600"]
                     trend_bg = self.theme.COLORS["green_50"]
                 elif trend.startswith("-"):
-                    trend_color = self.theme.COLORS["red_600"]
+                    _ = self.theme.COLORS["red_600"]
                     trend_bg = self.theme.COLORS["red_50"]
                 else:
-                    trend_color = self.theme.COLORS["blue_600"]
+                    _ = self.theme.COLORS["blue_600"]
                     trend_bg = self.theme.COLORS["blue_50"]
 
-                trend_style = f"""
+                _ = f"""
                     QLabel {{
                         color: {trend_color};
                         background-color: {trend_bg};
@@ -614,7 +645,7 @@ class UltraModernMetricCard(UltraModernCard):
                 self.trend_label.setStyleSheet(
                     convert_to_qt_compatible_css(trend_style)
                 )
-                # logger.debug(f"📈 Tendencia actualizada: {trend} para {self.title}")
+                # logger.debug("📈 Tendencia actualizada: {trend} para %s", self.title)
 
             # Actualizar objetivo si se proporciona
             if target is not None:
@@ -622,7 +653,7 @@ class UltraModernMetricCard(UltraModernCard):
 
                 # Solo recalcular progreso si no se proporciona porcentaje específico
                 if progress_percentage is None:
-                    target_numeric = self._parse_value(target)
+                    _ = self._parse_value(target)
                     progress_value = (
                         min(1.0, self.current_numeric_value / target_numeric)
                         if target_numeric > 0
@@ -638,7 +669,7 @@ class UltraModernMetricCard(UltraModernCard):
             if progress_percentage is not None and hasattr(self, "progress_indicator"):
                 # Convertir porcentaje a decimal si es necesario
                 if progress_percentage > 1.0:
-                    progress_value = progress_percentage / 100.0
+                    _ = progress_percentage / 100.0
                 else:
                     progress_value = progress_percentage
 
@@ -651,13 +682,15 @@ class UltraModernMetricCard(UltraModernCard):
             self.update_tooltip()
 
         except Exception as e:
-            logger.error(f"Error actualizando datos de métrica '{self.title}': {e}")
+            logger.error("Error actualizando datos de métrica '{self.title}': %s", e)
 
     def update_tooltip(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar tooltip con información detallada"""
-        current_time = datetime.now().strftime("%H:%M:%S")
+        _ = datetime.now().strftime("%H:%M:%S")
         target_numeric = self._parse_value(self.target)
-        progress_percent = (
+        _ = (
             (self.current_numeric_value / target_numeric * 100)
             if target_numeric > 0
             else 0
@@ -672,6 +705,8 @@ class UltraModernMetricCard(UltraModernCard):
         self.setToolTip(tooltip_text)
 
     def setup_interactions(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar interacciones de la tarjeta"""
         # Configurar clics y efectos hover
         self.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -680,10 +715,12 @@ class UltraModernMetricCard(UltraModernCard):
         self.context_menu = None  # Se puede expandir más tarde
 
     def mousePressEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar clics en la tarjeta"""
         if event.button() == Qt.MouseButton.LeftButton:
             # Emitir señal con datos de la métrica
-            metric_data = {
+            _ = {
                 "title": self.title,
                 "value": self.value,
                 "unit": self.unit,
@@ -695,6 +732,8 @@ class UltraModernMetricCard(UltraModernCard):
         super().mousePressEvent(event)
 
     def enterEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Efecto al entrar con el ratón"""
         super().enterEvent(event)
         # Efecto de elevación al hacer hover
@@ -702,6 +741,8 @@ class UltraModernMetricCard(UltraModernCard):
         self.add_shadow("xl")
 
     def leaveEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Efecto al salir con el ratón"""
         super().leaveEvent(event)
         # Restaurar elevación original
@@ -712,11 +753,14 @@ class UltraModernDashboard(UltraModernBaseWidget):
     """Dashboard ultra-moderno con grid responsivo"""
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setup_dashboard()
         self.create_metric_cards()
 
     def setup_dashboard(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar estructura del dashboard"""
         # Layout principal con scroll
         main_layout = QVBoxLayout(self)
@@ -782,10 +826,12 @@ class UltraModernDashboard(UltraModernBaseWidget):
         )
 
     def create_metric_cards(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear tarjetas de métricas con datos estáticos de ejemplo (solo para testing del componente)"""
         # NOTA: Datos estáticos para demostración del componente base
         # En producción usar HospitalityMetricCard con datos reales
-        metrics_data = [
+        _ = [
             {
                 "title": "Ventas Totales",
                 "value": "15,234",
@@ -832,15 +878,15 @@ class UltraModernDashboard(UltraModernBaseWidget):
 
         # Crear tarjetas en grid responsivo
         for i, data in enumerate(metrics_data):
-            card = UltraModernMetricCard(
+            _ = UltraModernMetricCard(
                 title=data["title"],
-                value=data["value"],
+                _ = data["value"],
                 unit=data["unit"],
-                trend=data["trend"],
+                _ = data["trend"],
                 metric_type=data["type"],
             )
 
-            row = i // 3  # 3 columnas
+            _ = i // 3  # 3 columnas
             col = i % 3
             self.metrics_layout.addWidget(card, row, col)
 
@@ -850,14 +896,18 @@ class UltraModernDashboard(UltraModernBaseWidget):
             )
 
     def on_metric_clicked(self, title):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar click en métrica"""
-        logger.info(f"Métrica clickeada: {title}")
+        logger.info("Métrica clickeada: %s", title)
 
 
 # === FUNCIÓN DE PRUEBA ===
 def create_ultra_modern_test_window():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crear ventana de prueba del sistema ultra-moderno"""
-    app = QApplication.instance() or QApplication([])
+    _ = QApplication.instance() or QApplication([])
 
     # Ventana principal
     window = QWidget()
@@ -877,7 +927,7 @@ def create_ultra_modern_test_window():
 
 if __name__ == "__main__":
     # Test directo
-    app = QApplication([])
+    _ = QApplication([])
     window = create_ultra_modern_test_window()
     window.show()
     app.exec()

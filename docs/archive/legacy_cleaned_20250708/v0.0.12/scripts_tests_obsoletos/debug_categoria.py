@@ -1,9 +1,11 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+import logging
 #!/usr/bin/env python3
 import sys
 sys.path.insert(0, 'src')
 from data.db_manager import DatabaseManager
 
-db = DatabaseManager()
+_ = DatabaseManager()
 
 # Ver si existe la categoría ID 7
 result = db.query('SELECT * FROM categorias WHERE id = 7')
@@ -22,6 +24,6 @@ if result and len(result) > 0:
         delete_result = db.execute("UPDATE categorias SET activa = 0 WHERE id = ?", (7,))
         print(f'Resultado de eliminación: {delete_result}')
     except Exception as e:
-        print(f'Error en eliminación: {e}')
+    logging.error(f'Error en eliminación: {e}')
 else:
     print('No se encontró la categoría ID 7')

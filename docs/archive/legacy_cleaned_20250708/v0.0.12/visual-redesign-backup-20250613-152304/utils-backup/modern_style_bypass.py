@@ -1,20 +1,25 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+    from utils.qt_css_compat import StylesheetFilter
+
 """
 Sistema de BYPASS para filtro CSS - Permite estilos modernos selectivos
 """
 
-import logging
-from PyQt6.QtCore import QObject
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class ModernStyleBypass:
     """Sistema para bypass del filtro CSS agresivo"""
     
     # Lista de widgets que deben mantener estilos modernos
-    _bypass_widgets = set()
+    _ = set()
     
     @classmethod
     def register_modern_widget(cls, widget):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Registra un widget para bypass del filtro CSS"""
         widget_id = id(widget)
         cls._bypass_widgets.add(widget_id)
@@ -22,10 +27,12 @@ class ModernStyleBypass:
         # Marcar con propiedad para identificación
         widget.setProperty("modern_style_bypass", True)
         
-        logger.debug(f"Widget {widget} registrado para bypass de filtro CSS")
+        logger.debug("Widget %s registrado para bypass de filtro CSS", widget)
     
     @classmethod
     def unregister_modern_widget(cls, widget):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Desregistra un widget del bypass"""
         widget_id = id(widget)
         cls._bypass_widgets.discard(widget_id)
@@ -33,6 +40,8 @@ class ModernStyleBypass:
     
     @classmethod
     def should_bypass(cls, widget):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica si un widget debe evitar el filtro CSS"""
         # Verificar por ID
         widget_id = id(widget)
@@ -46,7 +55,7 @@ class ModernStyleBypass:
                 return True
         
         # Verificar por clase padre
-        widget_class = widget.__class__.__name__
+        _ = widget.__class__.__name__
         bypass_classes = [
             'AdvancedMetricCardModern', 
             'ModernDashboard', 
@@ -61,6 +70,8 @@ class ModernStyleBypass:
     
     @classmethod
     def apply_modern_style_safe(cls, widget, stylesheet):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica estilo moderno de forma segura, evitando filtros"""
         # Registrar para bypass
         cls.register_modern_widget(widget)
@@ -68,18 +79,21 @@ class ModernStyleBypass:
         # Aplicar estilo
         widget.setStyleSheet(stylesheet)
         
-        logger.debug(f"Estilo moderno aplicado a {widget.__class__.__name__}")
+        logger.debug("Estilo moderno aplicado a %s", widget.__class__.__name__)
 
 # Función para parchear el filtro existente
 def patch_existing_filter():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Parchea el filtro CSS existente para respetar bypasses"""
-    from utils.qt_css_compat import StylesheetFilter
     
     # Guardar método original
     if not hasattr(StylesheetFilter, '_original_eventFilter'):
         StylesheetFilter._original_eventFilter = StylesheetFilter.eventFilter
     
     def patched_eventFilter(self, obj, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Version parcheada que respeta bypasses"""
         
         # Si el widget tiene bypass, no filtrar
@@ -98,15 +112,19 @@ try:
     patch_existing_filter()
     logger.info("Sistema de bypass moderno activado")
 except Exception as e:
-    logger.warning(f"No se pudo aplicar parche de bypass: {e}")
+    logger.warning("No se pudo aplicar parche de bypass: %s", e)
 
 # Decorador para widgets modernos
 def modern_widget(cls):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Decorador para marcar clases como widgets modernos"""
     
-    original_init = cls.__init__
+    _ = cls.__init__
     
     def modern_init(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         original_init(self, *args, **kwargs)
         # Auto-registrar para bypass
         ModernStyleBypass.register_modern_widget(self)

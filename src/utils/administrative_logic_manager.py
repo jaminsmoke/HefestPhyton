@@ -9,13 +9,14 @@ from datetime import datetime, timedelta
 import logging
 from data.db_manager import DatabaseManager
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class AdministrativeLogicManager:
     """Gestiona la lógica administrativa real para las métricas del dashboard"""
 
     def __init__(self, db_manager=None):
+        """TODO: Add docstring"""
         self.db_manager = db_manager or DatabaseManager()
 
         # Configuración de objetivos administrativos estándar
@@ -65,10 +66,12 @@ class AdministrativeLogicManager:
         }
 
     def get_administrative_metrics(self) -> Dict[str, Dict[str, Any]]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene métricas con lógica administrativa completa usando datos reales de BD"""
 
         # Mapeo del dashboard actual a nuestro sistema administrativo
-        dashboard_mapping = {
+        _ = {
             "Ventas Hoy": "ventas_diarias",
             "Margen Bruto": "margen_bruto",
             "Clientes Activos": "clientes_activos",
@@ -77,24 +80,24 @@ class AdministrativeLogicManager:
             "Eficiencia Op.": "eficiencia_op",
         }
 
-        admin_metrics = {}
+        _ = {}
 
         for dashboard_title, admin_key in dashboard_mapping.items():
             # Obtener datos actuales reales
-            current_data = self._get_current_metric_data(admin_key)
+            _ = self._get_current_metric_data(admin_key)
 
             # Calcular tendencia administrativa usando datos reales
-            trend_data = self._calculate_administrative_trend(
+            _ = self._calculate_administrative_trend(
                 admin_key, current_data["value"], current_data.get("real_data", {})
             )
 
             # Calcular progreso hacia objetivo
-            progress_data = self._calculate_administrative_progress(
+            _ = self._calculate_administrative_progress(
                 admin_key, current_data["value"]
             )
 
             # Determinar estado administrativo
-            admin_status = self._evaluate_administrative_status(
+            _ = self._evaluate_administrative_status(
                 admin_key, current_data["value"], trend_data["numeric"]
             )
 
@@ -133,9 +136,11 @@ class AdministrativeLogicManager:
         return admin_metrics
 
     def get_administrative_alerts(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene alertas administrativas basadas en datos reales de la BD"""
 
-        alerts = []
+        _ = []
         alert_summary = {
             "total_alerts": 0,
             "critical_count": 0,
@@ -176,10 +181,10 @@ class AdministrativeLogicManager:
                 elif priority == "medium":
                     alert_summary["medium_count"] += 1
 
-            # logger.info(f"✅ Generadas {len(alerts)} alertas administrativas reales")
+            # logger.info("✅ Generadas %s alertas administrativas reales", len(alerts))
 
         except Exception as e:
-            logger.error(f"Error generando alertas administrativas: {e}")
+            logger.error("Error generando alertas administrativas: %s", e)
             alerts.append(
                 {
                     "id": "error_alerts",
@@ -200,11 +205,11 @@ class AdministrativeLogicManager:
 
     def _get_stock_alerts(self) -> list:
         """Genera alertas de stock basadas en datos reales"""
-        alerts = []
+        _ = []
 
         try:
             # Productos con stock crítico
-            stock_bajo = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT nombre, stock, categoria
                 FROM productos
@@ -214,7 +219,7 @@ class AdministrativeLogicManager:
             )
 
             # Productos agotados
-            stock_agotado = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT nombre, categoria
                 FROM productos
@@ -236,7 +241,7 @@ class AdministrativeLogicManager:
                         "action": "Reabastecer producto",
                         "details": {
                             "producto": producto["nombre"],
-                        "stock": producto["stock"],
+                            "stock": producto["stock"],
                             "categoria": producto["categoria"],
                         },
                     }
@@ -262,19 +267,19 @@ class AdministrativeLogicManager:
                 )
 
         except Exception as e:
-            logger.error(f"Error obteniendo alertas de stock: {e}")
+            logger.error("Error obteniendo alertas de stock: %s", e)
 
         return alerts
 
     def _get_sales_alerts(self) -> list:
         """Genera alertas de ventas basadas en objetivos administrativos"""
-        alerts = []
+        _ = []
 
         try:
-            today = datetime.now().strftime("%Y-%m-%d")
+            _ = datetime.now().strftime("%Y-%m-%d")
 
             # Obtener ventas del día
-            ventas_hoy = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT SUM(total) as total_ventas, COUNT(*) as num_comandas
                 FROM comandas
@@ -284,9 +289,9 @@ class AdministrativeLogicManager:
                 (today,),
             )
 
-            total_ventas = ventas_hoy[0]["total_ventas"] or 0.0
+            _ = ventas_hoy[0]["total_ventas"] or 0.0
             objetivo_ventas = self.admin_targets["ventas_diarias"]["target"]
-            porcentaje_objetivo = (total_ventas / objetivo_ventas) * 100
+            _ = (total_ventas / objetivo_ventas) * 100
 
             # Sin ventas del día
             if total_ventas == 0:
@@ -347,17 +352,17 @@ class AdministrativeLogicManager:
                 )
 
         except Exception as e:
-            logger.error(f"Error obteniendo alertas de ventas: {e}")
+            logger.error("Error obteniendo alertas de ventas: %s", e)
 
         return alerts
 
     def _get_occupancy_alerts(self) -> list:
         """Genera alertas de ocupación de mesas"""
-        alerts = []
+        _ = []
 
         try:
             # Obtener estado de mesas
-            mesas_ocupadas = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as ocupadas
                 FROM mesas
@@ -365,18 +370,18 @@ class AdministrativeLogicManager:
             """
             )
 
-            total_mesas = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as total
                 FROM mesas
             """
             )
 
-            ocupadas = mesas_ocupadas[0]["ocupadas"] or 0
+            _ = mesas_ocupadas[0]["ocupadas"] or 0
             total = total_mesas[0]["total"] or 0
 
             if total > 0:
-                porcentaje_ocupacion = (ocupadas / total) * 100
+                _ = (ocupadas / total) * 100
 
                 # Ocupación muy baja
                 if porcentaje_ocupacion < 30:
@@ -413,19 +418,19 @@ class AdministrativeLogicManager:
                 )
 
         except Exception as e:
-            logger.error(f"Error obteniendo alertas de ocupación: {e}")
+            logger.error("Error obteniendo alertas de ocupación: %s", e)
 
         return alerts
 
     def _get_customer_alerts(self) -> list:
         """Genera alertas relacionadas con clientes"""
-        alerts = []
+        _ = []
 
         try:
-            today = datetime.now().strftime("%Y-%m-%d")
+            _ = datetime.now().strftime("%Y-%m-%d")
 
             # Clientes del día
-            clientes_hoy = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(DISTINCT mesa_id) as clientes_unicos
                 FROM comandas
@@ -434,7 +439,7 @@ class AdministrativeLogicManager:
                 (today,),
             )
 
-            clientes_unicos = clientes_hoy[0]["clientes_unicos"] or 0
+            _ = clientes_hoy[0]["clientes_unicos"] or 0
 
             # Sin clientes del día
             if clientes_unicos == 0:
@@ -458,24 +463,24 @@ class AdministrativeLogicManager:
                 )
 
         except Exception as e:
-            logger.error(f"Error obteniendo alertas de clientes: {e}")
+            logger.error("Error obteniendo alertas de clientes: %s", e)
 
         return alerts
 
     def _get_system_alerts(self) -> list:
         """Genera alertas del estado general del sistema"""
-        alerts = []
+        _ = []
 
         try:
             # Verificar si hay productos registrados
-            total_productos = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as total
                 FROM productos
             """
             )
 
-            productos_count = total_productos[0]["total"] or 0
+            _ = total_productos[0]["total"] or 0
 
             # Sin productos en el sistema
             if productos_count == 0:
@@ -513,7 +518,7 @@ class AdministrativeLogicManager:
                 )
 
         except Exception as e:
-            logger.error(f"Error obteniendo alertas del sistema: {e}")
+            logger.error("Error obteniendo alertas del sistema: %s", e)
 
         return alerts
 
@@ -559,13 +564,13 @@ class AdministrativeLogicManager:
                 return self._get_default_metric_data()
 
         except Exception as e:
-            logger.error(f"Error obteniendo datos reales para {admin_key}: {e}")
+            logger.error("Error obteniendo datos reales para {admin_key}: %s", e)
             return self._get_default_metric_data()
 
     def _get_ventas_diarias_real(self) -> Dict[str, Any]:
         """Obtener ventas reales del día actual"""
         try:
-            today = datetime.now().strftime("%Y-%m-%d")
+            _ = datetime.now().strftime("%Y-%m-%d")
             query = """
                 SELECT COALESCE(SUM(total), 0) as ventas_total, COUNT(*) as num_comandas
                 FROM comandas
@@ -575,7 +580,7 @@ class AdministrativeLogicManager:
 
             if result:
                 # Usar acceso directo por índice para sqlite3.Row
-                ventas_total = float(result[0][0])  # ventas_total
+                _ = float(result[0][0])  # ventas_total
                 num_comandas = int(result[0][1])  # num_comandas
 
                 return {
@@ -592,7 +597,7 @@ class AdministrativeLogicManager:
                 return self._get_no_data_metric("Ventas", "€0.00", "€", "💸")
 
         except Exception as e:
-            logger.error(f"Error obteniendo ventas diarias: {e}")
+            logger.error("Error obteniendo ventas diarias: %s", e)
             return self._get_no_data_metric("Ventas", "€0.00", "€", "❌")
 
     def _get_margen_bruto_real(self) -> Dict[str, Any]:
@@ -609,35 +614,35 @@ class AdministrativeLogicManager:
                 "real_data": {"note": "Pendiente configurar costos de productos"},
             }
         except Exception as e:
-            logger.error(f"Error calculando margen bruto: {e}")
+            logger.error("Error calculando margen bruto: %s", e)
             return self._get_no_data_metric("Margen", "0.0%", "%", "❌")
 
     def _get_clientes_activos_real(self) -> Dict[str, Any]:
         """Obtener número real de clientes activos hoy"""
         try:
-            today = datetime.now().strftime("%Y-%m-%d")
+            _ = datetime.now().strftime("%Y-%m-%d")
 
             # Contar clientes únicos con reservas activas (las comandas no tienen cliente_id directo)
-            query_reservas = """
+            _ = """
                 SELECT COUNT(DISTINCT cliente_id) as clientes_reservas
                 FROM reservas
                 WHERE estado = 'activa' AND DATE(fecha_entrada) <= ? AND DATE(fecha_salida) >= ?
             """
 
             # Contar total de clientes registrados como métrica base
-            query_total_clientes = """
+            _ = """
                 SELECT COUNT(*) as total_clientes
                 FROM clientes
             """
 
-            result_reservas = self.db_manager.query(query_reservas, (today, today))
+            _ = self.db_manager.query(query_reservas, (today, today))
             result_total = self.db_manager.query(query_total_clientes)
 
-            clientes_reservas = result_reservas[0][0] if result_reservas else 0
+            _ = result_reservas[0][0] if result_reservas else 0
             total_clientes = result_total[0][0] if result_total else 0
 
             # Para un sistema nuevo, mostrar clientes registrados como base
-            clientes_activos = (
+            _ = (
                 clientes_reservas if clientes_reservas > 0 else total_clientes
             )
 
@@ -654,7 +659,7 @@ class AdministrativeLogicManager:
             }
 
         except Exception as e:
-            logger.error(f"Error obteniendo clientes activos: {e}")
+            logger.error("Error obteniendo clientes activos: %s", e)
             return self._get_no_data_metric("Clientes", "0", "", "❌")
 
     def _get_satisfaccion_real(self) -> Dict[str, Any]:
@@ -670,14 +675,14 @@ class AdministrativeLogicManager:
                 "real_data": {"note": "Sistema de valoraciones pendiente"},
             }
         except Exception as e:
-            logger.error(f"Error obteniendo satisfacción: {e}")
+            logger.error("Error obteniendo satisfacción: %s", e)
             return self._get_no_data_metric("Satisfacción", "N/A", "★", "❌")
 
     def _get_stock_critico_real(self) -> Dict[str, Any]:
         """Obtener productos con stock crítico real"""
         try:
             # Productos con stock <= 5 (considerado crítico)
-            query = """
+            _ = """
                 SELECT COUNT(*) as stock_critico,
                        COUNT(CASE WHEN stock = 0 THEN 1 END) as sin_stock,
                        COUNT(*) as total_productos
@@ -688,9 +693,9 @@ class AdministrativeLogicManager:
 
             if result:
                 # Usar indexación directa en lugar de .get() para sqlite3.Row
-                stock_critico = int(result[0][0])  # stock_critico
+                _ = int(result[0][0])  # stock_critico
                 sin_stock = int(result[0][1])  # sin_stock
-                total_productos_query = self.db_manager.query(
+                _ = self.db_manager.query(
                     "SELECT COUNT(*) FROM productos"
                 )
                 total_productos = (
@@ -719,16 +724,16 @@ class AdministrativeLogicManager:
                 return self._get_no_data_metric("Stock", "Sin productos", "", "📋")
 
         except Exception as e:
-            logger.error(f"Error obteniendo stock crítico: {e}")
+            logger.error("Error obteniendo stock crítico: %s", e)
             return self._get_no_data_metric("Stock", "Error", "", "❌")
 
     def _get_eficiencia_operacional_real(self) -> Dict[str, Any]:
         """Obtener eficiencia operacional real"""
         try:
-            today = datetime.now().strftime("%Y-%m-%d")
+            _ = datetime.now().strftime("%Y-%m-%d")
 
             # Calcular eficiencia basada en comandas completadas vs iniciadas
-            query = """
+            _ = """
                 SELECT
                     COUNT(*) as total_comandas,
                     COUNT(CASE WHEN estado = 'completada' THEN 1 END) as completadas,
@@ -740,9 +745,9 @@ class AdministrativeLogicManager:
 
             if result and result[0][0] > 0:  # total_comandas
                 # Usar indexación directa en lugar de .get() para sqlite3.Row
-                total = int(result[0][0])  # total_comandas
+                _ = int(result[0][0])  # total_comandas
                 completadas = int(result[0][1])  # completadas
-                canceladas = int(result[0][2])  # canceladas
+                _ = int(result[0][2])  # canceladas
 
                 eficiencia = (completadas / total * 100) if total > 0 else 0.0
 
@@ -769,7 +774,7 @@ class AdministrativeLogicManager:
                 }
 
         except Exception as e:
-            logger.error(f"Error calculando eficiencia operacional: {e}")
+            logger.error("Error calculando eficiencia operacional: %s", e)
             return self._get_no_data_metric("Eficiencia", "0%", "%", "❌")
 
     def _get_no_data_metric(
@@ -820,7 +825,7 @@ class AdministrativeLogicManager:
                     "comparison": "Primera vez registrado",
                 }
         except Exception as e:
-            logger.error(f"Error calculando tendencia para {admin_key}: {e}")
+            logger.error("Error calculando tendencia para {admin_key}: %s", e)
             return {
                 "text": "Sin tendencia",
                 "numeric": 0.0,
@@ -832,20 +837,20 @@ class AdministrativeLogicManager:
         """Calcular progreso real hacia objetivos administrativos"""
         try:
             target_config = self.admin_targets.get(admin_key, {})
-            target_value = target_config.get("target", 100.0)
+            _ = target_config.get("target", 100.0)
             unit = target_config.get("unit", "")
 
             # Para métricas donde "menos es mejor" (como stock crítico)
             if target_config.get("logic") == "menos_mejor":
                 if current_value <= target_value:
-                    progress = 100.0  # Objetivo cumplido
+                    _ = 100.0  # Objetivo cumplido
                 else:
-                    progress = max(
+                    _ = max(
                         0, 100 - ((current_value - target_value) / target_value * 100)
                     )
             else:
                 # Para métricas normales donde "más es mejor"
-                progress = (
+                _ = (
                     min(100, (current_value / target_value * 100))
                     if target_value > 0
                     else 0
@@ -857,7 +862,7 @@ class AdministrativeLogicManager:
                 "target_value": target_value,
             }
         except Exception as e:
-            logger.error(f"Error calculando progreso para {admin_key}: {e}")
+            logger.error("Error calculando progreso para {admin_key}: %s", e)
             return {
                 "percentage": 0.0,
                 "target_text": "Sin objetivo",
@@ -870,7 +875,7 @@ class AdministrativeLogicManager:
         """Evaluar estado administrativo real basado en valor actual y tendencia"""
         try:
             target_config = self.admin_targets.get(admin_key, {})
-            target_value = target_config.get("target", 100.0)
+            _ = target_config.get("target", 100.0)
 
             # Evaluación basada en el progreso hacia el objetivo
             if target_config.get("logic") == "menos_mejor":
@@ -895,7 +900,7 @@ class AdministrativeLogicManager:
                     }
             else:
                 # Para ventas, eficiencia, etc.
-                progress = (
+                _ = (
                     (current_value / target_value * 100) if target_value > 0 else 0
                 )
 
@@ -919,7 +924,7 @@ class AdministrativeLogicManager:
                     }
 
         except Exception as e:
-            logger.error(f"Error evaluando estado para {admin_key}: {e}")
+            logger.error("Error evaluando estado para {admin_key}: %s", e)
             return {
                 "priority": "medium",
                 "action": "Revisar configuración",

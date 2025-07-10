@@ -30,20 +30,23 @@ from PyQt6.QtGui import QFont, QMouseEvent
 from utils.administrative_logic_manager import AdministrativeLogicManager
 from utils.modern_styles import ModernStyles
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ClickableFrame(QFrame):
     """Frame personalizado que maneja eventos de clic correctamente."""
 
-    clicked = pyqtSignal(dict)
+    _ = pyqtSignal(dict)
 
     def __init__(self, alert_data: Dict[str, Any], parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.alert_data = alert_data
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def mousePressEvent(self, event: QMouseEvent | None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el evento de clic del mouse."""
         if event and event.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit(self.alert_data)
@@ -63,7 +66,7 @@ class AdministrativeAlertsComponent(QWidget):
     """
 
     # Señales para comunicación con el dashboard principal
-    alert_clicked = pyqtSignal(dict)  # Emite cuando se hace clic en una alerta
+    _ = pyqtSignal(dict)  # Emite cuando se hace clic en una alerta
     refresh_requested = pyqtSignal()  # Emite cuando se solicita actualización
 
     def __init__(self, parent: Optional[QWidget] = None):
@@ -112,7 +115,7 @@ class AdministrativeAlertsComponent(QWidget):
             self._setup_footer()
 
         except Exception as e:
-            logger.error(f"Error configurando UI de alertas: {e}")
+            logger.error("Error configurando UI de alertas: %s", e)
             self._show_error_state("Error configurando interfaz")
 
     def _setup_header(self):
@@ -192,7 +195,7 @@ class AdministrativeAlertsComponent(QWidget):
     def _apply_styles(self):
         """Aplica los estilos modernos al componente."""
         try:
-            colors = self.modern_styles.COLORS
+            _ = self.modern_styles.COLORS
             styles = f"""
             /* Componente principal */
             AdministrativeAlertsComponent {{
@@ -327,20 +330,22 @@ class AdministrativeAlertsComponent(QWidget):
             self.setStyleSheet(styles)
 
         except Exception as e:
-            logger.error(f"Error aplicando estilos a alertas: {e}")
+            logger.error("Error aplicando estilos a alertas: %s", e)
 
     def refresh_alerts(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza las alertas obteniendo datos reales de la base de datos."""
         try:
             # logger.debug("Iniciando actualización de alertas administrativas")
 
             # Obtener alertas reales del manager
-            alerts_data = self.administrative_logic.get_administrative_alerts()
+            _ = self.administrative_logic.get_administrative_alerts()
             alerts = (
                 alerts_data.get("alerts", []) if isinstance(alerts_data, dict) else []
             )
 
-            # logger.debug(f"Obtenidas {len(alerts)} alertas del sistema")
+            # logger.debug("Obtenidas %s alertas del sistema", len(alerts))
 
             # Actualizar el estado interno
             self.current_alerts = alerts
@@ -364,7 +369,7 @@ class AdministrativeAlertsComponent(QWidget):
             # logger.debug("Actualización de alertas completada exitosamente")
 
         except Exception as e:
-            logger.error(f"Error actualizando alertas: {e}")
+            logger.error("Error actualizando alertas: %s", e)
             self._show_error_state(f"Error actualizando alertas: {str(e)}")
 
     def _clear_alerts_container(self):
@@ -379,7 +384,7 @@ class AdministrativeAlertsComponent(QWidget):
                     if widget:
                         widget.deleteLater()
         except Exception as e:
-            logger.error(f"Error limpiando contenedor de alertas: {e}")
+            logger.error("Error limpiando contenedor de alertas: %s", e)
 
     def _render_alerts(self, alerts: List[Dict[str, Any]]):
         """
@@ -401,7 +406,7 @@ class AdministrativeAlertsComponent(QWidget):
             self.alerts_layout.addStretch()
 
         except Exception as e:
-            logger.error(f"Error renderizando alertas: {e}")
+            logger.error("Error renderizando alertas: %s", e)
 
     def _create_alert_widget(self, alert: Dict[str, Any]) -> Optional[QWidget]:
         """
@@ -431,7 +436,7 @@ class AdministrativeAlertsComponent(QWidget):
             alert_layout.setSpacing(4)
 
             # Header de la alerta (icono + título)
-            header_layout = QHBoxLayout()
+            _ = QHBoxLayout()
 
             # Icono según el tipo
             icon_label = QLabel(self._get_alert_icon(alert_type))
@@ -465,7 +470,7 @@ class AdministrativeAlertsComponent(QWidget):
             return alert_frame
 
         except Exception as e:
-            logger.error(f"Error creando widget de alerta: {e}")
+            logger.error("Error creando widget de alerta: %s", e)
             return None
 
     def _get_alert_icon(self, alert_type: str) -> str:
@@ -520,7 +525,7 @@ class AdministrativeAlertsComponent(QWidget):
 
             # Actualizar contador
             count = len(self.current_alerts)
-            critical_count = len(
+            _ = len(
                 [a for a in self.current_alerts if a.get("type") == "critical"]
             )
 
@@ -538,7 +543,7 @@ class AdministrativeAlertsComponent(QWidget):
                 )
 
         except Exception as e:
-            logger.error(f"Error actualizando footer: {e}")
+            logger.error("Error actualizando footer: %s", e)
 
     def _on_alert_clicked(self, alert: Dict[str, Any]):
         """
@@ -548,7 +553,7 @@ class AdministrativeAlertsComponent(QWidget):
             alert: Datos de la alerta clickeada
         """
         try:
-            # logger.debug(f"Alerta clickeada: {alert.get('title', 'Sin título')}")
+            # logger.debug("Alerta clickeada: %s", alert.get('title', 'Sin título'))
 
             # Emitir señal con los datos de la alerta
             self.alert_clicked.emit(alert)
@@ -558,7 +563,7 @@ class AdministrativeAlertsComponent(QWidget):
                 self._show_alert_details(alert)
 
         except Exception as e:
-            logger.error(f"Error manejando clic en alerta: {e}")
+            logger.error("Error manejando clic en alerta: %s", e)
 
     def _show_alert_details(self, alert: Dict[str, Any]):
         """
@@ -586,9 +591,11 @@ class AdministrativeAlertsComponent(QWidget):
             msg_box.exec()
 
         except Exception as e:
-            logger.error(f"Error mostrando detalles de alerta: {e}")
+            logger.error("Error mostrando detalles de alerta: %s", e)
 
     def get_current_alerts(self) -> List[Dict[str, Any]]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Obtiene las alertas actuales del componente.
 
@@ -598,13 +605,15 @@ class AdministrativeAlertsComponent(QWidget):
         return self.current_alerts.copy()
 
     def get_alerts_count(self) -> Dict[str, int]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Obtiene el conteo de alertas por tipo.
 
         Returns:
             Diccionario con conteos por tipo
         """
-        counts = {"total": 0, "critical": 0, "warning": 0, "info": 0}
+        _ = {"total": 0, "critical": 0, "warning": 0, "info": 0}
 
         for alert in self.current_alerts:
             counts["total"] += 1
@@ -615,6 +624,8 @@ class AdministrativeAlertsComponent(QWidget):
         return counts
 
     def set_auto_refresh(self, enabled: bool, interval_seconds: int = 30):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Configura la actualización automática de alertas.
 
@@ -632,9 +643,11 @@ class AdministrativeAlertsComponent(QWidget):
                 self.refresh_timer.stop()
                 # logger.debug("Auto-refresh deshabilitado")
         except Exception as e:
-            logger.error(f"Error configurando auto-refresh: {e}")
+            logger.error("Error configurando auto-refresh: %s", e)
 
     def closeEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpia recursos al cerrar el componente."""
         try:
             # Detener timer
@@ -645,7 +658,7 @@ class AdministrativeAlertsComponent(QWidget):
             super().closeEvent(event)
 
         except Exception as e:
-            logger.error(f"Error cerrando componente de alertas: {e}")
+            logger.error("Error cerrando componente de alertas: %s", e)
             super().closeEvent(event)
 
 
@@ -666,6 +679,8 @@ def create_alerts_component(
 
 
 def get_current_alerts_summary() -> Dict[str, Any]:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """
     Obtiene un resumen de las alertas actuales del sistema.
 
@@ -675,7 +690,7 @@ def get_current_alerts_summary() -> Dict[str, Any]:
     try:
         logic_manager = AdministrativeLogicManager()
         alerts_data = logic_manager.get_administrative_alerts()
-        alerts = alerts_data.get("alerts", []) if isinstance(alerts_data, dict) else []
+        _ = alerts_data.get("alerts", []) if isinstance(alerts_data, dict) else []
 
         summary = {
             "total": len(alerts),
@@ -688,7 +703,7 @@ def get_current_alerts_summary() -> Dict[str, Any]:
         return summary
 
     except Exception as e:
-        logger.error(f"Error obteniendo resumen de alertas: {e}")
+        logger.error("Error obteniendo resumen de alertas: %s", e)
         return {
             "total": 0,
             "critical": 0,

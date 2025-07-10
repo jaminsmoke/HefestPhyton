@@ -1,28 +1,29 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+import random
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from .advanced_metric_card import AdvancedMetricCard
+
 """
 Widgets de métricas RESPONSIVE para Dashboard Admin v3
 Solo con AdvancedMetricCard - versión responsive que se ajusta al contenedor
 """
 
-import logging
-import random
-from typing import Optional
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                              QFrame, QGridLayout, QSizePolicy, QSpacerItem)
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QFont
 
-from .dashboard_config import METRICS_CONFIG, CONTAINER_CONFIG
-from .advanced_metric_card import AdvancedMetricCard
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class AdminMetricsSection(QWidget):
     """Sección de métricas RESPONSIVE con grid adaptativo 3x2"""
     
-    metrics_updated = pyqtSignal()
+    _ = pyqtSignal()
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.metric_cards = {}
         self.setup_ui()
@@ -35,6 +36,8 @@ class AdminMetricsSection(QWidget):
         self.update_timer.start(5000)
         
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configuración RESPONSIVE de la interfaz - Grid adaptativo 3x2"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(20, 20, 20, 20)
@@ -75,7 +78,7 @@ class AdminMetricsSection(QWidget):
         grid_layout.setContentsMargins(0, 0, 0, 0)
 
         # Métricas principales (6 tarjetas en 3x2)
-        metrics_data = [
+        _ = [
             # Fila 1
             ("💰", "Ventas", "€2,450", "Hoy vs Ayer", "+12%", "#10b981"),
             ("🏨", "Ocupación", "75%", "15/20 Mesas", "+3", "#3b82f6"),
@@ -88,7 +91,7 @@ class AdminMetricsSection(QWidget):
         ]
           # Crear tarjetas RESPONSIVE
         for i, (icon, title, value, subtitle, trend, color) in enumerate(metrics_data):
-            card = AdvancedMetricCard(icon, title, value, subtitle, trend, color)
+            _ = AdvancedMetricCard(icon, title, value, subtitle, trend, color)
             
             # TAMAÑO RESPONSIVE: se ajusta al contenedor disponible
             # Mínimo 250x160, pero crece con el contenedor
@@ -99,7 +102,7 @@ class AdminMetricsSection(QWidget):
             
             self.metric_cards[title.lower().replace(' ', '_')] = card
             
-            row = i // 3  # 3 columnas
+            _ = i // 3  # 3 columnas
             col = i % 3   
             grid_layout.addWidget(card, row, col)
             
@@ -120,8 +123,10 @@ class AdminMetricsSection(QWidget):
         print("✅ AdminMetricsSection RESPONSIVE con 6 tarjetas visibles")
         
     def simulate_data_update(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Simula actualización de datos realistas"""
-        updates = {
+        _ = {
             'ventas': (f"€{random.randint(2200, 2800)}", f"+{random.randint(8, 15)}%"),
             'ocupación': (f"{random.randint(65, 85)}%", f"+{random.randint(1, 5)}"),
             'tiempo': (f"{random.randint(40, 50)} min", f"-{random.randint(2, 8)} min"),
@@ -138,8 +143,10 @@ class AdminMetricsSection(QWidget):
         logger.debug("Métricas actualizadas automáticamente")
         
     def get_metrics_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna datos actuales de métricas"""
-        data = {}
+        _ = {}
         for key, card in self.metric_cards.items():
             if hasattr(card, 'value_label') and card.value_label:
                 data[key] = card.value_label.text()

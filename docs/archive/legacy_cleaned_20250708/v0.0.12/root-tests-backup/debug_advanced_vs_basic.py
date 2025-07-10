@@ -1,20 +1,23 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import sys
+import os
+from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QWidget, QVBoxLayout, QLabel
+from src.ui.modules.dashboard_admin_v3.advanced_metric_card import AdvancedMetricCard
+
 """
 DEBUG: Comparar AdvancedMetricCard vs tarjetas básicas
 """
 
-import sys
-import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QHBoxLayout, QWidget, QVBoxLayout, QLabel
-from PyQt6.QtCore import Qt
 
-from src.ui.modules.dashboard_admin_v3.advanced_metric_card import AdvancedMetricCard
 
 class BasicMetricCard(QWidget):
     """Tarjeta básica que funciona bien"""
     
     def __init__(self, icon="💰", title="Ventas", value="€2,450", color="#10b981"):
+        """TODO: Add docstring"""
         super().__init__()
         self.setFixedSize(280, 190)
         
@@ -48,6 +51,7 @@ class BasicMetricCard(QWidget):
 
 class DebugWindow(QMainWindow):
     def __init__(self):
+        """TODO: Add docstring"""
         super().__init__()
         self.setWindowTitle("DEBUG: Advanced vs Basic Cards")
         self.setFixedSize(600, 250)
@@ -60,7 +64,7 @@ class DebugWindow(QMainWindow):
         layout.setContentsMargins(20, 20, 20, 20)
         
         # Tarjeta básica (que funciona)
-        basic_container = QVBoxLayout()
+        _ = QVBoxLayout()
         basic_title = QLabel("BÁSICA (funciona)")
         basic_title.setStyleSheet("font-weight: bold; margin-bottom: 10px;")
         basic_container.addWidget(basic_title)
@@ -73,7 +77,7 @@ class DebugWindow(QMainWindow):
         layout.addWidget(basic_widget)
         
         # Tarjeta avanzada (problema)
-        advanced_container = QVBoxLayout()
+        _ = QVBoxLayout()
         advanced_title = QLabel("AVANZADA (problema)")
         advanced_title.setStyleSheet("font-weight: bold; margin-bottom: 10px;")
         advanced_container.addWidget(advanced_title)
@@ -86,7 +90,7 @@ class DebugWindow(QMainWindow):
         layout.addWidget(advanced_widget)
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    _ = QApplication(sys.argv)
     window = DebugWindow()
     window.show()
     

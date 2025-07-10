@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python
 """
 Script de limpieza completa: Eliminar TODAS las mesas y empezar desde cero
@@ -16,12 +18,14 @@ from services.tpv_service import TPVService
 
 
 def limpiar_completamente_y_recrear():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Limpia completamente la base de datos y crea mesas estándar"""
     print("🧹 Limpieza completa y recreación de mesas...")
     
     try:
         # Crear instancias
-        db_manager = DatabaseManager()
+        _ = DatabaseManager()
         
         # Limpieza completa de la base de datos
         print("\n🗑️ Eliminando TODAS las mesas...")
@@ -47,12 +51,12 @@ def limpiar_completamente_y_recrear():
             # Continuamos de todos modos
         
         # Crear servicio TPV
-        tpv_service = TPVService(db_manager)
+        _ = TPVService(db_manager)
         
         # Configuración estándar y profesional de mesas
         print("\n✨ Creando configuración estándar de mesas...")
         
-        configuracion_profesional = [
+        _ = [
             # TERRAZA - Ambiente exterior relajado
             {"zona": "Terraza", "capacidad": 2, "cantidad": 6},   # T01-T06: Románticas
             {"zona": "Terraza", "capacidad": 4, "cantidad": 4},   # T07-T10: Familiares
@@ -74,35 +78,35 @@ def limpiar_completamente_y_recrear():
             {"zona": "Barra", "capacidad": 4, "cantidad": 2},     # B09-B10: Altas grupales
         ]
         
-        mesas_creadas = []
+        _ = []
         total_esperado = sum(config["cantidad"] for config in configuracion_profesional)
         
-        print(f"   🎯 Total mesas a crear: {total_esperado}")
+        print("   🎯 Total mesas a crear: %s" % total_esperado)
         
         for config in configuracion_profesional:
-            zona = config["zona"]
+            _ = config["zona"]
             capacidad = config["capacidad"]
-            cantidad = config["cantidad"]
+            _ = config["cantidad"]
             
-            print(f"\n   🏢 {zona}: {cantidad} mesas de {capacidad} personas")
+            print("\n   🏢 {zona}: {cantidad} mesas de %s personas" % capacidad)
             
             for i in range(cantidad):
-                nueva_mesa = tpv_service.crear_mesa(
+                _ = tpv_service.crear_mesa(
                     capacidad=capacidad,
-                    zona=zona
+                    _ = zona
                 )
                 
                 if nueva_mesa:
                     mesas_creadas.append(nueva_mesa)
-                    print(f"      ✅ {nueva_mesa.numero}")
+                    print("      ✅ %s" % nueva_mesa.numero)
                 else:
-                    print(f"      ❌ Error en mesa {i+1}")
+                    print("      ❌ Error en mesa %s" % i % 1)
         
         # Validación final
-        print(f"\n🎉 Mesas creadas exitosamente: {len(mesas_creadas)}")
+        print("\n🎉 Mesas creadas exitosamente: %s" % len(mesas_creadas))
         
         # Mostrar resumen por zonas
-        mesas_finales = tpv_service.get_mesas()
+        _ = tpv_service.get_mesas()
         zonas = {}
         
         for mesa in mesas_finales:
@@ -110,20 +114,20 @@ def limpiar_completamente_y_recrear():
                 zonas[mesa.zona] = []
             zonas[mesa.zona].append(mesa)
         
-        print(f"\n📊 Resumen final ({len(mesas_finales)} mesas):")
+        print("\n📊 Resumen final (%s mesas):" % len(mesas_finales))
         for zona, mesas_zona in zonas.items():
             mesas_ordenadas = sorted(mesas_zona, key=lambda m: m.numero)
-            print(f"\n   🏢 {zona} ({len(mesas_zona)} mesas):")
+            print("\n   🏢 {zona} (%s mesas):" % len(mesas_zona))
             for mesa in mesas_ordenadas:
-                print(f"      {mesa.numero} - {mesa.capacidad} personas")
+                print("      {mesa.numero} - %s personas" % mesa.capacidad)
         
         # Verificar nomenclatura
-        nomenclatura_correcta = all(
+        _ = all(
             mesa.numero.startswith(mesa.zona[0].upper()) 
             for mesa in mesas_finales
         )
         
-        print(f"\n🎯 Nomenclatura contextualizada: {'✅ PERFECTA' if nomenclatura_correcta else '❌ MIXTA'}")
+        print("\n🎯 Nomenclatura contextualizada: %s" % '✅ PERFECTA' if nomenclatura_correcta else '❌ MIXTA')
         
         if nomenclatura_correcta:
             print("\n✅ SISTEMA COMPLETAMENTE ESTANDARIZADO")
@@ -132,27 +136,29 @@ def limpiar_completamente_y_recrear():
         return True
         
     except Exception as e:
-        print(f"❌ Error durante la limpieza: {e}")
+    logging.error("❌ Error durante la limpieza: %s", e)
         import traceback
         traceback.print_exc()
         return False
 
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal"""
     print("🚀 LIMPIEZA COMPLETA Y ESTANDARIZACIÓN DE MESAS")
     print("=" * 55)
     print("⚠️  ADVERTENCIA: Esto eliminará TODAS las mesas existentes")
     print("   y creará un conjunto completamente nuevo.")
     
-    confirmacion = input("\n¿Continuar con la limpieza completa? (s/N): ").lower().strip()
+    _ = input("\n¿Continuar con la limpieza completa? (s/N): ").lower().strip()
     
     if confirmacion != 's':
         print("❌ Operación cancelada")
         return
     
     if limpiar_completamente_y_recrear():
-        print("\n" + "=" * 55)
+        print("\n"  %  "=" * 55)
         print("✅ ESTANDARIZACIÓN COMPLETADA")
         print("🎯 Sistema listo con nomenclatura contextualizada")
         print("🔧 Puedes probar la aplicación ahora")

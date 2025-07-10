@@ -1,3 +1,16 @@
+
+ALLOWED_TABLES = {
+    'usuarios', 'productos', 'mesas', 'clientes', 'habitaciones',
+    'reservas', 'comandas', 'comanda_detalles', 'categorias',
+    'proveedores', 'movimientos_stock', 'zonas'
+}
+
+def validate_table_name(table):
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Table '{table}' not allowed")
+    return table
+
+from typing import Optional, Dict, List, Any
 #!/usr/bin/env python3
 """
 Script para reseteo COMPLETO a estado de configuración inicial
@@ -23,20 +36,22 @@ logger = logging.getLogger(__name__)
 DB_PATH = Path(__file__).parent.parent / "data" / "hefest.db"
 
 def reset_to_initial_configuration():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Resetear completamente a configuración inicial"""
     
     if not DB_PATH.exists():
-        logger.error(f"Base de datos no encontrada: {DB_PATH}")
+        logger.error("Base de datos no encontrada: %s", DB_PATH)
         return False
     
     try:
         conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         logger.info("🔄 INICIANDO RESETEO COMPLETO A CONFIGURACIÓN INICIAL")
         
         # Tablas a limpiar COMPLETAMENTE (datos operacionales)
-        tables_to_clear = [
+        _ = [
             'mesas',
             'productos', 
             'clientes',
@@ -51,11 +66,11 @@ def reset_to_initial_configuration():
         # Limpiar datos operacionales
         for table in tables_to_clear:
             try:
-                cursor.execute(f"DELETE FROM {table}")
+                cursor.execute("DELETE FROM " + validate_table_name(table))
                 count = cursor.rowcount
-                logger.info(f"  ✅ {table}: {count} registros eliminados")
+                logger.info("  ✅ {table}: %s registros eliminados", count)
             except sqlite3.OperationalError as e:
-                logger.warning(f"  ⚠️ {table}: {e}")
+                logger.warning("  ⚠️ {table}: %s", e)
         
         # Resetear secuencias automáticas
         cursor.execute("DELETE FROM sqlite_sequence WHERE name NOT IN ('usuarios')")
@@ -64,7 +79,7 @@ def reset_to_initial_configuration():
         # Verificar usuarios (se mantienen)
         cursor.execute("SELECT COUNT(*) FROM usuarios")
         user_count = cursor.fetchone()[0]
-        logger.info(f"  👥 Usuarios mantenidos: {user_count}")
+        logger.info("  👥 Usuarios mantenidos: %s", user_count)
         
         # Commit de todos los cambios
         conn.commit()
@@ -73,12 +88,12 @@ def reset_to_initial_configuration():
         logger.info("\n📊 ESTADO FINAL DESPUÉS DEL RESETEO:")
         for table in tables_to_clear:
             try:
-                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                cursor.execute("SELECT COUNT(*) FROM " + table)
                 count = cursor.fetchone()[0]
                 status = "✅ VACÍA" if count == 0 else f"⚠️ {count} registros"
-                logger.info(f"  {table}: {status}")
+                logger.info("  {table}: %s", status)
             except sqlite3.OperationalError:
-                logger.info(f"  {table}: ⚠️ No existe")
+                logger.info("  %s: ⚠️ No existe", table)
         
         conn.close()
         
@@ -90,42 +105,44 @@ def reset_to_initial_configuration():
         return True
         
     except Exception as e:
-        logger.error(f"❌ Error durante el reseteo: {e}")
+        logger.error("❌ Error durante el reseteo: %s", e)
         return False
 
 def verify_initial_state():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verificar que estamos en estado inicial correcto"""
     try:
         conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         logger.info("\n🔍 VERIFICACIÓN DEL ESTADO INICIAL:")
         
         # Verificar tablas vacías
-        operational_tables = ['mesas', 'productos', 'clientes', 'habitaciones', 
+        _ = ['mesas', 'productos', 'clientes', 'habitaciones', 
                              'reservas', 'comandas', 'comanda_detalles', 'empleados']
         
-        all_empty = True
+        _ = True
         for table in operational_tables:
             try:
-                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                cursor.execute("SELECT COUNT(*) FROM " + table)
                 count = cursor.fetchone()[0]
                 if count > 0:
-                    logger.warning(f"  ⚠️ {table}: {count} registros (debería estar vacía)")
-                    all_empty = False
+                    logger.warning("  ⚠️ {table}: %s registros (debería estar vacía)", count)
+                    _ = False
                 else:
-                    logger.info(f"  ✅ {table}: vacía")
+                    logger.info("  ✅ %s: vacía", table)
             except sqlite3.OperationalError:
-                logger.info(f"  ➖ {table}: no existe")
+                logger.info("  ➖ %s: no existe", table)
         
         # Verificar usuarios
         cursor.execute("SELECT COUNT(*) FROM usuarios")
         user_count = cursor.fetchone()[0]
         if user_count > 0:
-            logger.info(f"  ✅ usuarios: {user_count} registros (correcto)")
+            logger.info("  ✅ usuarios: %s registros (correcto)", user_count)
         else:
             logger.error("  ❌ usuarios: sin registros (ERROR - necesarios para login)")
-            all_empty = False
+            _ = False
         
         conn.close()
         
@@ -138,7 +155,7 @@ def verify_initial_state():
         return all_empty
         
     except Exception as e:
-        logger.error(f"❌ Error en verificación: {e}")
+        logger.error("❌ Error en verificación: %s", e)
         return False
 
 if __name__ == "__main__":
@@ -148,7 +165,7 @@ if __name__ == "__main__":
     
     # Ejecutar reseteo
     if reset_to_initial_configuration():
-        print("\n" + "="*60)
+        print("\n"  %  "="*60)
         print("✅ RESETEO COMPLETADO")
         
         # Verificar estado

@@ -8,18 +8,19 @@ from typing import Dict, Any, Optional, Tuple
 import logging
 from datetime import datetime
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class RealDataManager(QObject):
     """Manager centralizado para gestión SOLO de datos reales del dashboard"""
 
     # Señales para comunicación
-    data_updated = pyqtSignal(dict)
+    _ = pyqtSignal(dict)
     metric_updated = pyqtSignal(str, dict)
-    error_occurred = pyqtSignal(str)
+    _ = pyqtSignal(str)
 
     def __init__(self, db_manager=None, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.db_manager = db_manager
         self.is_running = False
@@ -35,6 +36,8 @@ class RealDataManager(QObject):
         logger.info("RealDataManager inicializado - Estado: Configuración inicial")
 
     def start_monitoring(self, interval_ms: int = 5000):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicia el monitoreo de datos reales"""
         if self.is_running:
             return
@@ -43,9 +46,11 @@ class RealDataManager(QObject):
         self.is_running = True
         self.fetch_all_real_data()
 
-        logger.info(f"RealDataManager iniciado - Intervalo: {interval_ms}ms")
+        logger.info("RealDataManager iniciado - Intervalo: %sms", interval_ms)
 
     def stop_monitoring(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Detiene el monitoreo"""
         if self.is_running:
             self.update_timer.stop()
@@ -53,6 +58,8 @@ class RealDataManager(QObject):
             logger.info("RealDataManager detenido")
 
     def fetch_all_real_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene datos reales de la BD"""
         try:
             data = self._get_real_metrics_formatted()
@@ -65,7 +72,7 @@ class RealDataManager(QObject):
             for metric_name, metric_data in data.items():
                 self.metric_updated.emit(metric_name, metric_data)
 
-            # logger.debug(f"Datos reales actualizados: {len(data)} métricas")
+            # logger.debug("Datos reales actualizados: %s métricas", len(data))
 
         except Exception as e:
             error_msg = f"Error obteniendo datos reales: {e}"
@@ -76,10 +83,10 @@ class RealDataManager(QObject):
         """Obtener métricas reales formateadas para el dashboard"""
 
         # Obtener métricas reales de la BD
-        raw_metrics = self._get_raw_hospitality_metrics()
+        _ = self._get_raw_hospitality_metrics()
 
         # Configuración de formato
-        config = {
+        _ = {
             "ocupacion_mesas": {"title": "Ocupación Mesas", "unit": "%", "icon": "🍽️"},
             "ventas_diarias": {"title": "Ventas Diarias", "unit": "€", "icon": "💰"},
             "comandas_activas": {"title": "Comandas Activas", "unit": "", "icon": "📋"},
@@ -120,9 +127,9 @@ class RealDataManager(QObject):
         }
 
         # Formatear datos con tendencias reales
-        formatted_data = {}
+        _ = {}
         for metric_name, metric_config in config.items():
-            value = raw_metrics.get(metric_name, 0)
+            _ = raw_metrics.get(metric_name, 0)
 
             # Calcular tendencia real basada en datos históricos
             trend_text, trend_numeric = self._calculate_real_trend(
@@ -162,20 +169,20 @@ class RealDataManager(QObject):
                 return "+0.0%", 0.0
 
             # Calcular tendencia porcentual
-            trend_numeric = ((current_value - previous_value) / previous_value) * 100
+            _ = ((current_value - previous_value) / previous_value) * 100
 
             # Formatear con lógica económica
             if abs(trend_numeric) < 0.1:
-                trend_text = "±0.0%"
+                _ = "±0.0%"
             elif trend_numeric > 0:
-                trend_text = f"+{trend_numeric:.1f}%"
+                _ = f"+{trend_numeric:.1f}%"
             else:
                 trend_text = f"{trend_numeric:.1f}%"
 
             return trend_text, trend_numeric
 
         except Exception as e:
-            # logger.debug(f"Error calculando tendencia para {metric_name}: {e}")
+            # logger.debug("Error calculando tendencia para {metric_name}: %s", e)
             return "+0.0%", 0.0
 
     def _get_historical_metric_value(self, metric_name: str) -> Optional[float]:
@@ -185,7 +192,7 @@ class RealDataManager(QObject):
 
         try:
             # Mapeo de métricas a consultas históricas con lógica económica-administrativa
-            historical_queries = {
+            _ = {
                 "ventas_diarias": """
                     SELECT COALESCE(SUM(total), 0)
                     FROM comandas
@@ -272,142 +279,96 @@ class RealDataManager(QObject):
             return None
 
         except Exception as e:
-            # logger.debug(f"Error obteniendo datos históricos de {metric_name}: {e}")
+            # logger.debug("Error obteniendo datos históricos de {metric_name}: %s", e)
             return None
 
     def _get_raw_hospitality_metrics(self) -> Dict[str, Any]:
-        """Obtener métricas sin formato desde la BD"""
+        """Obtener métricas sin formato desde la BD - Optimizado con single batch query"""
         if not self.db_manager:
             logger.info("Sin BD - Devolviendo configuración inicial (ceros)")
             return self._get_initial_config_metrics()
 
         try:
-            metrics = {}
-
-            # MESAS
-            total_tables = self._safe_query("SELECT COUNT(*) FROM mesas", 0)
-            if total_tables > 0:
-                occupied_tables = self._safe_query(
-                    "SELECT COUNT(*) FROM mesas WHERE estado='ocupada'", 0
+            # Single optimized batch query para todas las métricas
+            _ = self.db_manager.query("""
+                WITH daily_data AS (
+                    SELECT 
+                        COALESCE(SUM(total), 0) as ventas_diarias,
+                        COUNT(CASE WHEN estado IN ('pendiente', 'en_preparacion') THEN 1 END) as comandas_activas,
+                        COALESCE(AVG(CASE WHEN total > 0 THEN total END), 0) as ticket_promedio,
+                        COUNT(*) as total_comandas_hoy,
+                        COALESCE(AVG(CASE WHEN valoracion IS NOT NULL THEN CAST(valoracion AS FLOAT) END), 0) as satisfaccion_cliente,
+                        COALESCE(AVG(CASE WHEN estado = 'completada' THEN 
+                            COALESCE(tiempo_servicio, (strftime('%s', fecha_completado) - strftime('%s', fecha_hora)) / 60)
+                        END), 0) as tiempo_servicio,
+                        COALESCE(((SUM(CASE WHEN total > 0 THEN total - costo_ingredientes ELSE 0 END) / 
+                                  NULLIF(SUM(CASE WHEN total > 0 THEN total ELSE 0 END), 0)) * 100), 0) as margen_bruto
+                    FROM comandas 
+                    WHERE DATE(fecha_hora) = DATE('now')
+                ),
+                mesa_data AS (
+                    SELECT 
+                        COUNT(*) as total_mesas,
+                        COUNT(CASE WHEN estado='ocupada' THEN 1 END) as mesas_ocupadas
+                    FROM mesas
+                ),
+                other_data AS (
+                    SELECT 
+                        (SELECT COUNT(*) FROM reservas WHERE estado='confirmada' AND DATE(fecha_entrada) >= DATE('now')) as reservas_futuras,
+                        (SELECT COUNT(*) FROM habitaciones) as total_habitaciones,
+                        (SELECT COUNT(*) FROM habitaciones WHERE estado='libre') as habitaciones_libres,
+                        (SELECT COUNT(*) FROM productos WHERE stock > 0) as productos_stock,
+                        (SELECT COALESCE((CAST(SUM(stock) AS FLOAT) / NULLIF(SUM(stock_minimo), 0)) * 100, 0) 
+                         FROM productos WHERE categoria = 'Bebidas' OR nombre LIKE '%bebida%' OR nombre LIKE '%refresco%') as inventario_bebidas
                 )
-                metrics["ocupacion_mesas"] = round(
-                    (occupied_tables / total_tables) * 100, 1
-                )
-                metrics["mesas_ocupadas"] = occupied_tables
-                metrics["_total_tables_text"] = f"/{total_tables}"
-            else:
-                metrics["ocupacion_mesas"] = 0.0
-                metrics["mesas_ocupadas"] = 0
-                metrics["_total_tables_text"] = "/0"
+                SELECT 
+                    d.ventas_diarias, d.comandas_activas, d.ticket_promedio, d.total_comandas_hoy,
+                    d.satisfaccion_cliente, d.tiempo_servicio, d.margen_bruto,
+                    m.total_mesas, m.mesas_ocupadas,
+                    o.reservas_futuras, o.total_habitaciones, o.habitaciones_libres, 
+                    o.productos_stock, o.inventario_bebidas
+                FROM daily_data d, mesa_data m, other_data o
+            """)
+            
+            if not result or len(result) == 0:
+                return self._get_initial_config_metrics()
+                
+            _ = result[0]
+            
+            # Procesar resultados del batch query
+            _ = int(row[7])
+            occupied_tables = int(row[8])
+            _ = int(row[10])
+            
+            metrics = {
+                "ventas_diarias": float(row[0]),
+                "comandas_activas": int(row[1]),
+                "ticket_promedio": round(float(row[2]), 2),
+                "satisfaccion_cliente": round(float(row[4]), 1),
+                "tiempo_servicio": round(float(row[5]), 1),
+                "margen_bruto": round(float(row[6]), 1),
+                "mesas_ocupadas": occupied_tables,
+                "ocupacion_mesas": round((occupied_tables / max(total_tables, 1)) * 100, 1),
+                "_total_tables_text": f"/{total_tables}",
+                "reservas_futuras": int(row[9]),
+                "habitaciones_libres": int(row[11]),
+                "_total_rooms_text": f"/{total_rooms}",
+                "productos_stock": int(row[12]),
+                "inventario_bebidas": round(float(row[13]), 1),
+                "rotacion_mesas": round(float(row[3]) / max(total_tables, 1), 1)
+            }
 
-            # VENTAS
-            daily_sales = self._safe_query(
-                "SELECT COALESCE(SUM(total), 0) FROM comandas WHERE DATE(fecha_hora) = DATE('now')",
-                0.0,
-            )
-            metrics["ventas_diarias"] = float(daily_sales)
-
-            # COMANDAS
-            active_orders = self._safe_query(
-                "SELECT COUNT(*) FROM comandas WHERE estado IN ('pendiente', 'en_preparacion')",
-                0,
-            )
-            metrics["comandas_activas"] = int(active_orders)
-
-            # TICKET PROMEDIO
-            avg_ticket = self._safe_query(
-                "SELECT COALESCE(AVG(total), 0) FROM comandas WHERE DATE(fecha_hora) = DATE('now') AND total > 0",
-                0.0,
-            )
-            metrics["ticket_promedio"] = round(float(avg_ticket), 2)
-
-            # RESERVAS
-            future_reservations = self._safe_query(
-                "SELECT COUNT(*) FROM reservas WHERE estado='confirmada' AND DATE(fecha_entrada) >= DATE('now')",
-                0,
-            )
-            metrics["reservas_futuras"] = int(future_reservations)
-
-            # HABITACIONES
-            total_rooms = self._safe_query("SELECT COUNT(*) FROM habitaciones", 0)
-            if total_rooms > 0:
-                free_rooms = self._safe_query(
-                    "SELECT COUNT(*) FROM habitaciones WHERE estado='libre'", 0
-                )
-                metrics["habitaciones_libres"] = int(free_rooms)
-                metrics["_total_rooms_text"] = f"/{total_rooms}"
-            else:
-                metrics["habitaciones_libres"] = 0
-                metrics["_total_rooms_text"] = "/0"
-
-            # PRODUCTOS
-            products_in_stock = self._safe_query(
-                "SELECT COUNT(*) FROM productos WHERE stock > 0", 0
-            )
-            metrics["productos_stock"] = int(products_in_stock)
-
-            # SATISFACCIÓN CLIENTE
-            satisfaction = self._safe_query(
-                "SELECT COALESCE(AVG(CAST(valoracion AS FLOAT)), 0) FROM comandas WHERE valoracion IS NOT NULL AND DATE(fecha_hora) = DATE('now')",
-                0.0,
-            )
-            metrics["satisfaccion_cliente"] = round(float(satisfaction), 1)
-
-            # TIEMPO SERVICIO
-            service_time = self._safe_query(
-                """SELECT COALESCE(AVG(
-                    CASE
-                        WHEN tiempo_servicio IS NOT NULL THEN tiempo_servicio
-                        ELSE (strftime('%s', fecha_completado) - strftime('%s', fecha_hora)) / 60
-                    END
-                ), 0) FROM comandas WHERE estado = 'completada' AND DATE(fecha_hora) = DATE('now')""",
-                0.0,
-            )
-            metrics["tiempo_servicio"] = round(float(service_time), 1)
-
-            # ROTACIÓN MESAS
-            if total_tables > 0:
-                table_rotation = (
-                    self._safe_query(
-                        "SELECT COALESCE(COUNT(*), 0) FROM comandas WHERE DATE(fecha_hora) = DATE('now')",
-                        0,
-                    )
-                    / total_tables
-                )
-            else:
-                table_rotation = 0.0
-            metrics["rotacion_mesas"] = round(float(table_rotation), 1)
-
-            # INVENTARIO BEBIDAS
-            beverages_inventory = self._safe_query(
-                """SELECT COALESCE(
-                    (CAST(SUM(stock) AS FLOAT) / NULLIF(SUM(stock_minimo), 0)) * 100, 0
-                ) FROM productos WHERE categoria = 'Bebidas' OR nombre LIKE '%bebida%' OR nombre LIKE '%refresco%'""",
-                0.0,
-            )
-            metrics["inventario_bebidas"] = round(float(beverages_inventory), 1)
-
-            # MARGEN BRUTO
-            gross_margin = self._safe_query(
-                """SELECT COALESCE(
-                    ((SUM(total) - SUM(costo_ingredientes)) / NULLIF(SUM(total), 0)) * 100, 0
-                ) FROM comandas WHERE DATE(fecha_hora) = DATE('now') AND total > 0""",
-                0.0,
-            )
-            metrics["margen_bruto"] = round(float(gross_margin), 1)
-
-            # Log del estado
-            config_status = (
+            # Log del estado optimizado
+            _ = (
                 "✅ CON DATOS"
                 if any(v > 0 for k, v in metrics.items() if not k.startswith("_"))
                 else "📋 CONFIGURACIÓN INICIAL"
             )
-            # logger.info(f"Estado del establecimiento: {config_status}")
-
+            
             return metrics
 
         except Exception as e:
-            logger.error(f"Error obteniendo métricas reales: {e}")
+            logger.error("Error obteniendo métricas reales (batch optimizado): %s", e)
             return self._get_initial_config_metrics()
 
     def _get_initial_config_metrics(self) -> Dict[str, Any]:
@@ -440,14 +401,18 @@ class RealDataManager(QObject):
                 return result[0][0]
             return default_value
         except Exception as e:
-            # logger.debug(f"Query falló (normal en config inicial): {e}")
+            # logger.debug("Query falló (normal en config inicial): %s", e)
             return default_value
 
     def get_last_update(self) -> Optional[datetime]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Timestamp de última actualización"""
         return self._last_update
 
     def force_refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Forzar actualización inmediata"""
         logger.info("Actualización forzada de datos reales")
         self.fetch_all_real_data()

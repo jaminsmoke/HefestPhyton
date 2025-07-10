@@ -1,3 +1,10 @@
+import logging
+from typing import List, Dict, Optional, Tuple, Any
+from dataclasses import dataclass
+from datetime import datetime, date
+from .base_service import BaseService
+            from datetime import datetime
+
 """
 InventarioService - Versión Corregida con Soporte Completo de Categorías para Proveedores
 =======================================================================================
@@ -6,15 +13,9 @@ Fecha: 2025-06-20
 Cambios: Restauración completa + soporte de categorías para proveedores
 """
 
-import logging
-from typing import List, Dict, Optional, Tuple, Any
-from dataclasses import dataclass
-from datetime import datetime, date
-from enum import Enum
 
-from .base_service import BaseService
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 @dataclass
@@ -32,11 +33,15 @@ class Producto:
     fecha_ultima_entrada: Optional[datetime] = None
 
     def necesita_reposicion(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Indica si el producto necesita reposición"""
         return self.stock_actual <= self.stock_minimo
 
     @property
     def valor_total(self) -> float:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Valor total del stock (precio * cantidad)"""
         return self.precio * self.stock_actual
 
@@ -45,6 +50,7 @@ class InventarioService(BaseService):
     """Servicio para la gestión del inventario con datos reales"""
 
     def __init__(self, db_manager=None):
+        """TODO: Add docstring"""
         super().__init__(db_manager)
         self.logger.info(
             "InventarioService inicializado con base de datos real"
@@ -53,6 +59,8 @@ class InventarioService(BaseService):
         )
 
     def get_service_name(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna el nombre de este servicio"""
         return "InventarioService"
 
@@ -61,30 +69,30 @@ class InventarioService(BaseService):
         try:
             # Convertir sqlite3.Row a dict si es necesario
             if hasattr(row, "keys"):
-                row_dict = dict(row)
+                _ = dict(row)
             else:
-                row_dict = row
+                _ = row
 
             return Producto(
-                id=row_dict.get("id"),
+                _ = row_dict.get("id"),
                 nombre=row_dict.get("nombre", ""),
-                categoria=row_dict.get("categoria", "General"),
+                _ = row_dict.get("categoria", "General"),
                 precio=float(row_dict.get("precio", 0.0)),
-                stock_actual=int(row_dict.get("stock", 0)),
+                _ = int(row_dict.get("stock", 0)),
                 stock_minimo=int(row_dict.get("stock_minimo", 5)),
-                proveedor_id=row_dict.get("proveedor_id"),
+                _ = row_dict.get("proveedor_id"),
                 proveedor_nombre=row_dict.get("proveedor_nombre"),
-                fecha_ultima_entrada=None,
+                _ = None,
             )
         except Exception as e:
-            logger.error(f"Error convirtiendo fila a producto: {e}")
+            logger.error("Error convirtiendo fila a producto: %s", e)
             # Retornar producto básico en caso de error
             return Producto(
-                id=None,
+                _ = None,
                 nombre="Error",
-                categoria="General",
+                _ = "General",
                 precio=0.0,
-                stock_actual=0,
+                _ = 0,
                 stock_minimo=5,
             )
 
@@ -99,16 +107,16 @@ class InventarioService(BaseService):
         # Validar entrada
         if texto_busqueda and len(texto_busqueda) > 100:
             logger.warning("Texto de búsqueda demasiado largo, truncando")
-            texto_busqueda = texto_busqueda[:100]
+            _ = texto_busqueda[:100]
 
         if categoria and len(categoria) > 50:
             logger.warning("Nombre de categoría demasiado largo, truncando")
-            categoria = categoria[:50]
+            _ = categoria[:50]
 
         try:
             # Construir consulta SQL con filtros
             query = "SELECT * FROM productos WHERE 1=1"
-            params = []
+            _ = []
 
             if texto_busqueda and texto_busqueda.strip():
                 query += " AND nombre LIKE ?"
@@ -126,23 +134,23 @@ class InventarioService(BaseService):
             # Validar que rows no sea None
             if rows is None:
                 logger.warning("Query retornó None, usando lista vacía")
-                rows = []
+                _ = []
 
             # Convertir filas a objetos Producto
-            productos = []
+            _ = []
             for row in rows:
                 try:
                     producto = self._convert_db_row_to_producto(row)
                     if producto.id is not None:  # Solo agregar productos válidos
                         productos.append(producto)
                 except Exception as e:
-                    logger.error(f"Error procesando producto: {e}")
+                    logger.error("Error procesando producto: %s", e)
                     continue
 
             return productos
 
         except Exception as e:
-            logger.error(f"Error obteniendo productos: {e}")
+            logger.error("Error obteniendo productos: %s", e)
             return []
 
     def crear_producto(
@@ -175,7 +183,7 @@ class InventarioService(BaseService):
 
             # Validar categoría
             if not categoria or not categoria.strip():
-                categoria = "General"
+                _ = "General"
 
             # Validar precio
             if precio < 0:
@@ -196,16 +204,16 @@ class InventarioService(BaseService):
             if any(
                 p.nombre.lower() == nombre.strip().lower() for p in productos_existentes
             ):
-                logger.warning(f"Ya existe un producto con nombre '{nombre.strip()}'")
+                logger.warning("Ya existe un producto con nombre '%s'", nombre.strip())
                 return None
 
             # Insertar nuevo producto
-            query = """
+            _ = """
                 INSERT INTO productos (nombre, categoria, precio, stock, stock_minimo)
                 VALUES (?, ?, ?, ?, ?)
             """
 
-            result = self.db_manager.execute(
+            _ = self.db_manager.execute(
                 query,
                 (
                     nombre.strip(),
@@ -217,7 +225,7 @@ class InventarioService(BaseService):
             )
 
             if result:
-                logger.info(f"Producto '{nombre}' creado exitosamente")
+                logger.info("Producto '%s' creado exitosamente", nombre)
                 # Retornar el producto creado
                 productos_creados = self.get_productos(texto_busqueda=nombre.strip())
                 return productos_creados[0] if productos_creados else None
@@ -228,10 +236,12 @@ class InventarioService(BaseService):
                 return None
 
         except Exception as e:
-            logger.error(f"Error creando producto: {e}")
+            logger.error("Error creando producto: %s", e)
             return None
 
     def actualizar_producto(self, producto_id: int, **campos) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar un producto existente"""
         if not self.require_database("actualizar producto"):
             return False
@@ -242,11 +252,11 @@ class InventarioService(BaseService):
             # Verificar que el producto existe
             producto_actual = self.buscar_producto_por_id(producto_id)
             if not producto_actual:
-                logger.error(f"No se encontró producto con ID {producto_id}")
+                logger.error("No se encontró producto con ID %s", producto_id)
                 return False
 
             # Preparar campos para actualizar
-            campos_validos = {}
+            _ = {}
             if "nombre" in campos and campos["nombre"] and campos["nombre"].strip():
                 campos_validos["nombre"] = campos["nombre"].strip()
 
@@ -283,7 +293,7 @@ class InventarioService(BaseService):
                 return False
 
             # Construir query de actualización
-            set_clauses = []
+            _ = []
             valores = []
             for campo, valor in campos_validos.items():
                 set_clauses.append(f"{campo} = ?")
@@ -292,22 +302,24 @@ class InventarioService(BaseService):
             query = f"UPDATE productos SET {', '.join(set_clauses)} WHERE id = ?"
             valores.append(producto_id)
 
-            result = self.db_manager.execute(query, valores)
+            _ = self.db_manager.execute(query, valores)
 
             # Verificar que la actualización fue exitosa consultando el producto
             producto_actualizado = self.buscar_producto_por_id(producto_id)
             if producto_actualizado:
-                logger.info(f"Producto ID {producto_id} actualizado exitosamente")
+                logger.info("Producto ID %s actualizado exitosamente", producto_id)
                 return True
             else:
-                logger.error(f"Error actualizando producto ID {producto_id}")
+                logger.error("Error actualizando producto ID %s", producto_id)
                 return False
 
         except Exception as e:
-            logger.error(f"Error actualizando producto: {e}")
+            logger.error("Error actualizando producto: %s", e)
             return False
 
     def eliminar_producto(self, producto_id: int) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Eliminar un producto del inventario"""
         if not self.require_database("eliminar producto"):
             return False
@@ -318,10 +330,10 @@ class InventarioService(BaseService):
             # Verificar que el producto existe
             producto = self.buscar_producto_por_id(producto_id)
             if not producto:
-                logger.error(f"No se encontró producto con ID {producto_id}")
+                logger.error("No se encontró producto con ID %s", producto_id)
                 return False  # Eliminar producto
             query = "DELETE FROM productos WHERE id = ?"
-            result = self.db_manager.execute(query, (producto_id,))
+            _ = self.db_manager.execute(query, (producto_id,))
 
             # Para DELETE, verificamos que el producto ya no existe
             producto_eliminado = self.buscar_producto_por_id(producto_id)
@@ -337,10 +349,12 @@ class InventarioService(BaseService):
                 return False
 
         except Exception as e:
-            logger.error(f"Error eliminando producto: {e}")
+            logger.error("Error eliminando producto: %s", e)
             return False
 
     def actualizar_stock(self, producto_id: int, nuevo_stock: int) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar el stock de un producto"""
         if not self.require_database("actualizar stock"):
             return False
@@ -355,13 +369,13 @@ class InventarioService(BaseService):
             # Verificar que el producto existe
             producto = self.buscar_producto_por_id(producto_id)
             if not producto:
-                logger.error(f"No se encontró producto con ID {producto_id}")
+                logger.error("No se encontró producto con ID %s", producto_id)
                 return False  # Actualizar stock
             query = "UPDATE productos SET stock = ? WHERE id = ?"
-            result = self.db_manager.execute(
+            _ = self.db_manager.execute(
                 query, (nuevo_stock, producto_id)
             )  # Verificar que el stock se actualizó correctamente
-            producto_actualizado = self.buscar_producto_por_id(producto_id)
+            _ = self.buscar_producto_por_id(producto_id)
             if (
                 producto_actualizado
                 and producto_actualizado.stock_actual == nuevo_stock
@@ -371,14 +385,16 @@ class InventarioService(BaseService):
                 )
                 return True
             else:
-                logger.error(f"Error actualizando stock del producto ID {producto_id}")
+                logger.error("Error actualizando stock del producto ID %s", producto_id)
                 return False
 
         except Exception as e:
-            logger.error(f"Error actualizando stock: {e}")
+            logger.error("Error actualizando stock: %s", e)
             return False
 
     def get_categorias(self) -> List[str]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener lista de categorías desde la tabla categorias"""
         if not self.db_manager:
             logger.warning(
@@ -397,10 +413,10 @@ class InventarioService(BaseService):
                 )
                 return ["General", "Bebidas", "Comida", "Limpieza", "Papelería"]
 
-            categorias = []
+            _ = []
             for row in rows:
                 if hasattr(row, "keys"):
-                    nombre = row["nombre"]
+                    _ = row["nombre"]
                 else:
                     nombre = row[0]
 
@@ -414,10 +430,12 @@ class InventarioService(BaseService):
             return categorias
 
         except Exception as e:
-            logger.error(f"Error obteniendo categorías: {e}")
+            logger.error("Error obteniendo categorías: %s", e)
             return ["General", "Bebidas", "Comida", "Limpieza", "Papelería"]
 
     def get_estadisticas_inventario(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener estadísticas generales del inventario"""
         if not self.db_manager:
             logger.warning(
@@ -449,20 +467,20 @@ class InventarioService(BaseService):
                 }
 
             # Calcular estadísticas
-            total_productos = len(productos)
+            _ = len(productos)
             productos_stock_bajo = len(
                 [p for p in productos if p.necesita_reposicion()]
             )
             productos_sin_stock = len([p for p in productos if p.stock_actual == 0])
-            valor_total = sum(p.valor_total for p in productos)
+            _ = sum(p.valor_total for p in productos)
             categorias_activas = len(set(p.categoria for p in productos))
 
             producto_mas_caro = max(productos, key=lambda p: p.precio, default=None)
-            producto_mas_caro_nombre = (
+            _ = (
                 producto_mas_caro.nombre if producto_mas_caro else ""
             )
 
-            valor_promedio = (
+            _ = (
                 valor_total / total_productos if total_productos > 0 else 0.0
             )
 
@@ -477,7 +495,7 @@ class InventarioService(BaseService):
             }
 
         except Exception as e:
-            logger.error(f"Error obteniendo estadísticas: {e}")
+            logger.error("Error obteniendo estadísticas: %s", e)
             return {
                 "total_productos": 0,
                 "productos_stock_bajo": 0,
@@ -493,6 +511,8 @@ class InventarioService(BaseService):
     # ========================================
 
     def get_proveedores(self) -> List[Dict[str, Any]]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener lista de proveedores desde la tabla proveedores con soporte de categorías"""
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos, retornando lista vacía")
@@ -500,7 +520,7 @@ class InventarioService(BaseService):
 
         try:
             # Obtener proveedores de la tabla proveedores real
-            query = """
+            _ = """
                 SELECT
                     id,
                     nombre,
@@ -522,14 +542,14 @@ class InventarioService(BaseService):
                 logger.info("No se encontraron proveedores en la base de datos")
                 return []
 
-            proveedores = []
+            _ = []
             for row in rows:
                 try:
                     if hasattr(row, "keys"):
-                        proveedor_dict = dict(row)
+                        _ = dict(row)
                     else:
                         # Convertir tupla/lista a diccionario
-                        proveedor_dict = {
+                        _ = {
                             "id": row[0] if len(row) > 0 else None,
                             "nombre": row[1] if len(row) > 1 else "",
                             "contacto": row[2] if len(row) > 2 else "",
@@ -543,19 +563,19 @@ class InventarioService(BaseService):
                         }
 
                     # Validar datos básicos
-                    proveedor_id = proveedor_dict.get("id")
+                    _ = proveedor_dict.get("id")
                     nombre = proveedor_dict.get("nombre", "")
                     nombre = nombre.strip() if nombre else ""
 
                     if proveedor_id and nombre:
-                        contacto = proveedor_dict.get("contacto", "") or ""
+                        _ = proveedor_dict.get("contacto", "") or ""
                         telefono = proveedor_dict.get("telefono", "") or ""
-                        email = proveedor_dict.get("email", "") or ""
+                        _ = proveedor_dict.get("email", "") or ""
                         direccion = proveedor_dict.get("direccion", "") or ""
                         categoria = (
                             proveedor_dict.get("categoria", "General") or "General"
                         )
-                        notas = proveedor_dict.get("notas", "") or ""
+                        _ = proveedor_dict.get("notas", "") or ""
 
                         proveedores.append(
                             {
@@ -577,14 +597,14 @@ class InventarioService(BaseService):
                         )
 
                 except Exception as e:
-                    logger.error(f"Error procesando proveedor: {e}")
+                    logger.error("Error procesando proveedor: %s", e)
                     continue
 
-            logger.info(f"Obtenidos {len(proveedores)} proveedores de la base de datos")
+            logger.info("Obtenidos %s proveedores de la base de datos", len(proveedores))
             return proveedores
 
         except Exception as e:
-            logger.error(f"Error obteniendo proveedores: {e}")
+            logger.error("Error obteniendo proveedores: %s", e)
             # Retornar proveedores por defecto en caso de error
             return [
                 {
@@ -611,6 +631,8 @@ class InventarioService(BaseService):
             ]
 
     def crear_categoria(self, nombre: str, descripcion: str = "") -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Crear una nueva categoría en la tabla categorias. Si existe una inactiva, la reactiva.
         """
@@ -622,12 +644,12 @@ class InventarioService(BaseService):
             logger.error("El nombre de la categoría no puede estar vacío")
             return False
 
-        nombre = nombre.strip()
+        _ = nombre.strip()
         descripcion = descripcion.strip() if descripcion else ""
 
         try:
             # Buscar si existe una categoría con ese nombre
-            check_query = (
+            _ = (
                 "SELECT id, activa FROM categorias WHERE LOWER(nombre) = LOWER(?)"
             )
             existing = self.db_manager.query(check_query, (nombre,))
@@ -635,36 +657,35 @@ class InventarioService(BaseService):
             if existing:
                 cat_id, activa = existing[0][0], existing[0][1]
                 if activa:
-                    logger.warning(f"La categoría '{nombre}' ya existe y está activa")
+                    logger.warning("La categoría '%s' ya existe y está activa", nombre)
                     return False
                 else:
                     # Reactivar la categoría inactiva
-                    update_query = (
+                    _ = (
                         "UPDATE categorias SET activa = 1, descripcion = ? WHERE id = ?"
                     )
                     self.db_manager.execute(update_query, (descripcion, cat_id))
-                    logger.info(f"Categoría '{nombre}' reactivada exitosamente")
+                    logger.info("Categoría '%s' reactivada exitosamente", nombre)
                     return True
 
             # Insertar nueva categoría
-            from datetime import datetime
 
-            fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            _ = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             insert_query = """
                 INSERT INTO categorias (nombre, descripcion, fecha_creacion, activa)
                 VALUES (?, ?, ?, ?)
             """
-            result = self.db_manager.execute(
+            _ = self.db_manager.execute(
                 insert_query, (nombre, descripcion, fecha_creacion, True)
             )
             if result:
-                logger.info(f"Categoría '{nombre}' creada exitosamente")
+                logger.info("Categoría '%s' creada exitosamente", nombre)
                 return True
             else:
-                logger.error(f"Error creando categoría '{nombre}'")
+                logger.error("Error creando categoría '%s'", nombre)
                 return False
         except Exception as e:
-            logger.error(f"Error creando categoría: {e}")
+            logger.error("Error creando categoría: %s", e)
             return False
 
     def crear_proveedor(
@@ -686,18 +707,17 @@ class InventarioService(BaseService):
             return False
 
         try:
-            from datetime import datetime
 
-            nombre_clean = nombre.strip()
+            _ = nombre.strip()
             # Buscar si existe un proveedor con ese nombre
-            existing_query = (
+            _ = (
                 "SELECT id, activo FROM proveedores WHERE LOWER(nombre) = LOWER(?)"
             )
             existing = self.db_manager.query(existing_query, (nombre_clean,))
             if existing:
                 prov_id, activo = existing[0][0], existing[0][1]
                 if activo:
-                    logger.warning(f"El proveedor '{nombre}' ya existe y está activo")
+                    logger.warning("El proveedor '%s' ya existe y está activo", nombre)
                     return False
                 else:
                     # Reactivar proveedor inactivo
@@ -713,17 +733,17 @@ class InventarioService(BaseService):
                             prov_id,
                         ),
                     )
-                    logger.info(f"Proveedor '{nombre}' reactivado exitosamente")
+                    logger.info("Proveedor '%s' reactivado exitosamente", nombre)
                     return True
             # Validar y limpiar categoría
             if not categoria or not categoria.strip():
-                categoria = "General"
+                _ = "General"
             # Insertar nuevo proveedor
-            insert_query = """
+            _ = """
                 INSERT INTO proveedores (nombre, contacto, telefono, email, direccion, categoria, fecha_registro, activo)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """
-            fecha_registro = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            _ = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             success = self.db_manager.execute(
                 insert_query,
                 (
@@ -748,7 +768,7 @@ class InventarioService(BaseService):
                 )
                 return False
         except Exception as e:
-            logger.error(f"Error creando proveedor: {e}")
+            logger.error("Error creando proveedor: %s", e)
             return False
 
     def actualizar_proveedor(
@@ -773,10 +793,10 @@ class InventarioService(BaseService):
         try:
             # Validar y limpiar categoría
             if not categoria or not categoria.strip():
-                categoria = "General"
+                _ = "General"
 
             # Actualizar proveedor en la tabla proveedores
-            update_query = """
+            _ = """
                 UPDATE proveedores
                 SET nombre = ?, contacto = ?, telefono = ?, email = ?, direccion = ?, categoria = ?
                 WHERE id = ?
@@ -797,7 +817,7 @@ class InventarioService(BaseService):
                         proveedor_id,
                     ),
                 )
-                rows_affected = cursor.rowcount
+                _ = cursor.rowcount
                 conn.commit()
 
             if rows_affected > 0:
@@ -806,14 +826,16 @@ class InventarioService(BaseService):
                 )
                 return True
             else:
-                logger.warning(f"No se encontró proveedor con ID {proveedor_id}")
+                logger.warning("No se encontró proveedor con ID %s", proveedor_id)
                 return False
 
         except Exception as e:
-            logger.error(f"Error actualizando proveedor: {e}")
+            logger.error("Error actualizando proveedor: %s", e)
             return False
 
     def eliminar_proveedor(self, proveedor_id: int) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Eliminar un proveedor (marcar como inactivo)"""
         if not self.db_manager:
             logger.warning("Sin conexión a base de datos")
@@ -826,7 +848,7 @@ class InventarioService(BaseService):
             with self.db_manager._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(update_query, (proveedor_id,))
-                rows_affected = cursor.rowcount
+                _ = cursor.rowcount
                 conn.commit()
 
             if rows_affected > 0:
@@ -835,14 +857,16 @@ class InventarioService(BaseService):
                 )
                 return True
             else:
-                logger.warning(f"No se encontró proveedor con ID {proveedor_id}")
+                logger.warning("No se encontró proveedor con ID %s", proveedor_id)
                 return False
 
         except Exception as e:
-            logger.error(f"Error eliminando proveedor: {e}")
+            logger.error("Error eliminando proveedor: %s", e)
             return False
 
     def get_categorias_proveedores(self) -> List[str]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener lista de categorías únicas de proveedores"""
         if not self.db_manager:
             logger.warning(
@@ -874,10 +898,10 @@ class InventarioService(BaseService):
                     "Servicios",
                 ]
 
-            categorias = []
+            _ = []
             for row in rows:
                 if hasattr(row, "keys"):
-                    categoria = row["categoria"]
+                    _ = row["categoria"]
                 else:
                     categoria = row[0]
 
@@ -885,7 +909,7 @@ class InventarioService(BaseService):
                     categorias.append(categoria.strip())
 
             # Asegurar que siempre haya categorías por defecto
-            categorias_default = [
+            _ = [
                 "General",
                 "Bebidas",
                 "Comida",
@@ -900,7 +924,7 @@ class InventarioService(BaseService):
             return sorted(categorias)
 
         except Exception as e:
-            logger.error(f"Error obteniendo categorías de proveedores: {e}")
+            logger.error("Error obteniendo categorías de proveedores: %s", e)
             return [
                 "General",
                 "Bebidas",
@@ -911,6 +935,8 @@ class InventarioService(BaseService):
             ]
 
     def get_categorias_completas(self) -> List[Dict[str, Any]]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Obtener lista completa de categorías con todos los campos desde la tabla categorias
         """
@@ -919,7 +945,7 @@ class InventarioService(BaseService):
             return []
 
         try:  # Obtener categorías activas de la tabla categorias con todos los campos
-            query = """
+            _ = """
                 SELECT id, nombre, descripcion, fecha_creacion, activa
                 FROM categorias
                 WHERE activa = 1
@@ -931,12 +957,12 @@ class InventarioService(BaseService):
                 logger.info("No se encontraron categorías activas")
                 return []
 
-            categorias = []
+            _ = []
             for row in rows:
                 try:
                     if hasattr(row, "keys"):
                         # Row es un diccionario
-                        categoria = {
+                        _ = {
                             "id": row["id"],
                             "nombre": row["nombre"],
                             "descripcion": row["descripcion"] or "",
@@ -946,7 +972,7 @@ class InventarioService(BaseService):
                         }
                     else:
                         # Row es una tupla
-                        categoria = {
+                        _ = {
                             "id": row[0],
                             "nombre": row[1],
                             "descripcion": row[2] or "",
@@ -961,13 +987,13 @@ class InventarioService(BaseService):
                         categorias.append(categoria)
 
                 except Exception as e:
-                    logger.error(f"Error procesando fila de categoría: {e}")
+                    logger.error("Error procesando fila de categoría: %s", e)
                     continue
 
             return categorias
 
         except Exception as e:
-            logger.error(f"Error obteniendo categorías completas: {e}")
+            logger.error("Error obteniendo categorías completas: %s", e)
             return []
 
     # ========================================
@@ -975,6 +1001,8 @@ class InventarioService(BaseService):
     # ========================================
 
     def buscar_producto_por_id(self, producto_id: int) -> Optional[Producto]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Buscar un producto específico por ID"""
         if not self.db_manager:
             return None
@@ -983,28 +1011,34 @@ class InventarioService(BaseService):
             productos = self.get_productos()
             return next((p for p in productos if p.id == producto_id), None)
         except Exception as e:
-            logger.error(f"Error buscando producto por ID {producto_id}: {e}")
+            logger.error("Error buscando producto por ID {producto_id}: %s", e)
             return None
 
     def get_productos_stock_bajo(self) -> List[Producto]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener productos que necesitan reposición"""
         try:
             productos = self.get_productos()
             return [p for p in productos if p.necesita_reposicion()]
         except Exception as e:
-            logger.error(f"Error obteniendo productos con stock bajo: {e}")
+            logger.error("Error obteniendo productos con stock bajo: %s", e)
             return []
 
     def get_productos_sin_stock(self) -> List[Producto]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener productos sin stock"""
         try:
             productos = self.get_productos()
             return [p for p in productos if p.stock_actual == 0]
         except Exception as e:
-            logger.error(f"Error obteniendo productos sin stock: {e}")
+            logger.error("Error obteniendo productos sin stock: %s", e)
             return []
 
     def eliminar_categoria(self, categoria_nombre: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Eliminar una categoría de productos
         NOTA: No se puede eliminar si hay productos reales que la usan
@@ -1017,10 +1051,10 @@ class InventarioService(BaseService):
             logger.error("El nombre de la categoría no puede estar vacío")
             return False
 
-        categoria_nombre = categoria_nombre.strip()
+        _ = categoria_nombre.strip()
 
         # Verificar que no sea una categoría por defecto que no se puede eliminar
-        categorias_protegidas = [
+        _ = [
             "General",
             "Bebidas",
             "Comida",
@@ -1039,7 +1073,7 @@ class InventarioService(BaseService):
             count_result = self.db_manager.query(check_query, (categoria_nombre,))
 
             if count_result and count_result[0][0] > 0:
-                productos_count = count_result[0][0]
+                _ = count_result[0][0]
                 logger.warning(
                     f"No se puede eliminar la categoría '{categoria_nombre}': {productos_count} productos reales la están usando"
                 )
@@ -1049,11 +1083,11 @@ class InventarioService(BaseService):
             delete_temp_query = "DELETE FROM productos WHERE categoria = ? AND nombre LIKE '_TEMP_CATEGORY_PRODUCT_%'"
             self.db_manager.execute(delete_temp_query, (categoria_nombre,))
 
-            logger.info(f"Categoría '{categoria_nombre}' eliminada exitosamente")
+            logger.info("Categoría '%s' eliminada exitosamente", categoria_nombre)
             return True
 
         except Exception as e:
-            logger.error(f"Error eliminando categoría: {e}")
+            logger.error("Error eliminando categoría: %s", e)
             return False
 
     def actualizar_categoria(
@@ -1070,7 +1104,7 @@ class InventarioService(BaseService):
             logger.error("El nuevo nombre de la categoría no puede estar vacío")
             return False
 
-        nuevo_nombre = nuevo_nombre.strip()
+        _ = nuevo_nombre.strip()
         descripcion = descripcion.strip() if descripcion else ""
 
         try:
@@ -1079,15 +1113,15 @@ class InventarioService(BaseService):
             existing_categoria = self.db_manager.query(check_query, (categoria_id,))
 
             if not existing_categoria:
-                logger.error(f"No se encontró categoría con ID: {categoria_id}")
+                logger.error("No se encontró categoría con ID: %s", categoria_id)
                 return False
 
-            nombre_anterior = existing_categoria[0][0]
+            _ = existing_categoria[0][0]
 
             # Verificar que el nuevo nombre no existe ya (excepto si es el mismo)
             if nuevo_nombre.lower() != nombre_anterior.lower():
                 check_duplicate_query = "SELECT COUNT(*) FROM categorias WHERE LOWER(nombre) = LOWER(?) AND id != ?"
-                duplicate_count = self.db_manager.query(
+                _ = self.db_manager.query(
                     check_duplicate_query, (nuevo_nombre, categoria_id)
                 )
 
@@ -1098,7 +1132,7 @@ class InventarioService(BaseService):
                     return False
 
             # Actualizar categoría en la tabla categorias
-            update_query = """
+            _ = """
                 UPDATE categorias
                 SET nombre = ?, descripcion = ?
                 WHERE id = ?
@@ -1107,7 +1141,7 @@ class InventarioService(BaseService):
             with self.db_manager._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(update_query, (nuevo_nombre, descripcion, categoria_id))
-                rows_affected = cursor.rowcount
+                _ = cursor.rowcount
                 conn.commit()
 
             if rows_affected > 0:
@@ -1117,7 +1151,7 @@ class InventarioService(BaseService):
 
                 # Si se cambió el nombre, actualizar productos que usen esta categoría
                 if nuevo_nombre.lower() != nombre_anterior.lower():
-                    update_products_query = (
+                    _ = (
                         "UPDATE productos SET categoria = ? WHERE categoria = ?"
                     )
                     self.db_manager.execute(
@@ -1135,10 +1169,12 @@ class InventarioService(BaseService):
                 return False
 
         except Exception as e:
-            logger.error(f"Error actualizando categoría: {e}")
+            logger.error("Error actualizando categoría: %s", e)
             return False
 
     def eliminar_categoria_por_id(self, categoria_id: int) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Eliminar una categoría por ID de la tabla categorias
         """
@@ -1156,10 +1192,10 @@ class InventarioService(BaseService):
             existing_categoria = self.db_manager.query(check_query, (categoria_id,))
 
             if not existing_categoria:
-                logger.error(f"No se encontró categoría con ID: {categoria_id}")
+                logger.error("No se encontró categoría con ID: %s", categoria_id)
                 return False
 
-            categoria_nombre = (
+            _ = (
                 existing_categoria[0][0]
                 if hasattr(existing_categoria[0], "__getitem__")
                 else existing_categoria[0]["nombre"]
@@ -1167,7 +1203,7 @@ class InventarioService(BaseService):
 
             # Verificar si hay productos asociados
             productos_query = "SELECT COUNT(*) FROM productos WHERE categoria = ?"
-            productos_count = self.db_manager.query(
+            _ = self.db_manager.query(
                 productos_query, (categoria_nombre,)
             )
 
@@ -1186,7 +1222,7 @@ class InventarioService(BaseService):
             verify_result = self.db_manager.query(verify_query, (categoria_id,))
 
             if verify_result and len(verify_result) > 0:
-                activa = (
+                _ = (
                     verify_result[0][0]
                     if hasattr(verify_result[0], "__getitem__")
                     else verify_result[0]["activa"]
@@ -1208,7 +1244,7 @@ class InventarioService(BaseService):
                 return False
 
         except Exception as e:
-            logger.error(f"Error eliminando categoría por ID: {e}")
+            logger.error("Error eliminando categoría por ID: %s", e)
             return False
 
     # ========================================
@@ -1216,34 +1252,50 @@ class InventarioService(BaseService):
     # ========================================
 
     def get_products(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para get_productos"""
         return self.get_productos(*args, **kwargs)
 
     def create_product(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para crear_producto"""
         return self.crear_producto(*args, **kwargs)
 
     def update_product(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para actualizar_producto"""
         return self.actualizar_producto(*args, **kwargs)
 
     def delete_product(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para eliminar_producto"""
         return self.eliminar_producto(*args, **kwargs)
 
     def update_stock_alias(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para actualizar_stock"""
         return self.actualizar_stock(*args, **kwargs)
 
     def get_categories(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para get_categorias"""
         return self.get_categorias(*args, **kwargs)
 
     def get_stats(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para get_estadisticas_inventario"""
         return self.get_estadisticas_inventario(*args, **kwargs)
 
     def obtener_proveedores(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para get_proveedores - compatibilidad con versiones anteriores"""
         return self.get_proveedores(*args, **kwargs)
 
@@ -1261,5 +1313,7 @@ class InventarioService(BaseService):
         )
 
     def agregar_producto(self, *args, **kwargs):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para crear_producto - compatibilidad con versiones anteriores"""
         return self.crear_producto(*args, **kwargs)

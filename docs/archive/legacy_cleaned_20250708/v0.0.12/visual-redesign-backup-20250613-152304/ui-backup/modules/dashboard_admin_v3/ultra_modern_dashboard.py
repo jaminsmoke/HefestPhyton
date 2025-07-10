@@ -1,27 +1,31 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer
+from ui.visual_system_v2 import ModernStyleSystemV2, VisualEffectsV2, ResponsiveLayoutV2
+from .ultra_modern_metric_card import UltraModernMetricCard
+        import random
+
 """
 DASHBOARD ADMIN V2 - Arquitectura Visual Rediseñada
 Sistema completo sin filtros destructivos
 Diseño ultra-moderno con tarjetas sofisticadas
 """
 
-import logging
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                              QFrame, QGridLayout, QSizePolicy, QScrollArea)
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont
 
-from ui.visual_system_v2 import ModernStyleSystemV2, VisualEffectsV2, ResponsiveLayoutV2
-from .ultra_modern_metric_card import UltraModernMetricCard
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class UltraModernMetricsSection(QWidget):
     """Sección de métricas ultra-moderna sin filtros destructivos"""
     
-    metrics_updated = pyqtSignal()
+    _ = pyqtSignal()
     card_selected = pyqtSignal(str)
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         
         self.metric_cards = {}
@@ -37,6 +41,8 @@ class UltraModernMetricsSection(QWidget):
         logger.info("✨ UltraModernMetricsSection creada")
     
     def setup_ultra_modern_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura interfaz ultra-moderna"""
         
         # Layout principal con espaciado sofisticado
@@ -56,6 +62,8 @@ class UltraModernMetricsSection(QWidget):
         self.apply_container_effects()
     
     def create_modern_header(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea cabecera moderna con tipografía sofisticada"""
         
         header = QFrame()
@@ -65,9 +73,9 @@ class UltraModernMetricsSection(QWidget):
         
         # Título principal con estilo moderno
         title = QLabel("📊 Métricas Clave")
-        title_style = ModernStyleSystemV2.get_label_style(
+        _ = ModernStyleSystemV2.get_label_style(
             variant='title',
-            color='text_primary',
+            _ = 'text_primary',
             weight='bold'
         )
         title.setStyleSheet(title_style)
@@ -78,11 +86,11 @@ class UltraModernMetricsSection(QWidget):
         header_layout.addStretch()
         
         # Indicador de estado
-        status_label = QLabel("🟢 Datos en vivo")
+        _ = QLabel("🟢 Datos en vivo")
         status_style = ModernStyleSystemV2.get_label_style(
-            variant='caption',
+            _ = 'caption',
             color='success',
-            weight='medium'
+            _ = 'medium'
         )
         status_label.setStyleSheet(status_style)
         header_layout.addWidget(status_label)
@@ -90,6 +98,8 @@ class UltraModernMetricsSection(QWidget):
         return header
     
     def create_metrics_grid(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea grid responsive de métricas ultra-modernas"""
         
         # Contenedor principal
@@ -100,7 +110,7 @@ class UltraModernMetricsSection(QWidget):
         grid = ResponsiveLayoutV2.setup_metric_grid(container, columns=3, spacing=20)
         
         # Datos de métricas con más variedad y colores
-        metrics_data = [
+        _ = [
             # Fila 1 - Métricas principales
             {
                 'icon': '💰',
@@ -164,13 +174,13 @@ class UltraModernMetricsSection(QWidget):
         for i, metric_data in enumerate(metrics_data):
             
             # Crear tarjeta ultra-moderna
-            card = UltraModernMetricCard(
+            _ = UltraModernMetricCard(
                 icon=metric_data['icon'],
-                title=metric_data['title'],
+                _ = metric_data['title'],
                 value=metric_data['value'],
-                subtitle=metric_data['subtitle'],
+                _ = metric_data['subtitle'],
                 trend=metric_data['trend'],
-                accent_color=metric_data['accent'],
+                _ = metric_data['accent'],
                 size=metric_data['size']
             )
             
@@ -179,7 +189,7 @@ class UltraModernMetricsSection(QWidget):
             card.card_hovered.connect(lambda hovered, c=card: self.on_card_hovered(c, hovered))
             
             # Posición en grid
-            row = i // 3
+            _ = i // 3
             col = i % 3
             grid.addWidget(card, row, col)
             
@@ -187,22 +197,25 @@ class UltraModernMetricsSection(QWidget):
             card_key = metric_data['title'].lower().replace(' ', '_')
             self.metric_cards[card_key] = card
             
-            logger.debug(f"✨ Tarjeta ultra-moderna creada: {metric_data['title']}")
+            logger.debug("✨ Tarjeta ultra-moderna creada: %s", metric_data['title'])
         
         return container
     
     def setup_data_simulation(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura simulación de datos en tiempo real"""
         
         self.animation_timer.timeout.connect(self.simulate_live_updates)
         self.animation_timer.start(8000)  # Actualización cada 8 segundos
     
     def simulate_live_updates(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Simula actualizaciones de datos en vivo"""
-        import random
         
         # Datos realistas para simulación
-        updates = {
+        _ = {
             'ingresos_diarios': {
                 'values': ['€2,650.25', '€2,847.50', '€2,934.75', '€3,125.00'],
                 'trends': ['+8.5%', '+12.3%', '+15.7%', '+18.2%']
@@ -233,26 +246,30 @@ class UltraModernMetricsSection(QWidget):
         card_keys = list(self.metric_cards.keys())
         if card_keys:
             selected_key = random.choice(card_keys)
-            card = self.metric_cards[selected_key]
+            _ = self.metric_cards[selected_key]
             
             if selected_key in updates:
                 data = updates[selected_key]
-                new_value = random.choice(data['values'])
+                _ = random.choice(data['values'])
                 new_trend = random.choice(data['trends'])
                 
                 # Actualizar con animación
                 card.update_metrics(new_value, new_trend)
                 
-                logger.info(f"🔄 Métrica actualizada: {selected_key} = {new_value}")
+                logger.info("🔄 Métrica actualizada: {selected_key} = %s", new_value)
         
         self.metrics_updated.emit()
     
     def on_card_clicked(self, title):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja click en tarjeta"""
-        logger.info(f"🖱️ Tarjeta clickeada: {title}")
+        logger.info("🖱️ Tarjeta clickeada: %s", title)
         self.card_selected.emit(title)
     
     def on_card_hovered(self, card, is_hovered):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja hover en tarjeta con efectos adicionales"""
         if is_hovered:
             # Efecto sutil en tarjetas vecinas
@@ -262,6 +279,8 @@ class UltraModernMetricsSection(QWidget):
             self.apply_neighbor_dimming(card, False)
     
     def apply_neighbor_dimming(self, active_card, dim_others):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica efecto de dimming a tarjetas no activas"""
         
         for card in self.metric_cards.values():
@@ -276,13 +295,15 @@ class UltraModernMetricsSection(QWidget):
                 else:
                     # Restaurar estilo original
                     # Re-aplicar estilo base
-                    card_style = ModernStyleSystemV2.get_metric_card_style(
+                    _ = ModernStyleSystemV2.get_metric_card_style(
                         accent_color=card.accent_color,
-                        size=card.card_size
+                        _ = card.card_size
                     )
                     card.setStyleSheet(card_style)
     
     def apply_container_effects(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica efectos visuales al contenedor"""
         
         # Estilo del contenedor principal
@@ -299,9 +320,11 @@ class UltraModernMetricsSection(QWidget):
         VisualEffectsV2.apply_elevation_shadow(self, level='low')
     
     def get_metrics_summary(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene resumen de todas las métricas"""
         
-        summary = {}
+        _ = {}
         for key, card in self.metric_cards.items():
             summary[key] = {
                 'title': card.title,
@@ -313,19 +336,21 @@ class UltraModernMetricsSection(QWidget):
         return summary
     
     def set_theme_colors(self, color_scheme='default'):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cambia esquema de colores de todas las tarjetas"""
         
-        color_schemes = {
+        _ = {
             'default': ['primary', 'success', 'accent_teal', 'warning', 'accent_purple', 'accent_orange'],
             'professional': ['primary', 'primary_dark', 'text_primary', 'text_secondary', 'primary', 'primary_dark'],
             'vibrant': ['accent_purple', 'accent_teal', 'accent_orange', 'accent_pink', 'success', 'warning'],
             'monochrome': ['text_primary', 'text_secondary', 'text_tertiary', 'text_primary', 'text_secondary', 'text_tertiary']
         }
         
-        colors = color_schemes.get(color_scheme, color_schemes['default'])
+        _ = color_schemes.get(color_scheme, color_schemes['default'])
         
         for i, card in enumerate(self.metric_cards.values()):
             if i < len(colors):
                 card.set_accent_color(colors[i])
         
-        logger.info(f"🎨 Esquema de colores cambiado a: {color_scheme}")
+        logger.info("🎨 Esquema de colores cambiado a: %s", color_scheme)

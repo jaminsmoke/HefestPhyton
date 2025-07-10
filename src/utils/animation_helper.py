@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Hefest - Animation Helper
 Clase utilitaria para gestionar animaciones y efectos visuales modernos
@@ -22,7 +23,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QColor
 import logging
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class AnimationHelper:
@@ -30,12 +31,14 @@ class AnimationHelper:
 
     @staticmethod
     def fade_in(widget, duration=300, start_opacity=0.0, end_opacity=1.0):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Animación de fade in"""
         try:
             # Reutilizar efecto si ya existe y es del tipo correcto
             effect = widget.graphicsEffect()
             if not isinstance(effect, QGraphicsOpacityEffect):
-                effect = QGraphicsOpacityEffect(
+                _ = QGraphicsOpacityEffect(
                     widget
                 )  # Establecer el widget como padre
                 widget.setGraphicsEffect(effect)
@@ -54,16 +57,18 @@ class AnimationHelper:
             # widget._fade_animation = animation
             return animation
         except Exception as e:
-            logger.error(f"Error en fade_in para {widget}: {e}")
+            logger.error("Error en fade_in para {widget}: %s", e)
             return None
 
     @staticmethod
     def fade_out(widget, duration=300, callback=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Animación de fade out"""
         try:
             effect = widget.graphicsEffect()
             if not isinstance(effect, QGraphicsOpacityEffect):
-                effect = QGraphicsOpacityEffect(
+                _ = QGraphicsOpacityEffect(
                     widget
                 )  # Establecer el widget como padre
                 widget.setGraphicsEffect(effect)
@@ -83,21 +88,23 @@ class AnimationHelper:
             # widget._fade_animation = animation
             return animation
         except Exception as e:
-            logger.error(f"Error en fade_out para {widget}: {e}")
+            logger.error("Error en fade_out para {widget}: %s", e)
             return None
 
     @staticmethod
     def slide_in(widget, direction="left", duration=400, distance=200):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Animación de deslizamiento hacia adentro"""
         try:
-            current_pos = widget.pos()
+            _ = widget.pos()
 
             if direction == "left":
-                start_pos = QPoint(current_pos.x() - distance, current_pos.y())
+                _ = QPoint(current_pos.x() - distance, current_pos.y())
             elif direction == "right":
-                start_pos = QPoint(current_pos.x() + distance, current_pos.y())
+                _ = QPoint(current_pos.x() + distance, current_pos.y())
             elif direction == "top":
-                start_pos = QPoint(current_pos.x(), current_pos.y() - distance)
+                _ = QPoint(current_pos.x(), current_pos.y() - distance)
             else:  # bottom
                 start_pos = QPoint(current_pos.x(), current_pos.y() + distance)
 
@@ -113,23 +120,25 @@ class AnimationHelper:
             widget._slide_animation = animation
             return animation
         except Exception as e:
-            logger.error(f"Error en slide_in: {e}")
+            logger.error("Error en slide_in: %s", e)
             return None
 
     @staticmethod
     def slide_out(widget, direction="left", duration=400, distance=200, callback=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Animación de deslizamiento hacia afuera"""
         try:
-            current_pos = widget.pos()
+            _ = widget.pos()
 
             if direction == "left":
-                end_pos = QPoint(current_pos.x() - distance, current_pos.y())
+                _ = QPoint(current_pos.x() - distance, current_pos.y())
             elif direction == "right":
-                end_pos = QPoint(current_pos.x() + distance, current_pos.y())
+                _ = QPoint(current_pos.x() + distance, current_pos.y())
             elif direction == "top":
-                end_pos = QPoint(current_pos.x(), current_pos.y() - distance)
+                _ = QPoint(current_pos.x(), current_pos.y() - distance)
             else:  # bottom
-                end_pos = QPoint(current_pos.x(), current_pos.y() + distance)
+                _ = QPoint(current_pos.x(), current_pos.y() + distance)
 
             animation = QPropertyAnimation(widget, b"pos")
             animation.setDuration(duration)
@@ -144,24 +153,26 @@ class AnimationHelper:
             widget._slide_animation = animation
             return animation
         except Exception as e:
-            logger.error(f"Error en slide_out: {e}")
+            logger.error("Error en slide_out: %s", e)
             return None
 
     @staticmethod
     def scale_animation(widget, start_scale=1.0, end_scale=1.05, duration=200):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Animación de escala para efectos hover"""
         try:
             current_geometry = widget.geometry()
-            center_x = current_geometry.center().x()
+            _ = current_geometry.center().x()
             center_y = current_geometry.center().y()
 
-            width = int(current_geometry.width() * end_scale)
+            _ = int(current_geometry.width() * end_scale)
             height = int(current_geometry.height() * end_scale)
 
-            new_x = center_x - width // 2
+            _ = center_x - width // 2
             new_y = center_y - height // 2
 
-            end_geometry = QRect(new_x, new_y, width, height)
+            _ = QRect(new_x, new_y, width, height)
 
             animation = QPropertyAnimation(widget, b"geometry")
             animation.setDuration(duration)
@@ -173,17 +184,19 @@ class AnimationHelper:
             widget._scale_animation = animation
             return animation
         except Exception as e:
-            logger.error(f"Error en scale_animation: {e}")
+            logger.error("Error en scale_animation: %s", e)
             return None
 
     @staticmethod
     def bounce_animation(widget, intensity=10, duration=600):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Animación de rebote"""
         try:
-            original_pos = widget.pos()
+            _ = widget.pos()
 
             # Crear grupo de animaciones secuenciales
-            group = QSequentialAnimationGroup()
+            _ = QSequentialAnimationGroup()
 
             # Primera fase: subir
             up_animation = QPropertyAnimation(widget, b"pos")
@@ -222,7 +235,7 @@ class AnimationHelper:
             widget._bounce_animation = group
             return group
         except Exception as e:
-            logger.error(f"Error en bounce_animation: {e}")
+            logger.error("Error en bounce_animation: %s", e)
             return None
 
 
@@ -231,6 +244,8 @@ class EffectsHelper:
 
     @staticmethod
     def apply_opacity_effect(widget, opacity=0.5, duration=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica un efecto de opacidad, opcionalmente animado"""
         try:
             effect = widget.graphicsEffect()
@@ -250,7 +265,7 @@ class EffectsHelper:
                 effect.setOpacity(opacity)
             return effect
         except Exception as e:
-            logger.error(f"Error aplicando efecto de opacidad a {widget}: {e}")
+            logger.error("Error aplicando efecto de opacidad a {widget}: %s", e)
             return None
 
     @staticmethod
@@ -262,9 +277,9 @@ class EffectsHelper:
             # Intentar reutilizar el efecto si ya existe y es del tipo correcto
             existing_effect = widget.graphicsEffect()
             if isinstance(existing_effect, QGraphicsDropShadowEffect):
-                shadow_effect = existing_effect
+                _ = existing_effect
             else:
-                shadow_effect = QGraphicsDropShadowEffect(
+                _ = QGraphicsDropShadowEffect(
                     widget
                 )  # Establecer el widget como padre
                 # Si había otro tipo de efecto, no podemos simplemente reemplazarlo
@@ -277,11 +292,13 @@ class EffectsHelper:
             shadow_effect.setColor(color)
             return shadow_effect
         except Exception as e:
-            logger.error(f"Error aplicando sombra a {widget}: {e}")
+            logger.error("Error aplicando sombra a {widget}: %s", e)
             return None
 
     @staticmethod
     def apply_blur_effect(widget, blur_radius=5, duration=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica un efecto de desenfoque, opcionalmente animado"""
         try:
             effect = widget.graphicsEffect()
@@ -301,11 +318,13 @@ class EffectsHelper:
                 effect.setBlurRadius(blur_radius)
             return effect
         except Exception as e:
-            logger.error(f"Error aplicando efecto de desenfoque a {widget}: {e}")
+            logger.error("Error aplicando efecto de desenfoque a {widget}: %s", e)
             return None
 
     @staticmethod
     def apply_acrylic_effect(widget, opacity=0.85, blur_radius=15):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica efecto acrílico (glassmorphism)"""
         try:
             # Crear efecto combinado de opacidad y blur
@@ -325,7 +344,7 @@ class EffectsHelper:
             widget.setGraphicsEffect(opacity_effect)
             return opacity_effect
         except Exception as e:
-            logger.error(f"Error en apply_acrylic_effect: {e}")
+            logger.error("Error en apply_acrylic_effect: %s", e)
             return None
 
 
@@ -334,13 +353,17 @@ class TransitionHelper:
 
     @staticmethod
     def cross_fade_transition(old_widget, new_widget, duration=500):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Transición cruzada entre dos widgets"""
         try:
             # Fade out el widget anterior
-            fade_out_anim = AnimationHelper.fade_out(old_widget, duration // 2)
+            _ = AnimationHelper.fade_out(old_widget, duration // 2)
 
             # Fade in el widget nuevo después de un pequeño delay
             def start_fade_in():
+                """TODO: Add docstring"""
+                # TODO: Add input validation
                 AnimationHelper.fade_in(new_widget, duration // 2)
                 new_widget.show()
 
@@ -350,19 +373,21 @@ class TransitionHelper:
                 start_fade_in()
 
         except Exception as e:
-            logger.error(f"Error en cross_fade_transition: {e}")
+            logger.error("Error en cross_fade_transition: %s", e)
 
     @staticmethod
     def slide_transition(old_widget, new_widget, direction="left", duration=400):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Transición deslizante entre dos widgets"""
         try:
             # Deslizar hacia afuera el widget anterior
-            slide_out_anim = AnimationHelper.slide_out(
+            _ = AnimationHelper.slide_out(
                 old_widget, direction, duration, callback=lambda: old_widget.hide()
             )
 
             # Deslizar hacia adentro el widget nuevo
-            opposite_direction = {
+            _ = {
                 "left": "right",
                 "right": "left",
                 "top": "bottom",
@@ -373,4 +398,4 @@ class TransitionHelper:
             AnimationHelper.slide_in(new_widget, opposite_direction, duration)
 
         except Exception as e:
-            logger.error(f"Error en slide_transition: {e}")
+            logger.error("Error en slide_transition: %s", e)

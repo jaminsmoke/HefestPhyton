@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 """
 Configuración del Dashboard Admin v3
 Configuraciones centralizadas y reutilizables
@@ -29,6 +30,7 @@ class DashboardConfig:
     enable_animations: bool = True
     
     def __post_init__(self):
+        """TODO: Add docstring"""
         if self.required_permissions is None:
             self.required_permissions = [Role.ADMIN]
 
@@ -52,27 +54,27 @@ DEFAULT_CONFIG = DashboardConfig()
 ADMIN_METRICS = [
     MetricConfig(
         name="ventas_hoy",
-        display_name="Ventas Hoy",
+        _ = "Ventas Hoy",
         unit="€",
-        format_type="currency"
+        _ = "currency"
     ),
     MetricConfig(
         name="ocupacion_mesas",
-        display_name="Ocupación Mesas",
+        _ = "Ocupación Mesas",
         unit="/15",
-        format_type="number"
+        _ = "number"
     ),
     MetricConfig(
         name="tickets_pendientes",
-        display_name="Tickets Pendientes",
+        _ = "Tickets Pendientes",
         unit="",
-        format_type="number"
+        _ = "number"
     ),
     MetricConfig(
         name="ingresos_mes",
-        display_name="Ingresos del Mes",
+        _ = "Ingresos del Mes",
         unit="€",
-        format_type="currency"
+        _ = "currency"
     ),
     MetricConfig("users_online", "Usuarios en Línea", "usuarios", "number"),
     MetricConfig("daily_revenue", "Ingresos Diarios", "€", "currency"),

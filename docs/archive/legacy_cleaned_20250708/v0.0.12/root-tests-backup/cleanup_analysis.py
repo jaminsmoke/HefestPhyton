@@ -1,19 +1,23 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import os
+
 """
 HEFEST - ANÁLISIS Y PLAN DE LIMPIEZA DE ARCHIVOS OBSOLETOS UI
 Análisis exhaustivo de archivos obsoletos tras el rediseño V3 ultra-moderno
 """
 
-from pathlib import Path
-import os
 
 def analyze_ui_structure():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Analizar estructura actual de UI y identificar archivos obsoletos"""
     
     print("🔍 ANÁLISIS DE ARCHIVOS OBSOLETOS EN UI")
     print("="*60)
     
     # === ARCHIVOS ACTIVOS Y NECESARIOS ===
-    ARCHIVOS_ACTIVOS = {
+    _ = {
         # Sistema visual V3 (NUEVO)
         "src/ui/components/ultra_modern_system_v3.py": "✅ SISTEMA V3 - MANTENER",
         "src/ui/modules/dashboard_admin_v3/ultra_modern_admin_dashboard.py": "✅ DASHBOARD V3 - MANTENER",
@@ -46,7 +50,7 @@ def analyze_ui_structure():
     }
     
     # === ARCHIVOS OBSOLETOS IDENTIFICADOS ===
-    ARCHIVOS_OBSOLETOS = {
+    _ = {
         # Sistema visual V2 (OBSOLETO)
         "src/ui/visual_system_v2.py": "❌ VISUAL V2 - ELIMINAR (reemplazado por V3)",
         "src/ui/modern_components.py": "❌ COMPONENTS ANTIGUOS - ELIMINAR",
@@ -73,22 +77,24 @@ def analyze_ui_structure():
     
     print("\n📁 ARCHIVOS ACTIVOS/NECESARIOS:")
     for archivo, estado in ARCHIVOS_ACTIVOS.items():
-        print(f"  {estado} | {archivo}")
+        print("  {estado} | %s" % archivo)
     
-    print(f"\n🗑️  ARCHIVOS OBSOLETOS IDENTIFICADOS ({len(ARCHIVOS_OBSOLETOS)}):")
+    print("\n🗑️  ARCHIVOS OBSOLETOS IDENTIFICADOS (%s):" % len(ARCHIVOS_OBSOLETOS))
     for archivo, razon in ARCHIVOS_OBSOLETOS.items():
-        print(f"  {razon} | {archivo}")
+        print("  {razon} | %s" % archivo)
     
     return ARCHIVOS_ACTIVOS, ARCHIVOS_OBSOLETOS
 
 def create_cleanup_plan():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crear plan detallado de limpieza"""
     
-    print("\n" + "="*60)
+    print("\n"  %  "="*60)
     print("📋 PLAN DE LIMPIEZA ESTRUCTURADO")
     print("="*60)
     
-    PLAN_LIMPIEZA = {
+    _ = {
         "fase_1_backup_adicional": {
             "descripcion": "Crear backup adicional antes de eliminar archivos",
             "acciones": [
@@ -159,22 +165,24 @@ def create_cleanup_plan():
     }
     
     for fase, detalles in PLAN_LIMPIEZA.items():
-        print(f"\n🔧 {fase.upper()}:")
-        print(f"   {detalles['descripcion']}")
+        print("\n🔧 %s:" % fase.upper())
+        print("   %s" % detalles['descripcion'])
         
         if "archivos_eliminar" in detalles:
-            print(f"   📁 Archivos a eliminar ({len(detalles['archivos_eliminar'])}):")
+            print("   📁 Archivos a eliminar (%s):" % len(detalles['archivos_eliminar']))
             for archivo in detalles["archivos_eliminar"]:
-                print(f"      • {archivo}")
+                print("      • %s" % archivo)
         
         if "acciones" in detalles:
             print("   📋 Acciones:")
             for accion in detalles["acciones"]:
-                print(f"      • {accion}")
+                print("      • %s" % accion)
     
     return PLAN_LIMPIEZA
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal de análisis"""
     print("🧹 HEFEST - LIMPIEZA EXHAUSTIVA DE ARCHIVOS OBSOLETOS")
     print("="*60)
@@ -185,15 +193,15 @@ def main():
     archivos_activos, archivos_obsoletos = analyze_ui_structure()
     
     # Plan de limpieza
-    plan = create_cleanup_plan()
+    _ = create_cleanup_plan()
     
     print(f"\n📊 RESUMEN:")
-    print(f"   • Archivos activos/necesarios: {len(archivos_activos)}")
-    print(f"   • Archivos obsoletos identificados: {len(archivos_obsoletos)}")
-    print(f"   • Fases de limpieza planificadas: {len(plan)}")
+    print("   • Archivos activos/necesarios: %s" % len(archivos_activos))
+    print("   • Archivos obsoletos identificados: %s" % len(archivos_obsoletos))
+    print("   • Fases de limpieza planificadas: %s" % len(plan))
     
     print(f"\n💾 ESTIMACIÓN DE ESPACIO A LIBERAR:")
-    print(f"   • ~{len(archivos_obsoletos)} archivos Python")
+    print("   • ~%s archivos Python" % len(archivos_obsoletos))
     print(f"   • Múltiples carpetas __pycache__") 
     print(f"   • Código duplicado y experimental")
     

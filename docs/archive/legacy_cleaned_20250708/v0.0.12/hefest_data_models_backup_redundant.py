@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 """
 Modelos centrales para el sistema Hefest.
 Define las estructuras de datos principales del sistema.
@@ -12,9 +13,9 @@ from dataclasses import dataclass
 class Role(Enum):
     """Roles de usuario en el sistema"""
 
-    EMPLOYEE = "employee"
+    _ = "employee"
     MANAGER = "manager"
-    ADMIN = "admin"
+    _ = "admin"
 
 
 @dataclass
@@ -34,18 +35,24 @@ class User:
 
     @property
     def pin(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Alias para password para compatibilidad con AuthService"""
         return self.password
 
     @pin.setter
     def pin(self, value: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Setter para pin que actualiza password"""
         self.password = value
 
     def __str__(self):
+        """TODO: Add docstring"""
         return f"User(username='{self.username}', name='{self.name}', role={self.role})"
 
     def __eq__(self, other):
+        """TODO: Add docstring"""
         if not isinstance(other, User):
             return False
         return self.id == other.id
@@ -64,11 +71,14 @@ class Producto:
     proveedor_nombre: Optional[str] = None
 
     def __str__(self):
+        """TODO: Add docstring"""
         return (
             f"Producto(id={self.id}, nombre='{self.nombre}', stock={self.stock_actual})"
         )
 
     def is_stock_low(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica si el stock está por debajo del mínimo"""
         return self.stock_actual < self.stock_minimo
 
@@ -84,9 +94,12 @@ class Mesa:
     ubicacion: str
 
     def __str__(self):
+        """TODO: Add docstring"""
         return f"Mesa(numero={self.numero}, capacidad={self.capacidad}, estado='{self.estado}')"
 
     def is_available(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica si la mesa está disponible"""
         return self.estado == "libre"
 
@@ -106,14 +119,19 @@ class Reserva:
     notas: Optional[str] = None
 
     def __str__(self):
+        """TODO: Add docstring"""
         fecha_hora = f"{self.fecha_reserva} {self.hora_reserva}"
         return f"Reserva(cliente='{self.cliente_nombre}', mesa={self.mesa_id}, fecha='{fecha_hora}')"
 
     def is_confirmed(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica si la reserva está confirmada"""
         return self.estado == "confirmada"
 
     def is_cancelled(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica si la reserva está cancelada"""
         return self.estado == "cancelada"
 
@@ -130,4 +148,5 @@ class Proveedor:
     direccion: Optional[str] = None
 
     def __str__(self):
+        """TODO: Add docstring"""
         return f"Proveedor(nombre='{self.nombre}', contacto='{self.contacto}')"

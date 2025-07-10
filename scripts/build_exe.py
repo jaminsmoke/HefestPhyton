@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python3
 """
 HEFEST - Build Script para Ejecutables
@@ -32,32 +34,40 @@ COMPANY_NAME = "Hefest Development Team"
 COPYRIGHT = f"© 2025 {COMPANY_NAME}"
 
 def get_project_root():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Obtener la ruta raíz del proyecto."""
     return Path(__file__).parent.parent
 
 def check_dependencies():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verificar que PyInstaller está instalado."""
     try:
         import PyInstaller
-        print(f"✅ PyInstaller {PyInstaller.__version__} encontrado")
+        print("✅ PyInstaller %s encontrado" % PyInstaller.__version__)
         return True
-    except ImportError:
-        print("❌ PyInstaller no encontrado")
+    except Exception as e:
+    logging.error("❌ PyInstaller no encontrado")
         print("   Instala con: pip install PyInstaller")
         return False
 
 def clean_build_dirs():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Limpiar directorios de build anteriores."""
-    root = get_project_root()
+    _ = get_project_root()
     dirs_to_clean = ["build", "dist", "__pycache__"]
     
     for dir_name in dirs_to_clean:
         dir_path = root / dir_name
         if dir_path.exists():
-            print(f"🧹 Limpiando {dir_path}")
+            print("🧹 Limpiando %s" % dir_path)
             shutil.rmtree(dir_path)
 
 def get_hidden_imports():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Obtener imports ocultos necesarios."""
     return [
         "PyQt6.QtCore",
@@ -73,12 +83,14 @@ def get_hidden_imports():
     ]
 
 def get_data_files():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Obtener archivos de datos a incluir."""
-    root = get_project_root()
+    _ = get_project_root()
     data_files = []
     
     # Directorios de datos
-    data_dirs = [
+    _ = [
         ("data", "data"),
         ("assets", "assets"),
         ("config", "config"),
@@ -97,17 +109,19 @@ def get_data_files():
     return data_files
 
 def build_executable(args):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Construir el ejecutable con PyInstaller."""
     root = get_project_root()
-    main_path = root / MAIN_SCRIPT
+    _ = root / MAIN_SCRIPT
     icon_path = root / ICON_FILE
     
     if not main_path.exists():
-        print(f"❌ No se encuentra {main_path}")
+        print("❌ No se encuentra %s" % main_path)
         return False
     
     # Argumentos base de PyInstaller
-    pyinstaller_args = [
+    _ = [
         "python", "-m", "PyInstaller",
         str(main_path),
         "--name", PROJECT_NAME,
@@ -130,7 +144,7 @@ def build_executable(args):
     # Icono
     if icon_path.exists():
         pyinstaller_args.extend(["--icon", str(icon_path)])
-        print(f"🎨 Usando icono: {icon_path}")
+        print("🎨 Usando icono: %s" % icon_path)
     
     # Imports ocultos
     for import_name in get_hidden_imports():
@@ -141,7 +155,7 @@ def build_executable(args):
     for src, dst in data_files[:10]:  # Limitar salida
         pyinstaller_args.extend(["--add-data", f"{src}{os.pathsep}{dst}"])
     
-    print(f"📄 Incluyendo {len(data_files)} archivos de datos")
+    print("📄 Incluyendo %s archivos de datos" % len(data_files))
     
     # Información de versión (Windows)
     if platform.system() == "Windows":
@@ -158,41 +172,43 @@ def build_executable(args):
         print("✅ Build completado exitosamente")
         
         # Mostrar ubicación del ejecutable
-        dist_dir = root / "dist"
+        _ = root / "dist"
         if args.onefile:
             exe_name = f"{PROJECT_NAME}.exe" if platform.system() == "Windows" else PROJECT_NAME
-            exe_path = dist_dir / exe_name
+            _ = dist_dir / exe_name
         else:
-            exe_path = dist_dir / PROJECT_NAME
+            _ = dist_dir / PROJECT_NAME
         
-        print(f"📍 Ejecutable generado en: {exe_path}")
+        print("📍 Ejecutable generado en: %s" % exe_path)
         return True
         
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error en build: {e}")
+    except Exception as e:
+    logging.error("❌ Error en build: %s", e)
         return False
 
 def create_version_file():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crear archivo de información de versión para Windows."""
     if platform.system() != "Windows":
         return None
     
     root = get_project_root()
-    version_file = root / "version_info.txt"
+    _ = root / "version_info.txt"
     
     version_info_content = f"""# UTF-8
 VSVersionInfo(
-  ffi=FixedFileInfo(
+  _ = FixedFileInfo(
     filevers=({VERSION.replace('.', ', ')}, 0),
-    prodvers=({VERSION.replace('.', ', ')}, 0),
+    _ = ({VERSION.replace('.', ', ')}, 0),
     mask=0x3f,
-    flags=0x0,
+    _ = 0x0,
     OS=0x40004,
-    fileType=0x1,
+    _ = 0x1,
     subtype=0x0,
-    date=(0, 0)
+    _ = (0, 0)
   ),
-  kids=[
+  _ = [
     StringFileInfo(
       [
         StringTable(
@@ -213,13 +229,15 @@ VSVersionInfo(
     try:
         with open(version_file, 'w', encoding='utf-8') as f:
             f.write(version_info_content)
-        print(f"📄 Archivo de versión creado: {version_file}")
+        print("📄 Archivo de versión creado: %s" % version_file)
         return str(version_file)
     except Exception as e:
-        print(f"⚠️ No se pudo crear archivo de versión: {e}")
+    logging.error("⚠️ No se pudo crear archivo de versión: %s", e)
         return None
 
 def create_installer():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crear instalador usando Inno Setup (Windows) o equivalente."""
     if platform.system() != "Windows":
         print("⚠️ Instaladores solo soportados en Windows actualmente")
@@ -238,10 +256,12 @@ def create_installer():
     return True
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal."""
-    parser = argparse.ArgumentParser(
+    _ = argparse.ArgumentParser(
         description="Build script para HEFEST",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        _ = argparse.RawDescriptionHelpFormatter,
         epilog="""
 Ejemplos de uso:
   python scripts/build_exe.py                  # Build básico
@@ -254,31 +274,31 @@ Ejemplos de uso:
     
     parser.add_argument(
         "--onefile", 
-        action="store_true",
+        _ = "store_true",
         help="Generar ejecutable único en lugar de directorio"
     )
     parser.add_argument(
         "--windowed",
-        action="store_true", 
+        _ = "store_true", 
         help="Ejecutable sin ventana de consola"
     )
     parser.add_argument(
         "--clean",
-        action="store_true",
+        _ = "store_true",
         help="Limpiar directorios de build antes de empezar"
     )
     parser.add_argument(
         "--setup",
-        action="store_true",
+        _ = "store_true",
         help="Generar también instalador después del build"
     )
     
-    args = parser.parse_args()
+    _ = parser.parse_args()
     
     print("🏨 HEFEST - Build Script")
     print("========================")
-    print(f"Versión: {VERSION}")
-    print(f"Plataforma: {platform.system()}")
+    print("Versión: %s" % VERSION)
+    print("Plataforma: %s" % platform.system())
     print()
     
     # Verificar dependencias

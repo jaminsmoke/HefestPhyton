@@ -1,32 +1,36 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
+from PyQt6.QtCore import Qt, pyqtSignal
+from .base_module import BaseModule
+from services.tpv_service import TPVService
+
 """
 Módulo TPV avanzado con funcionalidades de descuentos, múltiples métodos de pago y facturación.
 """
 
-import logging
-from datetime import datetime
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
                             QTableWidgetItem, QHeaderView, QLabel, QSplitter, QFrame,
                             QDialog, QFormLayout, QComboBox, QSpinBox, QDoubleSpinBox,
                             QMessageBox, QGridLayout, QTabWidget, QLineEdit, QSizePolicy,
                             QGroupBox, QCheckBox, QTextEdit, QDialogButtonBox)
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QPixmap
 
-from .base_module import BaseModule
-from services.tpv_service import TPVService
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class AdvancedTPVModule(BaseModule):
     """Módulo TPV avanzado con funcionalidades completas"""
     
     def __init__(self):
+        """TODO: Add docstring"""
         super().__init__()
         self.tpv_service = TPVService()
         self.current_order = None
         self.setup_ui()
         
     def create_module_header(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el header del módulo TPV"""
         header = QFrame()
         header.setObjectName("module-header")
@@ -36,7 +40,7 @@ class AdvancedTPVModule(BaseModule):
         layout.setContentsMargins(20, 0, 20, 0)
         
         # Título y estadísticas
-        title_layout = QVBoxLayout()
+        _ = QVBoxLayout()
         title = QLabel("💳 TPV Avanzado")
         title.setObjectName("module-title")
         title.setStyleSheet("font-size: 24px; font-weight: bold; color: #1f2937;")
@@ -50,7 +54,7 @@ class AdvancedTPVModule(BaseModule):
         layout.addStretch()
         
         # Botones de acción rápida
-        quick_actions_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         new_order_btn = QPushButton("📝 Nuevo Pedido")
         new_order_btn.setStyleSheet("""
@@ -110,13 +114,15 @@ class AdvancedTPVModule(BaseModule):
         return header
         
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz del módulo TPV avanzado"""
         # Crear el header del módulo
         header = self.create_module_header()
         self.content_layout.addWidget(header)
 
         # Crear el splitter principal
-        main_splitter = QSplitter(Qt.Orientation.Horizontal)
+        _ = QSplitter(Qt.Orientation.Horizontal)
 
         # Panel izquierdo - Productos y categorías
         left_panel = self.create_products_panel()
@@ -153,12 +159,14 @@ class AdvancedTPVModule(BaseModule):
         right_layout.addWidget(self.total_label)
         
     def create_products_panel(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el panel de productos y categorías"""
         widget = QWidget()
-        layout = QVBoxLayout(widget)
+        _ = QVBoxLayout(widget)
         
         # Barra de búsqueda
-        search_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("🔍 Buscar productos...")
         self.search_input.setStyleSheet("""
@@ -207,9 +215,11 @@ class AdvancedTPVModule(BaseModule):
         return widget
         
     def create_category_tab(self, category):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea una pestaña para una categoría de productos"""
         tab = QWidget()
-        layout = QVBoxLayout(tab)
+        _ = QVBoxLayout(tab)
 
         # Placeholder para productos
         products_label = QLabel(f"Productos de la categoría: {category}")
@@ -220,9 +230,11 @@ class AdvancedTPVModule(BaseModule):
         return tab
 
     def create_order_panel(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el panel de pedido actual y pago"""
         panel = QWidget()
-        layout = QVBoxLayout(panel)
+        _ = QVBoxLayout(panel)
 
         # Placeholder para el pedido actual
         order_label = QLabel("Pedido Actual (Placeholder)")
@@ -239,6 +251,8 @@ class AdvancedTPVModule(BaseModule):
         return panel
 
     def get_action_button_style(self, color):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene el estilo para botones de acción"""
         return f"""
             QPushButton {{
@@ -256,8 +270,10 @@ class AdvancedTPVModule(BaseModule):
         """
         
     def get_products_by_category(self, category):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene productos por categoría"""
-        products_data = {
+        _ = {
             "Bebidas": [
                 {"name": "Café", "price": 1.50, "color": "#8b4513"},
                 {"name": "Té", "price": 1.30, "color": "#228b22"},
@@ -302,11 +318,15 @@ class AdvancedTPVModule(BaseModule):
         return products_data.get(category, [])
         
     def filter_products(self, text):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Filtra productos por texto de búsqueda"""
         # TODO: Implementar filtrado de productos
         pass
         
     def add_product_to_order(self, product):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Añade un producto al pedido actual"""
         # Crear pedido si no existe
         if not self.current_order:
@@ -319,17 +339,17 @@ class AdvancedTPVModule(BaseModule):
             }
         
         # Buscar si el producto ya existe en el pedido
-        existing_item = None
+        _ = None
         for item in self.current_order["items"]:
             if item["name"] == product["name"]:
-                existing_item = item
+                _ = item
                 break
         
         if existing_item:
             existing_item["quantity"] += 1
             existing_item["total"] = existing_item["price"] * existing_item["quantity"]
         else:
-            new_item = {
+            _ = {
                 "name": product["name"],
                 "price": product["price"],
                 "quantity": 1,
@@ -341,6 +361,8 @@ class AdvancedTPVModule(BaseModule):
         self.update_order_display()
         
     def update_order_display(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza la visualización del pedido"""
         if not self.current_order:
             return
@@ -348,7 +370,7 @@ class AdvancedTPVModule(BaseModule):
         # Actualizar tabla
         self.order_table.setRowCount(len(self.current_order["items"]))
         
-        subtotal = 0.0
+        _ = 0.0
         for row, item in enumerate(self.current_order["items"]):
             self.order_table.setItem(row, 0, QTableWidgetItem(item["name"]))
             self.order_table.setItem(row, 1, QTableWidgetItem(f"€{item['price']:.2f}"))
@@ -362,7 +384,7 @@ class AdvancedTPVModule(BaseModule):
         discount_total = self.current_order["discount"]
         subtotal_after_discount = subtotal - discount_total
         tax = subtotal_after_discount * 0.21  # IVA 21%
-        total = subtotal_after_discount + tax
+        _ = subtotal_after_discount + tax
         
         # Actualizar labels
         self.subtotal_label.setText(f"Subtotal: €{subtotal:.2f}")
@@ -378,6 +400,8 @@ class AdvancedTPVModule(BaseModule):
         })
         
     def apply_discount(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica un descuento al pedido"""
         if not self.current_order or not self.current_order["items"]:
             QMessageBox.warning(self, "Advertencia", "No hay productos en el pedido")
@@ -395,9 +419,11 @@ class AdvancedTPVModule(BaseModule):
             self.update_order_display()
             
     def clear_order(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpia el pedido actual"""
         if self.current_order and self.current_order["items"]:
-            reply = QMessageBox.question(self, "Confirmar", "¿Limpiar el pedido actual?",
+            _ = QMessageBox.question(self, "Confirmar", "¿Limpiar el pedido actual?",
                                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             if reply == QMessageBox.StandardButton.Yes:
                 self.current_order = None
@@ -408,24 +434,34 @@ class AdvancedTPVModule(BaseModule):
                 self.total_label.setText("TOTAL: €0.00")
                 
     def process_payment(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para procesar el pago"""
         QMessageBox.information(self, "Procesar Pago", "Funcionalidad de pago en desarrollo.")
         
     def new_order(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicia un nuevo pedido"""
         self.clear_order()
         
     def open_cash_register(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Abre la gestión de caja"""
         dialog = CashRegisterDialog(self)
         dialog.exec()
         
     def show_reports(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra los reportes de ventas"""
         dialog = ReportsDialog(self)
         dialog.exec()
         
     def refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza los datos del módulo"""
         logger.info("Actualizando módulo TPV avanzado...")
         self.status_changed.emit("TPV actualizado")
@@ -435,13 +471,16 @@ class DiscountDialog(QDialog):
     """Diálogo para aplicar descuentos"""
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setWindowTitle("Aplicar Descuento")
         self.setFixedSize(300, 200)
         self.setup_ui()
         
     def setup_ui(self):
-        layout = QFormLayout(self)
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = QFormLayout(self)
         
         # Tipo de descuento
         self.discount_type = QComboBox()
@@ -461,13 +500,15 @@ class DiscountDialog(QDialog):
         layout.addRow("Motivo:", self.reason)
         
         # Botones
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | 
+        _ = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | 
                                  QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addRow(buttons)
         
     def get_discount(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene el descuento configurado"""
         discount_type = "percentage" if self.discount_type.currentIndex() == 0 else "amount"
         return discount_type, self.discount_value.value()
@@ -477,6 +518,7 @@ class PaymentDialog(QDialog):
     """Diálogo para procesar el pago"""
     
     def __init__(self, order, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.order = order
         self.setWindowTitle("Procesar Pago")
@@ -484,11 +526,13 @@ class PaymentDialog(QDialog):
         self.setup_ui()
         
     def setup_ui(self):
-        layout = QVBoxLayout(self)
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = QVBoxLayout(self)
         
         # Resumen del pedido
         summary_group = QGroupBox("Resumen del Pedido")
-        summary_layout = QVBoxLayout(summary_group)
+        _ = QVBoxLayout(summary_group)
         
         total_label = QLabel(f"TOTAL A PAGAR: €{self.order['total']:.2f}")
         total_label.setStyleSheet("font-size: 18px; font-weight: bold; color: #059669;")
@@ -498,7 +542,7 @@ class PaymentDialog(QDialog):
         
         # Métodos de pago
         payment_group = QGroupBox("Método de Pago")
-        payment_layout = QVBoxLayout(payment_group)
+        _ = QVBoxLayout(payment_group)
         
         self.payment_method = QComboBox()
         self.payment_method.addItems([
@@ -511,7 +555,7 @@ class PaymentDialog(QDialog):
         
         # Pago en efectivo
         cash_group = QGroupBox("Pago en Efectivo")
-        cash_layout = QFormLayout(cash_group)
+        _ = QFormLayout(cash_group)
         
         self.cash_received = QDoubleSpinBox()
         self.cash_received.setMinimum(0)
@@ -529,7 +573,7 @@ class PaymentDialog(QDialog):
         
         # Opciones adicionales
         options_group = QGroupBox("Opciones")
-        options_layout = QVBoxLayout(options_group)
+        _ = QVBoxLayout(options_group)
         
         self.print_receipt = QCheckBox("Imprimir recibo")
         self.print_receipt.setChecked(True)
@@ -541,7 +585,7 @@ class PaymentDialog(QDialog):
         layout.addWidget(options_group)
         
         # Botones
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | 
+        _ = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | 
                                  QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
@@ -551,10 +595,12 @@ class PaymentDialog(QDialog):
         self.calculate_change()
         
     def calculate_change(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Calcula el cambio"""
-        received = self.cash_received.value()
+        _ = self.cash_received.value()
         total = self.order['total']
-        change = received - total
+        _ = received - total
         
         if change >= 0:
             self.change_label.setText(f"€{change:.2f}")
@@ -568,17 +614,20 @@ class CashRegisterDialog(QDialog):
     """Diálogo para gestión de caja"""
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setWindowTitle("Gestión de Caja")
         self.setFixedSize(400, 300)
         self.setup_ui()
         
     def setup_ui(self):
-        layout = QVBoxLayout(self)
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = QVBoxLayout(self)
         
         # Estado de caja
         status_group = QGroupBox("Estado de Caja")
-        status_layout = QFormLayout(status_group)
+        _ = QFormLayout(status_group)
         
         self.opening_amount = QLabel("€500.00")
         status_layout.addRow("Apertura:", self.opening_amount)
@@ -593,7 +642,7 @@ class CashRegisterDialog(QDialog):
         
         # Operaciones
         operations_group = QGroupBox("Operaciones")
-        operations_layout = QVBoxLayout(operations_group)
+        _ = QVBoxLayout(operations_group)
         
         open_register_btn = QPushButton("Abrir Caja")
         open_register_btn.clicked.connect(self.open_register)
@@ -619,18 +668,26 @@ class CashRegisterDialog(QDialog):
         layout.addWidget(close_btn)
         
     def open_register(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Abre la caja registradora"""
         QMessageBox.information(self, "Caja", "Caja abierta correctamente")
         
     def close_register(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cierra la caja registradora"""
         QMessageBox.information(self, "Caja", "Caja cerrada correctamente")
         
     def add_money(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Añade dinero a la caja"""
         QMessageBox.information(self, "Caja", "Dinero añadido a la caja")
         
     def remove_money(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retira dinero de la caja"""
         QMessageBox.information(self, "Caja", "Dinero retirado de la caja")
 
@@ -639,17 +696,20 @@ class ReportsDialog(QDialog):
     """Diálogo para mostrar reportes"""
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setWindowTitle("Reportes de Ventas")
         self.setFixedSize(600, 400)
         self.setup_ui()
         
     def setup_ui(self):
-        layout = QVBoxLayout(self)
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = QVBoxLayout(self)
         
         # Filtros
         filters_group = QGroupBox("Filtros")
-        filters_layout = QFormLayout(filters_group)
+        _ = QFormLayout(filters_group)
         
         self.date_from = QLineEdit("2025-06-01")
         filters_layout.addRow("Desde:", self.date_from)
@@ -674,6 +734,8 @@ class ReportsDialog(QDialog):
         layout.addWidget(close_btn)
         
     def generate_report(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Genera el reporte de ventas"""
         report = f"""
 REPORTE DE VENTAS

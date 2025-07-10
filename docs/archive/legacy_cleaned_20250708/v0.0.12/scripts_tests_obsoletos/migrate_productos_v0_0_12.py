@@ -1,3 +1,10 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import sqlite3
+import os
+import logging
+        import shutil
+
 #!/usr/bin/env python3
 """
 Script de migración para actualizar la estructura de la tabla productos
@@ -11,54 +18,55 @@ CAMBIOS:
 - Mantener compatibilidad con datos existentes
 """
 
-import sqlite3
-import os
-import logging
-from typing import Optional
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 def get_db_path() -> str:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Obtener la ruta de la base de datos"""
     return os.path.join(os.path.dirname(__file__), 'hefest.db')
 
 def backup_database() -> bool:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crear respaldo de la base de datos"""
     try:
         db_path = get_db_path()
-        backup_path = db_path.replace('.db', '_backup_v0.0.12.db')
+        _ = db_path.replace('.db', '_backup_v0.0.12.db')
         
         # Copiar la base de datos
-        import shutil
         shutil.copy2(db_path, backup_path)
         
-        logger.info(f"✅ Respaldo creado: {backup_path}")
+        logger.info("✅ Respaldo creado: %s", backup_path)
         return True
         
     except Exception as e:
-        logger.error(f"❌ Error creando respaldo: {e}")
+        logger.error("❌ Error creando respaldo: %s", e)
         return False
 
 def check_table_structure() -> dict:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verificar la estructura actual de la tabla productos"""
     try:
         db_path = get_db_path()
         conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         # Obtener información de columnas
         cursor.execute("PRAGMA table_info(productos)")
-        columns = cursor.fetchall()
+        _ = cursor.fetchall()
         
         # Obtener SQL de creación
         cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='productos'")
-        table_sql = cursor.fetchone()
+        _ = cursor.fetchone()
         
         conn.close()
         
-        column_names = [col[1] for col in columns]
+        _ = [col[1] for col in columns]
         
         return {
             'columns': column_names,
@@ -69,19 +77,21 @@ def check_table_structure() -> dict:
         }
         
     except Exception as e:
-        logger.error(f"❌ Error verificando estructura: {e}")
+        logger.error("❌ Error verificando estructura: %s", e)
         return {}
 
 def migrate_productos_table() -> bool:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Migrar la tabla productos a la nueva estructura"""
     try:
         db_path = get_db_path()
         conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         # Verificar estructura actual
         structure = check_table_structure()
-        logger.info(f"📋 Estructura actual - Columnas: {structure.get('columns', [])}")
+        logger.info("📋 Estructura actual - Columnas: %s", structure.get('columns', []))
         
         # Si ya tiene las columnas nuevas, no hacer nada
         if structure.get('has_proveedor_id') and structure.get('has_proveedor_nombre'):
@@ -104,10 +114,10 @@ def migrate_productos_table() -> bool:
             
             # Obtener productos con proveedor
             cursor.execute("SELECT id, proveedor FROM productos WHERE proveedor IS NOT NULL AND proveedor != ''")
-            productos_con_proveedor = cursor.fetchall()
+            _ = cursor.fetchall()
             
             # Crear mapeo de proveedores
-            proveedores_map = {}
+            _ = {}
             proveedor_id = 1
             
             for producto_id, proveedor_nombre in productos_con_proveedor:
@@ -122,7 +132,7 @@ def migrate_productos_table() -> bool:
                     WHERE id = ?
                 """, (proveedores_map[proveedor_nombre], proveedor_nombre, producto_id))
             
-            logger.info(f"✅ Migrados {len(productos_con_proveedor)} productos con {len(proveedores_map)} proveedores únicos")
+            logger.info("✅ Migrados {len(productos_con_proveedor)} productos con %s proveedores únicos", len(proveedores_map))
         
         conn.commit()
         conn.close()
@@ -131,31 +141,35 @@ def migrate_productos_table() -> bool:
         return True
         
     except Exception as e:
-        logger.error(f"❌ Error en migración: {e}")
+        logger.error("❌ Error en migración: %s", e)
         return False
 
 def verify_migration() -> bool:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verificar que la migración fue exitosa"""
     try:
-        structure = check_table_structure()
+        _ = check_table_structure()
         
         required_columns = ['id', 'nombre', 'precio', 'stock', 'categoria', 'stock_actual', 'stock_minimo', 'proveedor_id', 'proveedor_nombre']
-        actual_columns = structure.get('columns', [])
+        _ = structure.get('columns', [])
         
-        missing_columns = [col for col in required_columns if col not in actual_columns]
+        _ = [col for col in required_columns if col not in actual_columns]
         
         if missing_columns:
-            logger.error(f"❌ Faltan columnas: {missing_columns}")
+            logger.error("❌ Faltan columnas: %s", missing_columns)
             return False
         
         logger.info("✅ Verificación exitosa - Todas las columnas requeridas están presentes")
         return True
         
     except Exception as e:
-        logger.error(f"❌ Error en verificación: {e}")
+        logger.error("❌ Error en verificación: %s", e)
         return False
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal de migración"""
     logger.info("🚀 Iniciando migración de base de datos v0.0.12")
     

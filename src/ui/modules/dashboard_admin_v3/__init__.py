@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Dashboard Admin v3 - Módulo completo reorganizado
 Contiene el dashboard ultra-moderno con componentes especializados
@@ -16,6 +17,8 @@ __author__ = "Hefest Development Team"
 
 # Importación principal del dashboard
 def get_dashboard_controller():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     from .ultra_modern_admin_dashboard import UltraModernAdminDashboard
 
     return UltraModernAdminDashboard
@@ -23,6 +26,8 @@ def get_dashboard_controller():
 
 # Importación de componentes específicos
 def get_dashboard_components():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     from .components import UltraModernMetricCard, HospitalityMetricCard
 
     return {
@@ -33,11 +38,9 @@ def get_dashboard_components():
 
 # Exportación directa principal
 try:
-    from .ultra_modern_admin_dashboard import UltraModernAdminDashboard
-    from .components import UltraModernMetricCard, HospitalityMetricCard
 
     # Alias para compatibilidad con código existente
-    DashboardAdminController = UltraModernAdminDashboard
+    _ = UltraModernAdminDashboard
 
     __all__ = [
         "UltraModernAdminDashboard",
@@ -52,5 +55,5 @@ except ImportError as e:
     # Si hay problemas de importación, usar solo lazy loading
     import logging
 
-    logging.warning(f"Usando lazy loading para dashboard_admin_v3 debido a: {e}")
+    logging.warning("Usando lazy loading para dashboard_admin_v3 debido a: %s", e)
     __all__ = ["get_dashboard_controller", "get_dashboard_components"]

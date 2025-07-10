@@ -27,15 +27,16 @@ from PyQt6.QtGui import QFont, QPalette, QColor, QIcon, QPixmap
 
 from services.tpv_service import Producto
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ProductCard(QFrame):
     """Tarjeta individual de producto con diseño moderno"""
 
-    product_selected = pyqtSignal(Producto, int)
+    _ = pyqtSignal(Producto, int)
 
     def __init__(self, producto: Producto, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.producto = producto
         self.quantity = 1
@@ -43,6 +44,8 @@ class ProductCard(QFrame):
         self.setup_styles()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz de la tarjeta de producto"""
         self.setFixedSize(180, 220)
         self.setFrameStyle(QFrame.Shape.Box)
@@ -94,10 +97,10 @@ class ProductCard(QFrame):
             hasattr(self.producto, "stock")
             and self.producto.stock is not None
         ):
-            stock_text = f"Stock: {self.producto.stock}"
+            _ = f"Stock: {self.producto.stock}"
             stock_color = "#d32f2f" if self.producto.stock < 5 else "#1976d2"
         else:
-            stock_text = "Disponible"
+            _ = "Disponible"
             stock_color = "#1976d2"
 
         self.stock_label = QLabel(stock_text)
@@ -112,6 +115,8 @@ class ProductCard(QFrame):
         layout.addWidget(self.add_button)
 
     def setup_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura los estilos de la tarjeta"""
         self.setStyleSheet(
             """
@@ -142,6 +147,8 @@ class ProductCard(QFrame):
         )
 
     def on_add_clicked(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el clic en el botón añadir"""
         self.product_selected.emit(self.producto, self.quantity)
 
@@ -158,9 +165,10 @@ class ProductCard(QFrame):
 class ProductSelectorWidget(QWidget):
     """Widget selector de productos profesional y moderno"""
 
-    product_selected = pyqtSignal(Producto, int)
+    _ = pyqtSignal(Producto, int)
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.productos: List[Producto] = []
         self.filtered_productos: List[Producto] = []
@@ -173,8 +181,9 @@ class ProductSelectorWidget(QWidget):
         self.update_product_grid()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz principal"""
-        import logging
 
         old_layout = self.layout()
         if old_layout is not None:
@@ -187,14 +196,14 @@ class ProductSelectorWidget(QWidget):
             try:
                 old_layout.deleteLater()
             except RuntimeError as e:
-                logging.warning(f"No se pudo eliminar el layout anterior: {e}")
+                logging.warning("No se pudo eliminar el layout anterior: %s", e)
         layout = QVBoxLayout()
         layout.setContentsMargins(16, 16, 16, 16)
         layout.setSpacing(16)
         self.setLayout(layout)
 
         # Header con título
-        header_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         title_label = QLabel("Selector de Productos")
         font = QFont()
@@ -208,7 +217,7 @@ class ProductSelectorWidget(QWidget):
         layout.addLayout(header_layout)
 
         # Filtros y búsqueda
-        filters_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         # Búsqueda
         search_label = QLabel("Buscar:")
@@ -316,8 +325,10 @@ class ProductSelectorWidget(QWidget):
         layout.addWidget(self.status_label)
 
     def load_sample_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga datos de ejemplo para demostración"""
-        sample_productos = [
+        _ = [
             Producto(1, "Café Americano", 2.50, "Bebidas", 25),
             Producto(2, "Café con Leche", 3.00, "Bebidas", 30),
             Producto(3, "Cappuccino", 3.50, "Bebidas", 22),
@@ -341,11 +352,13 @@ class ProductSelectorWidget(QWidget):
         self.productos = sample_productos
 
         # Actualizar combo de categorías
-        categorias = ["Todos"] + list(set(p.categoria for p in self.productos))
+        _ = ["Todos"] + list(set(p.categoria for p in self.productos))
         self.category_combo.clear()
         self.category_combo.addItems(categorias)
 
     def update_product_grid(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza la grilla de productos"""
         # Limpiar tarjetas existentes
         for card in self.product_cards:
@@ -366,26 +379,28 @@ class ProductSelectorWidget(QWidget):
         self.status_label.hide()
 
         # Crear nuevas tarjetas
-        columns = 4  # Número de columnas en la grilla
+        _ = 4  # Número de columnas en la grilla
         for i, producto in enumerate(self.filtered_productos):
             card = ProductCard(producto)
             card.product_selected.connect(self.product_selected.emit)
 
-            row = i // columns
+            _ = i // columns
             col = i % columns
             self.products_layout.addWidget(card, row, col)
             self.product_cards.append(card)
 
         # Añadir espaciador para mantener las tarjetas alineadas arriba
-        spacer = QSpacerItem(
+        _ = QSpacerItem(
             20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding
         )
         final_row = (len(self.filtered_productos) - 1) // columns + 1
         self.products_layout.addItem(spacer, final_row, 0, 1, columns)
 
     def filter_products(self) -> List[Producto]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Filtra productos según criterios actuales"""
-        filtered = self.productos
+        _ = self.productos
 
         # Filtrar por categoría
         if self.current_category != "Todos":
@@ -399,21 +414,27 @@ class ProductSelectorWidget(QWidget):
         return filtered
 
     def on_search_changed(self, text: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja cambios en el texto de búsqueda"""
         self.search_text = text.strip()
         self.update_product_grid()
 
     def on_category_changed(self, category: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja cambios en la categoría seleccionada"""
         self.current_category = category
         self.update_product_grid()
 
     def set_productos(self, productos: List[Producto]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Establece la lista de productos"""
         self.productos = productos
 
         # Actualizar combo de categorías
-        categorias = ["Todos"] + list(set(p.categoria for p in productos))
+        _ = ["Todos"] + list(set(p.categoria for p in productos))
         self.category_combo.clear()
         self.category_combo.addItems(categorias)
 
@@ -424,7 +445,7 @@ if __name__ == "__main__":
     import sys
     from PyQt6.QtWidgets import QApplication
 
-    app = QApplication(sys.argv)
+    _ = QApplication(sys.argv)
 
     # Crear y mostrar el widget
     widget = ProductSelectorWidget()

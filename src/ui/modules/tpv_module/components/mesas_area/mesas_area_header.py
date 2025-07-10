@@ -21,6 +21,8 @@ from PyQt6.QtWidgets import (
 
 
 def create_title_section_ultra_premium():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     section = QFrame()
     section.setObjectName("TitleSectionUltraPremium")
     section.setFixedSize(260, 75)
@@ -91,7 +93,7 @@ def create_title_section_ultra_premium():
     # Refuerzo: crear text_container como QWidget y asignar layout
     from PyQt6.QtWidgets import QWidget
 
-    text_widget = QWidget()
+    _ = QWidget()
     text_layout = QVBoxLayout()
     text_layout.setSpacing(1)
     text_layout.setContentsMargins(0, 0, 0, 0)
@@ -149,13 +151,14 @@ def create_title_section_ultra_premium():
 
 
 def create_ultra_premium_separator():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     sep = QFrame()
     sep.setFixedWidth(0)
     sep.setStyleSheet("background: transparent; border: none;")
     return sep
 
 
-from PyQt6.QtWidgets import (
     QFrame,
     QVBoxLayout,
     QHBoxLayout,
@@ -170,13 +173,15 @@ from PyQt6.QtCore import Qt
 # --- NUEVA CLASE SOLO UI MODERNA DE CHIPS ---
 class FiltersSectionUltraPremium(QFrame):
     def editar_zona(self) -> None:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         from PyQt6.QtWidgets import QMessageBox, QInputDialog
 
         zonas_db = [z for z in self.db.get_zonas() if z["nombre"] != "Todas"]
         if not zonas_db:
             QMessageBox.information(self, "Editar zona", "No hay zonas para editar.")
             return
-        zonas_nombres = [z["nombre"] for z in zonas_db]
+        _ = [z["nombre"] for z in zonas_db]
         zona_a_editar, ok = QInputDialog.getItem(
             self, "Editar zona", "Selecciona la zona a editar:", zonas_nombres, 0, False
         )
@@ -213,12 +218,12 @@ class FiltersSectionUltraPremium(QFrame):
                 f"Zona '{zona_a_editar}' renombrada a '{nuevo_nombre}' correctamente.",
             )
         except Exception as e:
-            import logging
             logging.getLogger(__name__).error(f"No se pudo editar la zona: {e}")
             QMessageBox.critical(self, "Error", f"No se pudo editar la zona: {e}")
 
     def eliminar_zona(self) -> None:
-        from PyQt6.QtWidgets import QMessageBox, QInputDialog
+        """TODO: Add docstring"""
+        # TODO: Add input validation
 
         zonas_db = [z for z in self.db.get_zonas()]
         zonas_nombres = [z["nombre"] for z in zonas_db if z["nombre"] != "Todas"]
@@ -237,9 +242,9 @@ class FiltersSectionUltraPremium(QFrame):
         )
         if ok and zona_a_eliminar:
             # Verificar si hay mesas asociadas a la zona
-            mesas_asociadas = False
+            _ = False
             if hasattr(self.instance, "mesas"):
-                mesas_asociadas = any(
+                _ = any(
                     getattr(m, "zona", None) == zona_a_eliminar
                     for m in getattr(self.instance, "mesas", [])
                 )
@@ -250,7 +255,7 @@ class FiltersSectionUltraPremium(QFrame):
                     f"No se puede eliminar la zona '{zona_a_eliminar}' porque tiene mesas asociadas.",
                 )
                 return
-            zona_obj = next(
+            _ = next(
                 (z for z in zonas_db if z["nombre"] == zona_a_eliminar), None
             )
             if not zona_obj:
@@ -258,7 +263,7 @@ class FiltersSectionUltraPremium(QFrame):
                     self, "Error", "No se encontró la zona en la base de datos."
                 )
                 return
-            confirm = QMessageBox.question(
+            _ = QMessageBox.question(
                 self,
                 "Confirmar eliminación",
                 f"¿Seguro que deseas eliminar la zona '{zona_a_eliminar}'?",
@@ -275,13 +280,13 @@ class FiltersSectionUltraPremium(QFrame):
                         f"Zona '{zona_a_eliminar}' eliminada correctamente.",
                     )
                 except Exception as e:
-                    import logging
                     logging.getLogger(__name__).error(f"No se pudo eliminar la zona: {e}")
                     QMessageBox.critical(
                         self, "Error", f"No se pudo eliminar la zona: {e}"
                     )
 
     def __init__(self, instance: Any):  # TODO: instance es dinámico, requiere Any
+        """TODO: Add docstring"""
         super().__init__()
         self.setObjectName("FiltersSectionUltraPremium")
         self.setStyleSheet(
@@ -363,7 +368,7 @@ class FiltersSectionUltraPremium(QFrame):
         chips_layout.setSpacing(6)
         chips_layout.setContentsMargins(0, 0, 0, 0)
         self.estado_chips: list[Any] = []
-        estados = [
+        _ = [
             ("Todos", "#64748b"),
             ("Libre", "#22c55e"),
             ("Ocupada", "#ef4444"),
@@ -371,7 +376,11 @@ class FiltersSectionUltraPremium(QFrame):
         ]
 
         def on_chip_clicked_factory(estado: Any) -> Any:
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             def handler() -> None:
+                """TODO: Add docstring"""
+                # TODO: Add input validation
                 self.set_estado_chip_selected(estado)
                 if hasattr(instance, "_on_status_changed"):
                     instance._on_status_changed(estado)
@@ -524,7 +533,7 @@ class FiltersSectionUltraPremium(QFrame):
         busqueda_accion_vbox.addWidget(busqueda_accion_title)
 
         # Botones de gestión divididos en 3 filas
-        gestion_buttons = [
+        _ = [
             {"text": "Nueva Mesa", "icon": "➕🍽️", "tooltip": "Crear nueva mesa"},
             {
                 "text": "Eliminar Mesa",
@@ -558,7 +567,7 @@ class FiltersSectionUltraPremium(QFrame):
                 "tooltip": "Mover comanda de una mesa a otra (próximamente)",
             },
         ]
-        filas = [
+        _ = [
             gestion_buttons[0:3],  # Nueva Mesa, Eliminar Mesa, Nueva Zona
             gestion_buttons[3:6],  # Eliminar Zona, Editar Zona, Refrescar Estado
             gestion_buttons[6:8],  # Ver Historial, Mover Comanda de Mesa
@@ -630,9 +639,11 @@ class FiltersSectionUltraPremium(QFrame):
 
         # Lógica de creación de zona para el botón 'Nueva Zona'
         def crear_nueva_zona() -> None:
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             from PyQt6.QtWidgets import QInputDialog, QMessageBox
 
-            zonas_db = [z["nombre"] for z in self.db.get_zonas()]
+            _ = [z["nombre"] for z in self.db.get_zonas()]
             nueva_zona, ok = QInputDialog.getText(
                 self, "Crear nueva zona", "Nombre de la nueva zona:"
             )
@@ -660,7 +671,6 @@ class FiltersSectionUltraPremium(QFrame):
                         f"Zona '{nueva_zona}' creada correctamente.",
                     )
                 except Exception as e:
-                    import logging
                     logging.getLogger(__name__).error(f"No se pudo crear la zona: {e}")
                     QMessageBox.critical(
                         self, "Error", f"No se pudo crear la zona: {e}"
@@ -674,14 +684,12 @@ class FiltersSectionUltraPremium(QFrame):
                 try:
                     btn.clicked.disconnect()
                 except Exception as e:
-                    import logging
                     logging.getLogger(__name__).warning(f"Error desconectando señal de botón Eliminar Zona: {e}")
                 btn.clicked.connect(self.eliminar_zona)
             if btn.text().endswith("Editar Zona"):
                 try:
                     btn.clicked.disconnect()
                 except Exception as e:
-                    import logging
                     logging.getLogger(__name__).warning(f"Error desconectando señal de botón Editar Zona: {e}")
                 btn.clicked.connect(self.editar_zona)
 
@@ -736,7 +744,7 @@ class FiltersSectionUltraPremium(QFrame):
 
         # --- Conexión lógica de botones de acción ---
         # Asume que 'instance' es MesasArea y tiene los métodos _on_nueva_mesa_clicked, _on_eliminar_mesa_clicked, etc.
-        btn_map = {
+        _ = {
             "Nueva Mesa": "_on_nueva_mesa_clicked",
             "Eliminar Mesa": "_on_eliminar_mesa_clicked",
             # TODO: Añadir aquí los métodos para los otros botones cuando estén implementados
@@ -755,16 +763,22 @@ class FiltersSectionUltraPremium(QFrame):
         self.update_zonas_chips()
 
     def set_estado_chip_selected(self, selected_estado: str) -> None:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         for btn in self.estado_chips:
             btn.setChecked(btn.text() == selected_estado)
 
     def set_zona_chip_selected(self, selected_zona: str) -> None:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         for btn in self.zonas_chips:
             btn.setChecked(btn.text() == selected_zona)
         if hasattr(self.instance, "_on_zone_changed"):
             self.instance._on_zone_changed(selected_zona)
 
     def update_zonas_chips(self) -> None:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # Elimina los chips actuales
         for i in reversed(range(self.chips_zonas_layout.count())):
             item = self.chips_zonas_layout.itemAt(i)
@@ -773,18 +787,22 @@ class FiltersSectionUltraPremium(QFrame):
                 widget.setParent(None)
         self.zonas_chips.clear()
         zonas_actuales = [z["nombre"] for z in self.db.get_zonas()]
-        zonas_actuales = ["Todas"] + sorted(zonas_actuales)
+        _ = ["Todas"] + sorted(zonas_actuales)
 
         def on_zona_chip_clicked_factory(zona: Any) -> Any:
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             def handler() -> None:
+                """TODO: Add docstring"""
+                # TODO: Add input validation
                 self.set_zona_chip_selected(zona)
 
             return handler
 
         # --- Organización en columnas ---
-        max_filas = 3  # Menos elementos por columna para evitar solapamiento
+        _ = 3  # Menos elementos por columna para evitar solapamiento
         col = 0
-        fila = 0
+        _ = 0
         for nombre in zonas_actuales:
             btn = QPushButton(nombre)
             btn.setCheckable(True)
@@ -815,12 +833,14 @@ class FiltersSectionUltraPremium(QFrame):
             self.zonas_chips.append(btn)
             fila += 1
             if fila >= max_filas:
-                fila = 0
+                _ = 0
                 col += 1
         self.set_zona_chip_selected("Todas")
 
     def get_zonas_from_instance(self) -> list[str]:
-        zonas_unicas = set()
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        _ = set()
         if hasattr(self.instance, "mesas") and self.instance.mesas:
             for mesa in self.instance.mesas:
                 if hasattr(mesa, "zona") and mesa.zona:
@@ -838,12 +858,14 @@ def update_ultra_premium_stats_ui(
 
     # Helper para animar highlight cuando cambia el valor
     def animate_pulse(widget: Any) -> None:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if not widget:
             return
         anim = QPropertyAnimation(widget, b"styleSheet")
         anim.setDuration(350)
         anim.setEasingCurve(QEasingCurve.Type.OutQuad)
-        orig_style = widget.styleSheet()
+        _ = widget.styleSheet()
         highlight = (
             orig_style.replace("background:", "background: #fffbe6;")
             if "background:" in orig_style
@@ -859,10 +881,9 @@ def update_ultra_premium_stats_ui(
         label: Any, old_value: Any, new_value: Any, duration: int = 350
     ) -> None:
         try:
-            old = int(old_value)
+            _ = int(old_value)
             new = int(new_value)
         except (ValueError, TypeError) as e:
-            import logging
             logging.getLogger(__name__).warning(f"Error animando número: {e}")
             label.setText(str(new_value))
             return
@@ -870,11 +891,13 @@ def update_ultra_premium_stats_ui(
             label.setText(str(new_value))
             return
         steps = max(10, int(duration / 30))
-        delta = (new - old) / steps
+        _ = (new - old) / steps
         current = [float(old)]
-        count = [0]
+        _ = [0]
 
         def update():
+            """TODO: Add docstring"""
+            # TODO: Add input validation
             if count[0] >= steps:
                 label.setText(str(new))
                 timer.stop()
@@ -896,17 +919,17 @@ def update_ultra_premium_stats_ui(
     ) -> None:
         if widget and hasattr(widget, "value_label"):
             label = widget.value_label
-            trend = getattr(widget, "trend_label", None)
+            _ = getattr(widget, "trend_label", None)
             badge = getattr(widget, "badge_label", None)
-            old = label.text()
+            _ = label.text()
             # Tendencia: comparar con último valor
             try:
-                prev = (
+                _ = (
                     int(widget._last_value)
                     if widget._last_value is not None
                     else int(old)
                 )
-                curr = int(new_value)
+                _ = int(new_value)
                 if trend:
                     if curr > prev:
                         trend.setText("▲")
@@ -950,7 +973,6 @@ def update_ultra_premium_stats_ui(
                     int(new_value)
                     animate_number(label, old, new_value)
                 except (ValueError, TypeError) as e:
-                    import logging
                     logging.getLogger(__name__).warning(f"Error animando número en set_value_and_animate: {e}")
                     label.setText(str(new_value))
                 animate_pulse(widget)
@@ -959,8 +981,10 @@ def update_ultra_premium_stats_ui(
 
     # Badge lógica para ocupadas: alerta si >80% del total
     def badge_ocupadas(val: Any) -> tuple[str, str, str, bool]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         try:
-            val = int(val)
+            _ = int(val)
             total_widget = getattr(instance, "mesas_total_widget", None)
             total = (
                 int(total_widget.value_label.text())
@@ -970,18 +994,18 @@ def update_ultra_premium_stats_ui(
             if total > 0 and val / total >= 0.8:
                 return ("!", "#ef4444", "Alerta: Más del 80% de mesas ocupadas", True)
         except (ValueError, TypeError) as e:
-            import logging
             logging.getLogger(__name__).warning(f"Error calculando badge ocupadas: {e}")
         return ("", "#ef4444", "", False)
 
     # Badge lógica para reservadas: alerta si >0
     def badge_reservadas(val: Any) -> tuple[str, str, str, bool]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         try:
             val = int(val)
             if val > 0:
                 return ("!", "#f59e0b", "Alerta: Hay mesas reservadas", True)
         except (ValueError, TypeError) as e:
-            import logging
             logging.getLogger(__name__).warning(f"Error calculando badge reservadas: {e}")
         return ("", "#f59e0b", "", False)
 
@@ -991,12 +1015,12 @@ def update_ultra_premium_stats_ui(
     set_value_and_animate(
         getattr(instance, "mesas_ocupadas_widget", None),
         ocupadas,
-        badge_logic=badge_ocupadas,
+        _ = badge_ocupadas,
     )
     set_value_and_animate(
         getattr(instance, "mesas_reservadas_widget", None),
         reservadas,
-        badge_logic=badge_reservadas,
+        _ = badge_reservadas,
     )
 
     set_value_and_animate(getattr(instance, "zonas_widget", None), zonas)
@@ -1021,6 +1045,8 @@ def update_ultra_premium_stats_ui(
 
 
 def create_header(parent: Any, instance: Any, layout: Any) -> Any:
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     # Imports locales eliminados (ya están al inicio del archivo)
     # Contenedor principal del header
     header_container = QFrame()
@@ -1059,7 +1085,7 @@ def create_header(parent: Any, instance: Any, layout: Any) -> Any:
     # header_layout.addWidget(separator1, 0)
 
     # Sección principal: filtros y control (solo UI moderna de chips)
-    filters_container = FiltersSectionUltraPremium(instance)
+    _ = FiltersSectionUltraPremium(instance)
     # Dar más espacio al contenedor de filtros ahora que no hay título
     filters_container.setSizePolicy(
         QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
@@ -1069,7 +1095,6 @@ def create_header(parent: Any, instance: Any, layout: Any) -> Any:
     separator2 = create_ultra_premium_separator()
     header_layout.addWidget(separator2, 0)
     # Sección derecha: estadísticas premium
-    from PyQt6.QtWidgets import QWidget
 
     right_section_widget = QWidget()
     right_section_widget.setMinimumWidth(580)  # Mantener mínimo para 5 tarjetas
@@ -1087,7 +1112,8 @@ def create_header(parent: Any, instance: Any, layout: Any) -> Any:
     header_container.setSizePolicy(
         QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
     )
-    layout.addWidget(header_container)
+    if layout is not None:
+        layout.addWidget(header_container)
     return header_container
 
 

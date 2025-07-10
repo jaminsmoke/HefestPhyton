@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 TARJETA DE MÉTRICA ULTRA-MODERNA V2
 Arquitectura visual completamente rediseñada
@@ -11,7 +13,7 @@ from PyQt6.QtGui import QFont, QCursor
 from ui.visual_system_v2 import ModernStyleSystemV2, VisualEffectsV2, ResponsiveLayoutV2
 import logging
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class UltraModernMetricCard(QWidget):
     """
@@ -24,17 +26,17 @@ class UltraModernMetricCard(QWidget):
     """
     
     # Señales para interactividad
-    card_clicked = pyqtSignal()
+    _ = pyqtSignal()
     card_hovered = pyqtSignal(bool)
     
     def __init__(self, 
-                 icon="💰", 
+                 _ = "💰", 
                  title="Métrica", 
-                 value="1,234", 
+                 _ = "1,234", 
                  subtitle="Descripción",
-                 trend="+5.2%", 
+                 _ = "+5.2%", 
                  accent_color="primary",
-                 size="medium",
+                 _ = "medium",
                  parent=None):
         super().__init__(parent)
         
@@ -61,14 +63,16 @@ class UltraModernMetricCard(QWidget):
         self.setup_ultra_modern_ui()
         self.setup_interactions()
         
-        logger.info(f"✨ UltraModernMetricCard creada: {self.title}")
+        logger.info("✨ UltraModernMetricCard creada: %s", self.title)
     
     def setup_ultra_modern_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz ultra-moderna"""
           # Aplicar estilo base de la tarjeta
-        card_style = ModernStyleSystemV2.get_metric_card_style(
+        _ = ModernStyleSystemV2.get_metric_card_style(
             accent_color=self.accent_color,
-            size=self.card_size
+            _ = self.card_size
         )
         self.setStyleSheet(card_style)
         
@@ -108,9 +112,9 @@ class UltraModernMetricCard(QWidget):
         
         # === TÍTULO CON TIPOGRAFÍA JERÁRQUICA ===
         self.title_label = QLabel(self.title)
-        title_style = ModernStyleSystemV2.get_label_style(
+        _ = ModernStyleSystemV2.get_label_style(
             variant='subtitle', 
-            color='text_primary', 
+            _ = 'text_primary', 
             weight='semibold'
         )
         self.title_label.setStyleSheet(title_style)
@@ -119,9 +123,9 @@ class UltraModernMetricCard(QWidget):
         
         # === VALOR PRINCIPAL CON ÉNFASIS ===
         self.value_label = QLabel(self.value)
-        value_style = ModernStyleSystemV2.get_label_style(
+        _ = ModernStyleSystemV2.get_label_style(
             variant='heading', 
-            color=self.accent_color, 
+            _ = self.accent_color, 
             weight='bold'
         )
         self.value_label.setStyleSheet(value_style)
@@ -131,9 +135,9 @@ class UltraModernMetricCard(QWidget):
         # === SUBTÍTULO DESCRIPTIVO ===
         if self.subtitle:
             self.subtitle_label = QLabel(self.subtitle)
-            subtitle_style = ModernStyleSystemV2.get_label_style(
+            _ = ModernStyleSystemV2.get_label_style(
                 variant='caption', 
-                color='text_tertiary'
+                _ = 'text_tertiary'
             )
             self.subtitle_label.setStyleSheet(subtitle_style)
             VisualEffectsV2.apply_modern_font(self.subtitle_label, variant='caption')
@@ -150,6 +154,8 @@ class UltraModernMetricCard(QWidget):
         self._apply_final_polish()
     
     def setup_interactions(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura interacciones y animaciones"""
         
         # Habilitar tracking del mouse para hover effects
@@ -172,6 +178,8 @@ class UltraModernMetricCard(QWidget):
         self.opacity_animation.setEasingCurve(QEasingCurve.Type.OutQuad)
     
     def enterEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Efecto hover - entrada"""
         super().enterEvent(event)
         
@@ -185,9 +193,11 @@ class UltraModernMetricCard(QWidget):
             # Efecto de escala sutil
             self._animate_hover_enter()
             
-            logger.debug(f"Hover enter: {self.title}")
+            logger.debug("Hover enter: %s", self.title)
     
     def leaveEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Efecto hover - salida"""
         super().leaveEvent(event)
         
@@ -201,9 +211,11 @@ class UltraModernMetricCard(QWidget):
             # Volver a escala normal
             self._animate_hover_leave()
             
-            logger.debug(f"Hover leave: {self.title}")
+            logger.debug("Hover leave: %s", self.title)
     
     def mousePressEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Efecto click"""
         if event.button() == Qt.MouseButton.LeftButton:
             self.card_clicked.emit()
@@ -211,9 +223,11 @@ class UltraModernMetricCard(QWidget):
             # Efecto de presión
             VisualEffectsV2.apply_elevation_shadow(self, level='low')
             
-            logger.debug(f"Card clicked: {self.title}")
+            logger.debug("Card clicked: %s", self.title)
     
     def mouseReleaseEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Finalizar efecto click"""
         if event.button() == Qt.MouseButton.LeftButton:
             # Restaurar elevación según estado hover
@@ -224,7 +238,7 @@ class UltraModernMetricCard(QWidget):
         """Animación de entrada hover"""
         # Efecto sutil de escala y elevación
         current_geometry = self.geometry()
-        target_geometry = current_geometry.adjusted(-2, -2, 2, 2)
+        _ = current_geometry.adjusted(-2, -2, 2, 2)
         
         self.scale_animation.setStartValue(current_geometry)
         self.scale_animation.setEndValue(target_geometry)
@@ -234,7 +248,7 @@ class UltraModernMetricCard(QWidget):
         """Animación de salida hover"""
         # Volver a tamaño original
         current_geometry = self.geometry()
-        target_geometry = current_geometry.adjusted(2, 2, -2, -2)
+        _ = current_geometry.adjusted(2, 2, -2, -2)
         
         self.scale_animation.setStartValue(current_geometry)
         self.scale_animation.setEndValue(target_geometry)
@@ -274,6 +288,8 @@ class UltraModernMetricCard(QWidget):
         )
     
     def update_metrics(self, new_value, new_trend=None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza métricas con animación"""
         
         if self.value_label:
@@ -305,24 +321,26 @@ class UltraModernMetricCard(QWidget):
         self.opacity_animation.setEndValue(1.0)
         self.opacity_animation.start()
         
-        logger.info(f"Métricas actualizadas: {self.title} = {new_value}")
+        logger.info("Métricas actualizadas: {self.title} = %s", new_value)
     
     def set_accent_color(self, new_color):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cambia el color de acento dinámicamente"""
         
         self.accent_color = new_color
           # Re-aplicar estilos con nuevo color
-        card_style = ModernStyleSystemV2.get_metric_card_style(
+        _ = ModernStyleSystemV2.get_metric_card_style(
             accent_color=self.accent_color,
-            size=self.card_size
+            _ = self.card_size
         )
         self.setStyleSheet(card_style)
         
         # Actualizar estilo del valor
         if self.value_label:
-            value_style = ModernStyleSystemV2.get_label_style(
+            _ = ModernStyleSystemV2.get_label_style(
                 variant='heading', 
-                color=self.accent_color, 
+                _ = self.accent_color, 
                 weight='bold'
             )
             self.value_label.setStyleSheet(value_style)

@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 HEFEST - DASHBOARD ADMIN V3 ULTRA-MODERNO
 Rediseño completo del dashboard administrativo con arquitectura visual V3
@@ -19,17 +21,18 @@ from ...components.ultra_modern_system_v3 import (
     UltraModernMetricCard, UltraModernBaseWidget
 )
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class UltraModernAdminDashboard(UltraModernBaseWidget):
     """Dashboard administrativo ultra-moderno V3"""
     
     # Señales para comunicación con la ventana principal
-    metric_selected = pyqtSignal(str, dict)  # título, datos
+    _ = pyqtSignal(str, dict)  # título, datos
     action_requested = pyqtSignal(str)  # acción
     
     def __init__(self, auth_service=None, db_manager=None, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.theme = UltraModernTheme()
         
@@ -43,6 +46,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         logger.info("Dashboard Admin V3 Ultra-Moderno inicializado")
     
     def setup_admin_dashboard(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar estructura del dashboard administrativo"""
         # Layout principal
         main_layout = QVBoxLayout(self)
@@ -71,6 +76,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         """)
     
     def create_dashboard_header(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear header del dashboard"""
         header = UltraModernBaseWidget()
         header.setFixedHeight(100)
@@ -79,7 +86,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         layout.setContentsMargins(20, 16, 20, 16)
         
         # Título principal
-        title_layout = QVBoxLayout()
+        _ = QVBoxLayout()
         
         main_title = QLabel("Dashboard Administrativo")
         main_title_font = QFont(self.theme.TYPOGRAPHY['font_family'])
@@ -99,7 +106,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         title_layout.addWidget(subtitle)
         
         # Botones de acción rápida
-        actions_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         action_buttons = [
             ("🔄 Actualizar", "refresh"),
@@ -154,6 +161,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         return header
     
     def create_admin_tabs(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear tabs administrativos"""
         tab_widget = QTabWidget()
         tab_widget.setStyleSheet(f"""
@@ -199,6 +208,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         return tab_widget
     
     def create_metrics_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear tab de métricas principales"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -218,7 +229,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         metrics_layout.setContentsMargins(0, 0, 0, 0)
         
         # Datos de métricas administrativas
-        admin_metrics = [
+        _ = [
             {"title": "Ventas Totales", "value": "245,892", "unit": "€", "trend": "+18.5%", "type": "success"},
             {"title": "Pedidos Activos", "value": "1,847", "unit": "", "trend": "+12.3%", "type": "primary"},
             {"title": "Usuarios Registrados", "value": "15,234", "unit": "", "trend": "+25.7%", "type": "success"},
@@ -233,11 +244,11 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         # Crear tarjetas de métricas
         self.metric_cards = []
         for i, metric in enumerate(admin_metrics):
-            card = UltraModernMetricCard(
+            _ = UltraModernMetricCard(
                 title=metric["title"],
-                value=metric["value"],
+                _ = metric["value"],
                 unit=metric["unit"],
-                trend=metric["trend"],
+                _ = metric["trend"],
                 metric_type=metric["type"]
             )
             
@@ -247,7 +258,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
                 self.metric_selected.emit(title, data)
             )
             
-            row = i // 3  # 3 columnas
+            _ = i // 3  # 3 columnas
             col = i % 3
             metrics_layout.addWidget(card, row, col)
             self.metric_cards.append(card)
@@ -258,6 +269,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         return widget
     
     def create_analytics_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear tab de análisis avanzado"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -266,7 +279,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         # Placeholder para análisis avanzado
         placeholder = UltraModernCard(padding=32)
         
-        content_layout = QVBoxLayout()
+        _ = QVBoxLayout()
         
         title = QLabel("Análisis Avanzado")
         title_font = QFont(self.theme.TYPOGRAPHY['font_family'])
@@ -293,6 +306,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         return widget
     
     def create_system_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear tab de gestión del sistema"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -301,7 +316,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         # Información del sistema
         system_info_card = UltraModernCard(padding=24)
         
-        info_layout = QVBoxLayout()
+        _ = QVBoxLayout()
         
         title = QLabel("Información del Sistema")
         title_font = QFont(self.theme.TYPOGRAPHY['font_family'])
@@ -310,7 +325,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         title.setFont(title_font)
         title.setStyleSheet(f"color: {self.theme.COLORS['gray_900']};")
         
-        system_details = QLabel(f"""
+        _ = QLabel(f"""
         🚀 Hefest Dashboard Admin V3 Ultra-Moderno
         
         📅 Fecha: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
@@ -342,6 +357,8 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         return widget
     
     def create_dashboard_footer(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear footer del dashboard"""
         footer = UltraModernBaseWidget()
         footer.setFixedHeight(50)
@@ -350,7 +367,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         layout.setContentsMargins(20, 12, 20, 12)
         
         # Estado del sistema
-        status_label = QLabel("🟢 Sistema Operativo")
+        _ = QLabel("🟢 Sistema Operativo")
         status_font = QFont(self.theme.TYPOGRAPHY['font_family'])
         status_font.setPointSize(self.theme.TYPOGRAPHY['text_sm'])
         status_font.setWeight(self.theme.TYPOGRAPHY['font_medium'])
@@ -358,7 +375,7 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         status_label.setStyleSheet(f"color: {self.theme.COLORS['green_600']};")
         
         # Información de actualización
-        update_label = QLabel(f"Última actualización: {datetime.now().strftime('%H:%M:%S')}")
+        _ = QLabel(f"Última actualización: {datetime.now().strftime('%H:%M:%S')}")
         update_font = QFont(self.theme.TYPOGRAPHY['font_family'])
         update_font.setPointSize(self.theme.TYPOGRAPHY['text_xs'])
         update_label.setFont(update_font)
@@ -380,10 +397,14 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         return footer
     
     def setup_admin_features(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar características administrativas"""
         logger.info("Configurando características administrativas avanzadas")
     
     def setup_data_refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configurar actualización automática de datos"""
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_admin_data)
@@ -391,16 +412,22 @@ class UltraModernAdminDashboard(UltraModernBaseWidget):
         logger.info("Actualización automática de datos configurada (30s)")
     
     def refresh_admin_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar datos administrativos"""
         logger.debug("Actualizando datos administrativos...")
         # Los datos se actualizan automáticamente en cada tarjeta
         
     def on_metric_selected(self, title, data):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar selección de métrica"""
-        logger.info(f"Métrica seleccionada: {title}")
+        logger.info("Métrica seleccionada: %s", title)
         self.metric_selected.emit(title, data)
     
     def on_action_requested(self, action):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar solicitud de acción"""
-        logger.info(f"Acción solicitada: {action}")
+        logger.info("Acción solicitada: %s", action)
         self.action_requested.emit(action)

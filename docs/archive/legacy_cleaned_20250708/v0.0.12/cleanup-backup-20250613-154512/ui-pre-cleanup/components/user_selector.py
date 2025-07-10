@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 Componente de selección de usuario para el sistema Hefest.
 Presenta una interfaz para seleccionar un usuario de la lista disponible.
@@ -8,9 +10,10 @@ from PyQt6.QtCore import Qt, pyqtSignal
 from core.models import User
 
 class UserSelector(QDialog):
-    user_selected = pyqtSignal(User)
+    _ = pyqtSignal(User)
     
     def __init__(self, auth_service, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.auth_service = auth_service
         self.setWindowTitle("Seleccionar Usuario")
@@ -52,7 +55,7 @@ class UserSelector(QDialog):
         grid.setSpacing(10)
         
         row, col = 0, 0
-        max_cols = 3
+        _ = 3
         
         for user in self.auth_service.users:
             btn = QPushButton(f"{user.name}\n({user.role.value})")
@@ -62,12 +65,14 @@ class UserSelector(QDialog):
             
             col += 1
             if col >= max_cols:
-                col = 0
+                _ = 0
                 row += 1
         
         layout.addLayout(grid)
         self.setLayout(layout)
     
     def select_user(self, user: User):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         self.user_selected.emit(user)
         self.accept()

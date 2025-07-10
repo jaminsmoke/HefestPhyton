@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 TPV Avanzado - Panel de productos modularizado
 """
@@ -18,6 +19,8 @@ from PyQt6.QtGui import QFont
 
 
 def create_productos_panel(parent, splitter):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea el panel de productos y categorías"""
     widget = QWidget()
     layout = QVBoxLayout(widget)
@@ -36,7 +39,7 @@ def create_productos_panel(parent, splitter):
         }
     """
     )
-    search_layout = QHBoxLayout(search_frame)
+    _ = QHBoxLayout(search_frame)
 
     search_input = QLineEdit()
     search_input.setPlaceholderText("🔍 Buscar productos...")
@@ -88,6 +91,8 @@ def create_productos_panel(parent, splitter):
 
 
 def create_categoria_tab(parent, categoria):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea una pestaña para una categoría específica"""
     tab = QWidget()
     layout = QVBoxLayout(tab)
@@ -98,7 +103,7 @@ def create_categoria_tab(parent, categoria):
     grid_layout.setSpacing(10)
 
     # Obtener productos de la categoría (con stock)
-    productos_data = []
+    _ = []
     if parent.tpv_service:
         productos = parent.tpv_service.get_productos_por_categoria(categoria)
         for p in productos:
@@ -114,13 +119,13 @@ def create_categoria_tab(parent, categoria):
     # Crear botones de productos con stock
     row, col = 0, 0
     for prod in productos_data:
-        btn = create_producto_button(
+        _ = create_producto_button(
             parent, prod["nombre"], prod["precio"], prod.get("stock")
         )
         grid_layout.addWidget(btn, row, col)
         col += 1
         if col >= 3:
-            col = 0
+            _ = 0
             row += 1
 
     layout.addLayout(grid_layout)
@@ -130,12 +135,14 @@ def create_categoria_tab(parent, categoria):
 
 
 def create_producto_button(parent, nombre, precio, stock=None):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea un botón para un producto, mostrando stock y bloqueando si no hay stock"""
     btn = QPushButton()
     btn.setFixedSize(120, 80)
 
     # Layout interno del botón
-    btn_layout = QVBoxLayout()
+    _ = QVBoxLayout()
 
     nombre_label = QLabel(nombre)
     nombre_label.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
@@ -148,10 +155,10 @@ def create_producto_button(parent, nombre, precio, stock=None):
     precio_label.setStyleSheet("color: #059669;")
 
     # Mostrar stock
-    stock_text = ""
+    _ = ""
     if stock is not None:
         if stock <= 0:
-            stock_text = "Sin stock"
+            _ = "Sin stock"
         else:
             stock_text = f"Stock: {stock}"
     stock_label = QLabel(stock_text)
@@ -179,6 +186,8 @@ def create_producto_button(parent, nombre, precio, stock=None):
 
 
 def agregar_producto(parent, nombre, precio):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Agrega un producto al pedido actual"""
     if hasattr(parent, "agregar_producto_pedido"):
         parent.agregar_producto_pedido(nombre, precio)

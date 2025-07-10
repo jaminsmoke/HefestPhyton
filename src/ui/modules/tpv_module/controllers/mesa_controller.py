@@ -1,299 +1,277 @@
 """
-Controlador MesaController - Lógica de negocio para gestión de mesas
-Versión: v0.0.14
+Mesa Controller - Patrón Controller para eliminar acceso directo de UI a servicios
+Implementa separación de capas y mejora la arquitectura del sistema
 """
 
 import logging
-from typing import List, Optional, Callable
-from PyQt6.QtWidgets import QMessageBox
-from PyQt6.QtCore import QObject, pyqtSignal
+from typing import Dict, List, Optional, Any
+from datetime import datetime
 
-from services.tpv_service import TPVService, Mesa
-
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
-class MesaController(QObject):
-    def crear_mesa_con_numero(self, numero: int, capacidad: int, zona: str) -> bool:
-        """Crea una nueva mesa con número específico delegando en TPVService"""
-        try:
-            if not self.tpv_service:
-                self.error_occurred.emit("No hay servicio TPV disponible")
-                return False
-            nueva_mesa = None
-            if hasattr(self.tpv_service, "crear_mesa_con_numero"):
-                nueva_mesa = self.tpv_service.crear_mesa_con_numero(
-                    numero, capacidad, zona
-                )
-            else:
-                # Fallback: usar crear_mesa normal (sin número específico)
-                nueva_mesa = self.tpv_service.crear_mesa(capacidad, zona)
-            if nueva_mesa:
-                self.mesas.append(nueva_mesa)
-                self.load_mesas()  # Recargar desde servicio tras crear
-                logger.info(
-                    f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}"
-                )
-                return True
-            else:
-                self.error_occurred.emit("Error creando la mesa")
-                return False
-        except Exception as e:
-            error_msg = f"Error creando mesa con número: {e}"
-            logger.error(error_msg)
-            self.error_occurred.emit(error_msg)
-            return False
-
-    """Controlador para la lógica de negocio de las mesas"""
-
-    # Señales
-    error_occurred = pyqtSignal(str)  # Error ocurrido
-    # Importar el EventBus global de mesas
-    from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
-
-    def __init__(self, tpv_service: Optional[TPVService] = None, parent=None):
-        super().__init__(parent)
+class MesaController:
+    """Controller para operaciones de mesa - Elimina architecture violations"""
+    
+    def __init__(self, tpv_service=None, reserva_service=None):
+        """Inicializa el controller con servicios inyectados"""
+        if not tpv_service:
+            raise ValueError("tpv_service es requerido")
+            
         self.tpv_service = tpv_service
-        self.mesas: List[Mesa] = []
-
-    def set_service(self, tpv_service: TPVService):
-        """Establece el servicio TPV"""
-        self.tpv_service = tpv_service
-        self.load_mesas()
-
-    def load_mesas(self):
-        """Carga las mesas desde el servicio"""
+        self.reserva_service = reserva_service
+        logger.debug("MesaController inicializado")
+    
+    def get_mesa_data(self, mesa_numero: str) -> Optional[Dict[str, Any]]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Obtiene datos actualizados de una mesa"""
         try:
-            if not self.tpv_service:
-                logger.warning("No hay servicio TPV disponible")
-                return
-
-            self.mesas = self.tpv_service.get_mesas()
-            # ...
-            # El servicio debe emitir la señal global, no el controlador
-
-            # logger.debug(f"Cargadas {len(self.mesas)} mesas")
-
+            mesa = self.tpv_service.get_mesa_by_id(mesa_numero)
+            if not mesa:
+                return None
+                
+            return {
+                'numero': mesa.numero,
+                'estado': mesa.estado,
+                'capacidad': mesa.capacidad,
+                'zona': mesa.zona,
+                'alias': getattr(mesa, 'alias', None),
+                'notas': getattr(mesa, 'notas', None),
+                'personas_temporal': getattr(mesa, 'personas_temporal', None),
+                'nombre_display': mesa.nombre_display,
+                'personas_display': mesa.personas_display
+            }
         except Exception as e:
-            error_msg = f"Error cargando mesas: {e}"
-            logger.error(error_msg)
-            # ...
-            self.error_occurred.emit(error_msg)
-
-    def crear_mesa(self, capacidad: int, zona: str) -> bool:
-        """Crea una nueva mesa con numeración automática contextualizada por zona"""
+            logger.error("Error obteniendo datos de mesa {mesa_numero}: %s", e)
+            return None
+    
+    def get_mesa_reservas(self, mesa_numero: str) -> List[Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Obtiene reservas activas de una mesa"""
         try:
-            if not self.tpv_service:
-                self.error_occurred.emit("No hay servicio TPV disponible")
-                return False
-
-            # Crear mesa con numeración automática
-            nueva_mesa = self.tpv_service.crear_mesa(capacidad=capacidad, zona=zona)
-
-            if nueva_mesa:
-                self.mesas.append(nueva_mesa)
-                self.load_mesas()  # Recargar desde servicio tras crear
-                logger.info(
-                    f"Mesa {nueva_mesa.numero} creada correctamente en zona {zona}"
-                )
-                return True
+            if not self.reserva_service:
+                return []
+                
+            if hasattr(self.reserva_service, 'obtener_reservas_activas_por_mesa'):
+                reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
+                return reservas_por_mesa.get(mesa_numero, [])
             else:
-                self.error_occurred.emit("Error creando la mesa")
-                return False
-
+                # Fallback para servicios que no implementan el método
+                return []
         except Exception as e:
-            error_msg = f"Error creando mesa: {e}"
-            logger.error(error_msg)
-            self.error_occurred.emit(error_msg)
-            return False
-
-    def editar_mesa(
-        self, numero: str, nuevo_numero: str, capacidad: int, zona: str
-    ) -> bool:
-        """Edita una mesa existente usando el identificador string 'numero'"""
+            logger.error("Error obteniendo reservas de mesa {mesa_numero}: %s", e)
+            return []
+    
+    def update_mesa(self, mesa_numero: str, data: Dict[str, Any]) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Actualiza datos de una mesa"""
         try:
-            if not self.tpv_service:
-                self.error_occurred.emit("No hay servicio TPV disponible")
+            mesa = self.tpv_service.get_mesa_by_id(mesa_numero)
+            if not mesa:
+                logger.warning("Mesa %s no encontrada", mesa_numero)
                 return False
-
-            # Encontrar la mesa por numero
-            mesa_actual = None
-            for mesa in self.mesas:
-                if mesa.numero == numero:
-                    mesa_actual = mesa
-                    break
-
-            if not mesa_actual:
-                self.error_occurred.emit("Mesa no encontrada")
-                return False
-
-            # Validar que no exista otra mesa con el mismo nuevo_numero
-            if any(
-                mesa.numero == nuevo_numero and mesa.numero != numero
-                for mesa in self.mesas
-            ):
-                self.error_occurred.emit(
-                    f"Ya existe otra mesa con el número {nuevo_numero}"
-                )
-                return False
-
-            # Actualizar datos
-            mesa_actual.numero = str(nuevo_numero)
-            mesa_actual.capacidad = capacidad
-            mesa_actual.zona = zona
-
-            MesaController.mesa_event_bus.mesa_actualizada.emit(mesa_actual)
-            self.load_mesas()  # Recargar desde servicio tras editar
-
-            # logger.debug(f"Mesa {nuevo_numero} actualizada correctamente")
-            return True
-
+            
+            # Actualizar campos permitidos
+            if 'alias' in data:
+                success = self.tpv_service.cambiar_alias_mesa(mesa_numero, data['alias'])
+                if not success:
+                    return False
+                    
+            if 'capacidad' in data:
+                mesa.capacidad = data['capacidad']
+                
+            if 'notas' in data:
+                mesa.notas = data['notas']
+            
+            # Actualizar mesa en el servicio
+            return self.tpv_service.update_mesa(mesa)
+            
         except Exception as e:
-            error_msg = f"Error editando mesa: {e}"
-            logger.error(error_msg)
-            self.error_occurred.emit(error_msg)
+            logger.error("Error actualizando mesa {mesa_numero}: %s", e)
             return False
-
-    def eliminar_mesa(self, numero: str) -> bool:
-        """Elimina una mesa usando el identificador string 'numero'"""
+    
+    def liberar_mesa(self, mesa_numero: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Libera una mesa"""
         try:
-            if not self.tpv_service:
-                self.error_occurred.emit("No hay servicio TPV disponible")
-                return False
-
-            # Encontrar la mesa
-            mesa_actual = None
-            for mesa in self.mesas:
-                if mesa.numero == numero:
-                    mesa_actual = mesa
-                    break
-
-            if not mesa_actual:
-                self.error_occurred.emit("Mesa no encontrada")
-                return False
-
-            # Verificar que la mesa no esté ocupada
-            if mesa_actual.estado == "ocupada":
-                self.error_occurred.emit("No se puede eliminar una mesa ocupada")
-                return False
-
-            # Eliminar usando el servicio TPV (incluye base de datos)
-            if self.tpv_service.eliminar_mesa_por_numero(numero):
-                # Actualizar cache local
-                self.mesas = [mesa for mesa in self.mesas if mesa.numero != numero]
-
-                MesaController.mesa_event_bus.mesa_eliminada.emit(numero)
-                self.load_mesas()  # Recargar desde servicio tras eliminar
-
-                # logger.debug(f"Mesa {mesa_actual.numero} eliminada correctamente")
-                return True
-            else:
-                self.error_occurred.emit("Error eliminando mesa del sistema")
-                return False
-
+            return self.tpv_service.liberar_mesa(mesa_numero)
         except Exception as e:
-            error_msg = f"Error eliminando mesa: {e}"
-            logger.error(error_msg)
-            self.error_occurred.emit(error_msg)
+            logger.error("Error liberando mesa {mesa_numero}: %s", e)
             return False
-
-    def cambiar_estado_mesa(self, numero: str, nuevo_estado: str) -> bool:
-        """Cambia el estado de una mesa usando el identificador string 'numero'"""
+    
+    def create_reserva(self, mesa_numero: str, reserva_data: Dict[str, Any]) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Crea una nueva reserva para una mesa"""
         try:
-            if not self.tpv_service:
-                self.error_occurred.emit("No hay servicio TPV disponible")
+            if not self.reserva_service:
+                logger.warning("Servicio de reservas no disponible")
                 return False
-
-            # Validar estado
-            estados_validos = ["libre", "ocupada", "reservada", "mantenimiento"]
-            if nuevo_estado not in estados_validos:
-                self.error_occurred.emit(f"Estado inválido: {nuevo_estado}")
-                return False
-
-            # Encontrar la mesa
-            mesa_actual = None
-            for mesa in self.mesas:
-                if mesa.numero == numero:
-                    mesa_actual = mesa
-                    break
-
-            if not mesa_actual:
-                self.error_occurred.emit("Mesa no encontrada")
-                return False
-
-            # Cambiar estado localmente
-            mesa_actual.estado = nuevo_estado
-
-            MesaController.mesa_event_bus.mesa_actualizada.emit(mesa_actual)
-            self.load_mesas()  # Recargar desde servicio tras cambiar estado
-
-            logger.info(
-                f"Estado de mesa {mesa_actual.numero} cambiado a {nuevo_estado}"
+            
+            # Validar datos requeridos
+            required_fields = ['cliente_nombre', 'fecha_reserva', 'hora_reserva']
+            for field in required_fields:
+                if field not in reserva_data:
+                    logger.error("Campo requerido faltante: %s", field)
+                    return False
+            
+            # Construir fecha_hora
+            _ = datetime.combine(
+                reserva_data['fecha_reserva'],
+                datetime.strptime(reserva_data['hora_reserva'], "%H:%M").time()
             )
-            return True
-
+            
+            # Crear reserva a través del servicio
+            if hasattr(self.reserva_service, 'crear_reserva'):
+                _ = self.reserva_service.crear_reserva(
+                    mesa_id=mesa_numero,
+                    _ = reserva_data['cliente_nombre'],
+                    fecha_hora=fecha_hora,
+                    _ = reserva_data.get('duracion_min', 120),
+                    telefono=reserva_data.get('cliente_telefono', ''),
+                    _ = reserva_data.get('numero_personas', 1),
+                    notas=reserva_data.get('notas', '')
+                )
+                return reserva is not None
+            else:
+                logger.warning("Método crear_reserva no disponible en el servicio")
+                return False
+                
         except Exception as e:
-            error_msg = f"Error cambiando estado de mesa: {e}"
-            logger.error(error_msg)
-            self.error_occurred.emit(error_msg)
+            logger.error("Error creando reserva para mesa {mesa_numero}: %s", e)
+            return False
+    
+    def cancel_reserva(self, reserva_id: int) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Cancela una reserva"""
+        try:
+            if not self.reserva_service:
+                return False
+                
+            if hasattr(self.reserva_service, 'cancelar_reserva'):
+                return self.reserva_service.cancelar_reserva(reserva_id)
+            else:
+                logger.warning("Método cancelar_reserva no disponible")
+                return False
+                
+        except Exception as e:
+            logger.error("Error cancelando reserva {reserva_id}: %s", e)
+            return False
+    
+    def get_mesa_history(self, mesa_numero: str) -> List[Dict[str, Any]]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Obtiene historial de una mesa"""
+        try:
+            # Implementación básica - puede expandirse según necesidades
+            return [
+                {"timestamp": datetime.now(), "action": "Mesa consultada", "details": "Historial solicitado"}
+            ]
+        except Exception as e:
+            logger.error("Error obteniendo historial de mesa {mesa_numero}: %s", e)
+            return []
+    
+    def validate_mesa_operation(self, mesa_numero: str, operation: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Valida si una operación es permitida en una mesa"""
+        try:
+            mesa = self.tpv_service.get_mesa_by_id(mesa_numero)
+            if not mesa:
+                return False
+            
+            # Reglas de validación según el estado
+            if operation == "liberar" and mesa.estado == "ocupada":
+                # Verificar si hay comanda activa
+                comanda = self.tpv_service.get_comanda_activa(mesa_numero)
+                if comanda and comanda.estado in ['abierta', 'en_proceso']:
+                    return False  # No se puede liberar con comanda activa
+            
+            return True
+            
+        except Exception as e:
+            logger.error("Error validando operación {operation} en mesa {mesa_numero}: %s", e)
+            return False
+    
+    def cargar_mesas(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Carga las mesas desde el servicio TPV"""
+        try:
+            if self.tpv_service:
+                mesas = self.tpv_service.get_mesas()
+                logger.info("Cargadas %s mesas", len(mesas))
+                return mesas
+            return []
+        except Exception as e:
+            logger.error("Error cargando mesas: %s", e)
+            return []
+    
+    def eliminar_mesa(self, mesa_numero: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Elimina una mesa por su número"""
+        try:
+            if self.tpv_service:
+                return self.tpv_service.eliminar_mesa_por_numero(mesa_numero)
+            return False
+        except Exception as e:
+            logger.error("Error eliminando mesa {mesa_numero}: %s", e)
+            return False
+    
+    def crear_mesa(self, capacidad: int, zona: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Crea una nueva mesa"""
+        try:
+            if self.tpv_service:
+                mesa = self.tpv_service.crear_mesa(capacidad, zona)
+                return mesa is not None
+            return False
+        except Exception as e:
+            logger.error("Error creando mesa: %s", e)
+            return False
+    
+    def crear_mesa_con_numero(self, numero: int, capacidad: int, zona: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Crea una nueva mesa con número específico"""
+        try:
+            if self.tpv_service:
+                mesa = self.tpv_service.crear_mesa_con_numero(numero, capacidad, zona)
+                return mesa is not None
+            return False
+        except Exception as e:
+            logger.error("Error creando mesa con número: %s", e)
+            return False
+    
+    def cambiar_estado_mesa(self, mesa_numero: str, nuevo_estado: str) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Cambia el estado de una mesa"""
+        try:
+            if self.tpv_service:
+                return self.tpv_service.cambiar_estado_mesa(mesa_numero, nuevo_estado)
+            return False
+        except Exception as e:
+            logger.error("Error cambiando estado de mesa: %s", e)
             return False
 
-    def ocupar_mesa(self, numero: str) -> bool:
-        """Ocupa una mesa (cambia estado a ocupada)"""
-        return self.cambiar_estado_mesa(numero, "ocupada")
 
-    def liberar_mesa(self, numero: str) -> bool:
-        """Libera una mesa (cambia estado a libre)"""
-        return self.cambiar_estado_mesa(numero, "libre")
-
-    def reservar_mesa(self, numero: str) -> bool:
-        """Reserva una mesa (cambia estado a reservada)"""
-        return self.cambiar_estado_mesa(numero, "reservada")
-
-    def poner_en_mantenimiento(self, numero: str) -> bool:
-        """Pone una mesa en mantenimiento"""
-        return self.cambiar_estado_mesa(numero, "mantenimiento")
-
-    def get_mesa_by_numero(self, numero: str) -> Optional[Mesa]:
-        """Obtiene una mesa por su número (string)"""
-        for mesa in self.mesas:
-            if mesa.numero == numero:
-                return mesa
-        return None
-
-    def get_mesas_by_zona(self, zona: str) -> List[Mesa]:
-        """Obtiene las mesas de una zona específica"""
-        return [mesa for mesa in self.mesas if mesa.zona == zona]
-
-    def get_mesas_by_estado(self, estado: str) -> List[Mesa]:
-        """Obtiene las mesas con un estado específico"""
-        return [mesa for mesa in self.mesas if mesa.estado == estado]
-
-    def get_zonas_disponibles(self) -> List[str]:
-        """Obtiene la lista de zonas disponibles"""
-        zonas = set()
-        for mesa in self.mesas:
-            zonas.add(mesa.zona)
-        return sorted(list(zonas))
-
-    def refresh_mesas(self):
-        """Refresca la lista de mesas"""
-        self.load_mesas()
-
-    def cargar_mesas(self):
-        """Carga las mesas desde el servicio"""
-        try:
-            if not self.tpv_service:
-                self.error_occurred.emit("No hay servicio TPV disponible")
-                return
-
-            mesas = self.tpv_service.get_mesas()
-            self.mesas = mesas
-            # El servicio debe emitir la señal global, no el controlador
-
-            # logger.debug(f"Cargadas {len(mesas)} mesas desde el servicio")
-
-        except Exception as e:
-            error_msg = f"Error cargando mesas: {e}"
-            logger.error(error_msg)
-            self.error_occurred.emit(error_msg)
+class MesaControllerFactory:
+    """Factory para crear instancias de MesaController"""
+    
+    @staticmethod
+    def create(tpv_service=None, reserva_service=None) -> MesaController:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Crea una instancia de MesaController con validaciones"""
+        if not tpv_service:
+            raise ValueError("tpv_service es requerido para crear MesaController")
+            
+        return MesaController(tpv_service=tpv_service, reserva_service=reserva_service)

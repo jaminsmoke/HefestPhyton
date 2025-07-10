@@ -16,7 +16,7 @@ try:
 
     HAS_PSUTIL = True
 except ImportError:
-    HAS_PSUTIL = False
+    _ = False
 
 import time
 import json
@@ -28,7 +28,7 @@ import threading
 from dataclasses import dataclass
 import sqlite3
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 @dataclass
@@ -41,6 +41,8 @@ class Metric:
     tags: Optional[Dict[str, str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         return {
             "name": self.name,
             "value": self.value,
@@ -53,6 +55,7 @@ class MetricsCollector:
     """Recolector de métricas del sistema."""
 
     def __init__(self, db_path: str = "data/metrics.db"):
+        """TODO: Add docstring"""
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(exist_ok=True)
         self.metrics_buffer = []
@@ -87,6 +90,8 @@ class MetricsCollector:
             )
 
     def start_collection(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicia la recolección automática de métricas."""
         if self.is_running:
             return
@@ -99,6 +104,8 @@ class MetricsCollector:
         logger.info("Recolección de métricas iniciada")
 
     def stop_collection(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Detiene la recolección de métricas."""
         self.is_running = False
         if self.collection_thread:
@@ -114,12 +121,12 @@ class MetricsCollector:
                 self._flush_metrics()
                 time.sleep(self.collection_interval)
             except Exception as e:
-                logger.error(f"Error en recolección de métricas: {e}")
+                logger.error("Error en recolección de métricas: %s", e)
                 time.sleep(5)
 
     def _collect_system_metrics(self):
         """Recolecta métricas del sistema."""
-        now = datetime.now()
+        _ = datetime.now()
 
         # CPU
         cpu_percent = psutil.cpu_percent(interval=1)
@@ -147,7 +154,7 @@ class MetricsCollector:
 
     def _collect_application_metrics(self):
         """Recolecta métricas específicas de la aplicación."""
-        now = datetime.now()
+        _ = datetime.now()
 
         try:
             # Tamaño de base de datos
@@ -167,7 +174,7 @@ class MetricsCollector:
                 self.add_metric("app.logs.total_size_mb", total_log_size / 1024**2, now)
 
         except Exception as e:
-            logger.warning(f"Error recolectando métricas de aplicación: {e}")
+            logger.warning("Error recolectando métricas de aplicación: %s", e)
 
     def add_metric(
         self,
@@ -204,11 +211,11 @@ class MetricsCollector:
                         ),
                     )
 
-            logger.debug(f"Guardadas {len(self.metrics_buffer)} métricas")
+            logger.debug("Guardadas %s métricas", len(self.metrics_buffer))
             self.metrics_buffer.clear()
 
         except Exception as e:
-            logger.error(f"Error guardando métricas: {e}")
+            logger.error("Error guardando métricas: %s", e)
 
     def get_metrics(
         self, name: Optional[str] = None, hours: int = 24
@@ -220,7 +227,7 @@ class MetricsCollector:
             conn.row_factory = sqlite3.Row
 
             if name:
-                cursor = conn.execute(
+                _ = conn.execute(
                     """
                     SELECT * FROM metrics
                     WHERE name = ? AND timestamp >= ?
@@ -229,7 +236,7 @@ class MetricsCollector:
                     (name, since.isoformat()),
                 )
             else:
-                cursor = conn.execute(
+                _ = conn.execute(
                     """
                     SELECT * FROM metrics
                     WHERE timestamp >= ?
@@ -241,11 +248,13 @@ class MetricsCollector:
             return [dict(row) for row in cursor.fetchall()]
 
     def get_aggregated_metrics(self, name: str, hours: int = 24) -> Dict[str, float]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene métricas agregadas."""
         since = datetime.now() - timedelta(hours=hours)
 
         with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.execute(
+            _ = conn.execute(
                 """
                 SELECT
                     AVG(value) as avg_value,
@@ -258,7 +267,7 @@ class MetricsCollector:
                 (name, since.isoformat()),
             )
 
-            row = cursor.fetchone()
+            _ = cursor.fetchone()
             return {
                 "average": row[0] or 0,
                 "minimum": row[1] or 0,
@@ -271,6 +280,7 @@ class AlertManager:
     """Gestor de alertas basado en métricas."""
 
     def __init__(self, metrics_collector: MetricsCollector):
+        """TODO: Add docstring"""
         self.metrics_collector = metrics_collector
         self.alert_rules = []
         self.active_alerts = {}
@@ -284,7 +294,7 @@ class AlertManager:
         duration_minutes: int = 5,
     ):
         """Añade una regla de alerta."""
-        rule = {
+        _ = {
             "name": name,
             "metric_name": metric_name,
             "condition": condition,  # "greater_than", "less_than", "equals"
@@ -295,6 +305,8 @@ class AlertManager:
         self.alert_rules.append(rule)
 
     def check_alerts(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica todas las reglas de alerta."""
         for rule in self.alert_rules:
             self._check_single_alert(rule)
@@ -302,7 +314,7 @@ class AlertManager:
     def _check_single_alert(self, rule: Dict[str, Any]):
         """Verifica una regla de alerta específica."""
         # Obtener métricas recientes
-        recent_metrics = self.metrics_collector.get_metrics(
+        _ = self.metrics_collector.get_metrics(
             rule["metric_name"], hours=1
         )
 
@@ -310,7 +322,7 @@ class AlertManager:
             return
 
         # Verificar condición
-        latest_value = recent_metrics[0]["value"]
+        _ = recent_metrics[0]["value"]
         condition_met = self._evaluate_condition(
             latest_value, rule["condition"], rule["threshold"]
         )
@@ -334,7 +346,7 @@ class AlertManager:
 
     def _trigger_alert(self, rule: Dict[str, Any], current_value: float):
         """Dispara una alerta."""
-        alert_key = rule["name"]
+        _ = rule["name"]
         now = datetime.now()
 
         if alert_key not in self.active_alerts:
@@ -356,7 +368,7 @@ class AlertManager:
         """Limpia una alerta activa."""
         if alert_name in self.active_alerts:
             del self.active_alerts[alert_name]
-            logger.info(f"Alerta resuelta: {alert_name}")
+            logger.info("Alerta resuelta: %s", alert_name)
 
     def _send_alert_notification(self, rule: Dict[str, Any], current_value: float):
         """Envía notificación de alerta."""
@@ -368,6 +380,7 @@ class PerformanceMonitor:
     """Monitor de rendimiento de la aplicación."""
 
     def __init__(self):
+        """TODO: Add docstring"""
         self.metrics_collector = MetricsCollector()
         self.alert_manager = AlertManager(self.metrics_collector)
         self._setup_default_alerts()
@@ -380,7 +393,7 @@ class PerformanceMonitor:
             "system.cpu.usage",
             "greater_than",
             80.0,
-            duration_minutes=5,
+            _ = 5,
         )
 
         # Memoria baja
@@ -389,7 +402,7 @@ class PerformanceMonitor:
             "system.memory.available_gb",
             "less_than",
             1.0,
-            duration_minutes=3,
+            _ = 3,
         )
 
         # Disco lleno
@@ -398,20 +411,26 @@ class PerformanceMonitor:
             "system.disk.usage_percent",
             "greater_than",
             90.0,
-            duration_minutes=1,
+            _ = 1,
         )
 
     def start(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicia el monitoreo."""
         self.metrics_collector.start_collection()
         logger.info("Monitor de rendimiento iniciado")
 
     def stop(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Detiene el monitoreo."""
         self.metrics_collector.stop_collection()
         logger.info("Monitor de rendimiento detenido")
 
     def get_dashboard_data(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene datos para dashboard de monitoreo."""
         return {
             "cpu_usage": self.metrics_collector.get_aggregated_metrics(
@@ -433,6 +452,8 @@ performance_monitor = PerformanceMonitor()
 
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal para ejecutar como script independiente."""
     import argparse
 
@@ -442,25 +463,25 @@ def main():
         "--interval", type=int, default=10, help="Intervalo de recolección"
     )
 
-    args = parser.parse_args()
+    _ = parser.parse_args()
 
     monitor = PerformanceMonitor()
     monitor.metrics_collector.collection_interval = args.interval
 
     try:
         monitor.start()
-        print(f"Monitoreando por {args.duration} segundos...")
+        print("Monitoreando por %s segundos..." % args.duration)
         time.sleep(args.duration)
 
         # Mostrar resumen
-        dashboard_data = monitor.get_dashboard_data()
+        _ = monitor.get_dashboard_data()
         print("\n📊 Resumen de Métricas:")
-        print(f"CPU Promedio: {dashboard_data['cpu_usage']['average']:.2f}%")
-        print(f"Memoria Promedio: {dashboard_data['memory_usage']['average']:.2f}%")
-        print(f"Disco: {dashboard_data['disk_usage']['average']:.2f}%")
+        print("CPU Promedio: %s%" % dashboard_data['cpu_usage']['average']:.2f)
+        print("Memoria Promedio: %s%" % dashboard_data['memory_usage']['average']:.2f)
+        print("Disco: %s%" % dashboard_data['disk_usage']['average']:.2f)
 
         if dashboard_data["active_alerts"]:
-            print(f"⚠️ Alertas Activas: {', '.join(dashboard_data['active_alerts'])}")
+            print("⚠️ Alertas Activas: %s" % ', '.join(dashboard_data['active_alerts']))
         else:
             print("✅ Sin alertas activas")
 

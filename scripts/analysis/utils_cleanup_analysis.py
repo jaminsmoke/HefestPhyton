@@ -1,18 +1,21 @@
+from typing import Optional, Dict, List, Any
+import os
+
 #!/usr/bin/env python3
 """
 Análisis de archivos obsoletos en la carpeta utils/
 """
 
-import os
-import sys
 
 def analyze_utils_folder():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Analiza archivos en utils/ y determina cuáles son obsoletos"""
     
-    base_path = "src/utils"
+    _ = "src/utils"
     
     # Archivos actuales en utils/
-    current_files = [
+    _ = [
         "advanced_config.py",           # ✅ ACTIVO - Configuración avanzada
         "animation_helper.py",          # ✅ ACTIVO - Helper de animaciones
         "config.py",                    # ✅ ACTIVO - Configuración base 
@@ -31,7 +34,7 @@ def analyze_utils_folder():
     print("=" * 80)
     
     print("\n📋 ARCHIVOS ACTIVOS (MANTENER):")
-    active_files = [
+    _ = [
         "advanced_config.py",
         "animation_helper.py", 
         "config.py",
@@ -43,26 +46,26 @@ def analyze_utils_folder():
     ]
     
     for file in active_files:
-        print(f"  ✅ {file}")
+        print("  ✅ %s" % file)
     
     print("\n🗑️  ARCHIVOS OBSOLETOS/DUPLICADOS (ELIMINAR):")
-    obsolete_files = [
+    _ = [
         "qt_smart_css.py",              # Duplicado de qt_smart_css_fixed.py
         "qt_smart_css_fixed.py"         # No se usa activamente, solo en backups
     ]
     
     for file in obsolete_files:
-        print(f"  ❌ {file}")
+        print("  ❌ %s" % file)
     
     print("\n🔍 ARCHIVOS A REVISAR:")
-    review_files = [
+    _ = [
         "modern_style_bypass.py"        # Usado solo internamente, evaluar necesidad
     ]
     
     for file in review_files:
-        print(f"  🔄 {file}")
+        print("  🔄 %s" % file)
     
-    print("\n" + "=" * 80)
+    print("\n"  %  "=" * 80)
     print("PLAN DE LIMPIEZA UTILS/")
     print("=" * 80)
     
@@ -71,7 +74,7 @@ def analyze_utils_folder():
     
     print("\n🗑️ FASE 2: Eliminar archivos obsoletos")
     for file in obsolete_files:
-        print(f"  • Eliminar src/utils/{file}")
+        print("  • Eliminar src/utils/%s" % file)
     
     print("\n🔍 FASE 3: Revisar modern_style_bypass.py")
     print("  • Verificar si modern_style_bypass.py tiene uso real")
@@ -91,10 +94,10 @@ def analyze_utils_folder():
     }
 
 if __name__ == "__main__":
-    result = analyze_utils_folder()
+    _ = analyze_utils_folder()
     
     print(f"\n📊 RESUMEN:")
-    print(f"  • Archivos activos: {len(result['active'])}")
-    print(f"  • Archivos obsoletos: {len(result['obsolete'])}")
-    print(f"  • Archivos a revisar: {len(result['review'])}")
-    print(f"  • Total archivos analizados: {len(result['active']) + len(result['obsolete']) + len(result['review'])}")
+    print("  • Archivos activos: %s" % len(result['active']))
+    print("  • Archivos obsoletos: %s" % len(result['obsolete']))
+    print("  • Archivos a revisar: %s" % len(result['review']))
+    print("  • Total archivos analizados: %s" % len(result['active']) + len(result['obsolete']) + len(result['review']))

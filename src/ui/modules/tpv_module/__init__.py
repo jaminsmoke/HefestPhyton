@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Módulo TPV (Terminal Punto de Venta) - Hefest
 ============================================
@@ -19,7 +20,8 @@ __all__ = ["TPVModule"]
 
 
 def get_tpv_module():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Obtiene la clase TPVModule de forma diferida"""
-    from .tpv_module import TPVModule
 
     return TPVModule

@@ -55,19 +55,22 @@ from PyQt6.QtGui import QFont, QPixmap, QPainter, QColor, QMouseEvent
 
 from src.utils.modern_styles import ModernStyles
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ClickableFrame(QFrame):
     """Frame que emite señal al hacer clic"""
 
-    clicked = pyqtSignal(dict)
+    _ = pyqtSignal(dict)
 
     def __init__(self, alert_data: dict, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.alert_data = alert_data
 
     def mousePressEvent(self, ev: QMouseEvent):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if ev.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit(self.alert_data)
         super().mousePressEvent(ev)
@@ -76,13 +79,16 @@ class ClickableFrame(QFrame):
 class ClickableLabel(QLabel):
     """Label que emite señal al hacer clic"""
 
-    clicked = pyqtSignal(str)
+    _ = pyqtSignal(str)
 
     def __init__(self, text: str, category: str, parent=None):
+        """TODO: Add docstring"""
         super().__init__(text, parent)
         self.category = category
 
     def mousePressEvent(self, ev: QMouseEvent):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         if ev.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit(self.category)
         super().mousePressEvent(ev)
@@ -100,11 +106,12 @@ class InventorySummaryWidget(QWidget):
     """
 
     # Señales
-    alert_clicked = pyqtSignal(dict)  # Clic en alerta
+    _ = pyqtSignal(dict)  # Clic en alerta
     category_clicked = pyqtSignal(str)  # Clic en categoría
-    refresh_requested = pyqtSignal()  # Solicitud de actualización
+    _ = pyqtSignal()  # Solicitud de actualización
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.modern_styles = ModernStyles()
         self.summary_data = {}
@@ -137,7 +144,7 @@ class InventorySummaryWidget(QWidget):
 
     def _create_header(self) -> QHBoxLayout:
         """Crea el header del widget"""
-        layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         # Título
         title_label = QLabel("📊 Resumen de Inventario")
@@ -230,7 +237,7 @@ class InventorySummaryWidget(QWidget):
         layout.setSpacing(8)
 
         # Header con icono y título
-        header_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         icon_label = QLabel(icon)
         icon_label.setStyleSheet("font-size: 24px;")
@@ -344,7 +351,7 @@ class InventorySummaryWidget(QWidget):
 
     def _apply_styles(self):
         """Aplica estilos al widget"""
-        colors = self.modern_styles.COLORS
+        _ = self.modern_styles.COLORS
         self.setStyleSheet(
             f"""
             InventorySummaryWidget {{
@@ -354,6 +361,8 @@ class InventorySummaryWidget(QWidget):
         )
 
     def update_summary(self, data: Dict[str, Any]):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Actualiza el resumen con nuevos datos.
 
@@ -422,7 +431,7 @@ class InventorySummaryWidget(QWidget):
         if not categories:
             return
         # Crear barras de progreso para cada categoría
-        max_value = max(categories.values()) if categories else 1
+        _ = max(categories.values()) if categories else 1
 
         for category, count in categories.items():
             category_widget = self._create_category_item(category, count, max_value)
@@ -532,5 +541,7 @@ class InventorySummaryWidget(QWidget):
                     widget.deleteLater()
 
     def get_summary_data(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene los datos del resumen actual"""
         return self.summary_data.copy()

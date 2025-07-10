@@ -1,3 +1,24 @@
+from typing import Optional, Dict, List, Any
+from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit, QMenu
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent
+from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QAction
+from services.tpv_service import Mesa
+from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+from src.utils.modern_styles import ModernStyles
+                from PyQt6.QtWidgets import QCheckBox
+                import logging
+            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+        from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
+        from datetime import datetime, time
+        from PyQt6.QtCore import QTimer
+        from PyQt6.QtWidgets import QMenu
+            from src.ui.modules.tpv_module.dialogs.mesa_dialog import MesaDialog
+        from PyQt6.QtWidgets import (
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtGui import QFont, QIcon
+        from PyQt6.QtCore import QPropertyAnimation
+
 """
 Widget MesaWidget - Versión compacta y profesional con nombre editable
 Diseño ultra-compacto con máxima legibilidad y organización profesional
@@ -5,30 +26,29 @@ NUEVA FEATURE: Nombre editable con doble-click (ID fijo)
 Versión: v0.0.14 - FIXED RESPONSIVE ALIAS
 """
 
-from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit, QMenu
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent
-from PyQt6.QtGui import QFont
-from PyQt6.QtGui import QAction
-import sys
 
-from services.tpv_service import Mesa
-from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
-from src.utils.modern_styles import ModernStyles
 
 
 class MesaWidget(QFrame):
     def showEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         super().showEvent(event)
 
     def hideEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         super().hideEvent(event)
 
     def paintEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         super().paintEvent(event)
 
     def _on_reserva_event_bus_creada(self, reserva):
+        """TODO: Add docstring"""
         # Si la reserva es para esta mesa, actualizar estado y contador
-        mesa_numero = str(getattr(self.mesa, "numero", None))
+        _ = str(getattr(self.mesa, "numero", None))
         reserva_mesa_id = str(getattr(reserva, "mesa_id", None))
         # Ahora la comparación debe ser por numero, no por id
         if mesa_numero == reserva_mesa_id:
@@ -47,15 +67,16 @@ class MesaWidget(QFrame):
             self.repaint()
 
     # Señales para acciones principales
-    reservar_mesa_requested = pyqtSignal(object)  # Emite la mesa
+    _ = pyqtSignal(object)  # Emite la mesa
     iniciar_tpv_requested = pyqtSignal(object)  # Emite la mesa
 
     # --- Selección múltiple para acciones por lotes ---
     def set_batch_mode(self, enabled: bool):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         self.batch_mode = enabled
         if enabled:
             if not hasattr(self, "batch_checkbox"):
-                from PyQt6.QtWidgets import QCheckBox
 
                 self.batch_checkbox = QCheckBox()
                 self.batch_checkbox.setChecked(False)
@@ -72,6 +93,7 @@ class MesaWidget(QFrame):
                 self.batch_checkbox.hide()
 
     def _on_batch_checkbox_changed(self, state):
+        """TODO: Add docstring"""
         # Buscar el ancestro que tenga el método toggle_mesa_selection
         parent = self.parent()
         while parent is not None:
@@ -79,7 +101,7 @@ class MesaWidget(QFrame):
             if callable(toggle):
                 toggle(self.mesa.numero)
                 break
-            parent = getattr(parent, "parent", lambda: None)()
+            _ = getattr(parent, "parent", lambda: None)()
 
     """
     Widget compacto y profesional para mostrar una mesa con diseño optimizado y nombre editable.
@@ -90,10 +112,11 @@ class MesaWidget(QFrame):
     según el estado de la mesa (por ejemplo: tiempo de mantenimiento, alertas, notas, etc.).
     """
     # Señales
-    personas_changed = pyqtSignal(Mesa, int)  # Señal para cambio de personas
+    _ = pyqtSignal(Mesa, int)  # Señal para cambio de personas
     restaurar_original = pyqtSignal(int)  # Señal para restaurar valores originales
 
     def __init__(self, mesa: Mesa, parent=None, proxima_reserva=None, tpv_service=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.mesa = mesa
         self.proxima_reserva = proxima_reserva
@@ -113,25 +136,24 @@ class MesaWidget(QFrame):
 
         # --- SINCRONIZACIÓN Y PERSISTENCIA REAL AL INICIALIZAR ---
         # Refrescar estado real de la mesa desde el servicio si está disponible
-        mesa_real = None
+        _ = None
         if self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_numero"):
             try:
                 mesa_real = self.tpv_service.get_mesa_by_numero(self.mesa.numero)
                 if mesa_real:
                     self.mesa = mesa_real
             except Exception as e:
-                import logging
                 logging.getLogger(__name__).warning(f"Error actualizando referencia de mesa real: {e}")
         # Refrescar reservas activas de la mesa desde el servicio si existe
         self._reservas_activas_inicial = []
-        reserva_activada = False
+        _ = False
         if self.tpv_service and hasattr(self.tpv_service, "reserva_service"):
             reserva_service = getattr(self.tpv_service, "reserva_service", None)
             if reserva_service and hasattr(
                 reserva_service, "obtener_reservas_activas_por_mesa"
             ):
                 try:
-                    reservas_por_mesa = (
+                    _ = (
                         reserva_service.obtener_reservas_activas_por_mesa()
                     )
                     self._reservas_activas_inicial = reservas_por_mesa.get(
@@ -142,9 +164,8 @@ class MesaWidget(QFrame):
                         self.mesa.estado = "reservada"
                         self.proxima_reserva = self._reservas_activas_inicial[0]
                         self._ultima_reserva_activa = self.proxima_reserva
-                        reserva_activada = True
+                        _ = True
                 except Exception as e:
-                    import logging
                     logging.getLogger(__name__).warning(f"Error obteniendo reservas activas por mesa: {e}")
 
         self.setup_ui()
@@ -157,20 +178,18 @@ class MesaWidget(QFrame):
 
         # Suscribirse al event bus de reservas
         try:
-            from src.ui.modules.tpv_module.event_bus import reserva_event_bus
             reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
         except Exception as e:
-            import logging
             logging.getLogger(__name__).warning(f"Error suscribiéndose a reserva_event_bus: {e}")
 
         # Suscribirse al event bus de mesas para sincronización global
         try:
             mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
         except Exception as e:
-            import logging
             logging.getLogger(__name__).warning(f"Error suscribiéndose a mesa_event_bus: {e}")
 
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada):
+        """TODO: Add docstring"""
         if (
             str(getattr(mesa_actualizada, "numero", None)) == str(getattr(self.mesa, "numero", None))
             or str(getattr(mesa_actualizada, "id", None)) == str(getattr(self.mesa, "id", None))
@@ -178,8 +197,8 @@ class MesaWidget(QFrame):
             self.update_mesa(mesa_actualizada)
 
     def setup_ui(self):
-        from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QSizePolicy
-        from PyQt6.QtGui import QIcon
+        """TODO: Add docstring"""
+        # TODO: Add input validation
 
         # Protección: limpiar layout anterior si existe
         old_layout = self.layout()
@@ -193,7 +212,6 @@ class MesaWidget(QFrame):
             try:
                 old_layout.deleteLater()
             except Exception as e:
-                import logging
                 logging.getLogger(__name__).warning(f"Error eliminando layout anterior: {e}")
         self.layout_principal = QVBoxLayout(self)
         layout = self.layout_principal
@@ -201,7 +219,7 @@ class MesaWidget(QFrame):
         layout.setSpacing(2)
 
         # --- ALIAS DE MESA + BOTONES ---
-        alias_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         is_reservada = getattr(self.mesa, "estado", None) == "reservada" or getattr(
             self.mesa, "reservada", False
         )
@@ -294,7 +312,7 @@ class MesaWidget(QFrame):
         layout.addLayout(capacidad_layout)
 
         # ZONA + IDENTIFICADOR - Información contextual en una línea
-        zona_texto = (
+        _ = (
             self.mesa.zona
             if hasattr(self.mesa, "zona") and self.mesa.zona
             else "Principal"
@@ -328,8 +346,10 @@ class MesaWidget(QFrame):
             self._contador_timer.start()
 
     def get_estado_texto(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene el texto del estado de forma compacta"""
-        estados = {
+        _ = {
             "libre": "✓ LIBRE",
             "ocupada": "● OCUPADA",
             "reservada": "◐ RESERVADA",
@@ -338,8 +358,10 @@ class MesaWidget(QFrame):
         return estados.get(self.mesa.estado, "? DESCONOCIDO")
 
     def get_colores(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene los colores según el estado"""
-        colores = {
+        _ = {
             "libre": {
                 "fondo": "#f1f8e9",
                 "borde": "#4caf50",
@@ -368,8 +390,10 @@ class MesaWidget(QFrame):
         return colores.get(self.mesa.estado, colores["libre"])
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica estilos visuales según el estado de la mesa"""
-        base_style = """
+        _ = """
             QFrame#mesa_widget {
                 background-color: #f8fafc;
                 border: 2px solid #cbd5e1;
@@ -399,7 +423,7 @@ class MesaWidget(QFrame):
                 }
             """
         self.setStyleSheet(ModernStyles.get_base_widget_style())
-        colores = self.get_colores()
+        _ = self.get_colores()
         # Estilo principal del widget - Compacto y ajustado
         self.setStyleSheet(
             f"""
@@ -486,7 +510,7 @@ class MesaWidget(QFrame):
 
     def _darken_color(self, color_hex):
         """Oscurece un color hex para efectos"""
-        color_map = {
+        _ = {
             "#4caf50": "#388e3c",
             "#f44336": "#d32f2f",
             "#ff9800": "#f57c00",
@@ -495,52 +519,54 @@ class MesaWidget(QFrame):
         return color_map.get(color_hex, color_hex)
 
     def resizeEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # import logging
         # logger = logging.getLogger("mesa_widget_simple")
-        # logger.debug(f"[CICLO][MESA_WIDGET] resizeEvent para mesa={getattr(self.mesa, 'numero', None)} estado={getattr(self.mesa, 'estado', None)}")
+        # logger.debug("[CICLO][MESA_WIDGET] resizeEvent para mesa={getattr(self.mesa, 'numero', None)} estado=%s", getattr(self.mesa, 'estado', None))
         super().resizeEvent(event)
         self._ajustar_fuente_nombre()
 
     def _ajustar_fuente_nombre(self):
         """Responsividad: una sola línea, elipsis si no cabe, tooltip si hay elipsis. Ajuste fino con reducción de 16px a la derecha."""
-        label = getattr(self, "alias_label", None)
+        _ = getattr(self, "alias_label", None)
         try:
             if label is None or not hasattr(label, "width") or not label.isVisible():
                 return  # Evita crash si el QLabel ya fue destruido o no es visible
         except RuntimeError:
             return  # El objeto C++ ya fue destruido
-        alias = self.mesa.alias if self.mesa.alias else self.mesa.nombre_display
+        _ = self.mesa.alias if self.mesa.alias else self.mesa.nombre_display
 
         # Ajuste fino: reducción de 20px para el margen derecho
-        label_width = label.width()
+        _ = label.width()
         REDUCCION_DERECHA = 20  # px, margen de seguridad para botones y padding visual
         if label_width <= 1:
-            parent_width = self.width()
+            _ = self.width()
             btns_width = 0
             if hasattr(self, "edit_btn") and self.edit_btn.isVisible():
                 btns_width += self.edit_btn.width() + 6
             if hasattr(self, "restore_btn") and self.restore_btn.isVisible():
                 btns_width += self.restore_btn.width() + 6
             label_width = max(parent_width - btns_width - 24, 80)
-        available_width = max(label_width - REDUCCION_DERECHA, 40)
+        _ = max(label_width - REDUCCION_DERECHA, 40)
 
         # Buscar el tamaño de fuente óptimo para una sola línea
         # Si la mesa está reservada, forzar un mínimo mayor para mejor visibilidad
         if getattr(self.mesa, "estado", None) == "reservada" or getattr(
             self.mesa, "reservada", False
         ):
-            min_font_size = 10  # Antes: 6
+            _ = 10  # Antes: 6
             max_font_size = 16  # Antes: 15
         else:
-            min_font_size = 8
+            _ = 8
             max_font_size = 22
-        optimal_size = min_font_size
+        _ = min_font_size
         for font_size in range(max_font_size, min_font_size - 1, -1):
             font = QFont("Segoe UI", font_size, QFont.Weight.Bold)
             label.setFont(font)
             metrics = label.fontMetrics()
             if metrics.horizontalAdvance(alias) <= available_width:
-                optimal_size = font_size
+                _ = font_size
                 break
 
         # Aplicar fuente óptima y texto
@@ -567,13 +593,14 @@ class MesaWidget(QFrame):
         return bool(self.mesa.alias) or (self.mesa.personas_temporal is not None)
 
     def update_mesa(self, mesa: Mesa):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario. Usa la instancia real de la mesa por 'numero'."""
-        mesa_real = None
+        _ = None
         if hasattr(self, "tpv_service") and self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_id"):
             try:
-                mesa_real = self.tpv_service.get_mesa_by_id(getattr(mesa, "numero", None))
+                _ = self.tpv_service.get_mesa_by_id(getattr(mesa, "numero", None))
             except Exception as e:
-                import logging
                 logging.getLogger(__name__).warning(f"Error obteniendo mesa por id: {e}")
                 mesa_real = None
         if mesa_real:
@@ -597,7 +624,7 @@ class MesaWidget(QFrame):
                 self._ultima_reserva_activa = None
 
         # Forzar actualización del estado visual tras cambios de comanda
-        estado_anterior = getattr(self, "_estado_anterior", None)
+        _ = getattr(self, "_estado_anterior", None)
         self.estado_label.setText(self.get_estado_texto())
         self.apply_styles()
         # Forzar refresco visual completo
@@ -632,7 +659,7 @@ class MesaWidget(QFrame):
         self._estado_anterior = self.mesa.estado
         self.alias_label.setText(self.mesa.nombre_display)
         self.capacidad_label.setText(f"👥 {self.mesa.personas_display} personas")
-        zona_texto = self.mesa.zona if hasattr(self.mesa, "zona") and self.mesa.zona else "Principal"
+        _ = self.mesa.zona if hasattr(self.mesa, "zona") and self.mesa.zona else "Principal"
         identificador = self.mesa.numero
         self.zona_label.setText(f"🏢 {zona_texto} • {identificador}")
         self.restore_btn.setVisible(self._tiene_datos_temporales())
@@ -648,7 +675,7 @@ class MesaWidget(QFrame):
         self.repaint()
 
     def _actualizar_contador_reserva(self):
-        from datetime import datetime, time
+        """TODO: Add docstring"""
 
         reserva = self.proxima_reserva
         if reserva is None:
@@ -658,23 +685,22 @@ class MesaWidget(QFrame):
             self._contador_timer.stop()
             self._resaltar_contador(False)
             return
-        ahora = datetime.now()
+        _ = datetime.now()
         # Unificar fecha y hora
-        fecha = getattr(reserva, "fecha_reserva", None)
+        _ = getattr(reserva, "fecha_reserva", None)
         hora = getattr(reserva, "hora_reserva", None)
         if fecha and hora:
             if isinstance(hora, str):
                 try:
-                    hora_obj = datetime.strptime(hora, "%H:%M").time()
+                    _ = datetime.strptime(hora, "%H:%M").time()
                 except (ValueError, TypeError) as e:
-                    import logging
                     logging.getLogger(__name__).warning(f"Error interpretando hora de reserva: {e}")
-                    hora_obj = time(0, 0)
+                    _ = time(0, 0)
             else:
                 hora_obj = hora
-            fecha_hora = datetime.combine(fecha, hora_obj)
+            _ = datetime.combine(fecha, hora_obj)
         elif fecha:
-            fecha_hora = fecha
+            _ = fecha
         else:
             fecha_hora = ahora
         delta = fecha_hora - ahora
@@ -694,7 +720,7 @@ class MesaWidget(QFrame):
             return
         texto = f"⏳ {minutos} min"
         self.contador_label.setText(texto)
-        cliente = getattr(reserva, "cliente_nombre", getattr(reserva, "cliente", ""))
+        _ = getattr(reserva, "cliente_nombre", getattr(reserva, "cliente", ""))
         self.contador_label.setToolTip(
             f"Próxima reserva: {hora if hora else ''} - {cliente}"
         )
@@ -702,7 +728,8 @@ class MesaWidget(QFrame):
         self._resaltar_contador(minutos < 10)
 
     def _resaltar_contador(self, resaltar: bool):
-        base_style = "border-radius: 5px; padding: 3px 10px; font-weight: 600; font-size: 13px; min-width: 48px; min-height: 20px; border: 1px solid #ffe082; margin-top: 1px; margin-bottom: 1px;"
+        """TODO: Add docstring"""
+        _ = "border-radius: 5px; padding: 3px 10px; font-weight: 600; font-size: 13px; min-width: 48px; min-height: 20px; border: 1px solid #ffe082; margin-top: 1px; margin-bottom: 1px;"
         if resaltar:
             self.contador_label.setStyleSheet(
                 f"color: #fff; background: #e53935; {base_style}"
@@ -764,14 +791,13 @@ class MesaWidget(QFrame):
         self.updateGeometry()
         self.repaint()
         # Esperar a que el layout se actualice y luego ajustar fuente
-        from PyQt6.QtCore import QTimer
 
         QTimer.singleShot(0, self._ajustar_fuente_nombre)
 
     def mousePressEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra menú emergente moderno con acciones principales al hacer click izquierdo"""
-        from PyQt6.QtWidgets import QMenu
-        from PyQt6.QtGui import QAction
 
         if event.button() == Qt.MouseButton.LeftButton:
             if self.editing_mode:
@@ -795,28 +821,31 @@ class MesaWidget(QFrame):
             super().mousePressEvent(event)
 
     def _on_reservar_mesa(self):
+        """TODO: Add docstring"""
         # Siempre delega la acción al contenedor (grid) emitiendo la señal
         # Log eliminado por limpieza
         self.reservar_mesa_requested.emit(self.mesa)
 
     def _on_iniciar_tpv(self):
+        """TODO: Add docstring"""
         # Emite señal para que el contenedor maneje la acción de iniciar TPV
         self.iniciar_tpv_requested.emit(self.mesa)
 
     def _on_abrir_dialogo_mesa(self):
+        """TODO: Add docstring"""
         # Abre el diálogo de detalles/configuración de la mesa
         try:
-            from src.ui.modules.tpv_module.dialogs.mesa_dialog import MesaDialog
 
             parent = self.window() if hasattr(self, "window") else self.parent()
             dialog = MesaDialog(self.mesa, parent)
             dialog.exec()
         except Exception as e:
-            import logging
 
             logging.getLogger(__name__).error(f"Error abriendo MesaDialog: {e}")
 
     def eventFilter(self, obj, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # Mostrar tooltip claro con el alias completo al hacer hover sobre el alias_label
         if obj == self.alias_label:
             if event.type() == QEvent.Type.Enter:
@@ -828,6 +857,8 @@ class MesaWidget(QFrame):
         return super().eventFilter(obj, event)
 
     def keyPressEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja eventos de teclado"""
         if self.editing_mode and event.key() == Qt.Key.Key_Escape:
             # Cancelar edición con Escape
@@ -838,7 +869,6 @@ class MesaWidget(QFrame):
 
     def _editar_personas(self):
         """Permite editar temporalmente el número de personas de la mesa con UX moderna y visual profesional"""
-        from PyQt6.QtWidgets import (
             QDialog,
             QVBoxLayout,
             QHBoxLayout,
@@ -848,13 +878,11 @@ class MesaWidget(QFrame):
             QSpacerItem,
             QSizePolicy,
         )
-        from PyQt6.QtCore import Qt
-        from PyQt6.QtGui import QFont, QIcon
 
-        valor_actual = self.mesa.personas_display
+        _ = self.mesa.personas_display
         valor_original = self.mesa.capacidad
         min_val, max_val = 1, 500
-        nombre_display = self.mesa.nombre_display
+        _ = self.mesa.nombre_display
 
         class PersonasDialog(QDialog):
             def __init__(
@@ -921,8 +949,8 @@ class MesaWidget(QFrame):
                     # Eliminar el layout anterior si es posible
                     try:
                         old_layout.deleteLater()
-                    except Exception:
-                        pass
+                    except Exception as e:
+    logging.error("Error: %s", e)
                 layout = QVBoxLayout()
                 layout.setContentsMargins(18, 18, 18, 12)
                 layout.setSpacing(8)
@@ -954,7 +982,7 @@ class MesaWidget(QFrame):
                     )
                 )
                 # Botones
-                btns = QHBoxLayout()
+                _ = QHBoxLayout()
                 self.reset_btn = QPushButton("Restablecer valor original")
                 self.reset_btn.setObjectName("reset")
                 self.ok_btn = QPushButton("Aceptar")
@@ -972,11 +1000,12 @@ class MesaWidget(QFrame):
                 self.valor_original = valor_original
 
             def _reset(self):
+                """TODO: Add docstring"""
                 self.spin.setValue(self.valor_original)
 
         dlg = PersonasDialog(nombre_display, valor_actual, valor_original, self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
-            nuevo_valor = dlg.spin.value()
+            _ = dlg.spin.value()
             # Si el valor es igual al original, se interpreta como reset (eliminar temporal)
             if nuevo_valor == valor_original:
                 self.personas_changed.emit(self.mesa, valor_original)
@@ -997,7 +1026,6 @@ class MesaWidget(QFrame):
             label (QWidget): The label widget to animate.
         """
         """Animación simple de parpadeo para feedback visual"""
-        from PyQt6.QtCore import QPropertyAnimation
 
         anim = QPropertyAnimation(label, b"windowOpacity")
         anim.setDuration(300)

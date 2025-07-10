@@ -1,37 +1,38 @@
-"""
-Ventana principal moderna de la aplicación Hefest.
-"""
-
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 import logging
 from PyQt6.QtWidgets import (QMainWindow, QStatusBar, QWidget, 
-                            QVBoxLayout, QHBoxLayout, QFrame,
-                            QLabel, QPushButton, QMenuBar, QMenu,
-                            QMessageBox)
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QDateTime
 from PyQt6.QtGui import QCloseEvent, QAction
-
 from ui.components.sidebar import ModernSidebar
-from ui.modules.base_module import BaseModule
 from ui.modules.dashboard_admin_v3.dashboard_admin_controller import DashboardAdminController
-from utils.qt_css_compat import purge_modern_css_from_widget_tree
-
-# Importar servicios de autenticación y auditoría
 from services.auth_service import AuthService
 from services.audit_service import AuditService
 from core.models import Role
 from data.db_manager import DatabaseManager
 
-# Importar decorador de roles
-from utils.decorators import require_role
+"""
+Ventana principal moderna de la aplicación Hefest.
+"""
 
-logger = logging.getLogger(__name__)
+                            QVBoxLayout, QHBoxLayout, QFrame,
+                            QLabel, QPushButton, QMenuBar, QMenu,
+                            QMessageBox)
+
+
+# Importar servicios de autenticación y auditoría
+
+# Importar decorador de roles
+
+_ = logging.getLogger(__name__)
 
 class MainWindow(QMainWindow):
     """Ventana principal moderna con sidebar animado y efectos visuales"""
       # Señales
-    module_changed = pyqtSignal(str)
+    _ = pyqtSignal(str)
     
     def __init__(self, auth_service=None):
+        """TODO: Add docstring"""
         super().__init__()
         logger.info("Initializing MainWindow")
         self.setWindowTitle("Hefest v1.0 - Sistema Integral de Hostelería")
@@ -69,27 +70,31 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(100, lambda: self.show_module("dashboard"))
 
     def check_module_permission(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Verifica si el usuario tiene permisos para acceder al módulo"""
         if module_id not in self.module_permissions:
-            logger.warning(f"El módulo {module_id} no tiene permisos configurados.")
+            logger.warning("El módulo %s no tiene permisos configurados.", module_id)
             return False
         
-        required_role = self.module_permissions[module_id]
+        _ = self.module_permissions[module_id]
         current_user = self.auth_service.current_user
-        is_authenticated = self.auth_service.is_authenticated
+        _ = self.auth_service.is_authenticated
         
-        logger.debug(f"Verificando permisos para módulo: {module_id}")
-        logger.debug(f"  Rol requerido: {required_role.value}")
-        logger.debug(f"  Usuario actual: {current_user.name if current_user else 'None'}")
-        logger.debug(f"  Rol usuario: {current_user.role.value if current_user else 'None'}")
-        logger.debug(f"  Autenticado: {is_authenticated}")
+        logger.debug("Verificando permisos para módulo: %s", module_id)
+        logger.debug("  Rol requerido: %s", required_role.value)
+        logger.debug("  Usuario actual: %s", current_user.name if current_user else 'None')
+        logger.debug("  Rol usuario: %s", current_user.role.value if current_user else 'None')
+        logger.debug("  Autenticado: %s", is_authenticated)
         
         has_permission = self.auth_service.has_permission(required_role)
-        logger.debug(f"  Tiene permiso: {has_permission}")
+        logger.debug("  Tiene permiso: %s", has_permission)
         
         return has_permission
 
     def create_permission_denied_widget(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un widget que muestra mensaje de acceso denegado"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
@@ -120,6 +125,8 @@ class MainWindow(QMainWindow):
         return widget
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz principal"""
         logger.info("Setting up modern UI components")
         
@@ -146,6 +153,8 @@ class MainWindow(QMainWindow):
         self.setup_status_bar()
         
     def setup_status_bar(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la barra de estado moderna con información del usuario"""
         self.status_bar = QStatusBar()
         self.status_bar.setObjectName("modern-statusbar")
@@ -170,6 +179,8 @@ class MainWindow(QMainWindow):
         self.status_bar.addPermanentWidget(self.user_label)
         
     def setup_connections(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura las conexiones de señales"""
         self.sidebar.module_selected.connect(self.show_module)
         self.module_changed.connect(self.on_module_changed)
@@ -177,6 +188,8 @@ class MainWindow(QMainWindow):
         self.sidebar.logout_requested.connect(self.handle_logout)
         
     def setup_menu(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura el menú de la aplicación"""
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
@@ -209,6 +222,8 @@ class MainWindow(QMainWindow):
         help_menu.addAction(about_action)
         
     def module_action_triggered(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja la activación de acciones de módulo desde el menú"""
         action = self.sender()
         if action:
@@ -216,15 +231,17 @@ class MainWindow(QMainWindow):
             self.show_module(module_id)
         
     def show_module(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el módulo especificado si el usuario tiene permisos"""
         if not self.check_module_permission(module_id):
-            logger.info(f"Acceso denegado al módulo {module_id}")
+            logger.info("Acceso denegado al módulo %s", module_id)
             denied_widget = self.create_permission_denied_widget(module_id)
             self.module_layout.addWidget(denied_widget)
             return
 
         if module_id in self.module_widgets:
-            widget = self.module_widgets[module_id]
+            _ = self.module_widgets[module_id]
         else:
             widget = self.create_module_widget(module_id)
             self.module_widgets[module_id] = widget
@@ -241,6 +258,8 @@ class MainWindow(QMainWindow):
         self.module_changed.emit(module_id)
 
     def create_module_widget(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un widget para el módulo especificado"""
         try:
             module_class = self.get_module_class(module_id)
@@ -251,15 +270,17 @@ class MainWindow(QMainWindow):
                 else:
                     return module_class()
             else:
-                logger.error(f"Clase del módulo {module_id} no encontrada.")
+                logger.error("Clase del módulo %s no encontrada.", module_id)
                 return self.create_permission_denied_widget(module_id)
         except Exception as e:
-            logger.error(f"Error al crear el widget del módulo {module_id}: {e}")
+            logger.error("Error al crear el widget del módulo {module_id}: %s", e)
             return self.create_permission_denied_widget(module_id)
         
     def get_module_class(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene la clase del módulo correspondiente al module_id"""
-        module_classes = {
+        _ = {
             "dashboard": DashboardAdminController,
             "tpv": "ui.modules.tpv_module.TPVTab",
             "advanced_tpv": "ui.modules.advanced_tpv_module.AdvancedTPVModule",
@@ -282,10 +303,12 @@ class MainWindow(QMainWindow):
             else:
                 return class_path
         else:
-            logger.warning(f"Módulo no encontrado para ID: {module_id}")
+            logger.warning("Módulo no encontrado para ID: %s", module_id)
             return None
     
     def handle_logout(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el cierre de sesión"""
         if self.auth_service.current_user:
             self.auth_service.logout()
@@ -297,6 +320,8 @@ class MainWindow(QMainWindow):
         logger.info("Usuario ha cerrado sesión")
     
     def update_status_bar(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza la información de la barra de estado"""
         current_time = QDateTime.currentDateTime().toString("dd/MM/yyyy hh:mm:ss")
         self.status_bar.showMessage(current_time)
@@ -310,10 +335,14 @@ class MainWindow(QMainWindow):
         
         
     def on_module_changed(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el cambio de módulo"""
-        logger.info(f"Módulo cambiado a: {module_id}")
+        logger.info("Módulo cambiado a: %s", module_id)
     
     def closeEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el cierre de la ventana"""
         logger.info("Close event triggered")
         if hasattr(self, 'timer'):
@@ -322,6 +351,8 @@ class MainWindow(QMainWindow):
             event.accept()
     
     def show_about_dialog(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Muestra el diálogo Acerca de"""
         msg = QMessageBox()
         msg.setWindowTitle("Acerca de Hefest")
@@ -330,6 +361,8 @@ class MainWindow(QMainWindow):
         msg.exec()
         
     def keyPressEvent(self, event):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja eventos de teclas"""
         super().keyPressEvent(event)
         

@@ -1,7 +1,9 @@
+from typing import Optional, Dict, List, Any
+import logging
 # Script para corregir la foreign key de comanda_detalles en SQLite desde Python
 import sqlite3
 
-DB_PATH = 'data/hefest.db'
+_ = 'data/hefest.db'
 
 SQL_FIX = '''
 PRAGMA foreign_keys=off;
@@ -27,12 +29,14 @@ PRAGMA foreign_keys=on;
 '''
 
 def main():
-    conn = sqlite3.connect(DB_PATH)
+    """TODO: Add docstring"""
+    # TODO: Add input validation
+    _ = sqlite3.connect(DB_PATH)
     try:
         conn.executescript(SQL_FIX)
         print("Foreign key de comanda_detalles corregida (ahora apunta a comandas).")
     except Exception as e:
-        print(f"Error al ejecutar el script: {e}")
+    logging.error("Error al ejecutar el script: %s", e)
     finally:
         conn.close()
 

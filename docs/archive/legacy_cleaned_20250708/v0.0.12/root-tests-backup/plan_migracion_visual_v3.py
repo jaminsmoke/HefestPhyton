@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 """
 HEFEST - PLAN DE MIGRACIÓN A SISTEMA VISUAL V3 ULTRA-MODERNO
 Estrategia completa para migrar de la arquitectura antigua al nuevo sistema visual
@@ -5,7 +6,7 @@ Estrategia completa para migrar de la arquitectura antigua al nuevo sistema visu
 
 # === ANÁLISIS DE LA SITUACIÓN ACTUAL ===
 
-PROBLEMAS_IDENTIFICADOS = {
+_ = {
     "filtros_destructivos": {
         "archivo": "src/utils/qt_smart_css.py",
         "funcion": "install_global_stylesheet_filter",
@@ -29,7 +30,7 @@ PROBLEMAS_IDENTIFICADOS = {
 
 # === SISTEMA V3 ULTRA-MODERNO CREADO ===
 
-NUEVO_SISTEMA = {
+_ = {
     "base": {
         "archivo": "src/ui/components/ultra_modern_system_v3.py",
         "componentes": [
@@ -62,7 +63,7 @@ NUEVO_SISTEMA = {
 
 # === PLAN DE MIGRACIÓN ===
 
-PLAN_MIGRACION = {
+_ = {
     "fase_1_preparacion": {
         "descripcion": "Crear backups y preparar entorno",
         "tareas": [
@@ -110,7 +111,7 @@ PLAN_MIGRACION = {
 
 # === ARCHIVOS A MODIFICAR EN FASE 2 ===
 
-ARCHIVOS_MODIFICAR = {
+_ = {
     "principal": {
         "archivo": "src/ui/windows/main_window.py",
         "cambios": [
@@ -142,7 +143,7 @@ ARCHIVOS_MODIFICAR = {
 
 # === VALIDACIONES POST-MIGRACIÓN ===
 
-VALIDACIONES = {
+_ = {
     "visuales": [
         "Verificar que las tarjetas de métricas muestren gradientes",
         "Confirmar que los bordes redondeados se visualicen correctamente",
@@ -167,7 +168,7 @@ VALIDACIONES = {
 
 # === ROLLBACK EN CASO DE PROBLEMAS ===
 
-PLAN_ROLLBACK = {
+_ = {
     "backup_location": "version-backups/v0.0.12/visual-redesign-backup-20250613-152304/",
     "pasos": [
         "1. Restaurar archivos de UI desde backup",

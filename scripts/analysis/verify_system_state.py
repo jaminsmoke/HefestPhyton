@@ -1,3 +1,16 @@
+
+ALLOWED_TABLES = {
+    'usuarios', 'productos', 'mesas', 'clientes', 'habitaciones',
+    'reservas', 'comandas', 'comanda_detalles', 'categorias',
+    'proveedores', 'movimientos_stock', 'zonas'
+}
+
+def validate_table_name(table):
+    if table not in ALLOWED_TABLES:
+        raise ValueError(f"Table '{table}' not allowed")
+    return table
+
+from typing import Optional, Dict, List, Any
 #!/usr/bin/env python3
 """
 Script de verificación del estado del sistema Hefest
@@ -20,6 +33,8 @@ logger = logging.getLogger(__name__)
 DB_PATH = Path(__file__).parent.parent / "data" / "hefest.db"
 
 def verify_system_state():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verificar el estado actual del sistema"""
     
     print("="*60)
@@ -27,27 +42,27 @@ def verify_system_state():
     print("="*60)
     
     if not DB_PATH.exists():
-        logger.error(f"❌ Base de datos no encontrada: {DB_PATH}")
+        logger.error("❌ Base de datos no encontrada: %s", DB_PATH)
         return False
     
     try:
         conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
+        _ = conn.cursor()
         
         # Verificar usuarios (deben existir)
         cursor.execute("SELECT COUNT(*) FROM usuarios")
-        user_count = cursor.fetchone()[0]
+        _ = cursor.fetchone()[0]
         
         if user_count == 0:
             logger.error("❌ CRÍTICO: No hay usuarios en el sistema")
             return False
         elif user_count == 3:
-            logger.info(f"✅ Usuarios: {user_count} usuarios básicos (correcto)")
+            logger.info("✅ Usuarios: %s usuarios básicos (correcto)", user_count)
         else:
-            logger.warning(f"⚠️ Usuarios: {user_count} usuarios (esperado: 3)")
+            logger.warning("⚠️ Usuarios: %s usuarios (esperado: 3)", user_count)
         
         # Verificar tablas operacionales (deben estar vacías)
-        operational_tables = {
+        _ = {
             'mesas': 'Mesas configuradas',
             'productos': 'Productos en inventario',
             'clientes': 'Clientes registrados',
@@ -58,34 +73,34 @@ def verify_system_state():
             'empleados': 'Empleados registrados'
         }
         
-        total_records = 0
+        _ = 0
         config_status = "✅ CONFIGURACIÓN INICIAL"
         
         logger.info("\n📊 ESTADO DE DATOS OPERACIONALES:")
         for table, description in operational_tables.items():
             try:
-                cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                cursor.execute("SELECT COUNT(*) FROM " + table)
                 count = cursor.fetchone()[0]
                 total_records += count
                 
                 if count == 0:
-                    logger.info(f"  ✅ {table}: {count} ({description})")
+                    logger.info("  ✅ {table}: {count} (%s)", description)
                 else:
-                    logger.warning(f"  📊 {table}: {count} ({description})")
-                    config_status = "📊 CON DATOS"
+                    logger.warning("  📊 {table}: {count} (%s)", description)
+                    _ = "📊 CON DATOS"
                     
             except sqlite3.OperationalError as e:
-                logger.warning(f"  ⚠️ {table}: No existe ({e})")
+                logger.warning("  ⚠️ {table}: No existe (%s)", e)
         
         # Estado final
-        logger.info(f"\n🎯 ESTADO FINAL: {config_status}")
+        logger.info("\n🎯 ESTADO FINAL: %s", config_status)
         
         if total_records == 0:
             logger.info("📋 Sistema en CONFIGURACIÓN INICIAL perfecta")
             logger.info("🚀 Listo para configurar establecimiento desde cero")
             logger.info("📊 Dashboard mostrará valores 0 o vacíos (datos reales)")
         else:
-            logger.info(f"📊 Sistema CON DATOS: {total_records} registros totales")
+            logger.info("📊 Sistema CON DATOS: %s registros totales", total_records)
             logger.info("📈 Dashboard mostrará métricas reales basadas en datos")
         
         # Verificar credenciales
@@ -93,12 +108,12 @@ def verify_system_state():
         cursor.execute("SELECT nombre, role FROM usuarios ORDER BY id")
         users = cursor.fetchall()
         for user in users:
-            logger.info(f"  👤 {user[0]} ({user[1]})")
+            logger.info("  👤 {user[0]} (%s)", user[1])
         
         conn.close()
         
         # Resumen final
-        print("\n" + "="*60)
+        print("\n"  %  "="*60)
         if total_records == 0:
             print("✅ SISTEMA EN CONFIGURACIÓN INICIAL CORRECTA")
             print("📊 Dashboard mostrará valores reales (0 o vacíos)")
@@ -113,25 +128,26 @@ def verify_system_state():
         return True
         
     except Exception as e:
-        logger.error(f"❌ Error durante la verificación: {e}")
+        logger.error("❌ Error durante la verificación: %s", e)
         return False
 
 def check_dashboard_manager():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verificar que el RealDataManager esté configurado correctamente"""
     try:
         # Añadir src al path para importar
-        import sys
         sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
         
         from utils.real_data_manager import RealDataManager
         logger.info("✅ RealDataManager disponible")
         return True
     except ImportError as e:
-        logger.error(f"❌ Error importando RealDataManager: {e}")
+        logger.error("❌ Error importando RealDataManager: %s", e)
         return False
 
 if __name__ == "__main__":
-    success = verify_system_state()
+    _ = verify_system_state()
     
     if success:
         logger.info("\n🔍 Verificando componentes del sistema...")

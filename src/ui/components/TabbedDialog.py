@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 TabbedDialog - Componente base para diálogos con pestañas horizontales
 Proporciona estructura estándar y consistente para diálogos complejos
@@ -22,9 +23,10 @@ class TabbedDialog(QDialog):
     """Diálogo base con pestañas horizontales y estructura estándar"""
 
     # Señales estándar
-    accepted_with_data = pyqtSignal(dict)
+    _ = pyqtSignal(dict)
 
     def __init__(self, title: str = "Diálogo", parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.dialog_title = title
         self.tab_pages = {}  # Almacena las páginas por nombre
@@ -32,6 +34,8 @@ class TabbedDialog(QDialog):
         self.apply_base_styles()
 
     def setup_base_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la estructura base del diálogo"""
         self.setModal(True)
         self.setMinimumSize(520, 600)
@@ -55,6 +59,8 @@ class TabbedDialog(QDialog):
         main_layout.addWidget(self.footer_frame)
 
     def create_header(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el header estándar del diálogo"""
         header = QFrame()
         header.setFixedHeight(80)
@@ -91,6 +97,8 @@ class TabbedDialog(QDialog):
         return header
 
     def create_footer(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el footer estándar con botones"""
         footer = QFrame()
         footer.setFixedHeight(60)
@@ -128,23 +136,31 @@ class TabbedDialog(QDialog):
         return footer
 
     def add_tab(self, widget: QWidget, title: str, icon: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Añade una pestaña al diálogo"""
         tab_title = f"{icon} {title}" if icon else title
-        index = self.tab_widget.addTab(widget, tab_title)
+        _ = self.tab_widget.addTab(widget, tab_title)
         self.tab_pages[title] = widget
         return index
 
     def set_header_title(self, title: str, subtitle: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza el título y subtítulo del header"""
         self.title_label.setText(title)
         self.subtitle_label.setText(subtitle)
         self.subtitle_label.setVisible(bool(subtitle))
 
     def set_accept_button_text(self, text: str):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cambia el texto del botón de aceptar"""
         self.accept_btn.setText(text)
 
     def handle_accept(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja la aceptación del diálogo - override en subclases"""
         data = self.collect_data()
         if self.validate_data(data):
@@ -152,14 +168,20 @@ class TabbedDialog(QDialog):
             self.accept()
 
     def collect_data(self) -> dict:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Recolecta datos de todas las pestañas - override en subclases"""
         return {}
 
     def validate_data(self, data: dict) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Valida los datos antes de aceptar - override en subclases"""
         return True
 
     def get_tab_styles(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para las pestañas"""
         return """
             QTabWidget::pane {
@@ -189,6 +211,8 @@ class TabbedDialog(QDialog):
         """
 
     def get_button_style(self, color: str) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Estilos para botones"""
         return f"""
             QPushButton {{
@@ -209,6 +233,8 @@ class TabbedDialog(QDialog):
         """
 
     def apply_base_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica estilos base al diálogo"""
         self.setStyleSheet(
             """

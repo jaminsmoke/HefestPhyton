@@ -1,11 +1,17 @@
+from typing import Optional, Dict, List, Any
+import logging
+from datetime import datetime, timedelta
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, QDate, pyqtSignal, QTimer
+from PyQt6.QtGui import QFont, QColor, QPalette
+from ui.modules.module_base_interface import BaseModule
+        import random
+
 """
 Módulo de reportes y estadísticas del sistema Hefest.
 Proporciona informes detallados sobre ventas, ocupación, inventario y otros KPIs del negocio.
 """
 
-import logging
-from datetime import datetime, timedelta
-from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -29,25 +35,23 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt, QDate, pyqtSignal, QTimer
-from PyQt6.QtGui import QFont, QColor, QPalette
 
 # Comentado: PyQt6.QtChart no está disponible en todas las instalaciones
 # from PyQt6.QtChart import QChart, QChartView, QBarSeries, QBarSet, QLineSeries, QPieSeries, QPieSlice
 # from PyQt6.QtChart import QCategoryAxis, QValueAxis
 
-from ui.modules.module_base_interface import BaseModule
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ReportesModule(BaseModule):
     """Módulo de reportes y estadísticas del sistema"""
 
     # Señales
-    reporte_generado = pyqtSignal(str, dict)  # (tipo_reporte, datos)
+    _ = pyqtSignal(str, dict)  # (tipo_reporte, datos)
 
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setup_ui()
         self.cargar_datos_iniciales()
@@ -62,6 +66,8 @@ class ReportesModule(BaseModule):
         self.timer.start(60000)  # Actualizar cada minuto
 
     def create_module_header(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el header del módulo de reportes"""
         header = QFrame()
         header.setObjectName("module-header")
@@ -81,13 +87,13 @@ class ReportesModule(BaseModule):
         layout.setContentsMargins(20, 0, 20, 0)
 
         # Icono y título
-        title_container = QHBoxLayout()
+        _ = QHBoxLayout()
 
         icon_label = QLabel("📊")
         icon_label.setStyleSheet("font-size: 32px;")
         title_container.addWidget(icon_label)
 
-        title_text = QVBoxLayout()
+        _ = QVBoxLayout()
         title = QLabel("Reportes y Estadísticas")
         title.setStyleSheet("font-size: 24px; font-weight: bold; color: white;")
         subtitle = QLabel("Análisis detallado del rendimiento del negocio")
@@ -143,10 +149,12 @@ class ReportesModule(BaseModule):
         return header
 
     def create_filtros_panel(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el panel de filtros para los reportes"""
         panel = QFrame()
         panel.setStyleSheet("background: #f3f4f6; border-radius: 8px; padding: 10px;")
-        layout = QHBoxLayout(panel)
+        _ = QHBoxLayout(panel)
 
         # Filtros de fecha
         date_label = QLabel("Fecha:")
@@ -175,9 +183,11 @@ class ReportesModule(BaseModule):
         return panel
 
     def create_dashboard_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña del dashboard de reportes"""
         dashboard_tab = QWidget()
-        layout = QVBoxLayout(dashboard_tab)
+        _ = QVBoxLayout(dashboard_tab)
 
         # KPI Cards
         kpi_layout = QHBoxLayout()
@@ -197,6 +207,8 @@ class ReportesModule(BaseModule):
         self.tabs.addTab(dashboard_tab, "Dashboard")
 
     def create_ventas_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de reportes de ventas"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -204,7 +216,7 @@ class ReportesModule(BaseModule):
         layout.setContentsMargins(20, 20, 20, 20)
 
         # Métricas de ventas
-        metricas_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         metricas_data = [
             ("Total Ventas", "15,670€", "Este mes"),
@@ -230,6 +242,8 @@ class ReportesModule(BaseModule):
         self.tabs.addTab(tab, "💰 Ventas")
 
     def create_hospederia_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de reportes de hospedería"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -237,7 +251,7 @@ class ReportesModule(BaseModule):
         layout.setContentsMargins(20, 20, 20, 20)
 
         # Métricas de hospedería
-        hospederia_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         hospederia_data = [
             ("Tasa de Ocupación", "78%", "Este mes"),
@@ -263,6 +277,8 @@ class ReportesModule(BaseModule):
         self.tabs.addTab(tab, "🏨 Hospedería")
 
     def create_inventario_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de reportes de inventario"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -270,7 +286,7 @@ class ReportesModule(BaseModule):
         layout.setContentsMargins(20, 20, 20, 20)
 
         # Métricas de inventario
-        inventario_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         inventario_data = [
             ("Valor Total Stock", "8,450€", "Actualizado"),
@@ -296,6 +312,8 @@ class ReportesModule(BaseModule):
         self.tabs.addTab(tab, "📦 Inventario")
 
     def create_financiero_tab(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la pestaña de reportes financieros"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
@@ -303,7 +321,7 @@ class ReportesModule(BaseModule):
         layout.setContentsMargins(20, 20, 20, 20)
 
         # Métricas financieras
-        financiero_layout = QHBoxLayout()
+        _ = QHBoxLayout()
 
         financiero_data = [
             ("Ingresos Totales", "18,920€", "Este mes"),
@@ -329,6 +347,8 @@ class ReportesModule(BaseModule):
         self.tabs.addTab(tab, "💵 Financiero")
 
     def create_kpi_card(self, titulo, valor, cambio, color):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea una tarjeta de KPI"""
         card = QFrame()
         card.setFrameStyle(QFrame.Shape.StyledPanel)
@@ -358,7 +378,7 @@ class ReportesModule(BaseModule):
         layout.addWidget(valor_label)
 
         # Cambio
-        cambio_label = QLabel(cambio)
+        _ = QLabel(cambio)
         color_cambio = "#10b981" if cambio.startswith("+") else "#ef4444"
         cambio_label.setStyleSheet(
             f"color: {color_cambio}; font-size: 14px; font-weight: 600;"
@@ -368,6 +388,8 @@ class ReportesModule(BaseModule):
         return card
 
     def create_metric_card(self, titulo, valor, periodo):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea una tarjeta de métrica"""
         card = QFrame()
         card.setFrameStyle(QFrame.Shape.StyledPanel)
@@ -400,6 +422,8 @@ class ReportesModule(BaseModule):
         return card
 
     def create_ventas_chart(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para el gráfico de ventas"""
         chart_placeholder = QLabel("Gráfico de Ventas (Placeholder)")
         chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -407,6 +431,8 @@ class ReportesModule(BaseModule):
         return chart_placeholder
 
     def create_ocupacion_chart(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para el gráfico de ocupación"""
         chart_placeholder = QLabel("Gráfico de Ocupación (Placeholder)")
         chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -414,6 +440,8 @@ class ReportesModule(BaseModule):
         return chart_placeholder
 
     def create_resumen_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para la tabla de resumen"""
         table_placeholder = QLabel("Tabla de Resumen (Placeholder)")
         table_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -421,6 +449,8 @@ class ReportesModule(BaseModule):
         return table_placeholder
 
     def create_tendencia_ventas_chart(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para el gráfico de tendencia de ventas"""
         chart_placeholder = QLabel("Gráfico de Tendencia de Ventas (Placeholder)")
         chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -428,6 +458,8 @@ class ReportesModule(BaseModule):
         return chart_placeholder
 
     def create_ventas_detalle_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la tabla detallada de ventas"""
         table = QTableWidget(10, 6)
         table.setHorizontalHeaderLabels(
@@ -435,26 +467,25 @@ class ReportesModule(BaseModule):
         )
 
         # Datos ficticios
-        import random
 
-        datos_ejemplo = []
+        _ = []
         for i in range(10):
-            fecha = f"{random.randint(1, 30):02d}/05/2025"
+            _ = f"{random.randint(1, 30):02d}/05/2025"
             mesa = (
                 f"Mesa {random.randint(1, 20)}"
                 if random.choice([True, False])
                 else f"Hab. {random.randint(101, 250)}"
             )
-            total = f"{random.randint(25, 150)}€"
+            _ = f"{random.randint(25, 150)}€"
             metodo = random.choice(["Efectivo", "Tarjeta", "Transferencia"])
-            empleado = random.choice(["Ana García", "Carlos López", "María Ruiz"])
+            _ = random.choice(["Ana García", "Carlos López", "María Ruiz"])
             estado = random.choice(["Completado", "Pendiente", "Cancelado"])
 
             datos_ejemplo.append([fecha, mesa, total, metodo, empleado, estado])
 
         for i, fila in enumerate(datos_ejemplo):
             for j, valor in enumerate(fila):
-                item = QTableWidgetItem(valor)
+                _ = QTableWidgetItem(valor)
                 if j == 5:  # Columna estado
                     if valor == "Completado":
                         item.setBackground(QColor("#dcfce7"))
@@ -472,6 +503,8 @@ class ReportesModule(BaseModule):
         return table
 
     def create_ocupacion_tipo_chart(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para el gráfico de ocupación por tipo"""
         chart_placeholder = QLabel("Gráfico de Ocupación por Tipo (Placeholder)")
         chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -479,6 +512,8 @@ class ReportesModule(BaseModule):
         return chart_placeholder
 
     def create_productos_vendidos_chart(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para el gráfico de productos vendidos"""
         chart_placeholder = QLabel("Gráfico de Productos Vendidos (Placeholder)")
         chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -486,6 +521,8 @@ class ReportesModule(BaseModule):
         return chart_placeholder
 
     def create_stock_critico_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para la tabla de stock crítico"""
         table_placeholder = QLabel("Tabla de Stock Crítico (Placeholder)")
         table_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -493,6 +530,8 @@ class ReportesModule(BaseModule):
         return table_placeholder
 
     def create_flujo_caja_chart(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Placeholder para el gráfico de flujo de caja"""
         chart_placeholder = QLabel("Gráfico de Flujo de Caja (Placeholder)")
         chart_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -500,6 +539,8 @@ class ReportesModule(BaseModule):
         return chart_placeholder
 
     def create_transacciones_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la tabla de transacciones recientes"""
         table = QTableWidget(8, 5)
         table.setHorizontalHeaderLabels(
@@ -507,7 +548,7 @@ class ReportesModule(BaseModule):
         )
 
         # Datos ficticios de transacciones
-        datos_transacciones = [
+        _ = [
             ["10/06/2025", "Venta TPV Mesa 5", "Ingreso", "+85€", "12,450€"],
             ["10/06/2025", "Compra Proveedor Alimentaria", "Gasto", "-320€", "12,365€"],
             ["09/06/2025", "Pago Habitación 205", "Ingreso", "+160€", "12,685€"],
@@ -520,7 +561,7 @@ class ReportesModule(BaseModule):
 
         for i, fila in enumerate(datos_transacciones):
             for j, valor in enumerate(fila):
-                item = QTableWidgetItem(valor)
+                _ = QTableWidgetItem(valor)
                 if j == 3:  # Columna importe
                     if valor.startswith("+"):
                         item.setForeground(QColor("#059669"))
@@ -536,8 +577,10 @@ class ReportesModule(BaseModule):
         return table
 
     def cambiar_periodo(self, periodo):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Cambia las fechas según el periodo seleccionado"""
-        hoy = QDate.currentDate()
+        _ = QDate.currentDate()
 
         if periodo == "Hoy":
             self.fecha_desde.setDate(hoy)
@@ -560,10 +603,12 @@ class ReportesModule(BaseModule):
             self.fecha_hasta.setDate(hoy)
 
     def aplicar_filtros(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplica los filtros seleccionados"""
-        start_date = self.start_date.date().toPyDate()
+        _ = self.start_date.date().toPyDate()
         end_date = self.end_date.date().toPyDate()
-        logger.info(f"Aplicando filtros: {start_date} a {end_date}")
+        logger.info("Aplicando filtros: {start_date} a %s", end_date)
         QMessageBox.information(
             self,
             "Filtros Aplicados",
@@ -572,14 +617,18 @@ class ReportesModule(BaseModule):
         self.actualizar_datos()
 
     def actualizar_datos(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza todos los datos de los reportes"""
         logger.info("Actualizando datos de reportes...")
         # Aquí se implementaría la lógica para actualizar con datos reales
         pass
 
     def exportar_reporte(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Exporta el reporte actual"""
-        tab_actual = self.tabs.currentIndex()
+        _ = self.tabs.currentIndex()
         nombres_tabs = ["Dashboard", "Ventas", "Hospedería", "Inventario", "Financiero"]
 
         file_path, _ = QFileDialog.getSaveFileName(
@@ -597,20 +646,24 @@ class ReportesModule(BaseModule):
                     "Exportación Completada",
                     f"Reporte exportado exitosamente a:\n{file_path}",
                 )
-                logger.info(f"Reporte exportado a: {file_path}")
+                logger.info("Reporte exportado a: %s", file_path)
             except Exception as e:
-                logger.error(f"Error al exportar reporte: {e}")
+                logger.error("Error al exportar reporte: %s", e)
                 QMessageBox.critical(
                     self, "Error", f"Error al exportar el reporte:\n{str(e)}"
                 )
 
     def cargar_datos_iniciales(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Carga los datos iniciales para los reportes"""
         logger.info("Cargando datos iniciales de reportes...")
         # Aquí se implementaría la carga inicial de datos
         pass
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz del módulo"""
         # Header del módulo
         header = self.create_module_header()
@@ -649,6 +702,8 @@ class ReportesModule(BaseModule):
         self.content_layout.addWidget(self.tabs)
 
     def create_reservas_table(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea la tabla de reservas"""
         table = QTableWidget()
         table.setColumnCount(6)
@@ -657,7 +712,7 @@ class ReportesModule(BaseModule):
         )
 
         # Datos de ejemplo
-        reservas_data = [
+        _ = [
             ["001", "Juan Pérez", "101", "2025-06-10", "2025-06-15", "Confirmada"],
             ["002", "María García", "205", "2025-06-11", "2025-06-13", "Check-in"],
             ["003", "Carlos López", "302", "2025-06-12", "2025-06-16", "Pendiente"],

@@ -1,3 +1,12 @@
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal
+from ..module_base_interface import BaseModule
+from services.inventario_service_real import InventarioService
+from .components import (
+            from data.db_manager import DatabaseManager
+
 """
 Módulo de Inventario con Pestañas - Versión Refactorizada
 ========================================================
@@ -8,10 +17,7 @@ Widget principal que organiza el inventario en pestañas separadas:
 - Proveedores
 """
 
-import logging
-from typing import List, Dict, Any, Optional
 
-from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
@@ -21,18 +27,13 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont, QIcon
 
-from ..module_base_interface import BaseModule
-from services.inventario_service_real import InventarioService
-from .components import (
     ProductsManagerWidget,
     CategoryManagerWidget,
     SupplierManagerWidget,
 )
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class InventarioModule(BaseModule):
@@ -41,7 +42,7 @@ class InventarioModule(BaseModule):
     """
 
     # Señales
-    inventario_actualizado = pyqtSignal()
+    _ = pyqtSignal()
 
     def __init__(self, parent=None):
         """Inicializar el módulo de inventario refactorizado"""
@@ -49,12 +50,11 @@ class InventarioModule(BaseModule):
 
         # Intentar obtener db_manager
         try:
-            from data.db_manager import DatabaseManager
 
             self.db_manager = DatabaseManager()
             logger.info("InventarioModule: DatabaseManager creado correctamente")
         except Exception as e:
-            logger.error(f"InventarioModule: Error creando DatabaseManager: {e}")
+            logger.error("InventarioModule: Error creando DatabaseManager: %s", e)
             self.db_manager = None
 
         self.inventario_service = InventarioService(self.db_manager)
@@ -65,12 +65,14 @@ class InventarioModule(BaseModule):
         logger.info("InventarioModule inicializado correctamente")
 
     def init_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializar la interfaz de usuario"""
         self.setObjectName("InventarioModule")
 
         # Usar el layout principal de BaseModule
         if hasattr(self, "main_layout"):
-            layout = self.main_layout
+            _ = self.main_layout
         else:
             layout = QVBoxLayout(self)
 
@@ -88,10 +90,12 @@ class InventarioModule(BaseModule):
         self.apply_styles()
 
     def create_header(self) -> QFrame:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear el header principal del módulo"""
         header = QFrame()
         header.setObjectName("MainHeaderFrame")
-        layout = QHBoxLayout(header)
+        _ = QHBoxLayout(header)
 
         # Título principal
         title = QLabel("📦 Sistema de Inventario Profesional")
@@ -113,6 +117,8 @@ class InventarioModule(BaseModule):
         return header
 
     def create_tab_widget(self) -> QTabWidget:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crear el widget de pestañas"""
         tab_widget = QTabWidget()
         tab_widget.setObjectName("InventoryTabWidget")
@@ -137,6 +143,8 @@ class InventarioModule(BaseModule):
         return tab_widget
 
     def refresh_all_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar todos los datos"""
         try:
             # Actualizar cada pestaña
@@ -149,20 +157,24 @@ class InventarioModule(BaseModule):
             )
 
         except Exception as e:
-            logger.error(f"Error actualizando datos: {e}")
+            logger.error("Error actualizando datos: %s", e)
             QMessageBox.warning(self, "Error", f"Error actualizando datos: {str(e)}")
 
     def export_inventory(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Exportar inventario completo"""
         try:
             # Usar la funcionalidad de exportación del widget de productos
             self.products_widget.export_to_csv()
 
         except Exception as e:
-            logger.error(f"Error exportando inventario: {e}")
+            logger.error("Error exportando inventario: %s", e)
             QMessageBox.warning(self, "Error", f"Error exportando inventario: {str(e)}")
 
     def on_inventory_updated(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar actualización de inventario"""
         self.inventario_actualizado.emit()
 
@@ -170,20 +182,37 @@ class InventarioModule(BaseModule):
         self.categories_widget.update_statistics()
 
     def on_categories_updated(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar actualización de categorías"""
         # Actualizar productos para reflejar cambios en categorías
         self.products_widget.load_categories()  # Recargar categorías en el widget de productos
 
     def on_suppliers_updated(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Manejar actualización de proveedores"""
         # Los proveedores pueden afectar a los productos en el futuro
         pass
 
     def get_module_name(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtener el nombre del módulo"""
         return "Inventario Refactorizado"
+    
+    def refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
+        """Actualiza los datos del módulo de inventario"""
+        try:
+            self.refresh_all_data()
+        except Exception as e:
+            logger.error("Error refrescando módulo de inventario: %s", e)
 
     def cleanup(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Limpiar recursos"""
         try:
             # Limpiar widgets hijos
@@ -197,9 +226,11 @@ class InventarioModule(BaseModule):
                 pass
 
         except Exception as e:
-            logger.error(f"Error en cleanup: {e}")
+            logger.error("Error en cleanup: %s", e)
 
     def apply_styles(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Aplicar estilos al módulo"""
         self.setStyleSheet(
             """

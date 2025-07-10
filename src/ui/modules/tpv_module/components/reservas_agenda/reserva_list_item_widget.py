@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 Widget visual personalizado para mostrar una reserva en la agenda.
 """
@@ -10,11 +11,14 @@ from src.utils.modern_styles import ModernStyles
 
 class ReservaListItemWidget(QWidget):
     def __init__(self, reserva, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.reserva = reserva
         self.setup_ui()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 6, 8, 6)
         layout.setSpacing(12)
@@ -37,19 +41,19 @@ class ReservaListItemWidget(QWidget):
         label_cliente.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         info_layout.addWidget(label_cliente)
         # Fecha/hora
-        fecha = getattr(self.reserva, "fecha_reserva", None)
+        _ = getattr(self.reserva, "fecha_reserva", None)
         hora = getattr(self.reserva, "hora_reserva", None)
         if fecha and hora:
-            fecha_hora = f"{fecha.strftime('%d/%m/%Y')} {hora}"
+            _ = f"{fecha.strftime('%d/%m/%Y')} {hora}"
         elif fecha:
-            fecha_hora = fecha.strftime("%d/%m/%Y")
+            _ = fecha.strftime("%d/%m/%Y")
         else:
             fecha_hora = ""
         label_fecha = QLabel(f"🕒 {fecha_hora}")
         label_fecha.setFont(QFont("Segoe UI", 10))
         info_layout.addWidget(label_fecha)
         # Mesa
-        mesa_id = getattr(self.reserva, "mesa_id", "-")
+        _ = getattr(self.reserva, "mesa_id", "-")
         alias = getattr(self.reserva, "alias", "")
         label_mesa = QLabel(f"Mesa {mesa_id}{f' ({alias})' if alias else ''}")
         label_mesa.setFont(QFont("Segoe UI", 10))
@@ -82,5 +86,6 @@ class ReservaListItemWidget(QWidget):
         self.setStyleSheet(ModernStyles.get_reserva_list_item_style())
 
     def _badge_style(self, estado):
+        """TODO: Add docstring"""
         # DEPRECATED: Usar ModernStyles.get_reserva_badge_style(estado)
         return ModernStyles.get_reserva_badge_style(estado)

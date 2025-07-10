@@ -1,3 +1,5 @@
+from typing import Optional, Dict, List, Any
+import logging
 #!/usr/bin/env python3
 """
 Script de Limpieza Automática del Módulo de Inventario
@@ -12,18 +14,20 @@ import shutil
 from pathlib import Path
 
 def limpiar_modulo_inventario():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Limpia el módulo de inventario de archivos innecesarios"""
     
     print("🧹 LIMPIEZA AUTOMÁTICA DEL MÓDULO DE INVENTARIO")
     print("=" * 55)
     
-    modulo_path = Path("src/ui/modules/inventario_module")
+    _ = Path("src/ui/modules/inventario_module")
     
     if not modulo_path.exists():
         print("❌ Módulo de inventario no encontrado")
         return False
     
-    archivos_eliminados = 0
+    _ = 0
     
     # 1. Eliminar archivos __pycache__
     print("\n1. Eliminando archivos cache...")
@@ -31,10 +35,10 @@ def limpiar_modulo_inventario():
     for pycache_dir in pycache_dirs:
         try:
             shutil.rmtree(pycache_dir)
-            print(f"   ✅ Eliminado: {pycache_dir}")
+            print("   ✅ Eliminado: %s" % pycache_dir)
             archivos_eliminados += 1
         except Exception as e:
-            print(f"   ⚠️ Error eliminando {pycache_dir}: {e}")
+    logging.error("   ⚠️ Error eliminando {pycache_dir}: %s", e)
     
     if not pycache_dirs:
         print("   ✅ No hay archivos cache para eliminar")
@@ -45,17 +49,17 @@ def limpiar_modulo_inventario():
     for pyc_file in pyc_files:
         try:
             pyc_file.unlink()
-            print(f"   ✅ Eliminado: {pyc_file}")
+            print("   ✅ Eliminado: %s" % pyc_file)
             archivos_eliminados += 1
         except Exception as e:
-            print(f"   ⚠️ Error eliminando {pyc_file}: {e}")
+    logging.error("   ⚠️ Error eliminando {pyc_file}: %s", e)
     
     if not pyc_files:
         print("   ✅ No hay archivos .pyc sueltos")
     
     # 3. Eliminar archivos temporales
     print("\n3. Eliminando archivos temporales...")
-    temp_patterns = ["*.tmp", "*.temp", "*~", "*.bak"]
+    _ = ["*.tmp", "*.temp", "*~", "*.bak"]
     temp_eliminados = 0
     
     for pattern in temp_patterns:
@@ -63,10 +67,10 @@ def limpiar_modulo_inventario():
         for temp_file in temp_files:
             try:
                 temp_file.unlink()
-                print(f"   ✅ Eliminado: {temp_file}")
+                print("   ✅ Eliminado: %s" % temp_file)
                 temp_eliminados += 1
             except Exception as e:
-                print(f"   ⚠️ Error eliminando {temp_file}: {e}")
+    logging.error("   ⚠️ Error eliminando {temp_file}: %s", e)
     
     if temp_eliminados == 0:
         print("   ✅ No hay archivos temporales para eliminar")
@@ -75,20 +79,20 @@ def limpiar_modulo_inventario():
     
     # 4. Verificar archivos duplicados conocidos
     print("\n4. Verificando archivos duplicados...")
-    duplicados_conocidos = [
+    _ = [
         "dialogs/product_dialogs.py"  # Duplicado de product_dialogs_pro.py
     ]
     
-    duplicados_eliminados = 0
+    _ = 0
     for duplicado in duplicados_conocidos:
         duplicado_path = modulo_path / duplicado
         if duplicado_path.exists():
             try:
                 duplicado_path.unlink()
-                print(f"   ✅ Eliminado duplicado: {duplicado}")
+                print("   ✅ Eliminado duplicado: %s" % duplicado)
                 duplicados_eliminados += 1
             except Exception as e:
-                print(f"   ⚠️ Error eliminando {duplicado}: {e}")
+    logging.error("   ⚠️ Error eliminando {duplicado}: %s", e)
     
     if duplicados_eliminados == 0:
         print("   ✅ No hay archivos duplicados conocidos")
@@ -97,34 +101,34 @@ def limpiar_modulo_inventario():
     
     # 5. Limpiar servicios duplicados de inventario
     print("\n5. Verificando servicios duplicados...")
-    servicios_duplicados = [
+    _ = [
         "src/services/inventario_service_real_mejorado.py",
         "src/services/inventario_service_fixed.py"
     ]
     
-    servicios_eliminados = 0
+    _ = 0
     for servicio in servicios_duplicados:
         servicio_path = Path(servicio)
         if servicio_path.exists():
             try:
                 servicio_path.unlink()
-                print(f"   ✅ Eliminado servicio duplicado: {servicio}")
+                print("   ✅ Eliminado servicio duplicado: %s" % servicio)
                 servicios_eliminados += 1
             except Exception as e:
-                print(f"   ⚠️ Error eliminando {servicio}: {e}")
+    logging.error("   ⚠️ Error eliminando {servicio}: %s", e)
     
     if servicios_eliminados == 0:
         print("   ✅ No hay servicios duplicados para eliminar")
     
     archivos_eliminados += servicios_eliminados    # 6. Resumen final
-    print(f"\n" + "=" * 55)
+    print(f"\n"  %  "=" * 55)
     print("📊 RESUMEN DE LIMPIEZA:")
-    print(f"   🗑️ Archivos/directorios eliminados: {archivos_eliminados}")
-    print(f"   📂 Directorios cache eliminados: {len(pycache_dirs)}")
-    print(f"   📄 Archivos .pyc eliminados: {len(pyc_files)}")
-    print(f"   🗂️ Archivos temporales eliminados: {temp_eliminados}")
-    print(f"   📋 Archivos duplicados eliminados: {duplicados_eliminados}")
-    print(f"   🔧 Servicios duplicados eliminados: {servicios_eliminados}")
+    print("   🗑️ Archivos/directorios eliminados: %s" % archivos_eliminados)
+    print("   📂 Directorios cache eliminados: %s" % len(pycache_dirs))
+    print("   📄 Archivos .pyc eliminados: %s" % len(pyc_files))
+    print("   🗂️ Archivos temporales eliminados: %s" % temp_eliminados)
+    print("   📋 Archivos duplicados eliminados: %s" % duplicados_eliminados)
+    print("   🔧 Servicios duplicados eliminados: %s" % servicios_eliminados)
     
     if archivos_eliminados > 0:
         print("\n✅ LIMPIEZA COMPLETADA EXITOSAMENTE")
@@ -134,12 +138,14 @@ def limpiar_modulo_inventario():
     return True
 
 def verificar_estructura():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verifica que la estructura del módulo esté intacta"""
     
     print("\n🔍 VERIFICANDO ESTRUCTURA DEL MÓDULO...")
     print("-" * 40)
     
-    modulo_path = Path("src/ui/modules/inventario_module")
+    _ = Path("src/ui/modules/inventario_module")
     
     archivos_esenciales = [
         "inventario_module.py",
@@ -150,14 +156,14 @@ def verificar_estructura():
         "widgets/inventory_filters.py"
     ]
     
-    estructura_ok = True
+    _ = True
     for archivo in archivos_esenciales:
         archivo_path = modulo_path / archivo
         if archivo_path.exists():
-            print(f"   ✅ {archivo}")
+            print("   ✅ %s" % archivo)
         else:
-            print(f"   ❌ {archivo} - FALTANTE")
-            estructura_ok = False
+            print("   ❌ %s - FALTANTE" % archivo)
+            _ = False
     
     if estructura_ok:
         print("\n✅ Estructura del módulo verificada correctamente")

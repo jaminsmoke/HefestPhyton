@@ -1,23 +1,26 @@
+from typing import Optional, Dict, List, Any
+import sys
+import os
+import sqlite3
+from data.db_manager import DatabaseManager
+import logging
+
 """
 Script de migración de datos simulados a datos reales
 Pobla la base de datos con datos iniciales básicos para testing
 """
 
-import sys
-import os
-import sqlite3
-from datetime import datetime, date
 
 # Agregar la ruta del proyecto al path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from data.db_manager import DatabaseManager
-import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def migrar_a_datos_reales():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """
     Migra el sistema de datos simulados a datos reales
     Crea datos básicos para que la aplicación funcione
@@ -27,7 +30,7 @@ def migrar_a_datos_reales():
     
     try:
         # Inicializar DatabaseManager
-        db_manager = DatabaseManager()
+        _ = DatabaseManager()
         logger.info("✅ Conexión a base de datos establecida")
         
         # 1. Limpiar datos existentes (opcional - comentar si quieres mantener datos)
@@ -49,12 +52,14 @@ def migrar_a_datos_reales():
         logger.info("📊 La aplicación ahora usa datos reales de la base de datos")
         
     except Exception as e:
-        logger.error(f"❌ Error durante la migración: {e}")
+        logger.error("❌ Error durante la migración: %s", e)
         return False
     
     return True
 
 def limpiar_datos_existentes(db_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Limpia datos existentes (opcional)"""
     logger.info("🧹 Limpiando datos existentes...")
     
@@ -72,11 +77,13 @@ def limpiar_datos_existentes(db_manager):
             # No limpiamos empleados/usuarios para mantener acceso
             logger.info("✅ Datos existentes limpiados")
         except Exception as e:
-            logger.warning(f"Advertencia al limpiar datos: {e}")
+            logger.warning("Advertencia al limpiar datos: %s", e)
     else:
         logger.info("✅ Manteniendo datos existentes")
 
 def agregar_columnas_faltantes(db_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Agrega columnas que pueden faltar en la base de datos"""
     logger.info("🔧 Verificando y agregando columnas faltantes...")
     
@@ -103,13 +110,15 @@ def agregar_columnas_faltantes(db_manager):
             logger.debug("Columna capacidad ya existe en mesas")
             
     except Exception as e:
-        logger.warning(f"Advertencia al agregar columnas: {e}")
+        logger.warning("Advertencia al agregar columnas: %s", e)
 
 def poblar_productos_basicos(db_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Pobla la tabla de productos con productos básicos"""
     logger.info("🛒 Poblando productos básicos...")
     
-    productos_basicos = [
+    _ = [
         # Bebidas
         ("Coca Cola 330ml", "Bebidas", 2.50, 20, 10),
         ("Agua Mineral 500ml", "Bebidas", 1.50, 30, 20),  
@@ -144,16 +153,18 @@ def poblar_productos_basicos(db_manager):
                     VALUES (?, ?, ?, ?, ?)
                 """, (nombre, categoria, precio, stock, stock_minimo))
                 
-        logger.info(f"✅ {len(productos_basicos)} productos básicos poblados")
+        logger.info("✅ %s productos básicos poblados", len(productos_basicos))
         
     except Exception as e:
-        logger.error(f"Error al poblar productos: {e}")
+        logger.error("Error al poblar productos: %s", e)
 
 def poblar_habitaciones_basicas(db_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Pobla la tabla de habitaciones con habitaciones básicas"""
     logger.info("🏨 Poblando habitaciones básicas...")
     
-    habitaciones_basicas = [
+    _ = [
         ("101", "Individual", "disponible", 45.00),
         ("102", "Individual", "disponible", 45.00),
         ("103", "Doble", "disponible", 65.00),
@@ -176,16 +187,18 @@ def poblar_habitaciones_basicas(db_manager):
                     VALUES (?, ?, ?, ?)
                 """, (numero, tipo, estado, precio_base))
                 
-        logger.info(f"✅ {len(habitaciones_basicas)} habitaciones básicas pobladas")
+        logger.info("✅ %s habitaciones básicas pobladas", len(habitaciones_basicas))
         
     except Exception as e:
-        logger.error(f"Error al poblar habitaciones: {e}")
+        logger.error("Error al poblar habitaciones: %s", e)
 
 def poblar_mesas_basicas(db_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Pobla la tabla de mesas con mesas básicas"""
     logger.info("🍽️ Poblando mesas básicas...")
     
-    mesas_basicas = [
+    _ = [
         ("1", "Terraza", "libre", 4),
         ("2", "Terraza", "ocupada", 4), 
         ("3", "Terraza", "libre", 2),
@@ -208,16 +221,18 @@ def poblar_mesas_basicas(db_manager):
                     VALUES (?, ?, ?, ?)
                 """, (numero, zona, estado, capacidad))
                 
-        logger.info(f"✅ {len(mesas_basicas)} mesas básicas pobladas")
+        logger.info("✅ %s mesas básicas pobladas", len(mesas_basicas))
         
     except Exception as e:
-        logger.error(f"Error al poblar mesas: {e}")
+        logger.error("Error al poblar mesas: %s", e)
 
 def poblar_empleados_basicos(db_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Pobla la tabla de empleados con empleados básicos"""
     logger.info("👥 Poblando empleados básicos...")
     
-    empleados_basicos = [
+    _ = [
         ("admin", "Administrador", "Sistema", "00000000A", "admin", "1234", 1),
         ("camarero1", "Juan", "Pérez", "12345678B", "camarero", "1234", 1),
         ("camarero2", "María", "García", "87654321C", "camarero", "1234", 1),
@@ -234,41 +249,45 @@ def poblar_empleados_basicos(db_manager):
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (username, nombre, apellidos, dni, rol, password, active))
                 
-        logger.info(f"✅ {len(empleados_basicos)} empleados básicos poblados")
+        logger.info("✅ %s empleados básicos poblados", len(empleados_basicos))
         
     except Exception as e:
-        logger.error(f"Error al poblar empleados: {e}")
+        logger.error("Error al poblar empleados: %s", e)
 
 def verificar_migracion(db_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Verifica que la migración se haya completado correctamente"""
     logger.info("🔍 Verificando migración...")
     
     try:
         # Contar registros en tablas principales
-        productos = db_manager.query("SELECT COUNT(*) as count FROM productos")[0]['count']
+        _ = db_manager.query("SELECT COUNT(*) as count FROM productos")[0]['count']
         habitaciones = db_manager.query("SELECT COUNT(*) as count FROM habitaciones")[0]['count']
-        mesas = db_manager.query("SELECT COUNT(*) as count FROM mesas")[0]['count']
+        _ = db_manager.query("SELECT COUNT(*) as count FROM mesas")[0]['count']
         empleados = db_manager.query("SELECT COUNT(*) as count FROM empleados")[0]['count']
         
         logger.info(f"📊 Resumen de datos:")
-        logger.info(f"   - Productos: {productos}")
-        logger.info(f"   - Habitaciones: {habitaciones}")
-        logger.info(f"   - Mesas: {mesas}")
-        logger.info(f"   - Empleados: {empleados}")
+        logger.info("   - Productos: %s", productos)
+        logger.info("   - Habitaciones: %s", habitaciones)
+        logger.info("   - Mesas: %s", mesas)
+        logger.info("   - Empleados: %s", empleados)
         
         # Verificar métricas administrativas
-        metrics = db_manager.get_admin_metrics()
+        _ = db_manager.get_admin_metrics()
         logger.info(f"📈 Métricas obtenidas:")
-        logger.info(f"   - Ventas: {metrics.get('ventas', 'N/A')}")
-        logger.info(f"   - Ocupación: {metrics.get('ocupacion', 'N/A')}%")
-        logger.info(f"   - Órdenes activas: {metrics.get('ordenes_activas', 'N/A')}")
+        logger.info("   - Ventas: %s", metrics.get('ventas', 'N/A'))
+        logger.info("   - Ocupación: %s%", metrics.get('ocupacion', 'N/A'))
+        logger.info("   - Órdenes activas: %s", metrics.get('ordenes_activas', 'N/A'))
         
         logger.info("✅ Verificación completada - Sistema listo para usar datos reales")
         
     except Exception as e:
-        logger.error(f"Error durante la verificación: {e}")
+        logger.error("Error durante la verificación: %s", e)
 
 def main():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Función principal del script de migración"""
     print("="*60)
     print("🚀 MIGRACIÓN A DATOS REALES - SISTEMA HEFEST")

@@ -1,9 +1,15 @@
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (
+from PyQt6.QtCore import Qt, pyqtSignal
+from services.auth_service import get_auth_service
+from services.audit_service import AuditService
+from core.hefest_data_models import Role
+
 """
 Sidebar moderno para la aplicación Hefest.
 """
 
-import logging
-from PyQt6.QtWidgets import (
     QFrame,
     QVBoxLayout,
     QHBoxLayout,
@@ -12,25 +18,21 @@ from PyQt6.QtWidgets import (
     QWidget,
     QMessageBox,
 )
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QFont
 
 # Importar servicios de autenticación
-from services.auth_service import get_auth_service
-from services.audit_service import AuditService
-from core.hefest_data_models import Role
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class ModernSidebar(QFrame):
     """Sidebar moderno con navegación y efectos visuales"""
 
     # Señales
-    module_selected = pyqtSignal(str)
+    _ = pyqtSignal(str)
     logout_requested = pyqtSignal()
 
     def __init__(self, parent=None, auth_service=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         logger.info("Inicializando ModernSidebar")
         # logger.debug("Constructor de ModernSidebar inicializado correctamente.")
@@ -44,6 +46,8 @@ class ModernSidebar(QFrame):
         self.setup_ui()
 
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configura la interfaz del sidebar"""
         self.setFixedWidth(300)
         self.setFrameStyle(QFrame.Shape.NoFrame)
@@ -73,6 +77,8 @@ class ModernSidebar(QFrame):
         self.create_footer(layout)
 
     def create_header(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el header del sidebar"""
         header = QFrame()
         header.setFixedHeight(120)
@@ -121,6 +127,8 @@ class ModernSidebar(QFrame):
         layout.addWidget(header)
 
     def create_navigation(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea los botones de navegación según los permisos del usuario"""
         # logger.debug("Método create_navigation llamado correctamente.")
 
@@ -130,7 +138,7 @@ class ModernSidebar(QFrame):
         nav_layout.setSpacing(8)
 
         # Módulos disponibles y sus permisos requeridos
-        modules = [
+        _ = [
             (
                 "dashboard",
                 "📊",
@@ -173,11 +181,13 @@ class ModernSidebar(QFrame):
                     nav_layout.addWidget(btn)
                     self.nav_buttons[module_id] = btn
                 else:
-                    logger.warning(f"Acceso denegado al módulo: {module_id}")
+                    logger.warning("Acceso denegado al módulo: %s", module_id)
 
         layout.addWidget(nav_container)
 
     def create_nav_button(self, module_id, icon, title, description):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea un botón de navegación moderno"""
         btn = QPushButton()
         btn.setObjectName(f"nav_btn_{module_id}")
@@ -258,7 +268,9 @@ class ModernSidebar(QFrame):
 
         # Conectar señal
         def log_and_emit():
-            logger.info(f"[SIDEBAR] Botón pulsado: {module_id}")
+            """TODO: Add docstring"""
+            # TODO: Add input validation
+            logger.info("[SIDEBAR] Botón pulsado: %s", module_id)
             if module_id == "tpv":
                 logger.info(
                     "[SIDEBAR] Entrando al módulo TPV desde sidebar (log explícito)"
@@ -273,6 +285,8 @@ class ModernSidebar(QFrame):
         return btn
 
     def create_footer(self, layout):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el footer del sidebar con información del usuario y botón de logout"""
         footer = QFrame()
         footer.setFixedHeight(80)
@@ -345,8 +359,10 @@ class ModernSidebar(QFrame):
         layout.addWidget(footer)
 
     def logout_clicked(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Maneja el clic en el botón de logout"""
-        reply = QMessageBox.question(
+        _ = QMessageBox.question(
             self,
             "Cerrar Sesión",
             "¿Está seguro de que desea cerrar sesión?",
@@ -362,6 +378,8 @@ class ModernSidebar(QFrame):
             self.logout_requested.emit()
 
     def set_active_module(self, module_id):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Establece el módulo activo visualmente"""
         # Resetear todos los botones
         for btn_id, btn in self.nav_buttons.items():

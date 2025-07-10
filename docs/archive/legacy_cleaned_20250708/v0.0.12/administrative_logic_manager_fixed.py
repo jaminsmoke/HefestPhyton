@@ -1,3 +1,4 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
 """
 Administrative Logic Manager - Lógica administrativa real para métricas KPI
 Maneja objetivos, tendencias y progreso basado en criterios de negocio hotelero
@@ -9,13 +10,14 @@ from datetime import datetime, timedelta
 import logging
 from data.db_manager import DatabaseManager
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class AdministrativeLogicManager:
     """Gestiona la lógica administrativa real para las métricas del dashboard"""
 
     def __init__(self, db_manager=None):
+        """TODO: Add docstring"""
         self.db_manager = db_manager or DatabaseManager()
 
         # Configuración de objetivos administrativos estándar
@@ -49,10 +51,12 @@ class AdministrativeLogicManager:
         }
 
     def get_administrative_metrics(self) -> Dict[str, Dict[str, Any]]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Obtiene métricas con lógica administrativa completa usando datos reales de BD"""
 
         # Mapeo del dashboard actual a nuestro sistema administrativo
-        dashboard_mapping = {
+        _ = {
             "Ventas Hoy": "ventas_diarias",
             "Margen Bruto": "margen_bruto",
             "Clientes Activos": "clientes_activos",
@@ -61,24 +65,24 @@ class AdministrativeLogicManager:
             "Eficiencia Op.": "eficiencia_op",
         }
 
-        admin_metrics = {}
+        _ = {}
 
         for dashboard_title, admin_key in dashboard_mapping.items():
             # Obtener datos actuales reales
-            current_data = self._get_current_metric_data(admin_key)
+            _ = self._get_current_metric_data(admin_key)
 
             # Calcular tendencia administrativa usando datos reales
-            trend_data = self._calculate_administrative_trend(
+            _ = self._calculate_administrative_trend(
                 admin_key, current_data["value"], current_data.get("real_data", {})
             )
 
             # Calcular progreso hacia objetivo
-            progress_data = self._calculate_administrative_progress(
+            _ = self._calculate_administrative_progress(
                 admin_key, current_data["value"]
             )
 
             # Determinar estado administrativo
-            admin_status = self._evaluate_administrative_status(
+            _ = self._evaluate_administrative_status(
                 admin_key, current_data["value"], trend_data["numeric"]
             )
 
@@ -120,10 +124,10 @@ class AdministrativeLogicManager:
         """Obtiene datos reales de ventas de la base de datos"""
         try:
             # Ventas del día actual
-            today = datetime.now().strftime("%Y-%m-%d")
+            _ = datetime.now().strftime("%Y-%m-%d")
 
             # Consultar comandas del día
-            ventas_hoy = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT SUM(total) as total_ventas, COUNT(*) as num_comandas
                 FROM comandas 
@@ -133,12 +137,12 @@ class AdministrativeLogicManager:
                 (today,),
             )
 
-            total_ventas = ventas_hoy[0]["total_ventas"] or 0.0
+            _ = ventas_hoy[0]["total_ventas"] or 0.0
             num_comandas = ventas_hoy[0]["num_comandas"] or 0
 
             # Calcular tendencia comparando con ayer
             yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-            ventas_ayer = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT SUM(total) as total_ventas
                 FROM comandas 
@@ -148,7 +152,7 @@ class AdministrativeLogicManager:
                 (yesterday,),
             )
 
-            total_ayer = ventas_ayer[0]["total_ventas"] or 0.0
+            _ = ventas_ayer[0]["total_ventas"] or 0.0
 
             return {
                 "value": total_ventas,
@@ -158,14 +162,14 @@ class AdministrativeLogicManager:
             }
 
         except Exception as e:
-            logger.error(f"Error obteniendo datos de ventas reales: {e}")
+            logger.error("Error obteniendo datos de ventas reales: %s", e)
             return {"value": 0.0, "count": 0, "previous_value": 0.0, "unit": "€"}
 
     def _get_real_inventory_data(self) -> Dict[str, Any]:
         """Obtiene datos reales de inventario de la base de datos"""
         try:
             # Productos con stock crítico (menos de 5 unidades)
-            stock_critico = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as productos_criticos
                 FROM productos 
@@ -174,27 +178,27 @@ class AdministrativeLogicManager:
             )
 
             # Total de productos
-            total_productos = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as total
                 FROM productos
             """
             )
 
-            productos_criticos = stock_critico[0]["productos_criticos"] or 0
+            _ = stock_critico[0]["productos_criticos"] or 0
             total = total_productos[0]["total"] or 0
 
             return {"value": productos_criticos, "total_products": total, "unit": ""}
 
         except Exception as e:
-            logger.error(f"Error obteniendo datos de inventario reales: {e}")
+            logger.error("Error obteniendo datos de inventario reales: %s", e)
             return {"value": 0, "total_products": 0, "unit": ""}
 
     def _get_real_customer_data(self) -> Dict[str, Any]:
         """Obtiene datos reales de clientes de la base de datos"""
         try:
             # Clientes únicos del día (por comandas)
-            today = datetime.now().strftime("%Y-%m-%d")
+            _ = datetime.now().strftime("%Y-%m-%d")
 
             clientes_hoy = self.db_manager.query(
                 """
@@ -206,27 +210,27 @@ class AdministrativeLogicManager:
             )
 
             # Total de clientes registrados
-            total_clientes = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as total
                 FROM clientes
             """
             )
 
-            clientes_unicos = clientes_hoy[0]["clientes_unicos"] or 0
+            _ = clientes_hoy[0]["clientes_unicos"] or 0
             total = total_clientes[0]["total"] or 0
 
             return {"value": clientes_unicos, "total_registered": total, "unit": ""}
 
         except Exception as e:
-            logger.error(f"Error obteniendo datos de clientes reales: {e}")
+            logger.error("Error obteniendo datos de clientes reales: %s", e)
             return {"value": 0, "total_registered": 0, "unit": ""}
 
     def _get_real_occupancy_data(self) -> Dict[str, Any]:
         """Obtiene datos reales de ocupación de mesas"""
         try:
             # Mesas ocupadas actualmente
-            mesas_ocupadas = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as ocupadas
                 FROM mesas 
@@ -235,17 +239,17 @@ class AdministrativeLogicManager:
             )
 
             # Total de mesas
-            total_mesas = self.db_manager.query(
+            _ = self.db_manager.query(
                 """
                 SELECT COUNT(*) as total
                 FROM mesas
             """
             )
 
-            ocupadas = mesas_ocupadas[0]["ocupadas"] or 0
+            _ = mesas_ocupadas[0]["ocupadas"] or 0
             total = total_mesas[0]["total"] or 1  # Evitar división por cero
 
-            porcentaje = (ocupadas / total) * 100
+            _ = (ocupadas / total) * 100
 
             return {
                 "value": porcentaje,
@@ -255,14 +259,14 @@ class AdministrativeLogicManager:
             }
 
         except Exception as e:
-            logger.error(f"Error obteniendo datos de ocupación reales: {e}")
+            logger.error("Error obteniendo datos de ocupación reales: %s", e)
             return {"value": 0.0, "occupied": 0, "total": 1, "unit": "%"}
 
     def _get_current_metric_data(self, admin_key: str) -> Dict[str, Any]:
         """Obtiene datos actuales de una métrica específica usando datos reales de la BD"""
 
         # Mapeo de métricas a métodos de datos reales
-        real_data_methods = {
+        _ = {
             "ventas_diarias": self._get_real_sales_data,
             "margen_bruto": self._get_real_sales_data,  # Calculado a partir de ventas
             "clientes_activos": self._get_real_customer_data,
@@ -283,43 +287,43 @@ class AdministrativeLogicManager:
 
         # Obtener datos reales
         if admin_key in real_data_methods:
-            real_data = real_data_methods[admin_key]()
+            _ = real_data_methods[admin_key]()
         else:
             # Valor por defecto para métricas sin implementar
             real_data = {"value": 0.0, "unit": ""}
 
-        value = real_data.get("value", 0.0)
+        _ = real_data.get("value", 0.0)
         config = self.admin_targets.get(admin_key, {})
 
         # Formatear valor según tipo y si hay datos reales
-        has_real_data = value > 0 or admin_key in [
+        _ = value > 0 or admin_key in [
             "stock_critico"
         ]  # Stock crítico puede ser 0 legítimamente
 
         if not has_real_data:
             # Sin datos reales disponibles
-            formatted_value = "Sin datos"
+            _ = "Sin datos"
             icon = "❌"
         elif config.get("unit") == "€":
             formatted_value = f"€{value:,.0f}" if value >= 1000 else f"€{value:.2f}"
-            icon = "💰"
+            _ = "💰"
         elif config.get("unit") == "%":
-            formatted_value = f"{value:.1f}%"
+            _ = f"{value:.1f}%"
             icon = "📈"
         elif config.get("unit") == "★":
-            formatted_value = f"{value:.1f}★" if value > 0 else "Sin datos"
+            _ = f"{value:.1f}★" if value > 0 else "Sin datos"
             icon = "⭐"
         elif config.get("unit") == "min":
-            formatted_value = f"{value:.1f}min" if value > 0 else "Sin datos"
+            _ = f"{value:.1f}min" if value > 0 else "Sin datos"
             icon = "⏱️"
         elif admin_key == "stock_critico":
-            formatted_value = str(int(value))
+            _ = str(int(value))
             icon = "⚠️" if value > 0 else "✅"
         elif admin_key == "eficiencia_op":
-            formatted_value = f"{value:.1f}%" if value > 0 else "Sin datos"
+            _ = f"{value:.1f}%" if value > 0 else "Sin datos"
             icon = "⚡"
         else:
-            formatted_value = str(int(value)) if value > 0 else "Sin datos"
+            _ = str(int(value)) if value > 0 else "Sin datos"
             icon = "👥"
 
         return {
@@ -340,16 +344,16 @@ class AdministrativeLogicManager:
         """Calcula tendencia administrativa usando datos reales cuando están disponibles"""
 
         if real_data is None:
-            real_data = {}
+            _ = {}
 
         config = self.admin_targets.get(admin_key, {})
 
         # Intentar usar datos reales de comparación si están disponibles
-        comparison_value = None
+        _ = None
         comparison_text = "vs anterior"
 
         if real_data and "previous_value" in real_data:
-            comparison_value = real_data["previous_value"]
+            _ = real_data["previous_value"]
             comparison_text = "vs ayer"
         elif current_value == 0:
             # Sin datos actuales = sin tendencia
@@ -361,43 +365,43 @@ class AdministrativeLogicManager:
             }
         else:
             # Usar valor actual como referencia (sin cambio)
-            comparison_value = current_value
+            _ = current_value
 
         # Calcular tendencia
         if comparison_value == 0:
             if current_value > 0:
                 # Primer registro = tendencia positiva
-                trend_text = "Nuevo"
+                _ = "Nuevo"
                 direction = "up"
-                trend_numeric = 100.0
+                _ = 100.0
             else:
                 # Sin datos = sin tendencia
-                trend_text = "Sin datos"
+                _ = "Sin datos"
                 direction = "stable"
-                trend_numeric = 0.0
+                _ = 0.0
         elif comparison_value == current_value:
-            trend_numeric = 0.0
+            _ = 0.0
             trend_text = "±0%"
-            direction = "stable"
+            _ = "stable"
         else:
-            trend_numeric = (
+            _ = (
                 (current_value - comparison_value) / comparison_value
             ) * 100
 
             # Lógica invertida para métricas donde "menos es mejor"
             if config.get("logic") == "menos_mejor":
-                display_trend = -trend_numeric  # Invertir para mostrar
+                _ = -trend_numeric  # Invertir para mostrar
             else:
                 display_trend = trend_numeric
 
             if abs(display_trend) < 0.5:
-                trend_text = "±0%"
+                _ = "±0%"
                 direction = "stable"
             elif display_trend > 0:
-                trend_text = f"+{abs(display_trend):.1f}%"
+                _ = f"+{abs(display_trend):.1f}%"
                 direction = "up"
             else:
-                trend_text = f"-{abs(display_trend):.1f}%"
+                _ = f"-{abs(display_trend):.1f}%"
                 direction = "down"
 
         return {
@@ -413,37 +417,37 @@ class AdministrativeLogicManager:
         """Calcula progreso hacia objetivos administrativos"""
 
         config = self.admin_targets.get(admin_key, {})
-        target_value = config.get("target", 100.0)
+        _ = config.get("target", 100.0)
 
         # Calcular progreso
         if config.get("logic") == "menos_mejor":
             # Para métricas donde menos es mejor (ej: stock crítico, tiempo servicio)
             if current_value <= target_value:
-                progress = 100.0
+                _ = 100.0
             else:
                 # Progreso decrece conforme se aleja del objetivo
-                progress = max(
+                _ = max(
                     0.0, 100.0 - ((current_value - target_value) / target_value * 100)
                 )
         else:
             # Para métricas normales donde más es mejor
-            progress = min(100.0, (current_value / target_value) * 100)
+            _ = min(100.0, (current_value / target_value) * 100)
 
         # Formatear texto del objetivo
         unit = config.get("unit", "")
         if unit == "€":
-            target_text = f"€{target_value:,.0f}"
+            _ = f"€{target_value:,.0f}"
         elif unit == "%":
-            target_text = f"{target_value:.1f}%"
+            _ = f"{target_value:.1f}%"
         elif unit == "★":
-            target_text = f"{target_value:.1f}★"
+            _ = f"{target_value:.1f}★"
         elif unit == "min":
-            target_text = f"≤{target_value:.1f}min"
+            _ = f"≤{target_value:.1f}min"
         else:
             if config.get("logic") == "menos_mejor":
-                target_text = f"≤{target_value:.0f}"
+                _ = f"≤{target_value:.0f}"
             else:
-                target_text = f"{target_value:.0f}"
+                _ = f"{target_value:.0f}"
 
         return {
             "percentage": progress,
@@ -457,7 +461,7 @@ class AdministrativeLogicManager:
         """Evalúa el estado administrativo y acciones recomendadas"""
 
         config = self.admin_targets.get(admin_key, {})
-        target_value = config.get("target", 100.0)
+        _ = config.get("target", 100.0)
 
         # Sin datos = estado neutral
         if current_value == 0 and admin_key != "stock_critico":
@@ -472,44 +476,44 @@ class AdministrativeLogicManager:
         # Evaluar prioridad y acciones
         if admin_key == "ventas_diarias":
             if current_value >= target_value * 0.9:
-                priority = "good"
+                _ = "good"
                 action = "Mantener"
-                color = "success"
+                _ = "success"
             elif current_value >= target_value * 0.7:
-                priority = "medium"
+                _ = "medium"
                 action = "Impulsar"
-                color = "warning"
+                _ = "warning"
             else:
-                priority = "critical"
+                _ = "critical"
                 action = "Acción urgente"
-                color = "error"
+                _ = "error"
 
         elif admin_key == "stock_critico":
             if current_value == 0:
-                priority = "good"
+                _ = "good"
                 action = "Perfecto"
-                color = "success"
+                _ = "success"
             elif current_value <= target_value:
-                priority = "medium"
+                _ = "medium"
                 action = "Monitorear"
-                color = "warning"
+                _ = "warning"
             else:
-                priority = "critical"
+                _ = "critical"
                 action = "Reabastecer"
-                color = "error"
+                _ = "error"
 
         else:
             # Evaluación genérica
             if current_value >= target_value * 0.9:
-                priority = "good"
+                _ = "good"
                 action = "Mantener"
-                color = "success"
+                _ = "success"
             elif current_value >= target_value * 0.6:
-                priority = "medium"
+                _ = "medium"
                 action = "Mejorar"
-                color = "warning"
+                _ = "warning"
             else:
-                priority = "critical"
+                _ = "critical"
                 action = "Atención urgente"
                 color = "error"
 

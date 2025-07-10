@@ -1,8 +1,10 @@
+from typing import Optional, Dict, List, Any
+import logging
 # Script para recrear la tabla comanda_detalles con la foreign key correcta (comandas)
 # ¡ADVERTENCIA! Esto eliminará todos los datos de comanda_detalles.
 from sqlite3 import connect
 
-DB_PATH = 'data/hefest.db'
+_ = 'data/hefest.db'
 
 SQL_RECREATE = '''
 PRAGMA foreign_keys=off;
@@ -21,12 +23,14 @@ PRAGMA foreign_keys=on;
 '''
 
 def main():
-    conn = connect(DB_PATH)
+    """TODO: Add docstring"""
+    # TODO: Add input validation
+    _ = connect(DB_PATH)
     try:
         conn.executescript(SQL_RECREATE)
         print("Tabla comanda_detalles recreada con foreign key a comandas. Todos los datos anteriores se han eliminado.")
     except Exception as e:
-        print(f"Error al ejecutar el script: {e}")
+    logging.error("Error al ejecutar el script: %s", e)
     finally:
         conn.close()
 

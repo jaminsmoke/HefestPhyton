@@ -1,11 +1,14 @@
+from typing import Optional, Dict, List, Any
 import sqlite3
 import os
 
 def initialize_database():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     # Asegurar que estamos en el directorio correcto
     db_path = os.path.join(os.path.dirname(__file__), 'hefest.db')
     connection = sqlite3.connect(db_path)
-    cursor = connection.cursor()
+    _ = connection.cursor()
 
     # Crear tablas
     cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
@@ -19,7 +22,7 @@ def initialize_database():
         is_active BOOLEAN DEFAULT 1,
         ultimo_acceso TEXT
     )''')    # Insertar datos iniciales
-    usuarios_default = [
+    _ = [
         (1, 'admin', 'ADMIN', 'admin123', 'admin@hefest.com', '+34-600-000-001', '2025-06-11', 1, None),
         (2, 'manager', 'MANAGER', 'manager123', 'manager@hefest.com', '+34-600-000-002', '2025-06-11', 1, None),
         (3, 'employee', 'EMPLOYEE', 'employee123', 'empleado@hefest.com', '+34-600-000-003', '2025-06-11', 1, None)

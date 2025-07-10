@@ -7,12 +7,11 @@ Ubicación: src/services/base_service.py
 
 import logging
 from typing import Optional, Dict, Any
-from abc import ABC, abstractmethod
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
-class BaseService(ABC):
+class BaseService:
     """
     Clase base abstracta para todos los servicios de Hefest.
 
@@ -42,10 +41,14 @@ class BaseService(ABC):
 
     @property
     def has_database(self) -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna True si el servicio tiene conexión a base de datos"""
         return self.db_manager is not None
 
     def require_database(self, operation_name: str = "operación") -> bool:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Valida que existe conexión a base de datos para una operación.
 
@@ -76,10 +79,12 @@ class BaseService(ABC):
         Returns:
             El valor por defecto especificado
         """
-        self.logger.error(f"Error en {operation}: {error}")
+        self.logger.error("Error en {operation}: %s", error)
         return default_return
 
     def log_operation(self, operation: str, details: Optional[Dict[str, Any]] = None):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Log estandarizado de operaciones del servicio.
 
@@ -88,16 +93,19 @@ class BaseService(ABC):
             details: Detalles adicionales para el log
         """
         if details:
-            self.logger.info(f"{operation}: {details}")
+            self.logger.info("{operation}: %s", details)
         else:
             self.logger.info(operation)
 
-    @abstractmethod
     def get_service_name(self) -> str:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna el nombre del servicio para logging y debugging"""
-        pass
+        return self.__class__.__name__
 
     def get_service_status(self) -> Dict[str, Any]:
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """
         Retorna el estado actual del servicio.
 

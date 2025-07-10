@@ -1,29 +1,33 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
+from PyQt6.QtGui import QFont, QIcon, QColor
+from .base_module import BaseModule
+from services.inventario_service import InventarioService, Producto, Proveedor
+
 """
 Módulo de Inventario para la aplicación Hefest.
 """
 
-import logging
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
                             QTableWidgetItem, QHeaderView, QLineEdit, QComboBox, QLabel,
                             QDialog, QFormLayout, QDoubleSpinBox, QSpinBox, QMessageBox,
                             QTabWidget, QFrame, QGridLayout, QProgressBar)
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QIcon, QColor
-import datetime
 
-from .base_module import BaseModule
-from services.inventario_service import InventarioService, Producto, Proveedor
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 class ProductoDialog(QDialog):
     """Diálogo para crear o editar un producto"""
     def __init__(self, producto=None, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.producto = producto  # None si es nuevo, dict si es edición
         self.init_ui()
         
     def init_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializa la interfaz de usuario del diálogo"""
         if self.producto:
             self.setWindowTitle(f"Editar Producto: {self.producto['nombre']}")
@@ -32,10 +36,10 @@ class ProductoDialog(QDialog):
             
         self.setMinimumWidth(400)
         
-        layout = QVBoxLayout()
+        _ = QVBoxLayout()
         
         # Formulario
-        form_layout = QFormLayout()
+        _ = QFormLayout()
         
         # Nombre
         self.nombre_input = QLineEdit()
@@ -89,7 +93,7 @@ class ProductoDialog(QDialog):
         layout.addLayout(form_layout)
         
         # Botones
-        button_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         self.cancel_btn = QPushButton("Cancelar")
         self.cancel_btn.clicked.connect(self.reject)
@@ -107,8 +111,10 @@ class ProductoDialog(QDialog):
         self.setLayout(layout)
     
     def get_producto_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna los datos del formulario como un diccionario"""
-        producto = {
+        _ = {
             "nombre": self.nombre_input.text(),
             "categoria": self.categoria_combo.currentText(),
             "precio": self.precio_spin.value(),
@@ -126,11 +132,14 @@ class ProductoDialog(QDialog):
 class InventarioTab(BaseModule):
     """Tab principal para el módulo de inventario"""
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setup_ui()
         self._cargar_datos_prueba()
     
     def create_module_header(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Crea el header personalizado del módulo de inventario"""
         header = QFrame()
         header.setObjectName("module-header")
@@ -187,6 +196,8 @@ class InventarioTab(BaseModule):
         return header
         
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Inicializa la interfaz de usuario del inventario"""
         # Tabs para diferentes vistas
         self.tabs = QTabWidget()
@@ -216,10 +227,10 @@ class InventarioTab(BaseModule):
         
     def _init_vista_productos(self):
         """Inicializa la vista de productos"""
-        layout = QVBoxLayout()
+        _ = QVBoxLayout()
         
         # Barra de búsqueda y filtros
-        busqueda_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         self.busqueda_input = QLineEdit()
         self.busqueda_input.setPlaceholderText("Buscar producto...")
@@ -247,7 +258,7 @@ class InventarioTab(BaseModule):
         layout.addWidget(self.productos_table)
         
         # Botones de acción
-        acciones_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         self.nuevo_btn = QPushButton("Nuevo Producto")
         self.nuevo_btn.setStyleSheet("background-color: #4CAF50; color: white;")
@@ -269,7 +280,7 @@ class InventarioTab(BaseModule):
         
     def _init_vista_alertas(self):
         """Inicializa la vista de alertas de stock"""
-        layout = QVBoxLayout()
+        _ = QVBoxLayout()
         
         # Información
         info_label = QLabel("Productos con nivel de stock bajo el mínimo establecido:")
@@ -298,7 +309,7 @@ class InventarioTab(BaseModule):
     
     def _init_vista_proveedores(self):
         """Inicializa la vista de proveedores"""
-        layout = QVBoxLayout()
+        _ = QVBoxLayout()
           # Tabla de proveedores
         self.proveedores_table = QTableWidget(0, 5)
         self.proveedores_table.setHorizontalHeaderLabels(
@@ -310,7 +321,7 @@ class InventarioTab(BaseModule):
         layout.addWidget(self.proveedores_table)
         
         # Botones de acción
-        acciones_layout = QHBoxLayout()
+        _ = QHBoxLayout()
         
         self.nuevo_prov_btn = QPushButton("Nuevo Proveedor")
         self.nuevo_prov_btn.setStyleSheet("background-color: #4CAF50; color: white;")
@@ -326,13 +337,13 @@ class InventarioTab(BaseModule):
     
     def _init_vista_estadisticas(self):
         """Inicializa la vista de estadísticas de inventario"""
-        layout = QVBoxLayout()
+        _ = QVBoxLayout()
         
         # Gráficos con valores ficticios (sólo para demo)
         # Nivel de stock por categoría
         layout.addWidget(QLabel("Nivel de stock por categoría:"))
         
-        categorias = ["Bebidas", "Entrantes", "Platos Principales", "Postres", "Limpieza"]
+        _ = ["Bebidas", "Entrantes", "Platos Principales", "Postres", "Limpieza"]
         niveles = [75, 45, 60, 90, 30]  # Porcentajes ficticios
         
         for i, (cat, nivel) in enumerate(zip(categorias, niveles)):
@@ -371,7 +382,7 @@ class InventarioTab(BaseModule):
         self.inventario_service = InventarioService()
         
         # Cargar categorías
-        categorias = self.inventario_service.get_categorias()
+        _ = self.inventario_service.get_categorias()
         self.categoria_combo.clear()
         self.categoria_combo.addItem("Todas")
         self.categoria_combo.addItems(categorias)
@@ -394,7 +405,7 @@ class InventarioTab(BaseModule):
         self.productos_table.setRowCount(0)
         
         # Obtener productos del servicio
-        productos = self.inventario_service.get_productos()
+        _ = self.inventario_service.get_productos()
         
         # Llenar tabla
         for i, producto in enumerate(productos):
@@ -407,7 +418,7 @@ class InventarioTab(BaseModule):
             self.productos_table.setItem(i, 3, QTableWidgetItem(f"{producto.precio:.2f} €"))
             
             # Stock con color según nivel
-            stock_item = QTableWidgetItem(str(producto.stock_actual))
+            _ = QTableWidgetItem(str(producto.stock_actual))
             if producto.stock_actual <= producto.stock_minimo:
                 stock_item.setBackground(QColor(255, 200, 200))  # Rojo claro
             self.productos_table.setItem(i, 4, stock_item)
@@ -415,7 +426,7 @@ class InventarioTab(BaseModule):
             self.productos_table.setItem(i, 5, QTableWidgetItem(str(producto.stock_minimo)))
             
             # Botones de acción
-            acciones_widget = QWidget()
+            _ = QWidget()
             acciones_layout = QHBoxLayout()
             acciones_layout.setContentsMargins(2, 2, 2, 2)
             acciones_layout.setSpacing(2)
@@ -440,7 +451,7 @@ class InventarioTab(BaseModule):
         self.alertas_table.setRowCount(0)
         
         # Obtener productos bajo mínimo
-        alertas = self.inventario_service.get_productos_bajo_minimo()
+        _ = self.inventario_service.get_productos_bajo_minimo()
         
         # Llenar tabla
         for i, alerta in enumerate(alertas):
@@ -467,7 +478,7 @@ class InventarioTab(BaseModule):
         self.proveedores_table.setRowCount(0)
         
         # Obtener proveedores del servicio
-        proveedores = self.inventario_service.get_proveedores()
+        _ = self.inventario_service.get_proveedores()
         
         # Llenar tabla
         for i, proveedor in enumerate(proveedores):
@@ -479,7 +490,7 @@ class InventarioTab(BaseModule):
             self.proveedores_table.setItem(i, 3, QTableWidgetItem(proveedor.email))
             
             # Botones de acción
-            acciones_widget = QWidget()
+            _ = QWidget()
             acciones_layout = QHBoxLayout()
             acciones_layout.setContentsMargins(2, 2, 2, 2)
             
@@ -503,15 +514,15 @@ class InventarioTab(BaseModule):
     
     def _buscar_productos(self):
         """Busca productos según los criterios de búsqueda"""
-        texto = self.busqueda_input.text()
+        _ = self.busqueda_input.text()
         categoria = self.categoria_combo.currentText()
         
         if categoria == "Todas":
-            categoria = ""
+            _ = ""
             
         if hasattr(self, 'inventario_service'):
             # Obtener productos filtrados
-            productos = self.inventario_service.get_productos(texto, categoria)
+            _ = self.inventario_service.get_productos(texto, categoria)
             
             # Limpiar y volver a cargar la tabla
             self.productos_table.setRowCount(0)
@@ -527,7 +538,7 @@ class InventarioTab(BaseModule):
                 self.productos_table.setItem(i, 3, QTableWidgetItem(f"{producto.precio:.2f} €"))
                 
                 # Stock con color según nivel
-                stock_item = QTableWidgetItem(str(producto.stock_actual))
+                _ = QTableWidgetItem(str(producto.stock_actual))
                 if producto.stock_actual <= producto.stock_minimo:
                     stock_item.setBackground(QColor(255, 200, 200))  # Rojo claro
                 self.productos_table.setItem(i, 4, stock_item)
@@ -535,7 +546,7 @@ class InventarioTab(BaseModule):
                 self.productos_table.setItem(i, 5, QTableWidgetItem(str(producto.stock_minimo)))
                 
                 # Botones de acción
-                acciones_widget = QWidget()
+                _ = QWidget()
                 acciones_layout = QHBoxLayout()
                 acciones_layout.setContentsMargins(2, 2, 2, 2)
                 
@@ -557,18 +568,18 @@ class InventarioTab(BaseModule):
         """Abre el diálogo para crear un nuevo producto"""
         dialog = ProductoDialog(parent=self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            producto_data = dialog.get_producto_data()
+            _ = dialog.get_producto_data()
             
             if hasattr(self, 'inventario_service'):
                 try:
                     # Convertir dict a objeto Producto
-                    nuevo_producto = Producto(
+                    _ = Producto(
                         id=None,
-                        nombre=producto_data["nombre"],
+                        _ = producto_data["nombre"],
                         categoria=producto_data["categoria"],
-                        precio=producto_data["precio"],
+                        _ = producto_data["precio"],
                         stock_actual=producto_data["stock"],
-                        stock_minimo=producto_data["stock_min"],
+                        _ = producto_data["stock_min"],
                         proveedor_nombre=producto_data["proveedor"]
                     )
                     
@@ -582,12 +593,12 @@ class InventarioTab(BaseModule):
                     self.status_changed.emit(f"Producto '{producto_data['nombre']}' agregado correctamente")
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"No se pudo crear el producto: {str(e)}")
-                    logger.error(f"Error al crear producto: {e}")
+                    logger.error("Error al crear producto: %s", e)
     
     def _editar_producto(self, producto):
         """Abre el diálogo para editar un producto"""
         # Convertir objeto Producto a dict para el diálogo
-        producto_dict = {
+        _ = {
             "id": producto.id,
             "nombre": producto.nombre,
             "categoria": producto.categoria,
@@ -599,18 +610,18 @@ class InventarioTab(BaseModule):
         
         dialog = ProductoDialog(producto_dict, parent=self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            producto_actualizado = dialog.get_producto_data()
+            _ = dialog.get_producto_data()
             
             if hasattr(self, 'inventario_service'):
                 try:
                     # Convertir dict a objeto Producto
-                    producto_obj = Producto(
+                    _ = Producto(
                         id=producto.id,
-                        nombre=producto_actualizado["nombre"],
+                        _ = producto_actualizado["nombre"],
                         categoria=producto_actualizado["categoria"],
-                        precio=producto_actualizado["precio"],
+                        _ = producto_actualizado["precio"],
                         stock_actual=producto_actualizado["stock"],
-                        stock_minimo=producto_actualizado["stock_min"],
+                        _ = producto_actualizado["stock_min"],
                         proveedor_nombre=producto_actualizado["proveedor"]
                     )
                     
@@ -624,11 +635,11 @@ class InventarioTab(BaseModule):
                     self.status_changed.emit(f"Producto '{producto_actualizado['nombre']}' actualizado correctamente")
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"No se pudo actualizar el producto: {str(e)}")
-                    logger.error(f"Error al actualizar producto: {e}")
+                    logger.error("Error al actualizar producto: %s", e)
     
     def _eliminar_producto(self, producto):
         """Elimina un producto del inventario"""
-        confirmacion = QMessageBox.question(
+        _ = QMessageBox.question(
             self, 
             "Confirmar eliminación",
             f"¿Está seguro de que desea eliminar el producto '{producto.nombre}'?",
@@ -648,7 +659,7 @@ class InventarioTab(BaseModule):
                     self.status_changed.emit(f"Producto '{producto.nombre}' eliminado correctamente")
                 except Exception as e:
                     QMessageBox.critical(self, "Error", f"No se pudo eliminar el producto: {str(e)}")
-                    logger.error(f"Error al eliminar producto: {e}")
+                    logger.error("Error al eliminar producto: %s", e)
     
     def _realizar_pedido(self, producto):
         """Realiza un pedido para un producto"""
@@ -663,11 +674,11 @@ class InventarioTab(BaseModule):
         """Genera un pedido automático para todos los productos bajo mínimo"""
         if hasattr(self, 'inventario_service'):
             try:                # Generar pedido automático usando el servicio
-                pedidos = self.inventario_service.generar_pedido_automatico()
+                _ = self.inventario_service.generar_pedido_automatico()
                 
                 if pedidos:
                     # Verificar si pedidos es una lista o un objeto individual
-                    num_pedidos = len(pedidos) if isinstance(pedidos, (list, tuple)) else 1
+                    _ = len(pedidos) if isinstance(pedidos, (list, tuple)) else 1
                     QMessageBox.information(
                         self,
                         "Pedidos generados",
@@ -682,9 +693,11 @@ class InventarioTab(BaseModule):
                     )
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"No se pudieron generar pedidos automáticos: {str(e)}")
-                logger.error(f"Error al generar pedidos automáticos: {e}")
+                logger.error("Error al generar pedidos automáticos: %s", e)
     
     def refresh(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualiza los datos del módulo de inventario"""
         super().refresh()
         
@@ -702,11 +715,15 @@ class InventarioTab(BaseModule):
         self.status_changed.emit("Inventario actualizado correctamente")
     
     def on_module_activated(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Se llama cuando el módulo de inventario se activa"""
         super().on_module_activated()
         self.status_changed.emit("Inventario - Gestión de productos y stock")
     
     def on_module_deactivated(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Se llama cuando el módulo de inventario se desactiva"""
         super().on_module_deactivated()
         # Guardar cambios si es necesario

@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 #!/usr/bin/env python3
 """
 Script de diagnóstico para el problema de tendencias aleatorias
@@ -22,6 +23,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def test_trend_consistency():
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Probar la consistencia de las tendencias"""
     
     print("="*60)
@@ -30,21 +33,21 @@ def test_trend_consistency():
     
     # Inicializar componentes
     db_manager = DatabaseManager()
-    data_manager = RealDataManager(db_manager)
+    _ = RealDataManager(db_manager)
     
     print("\n📊 Probando consistencia de tendencias (3 iteraciones)...")
     
-    results = []
+    _ = []
     
     for i in range(3):
-        print(f"\n--- Iteración {i+1} ---")
+        print("\n--- Iteración %s ---" % i % 1)
         
         # Obtener métricas
-        metrics = data_manager._get_real_metrics_formatted()
+        _ = data_manager._get_real_metrics_formatted()
         
         iteration_result = {}
         for metric_name, metric_data in metrics.items():
-            trend = metric_data.get('trend', 'N/A')
+            _ = metric_data.get('trend', 'N/A')
             value = metric_data.get('value', 0)
             
             iteration_result[metric_name] = {
@@ -52,7 +55,7 @@ def test_trend_consistency():
                 'trend': trend
             }
             
-            print(f"  {metric_name}: {value} (tendencia: {trend})")
+            print("  {metric_name}: {value} (tendencia: %s)" % trend)
         
         results.append(iteration_result)
         
@@ -60,29 +63,29 @@ def test_trend_consistency():
             time.sleep(2)
     
     # Analizar consistencia
-    print("\n" + "="*60)
+    print("\n"  %  "="*60)
     print("📋 ANÁLISIS DE CONSISTENCIA:")
     print("="*60)
     
-    inconsistent_metrics = []
+    _ = []
     
     for metric_name in results[0].keys():
-        trends = [result[metric_name]['trend'] for result in results]
+        _ = [result[metric_name]['trend'] for result in results]
         values = [result[metric_name]['value'] for result in results]
         
         # Si los valores son iguales pero las tendencias cambian, hay problema
         if len(set(values)) == 1 and len(set(trends)) > 1:
-            print(f"❌ {metric_name}: INCONSISTENTE")
-            print(f"   Valores: {values} (todos iguales)")
-            print(f"   Tendencias: {trends} (cambian aleatoriamente)")
+            print("❌ %s: INCONSISTENTE" % metric_name)
+            print("   Valores: %s (todos iguales)" % values)
+            print("   Tendencias: %s (cambian aleatoriamente)" % trends)
             inconsistent_metrics.append(metric_name)
         else:
-            print(f"✅ {metric_name}: CONSISTENTE")
+            print("✅ %s: CONSISTENTE" % metric_name)
     
     if inconsistent_metrics:
         print(f"\n🚨 PROBLEMA ENCONTRADO:")
-        print(f"   {len(inconsistent_metrics)} métricas con tendencias aleatorias")
-        print(f"   Métricas afectadas: {', '.join(inconsistent_metrics)}")
+        print("   %s métricas con tendencias aleatorias" % len(inconsistent_metrics))
+        print("   Métricas afectadas: %s" % ', '.join(inconsistent_metrics))
         
         # Diagnosticar la causa
         print(f"\n🔍 DIAGNÓSTICO DE LA CAUSA:")
@@ -91,26 +94,28 @@ def test_trend_consistency():
         print(f"\n✅ TODAS LAS TENDENCIAS SON CONSISTENTES")
 
 def test_historical_queries(data_manager):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Probar las consultas históricas"""
     
     print("\n📋 Probando consultas históricas...")
     
     # Probar algunas métricas
-    test_metrics = ['ventas_diarias', 'comandas_activas', 'ocupacion_mesas']
+    _ = ['ventas_diarias', 'comandas_activas', 'ocupacion_mesas']
     
     for metric in test_metrics:
-        print(f"\n--- {metric} ---")
+        print("\n--- %s ---" % metric)
         
         # Llamar varias veces la consulta histórica
         for i in range(3):
             historical_value = data_manager._get_historical_metric_value(metric)
-            print(f"  Consulta {i+1}: {historical_value}")
+            print("  Consulta {i % 1}: %s" % historical_value)
             time.sleep(0.5)
 
 if __name__ == "__main__":
     try:
         test_trend_consistency()
     except Exception as e:
-        print(f"❌ Error en diagnóstico: {e}")
+    logging.error("❌ Error en diagnóstico: %s", e)
         import traceback
         traceback.print_exc()

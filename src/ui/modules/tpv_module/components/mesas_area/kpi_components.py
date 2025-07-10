@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 kpi_components.py
 Componentes reutilizables para widgets KPI avanzados (tooltips, badges, animaciones, sparkline, accesibilidad, layout)
@@ -9,6 +10,7 @@ from PyQt6.QtCore import Qt
 
 class TooltipAvanzado(QLabel):
     def __init__(self, text, parent=None):
+        """TODO: Add docstring"""
         super().__init__(text, parent)
         self.setObjectName("TooltipAvanzado")
         self.setStyleSheet(
@@ -29,6 +31,7 @@ class TooltipAvanzado(QLabel):
 
 class BadgeKPI(QLabel):
     def __init__(self, text, color="#a21caf", parent=None):
+        """TODO: Add docstring"""
         super().__init__(text, parent)
         self.setObjectName("BadgeKPI")
         self.setStyleSheet(
@@ -53,6 +56,8 @@ from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
 class AnimacionKPI:
     @staticmethod
     def animar_hover(widget, color_hover="#ede9fe"):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # Cambia el fondo temporalmente al hacer hover
         anim = QPropertyAnimation(widget, b"styleSheet")
         anim.setDuration(180)
@@ -64,6 +69,7 @@ class AnimacionKPI:
 # SparklineKPI: Placeholder visual (implementación real requiere librería de gráficos)
 class SparklineKPI(QLabel):
     def __init__(self, data=None, color="#a21caf", parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.setObjectName("SparklineKPI")
         self.setText("[sparkline]")  # Placeholder visual
@@ -75,6 +81,8 @@ class SparklineKPI(QLabel):
 class AccesibilidadKPI:
     @staticmethod
     def set_accessible_label(widget, label):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         widget.setAccessibleName(label)
         widget.setToolTip(label)
 
@@ -83,6 +91,8 @@ class AccesibilidadKPI:
 class LayoutKPI:
     @staticmethod
     def apply_layout_options(widget, opts):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         # opts: dict con opciones de layout (márgenes, alineación, etc.)
         if not opts:
             return

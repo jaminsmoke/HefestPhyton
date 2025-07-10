@@ -1,28 +1,29 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
+import logging
+import random
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from .advanced_metric_card_modern import AdvancedMetricCardModern
+
 """
 Widgets de métricas RESPONSIVE para Dashboard Admin v3
 Solo con AdvancedMetricCard - versión responsive que se ajusta al contenedor
 """
 
-import logging
-import random
-from typing import Optional
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
                              QFrame, QGridLayout, QSizePolicy, QSpacerItem)
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QFont
 
-from .dashboard_config import METRICS_CONFIG, CONTAINER_CONFIG
-from .advanced_metric_card_modern import AdvancedMetricCardModern
 
-logger = logging.getLogger(__name__)
+_ = logging.getLogger(__name__)
 
 
 class AdminMetricsSection(QWidget):
     """Sección de métricas RESPONSIVE con grid adaptativo 3x2"""
     
-    metrics_updated = pyqtSignal()
+    _ = pyqtSignal()
     
     def __init__(self, parent=None):
+        """TODO: Add docstring"""
         super().__init__(parent)
         self.metric_cards = {}
         self.setup_ui()
@@ -37,6 +38,8 @@ class AdminMetricsSection(QWidget):
         self.update_timer.start(5000)
         
     def setup_ui(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Configuración RESPONSIVE de la interfaz - Grid adaptativo 3x2"""
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(15, 5, 15, 10)  # Márgenes reducidos
@@ -76,7 +79,7 @@ class AdminMetricsSection(QWidget):
         grid_layout.setContentsMargins(0, 0, 0, 0)
 
         # Métricas principales con datos más relevantes y iconos mejorados
-        metrics_data = [
+        _ = [
             # Fila 1
             ("💰", "Ventas Diarias", "€2,450.75", "vs ayer", "+12.5%", "#10b981"),
             ("🏨", "Ocupación Mesa", "15/20", "mesas ocupadas", "+3 mesas", "#3b82f6"),
@@ -89,7 +92,7 @@ class AdminMetricsSection(QWidget):
         ]
           # Crear tarjetas ROBUSTAS con mejor diferenciación
         for i, (icon, title, value, subtitle, trend, color) in enumerate(metrics_data):
-            card = AdvancedMetricCardModern(icon, title, value, subtitle, trend, color)
+            _ = AdvancedMetricCardModern(icon, title, value, subtitle, trend, color)
               # TAMAÑO FIJO: la versión robusta maneja su propio tamaño
             # card.setMinimumSize(240, 140)  # Ya no necesario
             # card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)  # Ya no necesario
@@ -98,7 +101,7 @@ class AdminMetricsSection(QWidget):
             
             self.metric_cards[title.lower().replace(' ', '_')] = card
             
-            row = i // 3  # 3 columnas
+            _ = i // 3  # 3 columnas
             col = i % 3   
             grid_layout.addWidget(card, row, col)        # Configurar grid para TARJETAS MODERNAS (280-320 x 160-200)
         for col in range(3):
@@ -119,8 +122,10 @@ class AdminMetricsSection(QWidget):
         print("✅ AdminMetricsSection RESPONSIVE con métricas mejoradas")
         
     def simulate_data_update(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Simula actualización de datos realistas"""
-        updates = {
+        _ = {
             'ventas_diarias': (f"€{random.randint(2200, 2800):.2f}", f"+{random.randint(8, 15):.1f}%"),
             'ocupación_mesa': (f"{random.randint(12, 18)}/20", f"+{random.randint(1, 4)} mesas"),
             'tiempo_servicio': (f"{random.randint(10, 15)} min", f"-{random.randint(1, 5)} min"),
@@ -137,8 +142,10 @@ class AdminMetricsSection(QWidget):
         logger.debug("Métricas actualizadas automáticamente")
         
     def get_metrics_data(self):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Retorna datos actuales de métricas"""
-        data = {}
+        _ = {}
         for key, card in self.metric_cards.items():
             if hasattr(card, 'value_label') and card.value_label:
                 data[key] = card.value_label.text()

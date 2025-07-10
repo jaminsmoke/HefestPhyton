@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 #!/usr/bin/env python3
 """
 Investigación profunda del problema de las tarjetas
@@ -16,20 +17,22 @@ from ui.modules.tpv_module.components.mesas_area import MesasArea
 from services.tpv_service import Mesa
 
 def investigar_problema():
-    app = QApplication(sys.argv)
+    """TODO: Add docstring"""
+    # TODO: Add input validation
+    _ = QApplication(sys.argv)
     
     print("🔍 INVESTIGACIÓN PROFUNDA DEL PROBLEMA")
     print("=" * 50)
     
     # Crear mesas de prueba
-    mesas = [
+    _ = [
         Mesa(1, "1", "Terraza", "libre", 4),
         Mesa(2, "2", "Interior", "ocupada", 6),
         Mesa(3, "3", "Terraza", "reservada", 4),
     ]
     
     # Crear MesasArea
-    mesas_area = MesasArea()
+    _ = MesasArea()
     
     print("📊 ESTADO INICIAL (después de __init__):")
     analizar_tarjetas(mesas_area)
@@ -58,8 +61,10 @@ def investigar_problema():
     return app.exec()
 
 def analizar_tarjetas(mesas_area):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Analiza el estado actual de las tarjetas"""
-    widgets_to_check = [
+    _ = [
         ('zonas_widget', 'Zonas'),
         ('mesas_total_widget', 'Total'),
         ('mesas_libres_widget', 'Libres'),
@@ -77,13 +82,13 @@ def analizar_tarjetas(mesas_area):
                 if name_item and name_item.widget() and isinstance(name_item.widget(), QLabel):
                     actual_text = name_item.widget().text()
                     status = "✅" if actual_text == expected_label else "❌"
-                    print(f"  {widget_name}: {status} '{actual_text}' (esperado: '{expected_label}')")
+                    print("  {widget_name}: {status} '{actual_text}' (esperado: '%s')" % expected_label)
                 else:
-                    print(f"  {widget_name}: ❌ No se encontró QLabel en posición 1")
+                    print("  %s: ❌ No se encontró QLabel en posición 1" % widget_name)
             else:
-                print(f"  {widget_name}: ❌ Layout inválido")
+                print("  %s: ❌ Layout inválido" % widget_name)
         else:
-            print(f"  {widget_name}: ❌ Widget no existe")
+            print("  %s: ❌ Widget no existe" % widget_name)
 
 if __name__ == "__main__":
     exit_code = investigar_problema()

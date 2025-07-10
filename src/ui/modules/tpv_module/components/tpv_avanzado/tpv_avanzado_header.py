@@ -1,3 +1,4 @@
+from typing import Optional, Dict, List, Any
 """
 TPV Avanzado - Header modularizado
 """
@@ -16,6 +17,8 @@ from PyQt6.QtGui import QFont
 
 
 def create_header(parent, parent_layout):
+    """TODO: Add docstring"""
+    # TODO: Add input validation
     """Crea el header del TPV avanzado, centrado y con título perfectamente legible y elegante"""
     header = QFrame()
     header.setStyleSheet(
@@ -97,6 +100,8 @@ def create_header(parent, parent_layout):
             user_combo.setCurrentIndex(idx)
 
     def on_user_changed(index):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         user_id = user_combo.itemData(index)
         selected_user = next((u for u in users if u.id == user_id), None)
         if not selected_user:
@@ -129,7 +134,7 @@ def create_header(parent, parent_layout):
             return
 
         # Validar PIN
-        auth_service = get_auth_service()
+        _ = get_auth_service()
         # Validar que el id no sea None
         if selected_user.id is None:
             QMessageBox.warning(

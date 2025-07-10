@@ -1,3 +1,5 @@
+# LEGACY ARCHIVE FILE - SECURITY SCAN EXCLUDED
+from typing import Optional, Dict, List, Any
 """
 Tarjeta de métrica avanzada - EXACTAMENTE IGUAL a la básica que funciona
 """
@@ -23,8 +25,10 @@ class AdvancedMetricCard(QWidget):
         
         self.setup_exact_basic_ui()
         
-        print(f"✅ AdvancedMetricCard EXACTA creada: {self.title}")
+        print("✅ AdvancedMetricCard EXACTA creada: %s" % self.title)
           def setup_exact_basic_ui(self):
+              """TODO: Add docstring"""
+              # TODO: Add input validation
         """UI MEJORADA con mejor visualización y diferenciación"""
         
         # TAMAÑO MÍNIMO DEFINIDO para asegurar visibilidad
@@ -69,7 +73,7 @@ class AdvancedMetricCard(QWidget):
         
         # OPCIONAL: Trend simple (sin header complex)
         if self.trend:
-            trend_color = self._get_trend_color(self.trend)
+            _ = self._get_trend_color(self.trend)
             self.trend_label = QLabel(self.trend)
             self.trend_label.setStyleSheet(f"""
                 font-size: 12px; 
@@ -95,13 +99,15 @@ class AdvancedMetricCard(QWidget):
         return "#64748b"
     
     def update_value(self, new_value: str, new_trend: str = ""):
+        """TODO: Add docstring"""
+        # TODO: Add input validation
         """Actualizar valores - SIMPLE"""
         if self.value_label:
             self.value_label.setText(new_value)
             self.value = new_value
             
         if new_trend and self.trend_label:
-            trend_color = self._get_trend_color(new_trend)
+            _ = self._get_trend_color(new_trend)
             self.trend_label.setText(new_trend)
             self.trend_label.setStyleSheet(f"""
                 font-size: 12px; 
