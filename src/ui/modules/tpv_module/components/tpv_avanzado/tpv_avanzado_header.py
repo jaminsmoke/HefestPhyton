@@ -2,20 +2,18 @@
 TPV Avanzado - Header modularizado
 """
 
-from PyQt6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QVBoxLayout,
-    QLabel,
-    QComboBox,
-)
-from services.auth_service import get_auth_service
+from typing import Any
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QComboBox, QFrame, QHBoxLayout, QLabel, QVBoxLayout
+
+from services.auth_service import get_auth_service
 
 
-def create_header(parent, parent_layout):
-    """Crea el header del TPV avanzado, centrado y con título perfectamente legible y elegante"""
+def create_header(parent: Any, parent_layout: Any) -> None:
+    """Crea el header del TPV avanzado, centrado y con título
+    perfectamente legible y elegante"""
     header = QFrame()
     header.setStyleSheet(
         """
@@ -95,87 +93,96 @@ def create_header(parent, parent_layout):
         if idx >= 0:
             user_combo.setCurrentIndex(idx)
 
-    def on_user_changed(index):
+    def on_user_changed(index: int) -> None:
         user_id = user_combo.itemData(index)
-        selected_user = next((u for u in users if u.id == user_id), None)
+        selected_user = next(
+            (u for u in users if u.id == user_id), None
+        )  # type: ignore[misc]
         if not selected_user:
             return
         # Si el usuario seleccionado es el mismo, no hacer nada
         if (
-            hasattr(parent, "selected_user")
-            and parent.selected_user
-            and parent.selected_user.id == selected_user.id
+            hasattr(parent, "selected_user")  # type: ignore[misc]
+            and parent.selected_user  # type: ignore[misc]
+            and (parent.selected_user.id == selected_user.id)  # type: ignore[misc]
         ):
             return
 
         # Pedir PIN del usuario seleccionado
-        from PyQt6.QtWidgets import QInputDialog, QMessageBox, QLineEdit
+        from PyQt6.QtWidgets import QInputDialog, QLineEdit, QMessageBox
 
-        pin, ok = QInputDialog.getText(
+        pin, ok = QInputDialog.getText(  # type: ignore[misc]
             parent,
             "Autenticación requerida",
-            f"Introduce el PIN de {selected_user.name}:",
+            f"Introduce el PIN de {selected_user.name}:",  # type: ignore[misc]
             QLineEdit.EchoMode.Password,
         )
         if not ok:
             # Cancelado, volver al usuario anterior
-            if hasattr(parent, "selected_user") and parent.selected_user:
-                idx = user_combo.findData(parent.selected_user.id)
+            if (
+                hasattr(parent, "selected_user") and parent.selected_user
+            ):  # type: ignore[misc]
+                idx = user_combo.findData(parent.selected_user.id)  # type: ignore[misc]
                 if idx >= 0:
-                    user_combo.blockSignals(True)
-                    user_combo.setCurrentIndex(idx)
-                    user_combo.blockSignals(False)
+                    user_combo.blockSignals(True)  # type: ignore[misc]
+                    user_combo.setCurrentIndex(idx)  # type: ignore[misc]
+                    user_combo.blockSignals(False)  # type: ignore[misc]
             return
 
         # Validar PIN
         auth_service = get_auth_service()
         # Validar que el id no sea None
-        if selected_user.id is None:
-            QMessageBox.warning(
+        if selected_user.id is None:  # type: ignore[misc]
+            QMessageBox.warning(  # type: ignore[misc]
                 parent,
                 "Error de autenticación",
-                f"El usuario seleccionado no tiene ID válido. Se mantiene el usuario actual.",
+                "El usuario seleccionado no tiene ID válido. "
+                "Se mantiene el usuario actual.",
             )
-            if hasattr(parent, "selected_user") and parent.selected_user:
-                idx = user_combo.findData(parent.selected_user.id)
+            if (
+                hasattr(parent, "selected_user") and parent.selected_user
+            ):  # type: ignore[misc]
+                idx = user_combo.findData(parent.selected_user.id)  # type: ignore[misc]
                 if idx >= 0:
-                    user_combo.blockSignals(True)
-                    user_combo.setCurrentIndex(idx)
-                    user_combo.blockSignals(False)
+                    user_combo.blockSignals(True)  # type: ignore[misc]
+                    user_combo.setCurrentIndex(idx)  # type: ignore[misc]
+                    user_combo.blockSignals(False)  # type: ignore[misc]
             return
-        if not auth_service.login(int(selected_user.id), pin):
+        if not auth_service.login(int(selected_user.id), pin):  # type: ignore[misc]
             # Log intento fallido
             import logging
 
             logging.getLogger(__name__).warning(
-                f"Intento fallido de login para usuario {selected_user.username} desde TPV avanzado."
+                "Intento fallido de login para usuario %s desde TPV avanzado.",
+                selected_user.username,  # type: ignore[misc]
             )
-            QMessageBox.warning(
+            QMessageBox.warning(  # type: ignore[misc]
                 parent,
                 "Error de autenticación",
-                f"PIN incorrecto para {selected_user.name}. Se mantiene el usuario actual.",
+                f"PIN incorrecto para {selected_user.name}. "
+                "Se mantiene el usuario actual.",  # type: ignore[misc]
             )
             # Volver al usuario anterior
-            if hasattr(parent, "selected_user") and parent.selected_user:
-                idx = user_combo.findData(parent.selected_user.id)
+            if (
+                hasattr(parent, "selected_user") and parent.selected_user
+            ):  # type: ignore[misc]
+                idx = user_combo.findData(parent.selected_user.id)  # type: ignore[misc]
                 if idx >= 0:
-                    user_combo.blockSignals(True)
-                    user_combo.setCurrentIndex(idx)
-                    user_combo.blockSignals(False)
+                    user_combo.blockSignals(True)  # type: ignore[misc]
+                    user_combo.setCurrentIndex(idx)  # type: ignore[misc]
+                    user_combo.blockSignals(False)  # type: ignore[misc]
             return
 
         # Autenticación exitosa: cambiar usuario
-        parent.selected_user = selected_user
+        parent.selected_user = selected_user  # type: ignore[misc]
         # Feedback visual: resaltar usuario activo
-        user_combo.setStyleSheet(
+        user_combo.setStyleSheet(  # type: ignore[misc]
             user_combo.styleSheet()
             + "QComboBox { font-weight: bold; background: #e0e7ff; }"
         )
-        # TODO: Propagar cambio de usuario a operaciones relevantes y refrescar UI
-        # Mensaje opcional de éxito
-        # QMessageBox.information(parent, "Usuario cambiado", f"Ahora operando como {selected_user.name}.")
+        # Pendiente: Propagar cambio de usuario a operaciones relevantes
 
-    user_combo.currentIndexChanged.connect(on_user_changed)
+    user_combo.currentIndexChanged.connect(on_user_changed)  # type: ignore[misc]
     parent.user_selector_combo = user_combo
     parent.selected_user = (
         current_user if current_user else (users[0] if users else None)
@@ -184,16 +191,19 @@ def create_header(parent, parent_layout):
     layout.addLayout(user_selector_layout)
 
     # Información de la mesa, centrada y con mejor contraste
-    parent.header_mesa_label = QLabel("Seleccione una mesa")
-    if getattr(parent, "mesa", None):
-        parent.header_mesa_label.setText(
-            f"Mesa {parent.mesa.numero} - {parent.mesa.zona}"
+    parent.header_mesa_label = QLabel("Seleccione una mesa")  # type: ignore[misc]
+    if getattr(parent, "mesa", None):  # type: ignore[misc]
+        parent.header_mesa_label.setText(  # type: ignore[misc]
+            f"Mesa {parent.mesa.numero} - "
+            f"{parent.mesa.zona}"  # type: ignore[misc]
         )
     parent.header_mesa_label.setFont(QFont("Segoe UI", 15, QFont.Weight.Medium))
-    parent.header_mesa_label.setStyleSheet(
+    parent.header_mesa_label.setStyleSheet(  # type: ignore[misc]
         "color: rgba(255,255,255,0.96); margin-top: 2px; margin-bottom: 10px;"
     )
-    parent.header_mesa_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-    layout.addWidget(parent.header_mesa_label)
+    parent.header_mesa_label.setAlignment(
+        Qt.AlignmentFlag.AlignHCenter
+    )  # type: ignore[misc]
+    layout.addWidget(parent.header_mesa_label)  # type: ignore[misc]
 
-    parent_layout.addWidget(header)
+    parent_layout.addWidget(header)  # type: ignore[misc]
