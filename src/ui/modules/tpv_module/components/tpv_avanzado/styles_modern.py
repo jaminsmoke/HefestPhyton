@@ -8,16 +8,15 @@ COLORS = {
     # Colores primarios
     "primary": "#2563eb",           # Azul moderno
     "primary_dark": "#1d4ed8",      # Azul oscuro
-    "primary_light": "#3b82f6",     # Azul claro
+    "primary_light": "#60a5fa",     # Azul claro
     
-    # Colores secundarios
-    "secondary": "#64748b",         # Gris azulado
-    "secondary_light": "#94a3b8",   # Gris claro
-    "accent": "#059669",            # Verde para éxito
-    "warning": "#d97706",           # Naranja para advertencias
-    "danger": "#dc2626",            # Rojo para errores
+    # Colores de estado
+    "success": "#10b981",           # Verde éxito
+    "warning": "#f59e0b",           # Amarillo advertencia
+    "danger": "#ef4444",            # Rojo peligro
+    "info": "#3b82f6",              # Azul información
     
-    # Neutrales
+    # Escala de grises
     "white": "#ffffff",
     "gray_50": "#f9fafb",
     "gray_100": "#f3f4f6",
@@ -29,37 +28,41 @@ COLORS = {
     "gray_700": "#374151",
     "gray_800": "#1f2937",
     "gray_900": "#111827",
+    "black": "#000000",
     
-    # Colores especiales para TPV
-    "success": "#10b981",           # Verde para ventas completadas
-    "pending": "#f59e0b",           # Amarillo para pendientes
-    "table_free": "#ecfdf5",        # Verde muy claro para mesas libres
-    "table_occupied": "#fef3c7",    # Amarillo claro para mesas ocupadas
-    "table_reserved": "#e0e7ff",    # Azul claro para mesas reservadas
+    # Colores de fondo
+    "background": "#f8fafc",
+    "surface": "#ffffff",
+    "card": "#ffffff",
 }
 
-# 📐 DIMENSIONES Y ESPACIADO
+# 📏 SISTEMA DE ESPACIADO
 SPACING = {
     "xs": "4px",
     "sm": "8px",
     "md": "12px",
     "lg": "16px",
-    "xl": "24px",
-    "2xl": "32px",
-    "3xl": "48px",
+    "xl": "20px",
+    "2xl": "24px",
+    "3xl": "32px",
 }
 
+# 🔄 BORDER RADIUS
 BORDER_RADIUS = {
-    "sm": "6px",
-    "md": "8px",
-    "lg": "12px",
-    "xl": "16px",
+    "none": "0px",
+    "sm": "4px",
+    "md": "6px",
+    "lg": "8px",
+    "xl": "12px",
     "full": "50%",
 }
 
+
 # 🎯 ESTILOS DE COMPONENTES TPV
 
-def get_modern_button_style(variant="primary", size="md"):
+
+def get_modern_button_style(variant: str = "primary",
+                            size: str = "md") -> str:
     """Genera estilos modernos para botones"""
     base_style = f"""
         QPushButton {{
@@ -67,27 +70,26 @@ def get_modern_button_style(variant="primary", size="md"):
             border-radius: {BORDER_RADIUS['md']};
             font-weight: 600;
             font-family: 'Segoe UI', Arial, sans-serif;
-            transition: all 0.2s ease;
         }}
         QPushButton:hover {{
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0.9;
         }}
         QPushButton:pressed {{
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 0.8;
         }}
         QPushButton:disabled {{
             opacity: 0.5;
-            cursor: not-allowed;
         }}
     """
     
     # Tamaños
     sizes = {
-        "sm": f"padding: {SPACING['sm']} {SPACING['md']}; font-size: 13px; min-width: 80px; min-height: 32px;",
-        "md": f"padding: {SPACING['md']} {SPACING['lg']}; font-size: 14px; min-width: 100px; min-height: 38px;",
-        "lg": f"padding: {SPACING['lg']} {SPACING['xl']}; font-size: 16px; min-width: 120px; min-height: 44px;",
+        "sm": (f"padding: {SPACING['sm']} {SPACING['md']}; "
+               f"font-size: 13px; min-width: 80px; min-height: 32px;"),
+        "md": (f"padding: {SPACING['md']} {SPACING['lg']}; "
+               f"font-size: 14px; min-width: 100px; min-height: 38px;"),
+        "lg": (f"padding: {SPACING['lg']} {SPACING['xl']}; "
+               f"font-size: 16px; min-width: 120px; min-height: 44px;"),
     }
     
     # Variantes de color
@@ -98,19 +100,18 @@ def get_modern_button_style(variant="primary", size="md"):
             color: {COLORS['white']};
         """,
         "secondary": f"""
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 {COLORS['gray_100']}, stop:1 {COLORS['gray_200']});
-            color: {COLORS['gray_700']};
+            background: {COLORS['gray_100']};
+            color: {COLORS['gray_800']};
             border: 1px solid {COLORS['gray_300']};
         """,
         "success": f"""
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 {COLORS['success']}, stop:1 {COLORS['accent']});
+                stop:0 {COLORS['success']}, stop:1 #059669);
             color: {COLORS['white']};
         """,
         "warning": f"""
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                stop:0 {COLORS['warning']}, stop:1 #b45309);
+                stop:0 {COLORS['warning']}, stop:1 #d97706);
             color: {COLORS['white']};
         """,
         "danger": f"""
@@ -122,7 +123,8 @@ def get_modern_button_style(variant="primary", size="md"):
     
     return base_style + f"QPushButton {{ {sizes[size]} {variants[variant]} }}"
 
-def get_modern_card_style():
+
+def get_modern_card_style() -> str:
     """Genera estilos para tarjetas modernas"""
     return f"""
         QFrame {{
@@ -130,97 +132,109 @@ def get_modern_card_style():
             border: 1px solid {COLORS['gray_200']};
             border-radius: {BORDER_RADIUS['lg']};
             padding: {SPACING['lg']};
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }}
         QFrame:hover {{
             border-color: {COLORS['primary_light']};
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            background: {COLORS['gray_50']};
         }}
     """
 
-def get_modern_input_style():
+
+def get_modern_input_style() -> str:
     """Genera estilos para inputs modernos"""
     return f"""
         QLineEdit, QComboBox {{
             background: {COLORS['white']};
             border: 2px solid {COLORS['gray_200']};
             border-radius: {BORDER_RADIUS['md']};
-            padding: {SPACING['md']};
+            padding: {SPACING['sm']} {SPACING['md']};
             font-size: 14px;
-            font-family: 'Segoe UI', Arial, sans-serif;
             color: {COLORS['gray_800']};
         }}
         QLineEdit:focus, QComboBox:focus {{
             border-color: {COLORS['primary']};
             outline: none;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }}
-        QLineEdit::placeholder {{
-            color: {COLORS['gray_400']};
+        QLineEdit:hover, QComboBox:hover {{
+            border-color: {COLORS['gray_300']};
+        }}
+        QSpinBox {{
+            background: {COLORS['white']};
+            border: 2px solid {COLORS['gray_200']};
+            border-radius: {BORDER_RADIUS['md']};
+            padding: {SPACING['sm']};
+            font-size: 14px;
         }}
     """
 
-def get_modern_table_style():
+
+def get_modern_table_style() -> str:
     """Genera estilos para tablas modernas"""
     return f"""
         QTableWidget {{
             background: {COLORS['white']};
             border: 1px solid {COLORS['gray_200']};
             border-radius: {BORDER_RADIUS['md']};
-            gridline-color: {COLORS['gray_100']};
-            font-family: 'Segoe UI', Arial, sans-serif;
+            gridline-color: {COLORS['gray_200']};
+            font-size: 14px;
         }}
         QTableWidget::item {{
             padding: {SPACING['md']};
-            border: none;
+            border-bottom: 1px solid {COLORS['gray_100']};
         }}
         QTableWidget::item:selected {{
             background: {COLORS['primary_light']};
             color: {COLORS['white']};
         }}
-        QHeaderView::section {{
+        QTableWidget::item:hover {{
             background: {COLORS['gray_50']};
-            border: none;
-            border-bottom: 2px solid {COLORS['gray_200']};
-            padding: {SPACING['md']};
-            font-weight: 600;
+        }}
+        QHeaderView::section {{
+            background: {COLORS['gray_100']};
             color: {COLORS['gray_700']};
+            padding: {SPACING['md']};
+            border: none;
+            font-weight: 600;
         }}
     """
 
-def get_modern_tab_style():
+
+def get_modern_tab_style() -> str:
     """Genera estilos para pestañas modernas"""
     return f"""
         QTabWidget::pane {{
             border: 1px solid {COLORS['gray_200']};
             background: {COLORS['white']};
             border-radius: {BORDER_RADIUS['md']};
-            margin-top: -1px;
         }}
+        
+        QTabWidget::tab-bar {{
+            alignment: center;
+        }}
+        
         QTabBar::tab {{
             background: {COLORS['gray_100']};
-            border: 1px solid {COLORS['gray_200']};
-            border-bottom: none;
-            border-radius: {BORDER_RADIUS['md']} {BORDER_RADIUS['md']} 0 0;
-            padding: {SPACING['md']} {SPACING['lg']};
-            margin-right: 2px;
-            font-weight: 500;
             color: {COLORS['gray_600']};
-            min-width: 120px;
+            border: 1px solid {COLORS['gray_200']};
+            padding: {SPACING['sm']} {SPACING['md']};
+            margin-right: 2px;
+            border-top-left-radius: {BORDER_RADIUS['md']};
+            border-top-right-radius: {BORDER_RADIUS['md']};
         }}
+        
         QTabBar::tab:selected {{
-            background: {COLORS['white']};
+            background: {COLORS['primary']};
+            color: {COLORS['white']};
             border-bottom: 2px solid {COLORS['primary']};
-            color: {COLORS['primary']};
-            font-weight: 600;
         }}
-        QTabBar::tab:hover:!selected {{
+        
+        QTabBar::tab:hover {{
             background: {COLORS['gray_200']};
-            color: {COLORS['gray_700']};
         }}
     """
 
-def get_product_card_style():
+
+def get_product_card_style() -> str:
     """Estilos específicos para tarjetas de productos"""
     return f"""
         QPushButton {{
@@ -228,57 +242,47 @@ def get_product_card_style():
             border: 2px solid {COLORS['gray_200']};
             border-radius: {BORDER_RADIUS['lg']};
             padding: {SPACING['lg']};
-            text-align: center;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: left;
+            font-size: 14px;
             color: {COLORS['gray_800']};
-            min-width: 140px;
-            min-height: 100px;
         }}
         QPushButton:hover {{
             border-color: {COLORS['primary']};
             background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                 stop:0 {COLORS['white']}, stop:1 {COLORS['gray_50']});
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
         }}
         QPushButton:pressed {{
             background: {COLORS['primary_light']};
             color: {COLORS['white']};
-            transform: translateY(0);
-        }}
-        QPushButton:disabled {{
-            background: {COLORS['gray_100']};
-            color: {COLORS['gray_400']};
-            border-color: {COLORS['gray_200']};
         }}
     """
 
-def get_status_badge_style(status="success"):
+
+def get_status_badge_style(status: str = "success") -> str:
     """Genera estilos para badges de estado"""
     status_colors = {
         "success": {"bg": COLORS['success'], "text": COLORS['white']},
         "warning": {"bg": COLORS['warning'], "text": COLORS['white']},
         "danger": {"bg": COLORS['danger'], "text": COLORS['white']},
-        "pending": {"bg": COLORS['pending'], "text": COLORS['white']},
-        "info": {"bg": COLORS['primary'], "text": COLORS['white']},
+        "info": {"bg": COLORS['info'], "text": COLORS['white']},
+        "default": {"bg": COLORS['gray_100'], "text": COLORS['gray_800']},
     }
     
-    colors = status_colors.get(status, status_colors['info'])
+    colors = status_colors.get(status, status_colors["default"])
     
     return f"""
         QLabel {{
             background: {colors['bg']};
             color: {colors['text']};
+            padding: {SPACING['xs']} {SPACING['sm']};
             border-radius: {BORDER_RADIUS['full']};
-            padding: {SPACING['xs']} {SPACING['md']};
             font-size: 12px;
             font-weight: 600;
-            text-align: center;
         }}
     """
 
-# 🎭 ANIMACIONES Y EFECTOS
-def get_fade_animation():
+
+def get_fade_animation() -> str:
     """CSS para animaciones de fade"""
     return """
         @keyframes fadeIn {
@@ -290,35 +294,37 @@ def get_fade_animation():
         }
     """
 
-def get_slide_animation():
+
+def get_slide_animation() -> str:
     """CSS para animaciones de slide"""
     return """
         @keyframes slideInUp {
-            from { 
+            from {
                 opacity: 0;
                 transform: translateY(20px);
             }
-            to { 
+            to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
         .slide-in-up {
-            animation: slideInUp 0.4s ease-out;
+            animation: slideInUp 0.3s ease-out;
         }
     """
 
-# 🌓 MODO OSCURO (para implementación futura)
+
+# 🌙 TEMA OSCURO
+
 DARK_COLORS = {
-    "primary": "#3b82f6",
-    "background": "#1f2937",
-    "surface": "#374151",
-    "text": "#f9fafb",
-    "text_secondary": "#9ca3af",
-    "border": "#4b5563",
+    "background": "#1a1a1a",
+    "surface": "#2d2d2d",
+    "text": "#ffffff",
+    "text_secondary": "#b3b3b3",
 }
 
-def get_dark_theme_override():
+
+def get_dark_theme_override() -> str:
     """Estilos para modo oscuro"""
     return f"""
         QWidget {{
@@ -327,6 +333,11 @@ def get_dark_theme_override():
         }}
         QFrame {{
             background-color: {DARK_COLORS['surface']};
-            border-color: {DARK_COLORS['border']};
+            border-color: #404040;
+        }}
+        QLineEdit, QComboBox {{
+            background-color: {DARK_COLORS['surface']};
+            color: {DARK_COLORS['text']};
+            border-color: #404040;
         }}
     """
