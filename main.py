@@ -19,7 +19,6 @@ import sys
 import os
 import logging
 import importlib.util
-from typing import Any
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -28,11 +27,18 @@ logging.basicConfig(
 
 # === FILTRO DE AVISOS QT (IGNORAR box-shadow/transform) ===
 try:
-    from PyQt6.QtCore import qInstallMessageHandler
+    from PyQt6.QtCore import (
+        qInstallMessageHandler, QtMsgType, QMessageLogContext
+    )
 
-    def qt_message_handler(_: Any, __: Any, message: str) -> None:
+    def qt_message_handler(
+        _msg_type: QtMsgType,
+        _context: QMessageLogContext,
+        message: str | None
+    ) -> None:
+        """Filtra avisos irrelevantes de estilos no soportados en Qt."""
         # Filtrar todos los avisos irrelevantes de estilos no soportados
-        if (
+        if message and (
             "box-shadow" in message
             or "transform" in message
             or "Unknown property overflow" in message
@@ -98,55 +104,58 @@ def main() -> int:
             main_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(main_module)
             print("🚀 Iniciando Hefest...")
-            return main_module.main()
+            result = main_module.main()
+            return result if isinstance(result, int) else 0
         except ImportError as e:
             print(f"Error al importar el módulo principal: {e}")
             print(f"Directorio src: {src_dir}")
             print(f"Python path: {sys.path}")
             return 1
-        except Exception as e:
-            print(f"Error al ejecutar la aplicación: {e}")
+        except Exception as exc:  # pylint: disable=broad-except
+            # TODO: Capturar excepciones más específicas
+            print(f"Error al ejecutar la aplicación: {exc}")
             return 1
 
-    except Exception as e:
-        print(f"Error crítico en el launcher: {e}")
+    except Exception as exc:  # pylint: disable=broad-except
+        # TODO: Capturar excepciones más específicas
+        print(f"Error crítico en el launcher: {exc}")
         return 1
 
 
 if __name__ == "__main__":
-    debug_mode = False
+    DEBUG_MODE = False
     try:
-        exit_code = main()
-        if exit_code is None:
-            exit_code = 0
+        EXIT_CODE = main()
+        if EXIT_CODE is None:
+            EXIT_CODE = 0
 
         # Detectar si estamos en modo debug (VS Code, PyCharm, etc.)
-        debug_mode = (
+        DEBUG_MODE = (
             hasattr(sys, 'gettrace') and sys.gettrace() is not None or
             'debugpy' in sys.modules or  # VS Code debugger
             'pydevd' in sys.modules or   # PyCharm debugger
             '--debug' in sys.argv        # Argumento explícito
         )
 
-        if debug_mode:
+        if DEBUG_MODE:
             # En modo debug, evitar sys.exit para mejor compatibilidad
             print(
-                f"🔧 [DEBUG MODE] Aplicación terminada con código: {exit_code}"
+                f"🔧 [DEBUG MODE] Aplicación terminada con código: {EXIT_CODE}"
             )
-            if exit_code != 0:
+            if EXIT_CODE != 0:
                 print(
                     f"⚠️ [DEBUG MODE] Código de salida indica error: "
-                    f"{exit_code}"
+                    f"{EXIT_CODE}"
                 )
         else:
             # Ejecución normal, usar sys.exit
-            sys.exit(exit_code)
+            sys.exit(EXIT_CODE)
 
     except KeyboardInterrupt:
         print("\n⏹️ Aplicación interrumpida por el usuario")
-        if not debug_mode:
+        if not DEBUG_MODE:
             sys.exit(130)  # Código estándar para Ctrl+C
-    except Exception as e:
-        print(f"❌ Error inesperado en el launcher: {e}")
-        if not debug_mode:
+    except Exception as exc:  # pylint: disable=broad-except
+        print(f"❌ Error inesperado en el launcher: {exc}")
+        if not DEBUG_MODE:
             sys.exit(1)

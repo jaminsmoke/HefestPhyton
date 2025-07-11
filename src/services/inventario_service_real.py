@@ -5,7 +5,12 @@ para Proveedores
 Versión: v0.0.12
 Fecha: 2025-06-20
 Cambios: Restauración completa + soporte de categorías para proveedores
+
+Supresiones de PyLint aplicadas globalmente:
+- broad-except: Se utilizan excepciones genéricas para robustez del sistema
+- too-many-lines: Archivo extenso pero funcionalmente cohesivo
 """
+# pylint: disable=broad-except,too-many-lines,logging-fstring-interpolation
 
 import logging
 from typing import Any, Dict, List, Optional
@@ -123,7 +128,7 @@ class InventarioService(BaseService):
         categoria: str = "General",
         stock_inicial: int = 0,
         stock_minimo: int = 5,
-        **kwargs: Any,
+        **_kwargs: Any,  # Argumentos adicionales no utilizados
     ) -> Optional[Producto]:
         """Crear un nuevo producto en el inventario"""
         if not self.require_database("crear producto"):
@@ -287,15 +292,15 @@ class InventarioService(BaseService):
             producto_actualizado = self.buscar_producto_por_id(producto_id)
             if producto_actualizado:
                 logger.info(
-                    f"Producto ID {producto_id} actualizado exitosamente"
+                    "Producto ID %s actualizado exitosamente", producto_id
                 )
                 return True
             else:
-                logger.error(f"Error actualizando producto ID {producto_id}")
+                logger.error("Error actualizando producto ID %s", producto_id)
                 return False
 
-        except Exception as e:
-            logger.error(f"Error actualizando producto: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error actualizando producto: %s", e)
             return False
 
     def eliminar_producto(self, producto_id: int) -> bool:
@@ -309,7 +314,7 @@ class InventarioService(BaseService):
             # Verificar que el producto existe
             producto = self.buscar_producto_por_id(producto_id)
             if not producto:
-                logger.error(f"No se encontró producto con ID {producto_id}")
+                logger.error("No se encontró producto con ID %s", producto_id)
                 return False  # Eliminar producto
             query = "DELETE FROM productos WHERE id = ?"
             self.db_manager.execute(query, (producto_id,))
@@ -318,19 +323,19 @@ class InventarioService(BaseService):
             producto_eliminado = self.buscar_producto_por_id(producto_id)
             if not producto_eliminado:
                 logger.info(
-                    f"Producto '{producto.nombre}' (ID {producto_id}) "
-                    f"eliminado exitosamente"
+                    "Producto '%s' (ID %s) eliminado exitosamente",
+                    producto.nombre, producto_id
                 )
                 return True
             else:
                 logger.error(
-                    f"Error eliminando producto ID {producto_id}: "
-                    f"el producto aún existe"
+                    "Error eliminando producto ID %s: el producto aún existe",
+                    producto_id
                 )
                 return False
 
-        except Exception as e:
-            logger.error(f"Error eliminando producto: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error eliminando producto: %s", e)
             return False
 
     def actualizar_stock(self, producto_id: int, nuevo_stock: int) -> bool:
@@ -348,7 +353,7 @@ class InventarioService(BaseService):
             # Verificar que el producto existe
             producto = self.buscar_producto_por_id(producto_id)
             if not producto:
-                logger.error(f"No se encontró producto con ID {producto_id}")
+                logger.error("No se encontró producto con ID %s", producto_id)
                 return False  # Actualizar stock
             query = "UPDATE productos SET stock = ? WHERE id = ?"
             self.db_manager.execute(
@@ -360,18 +365,18 @@ class InventarioService(BaseService):
                 and producto_actualizado.stock_actual == nuevo_stock
             ):
                 logger.info(
-                    f"Stock del producto '{producto.nombre}' "
-                    f"actualizado a {nuevo_stock}"
+                    "Stock del producto '%s' actualizado a %s",
+                    producto.nombre, nuevo_stock
                 )
                 return True
             else:
                 logger.error(
-                    f"Error actualizando stock del producto ID {producto_id}"
+                    "Error actualizando stock del producto ID %s", producto_id
                 )
                 return False
 
-        except Exception as e:
-            logger.error(f"Error actualizando stock: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error actualizando stock: %s", e)
             return False
 
     def get_categorias(self) -> List[str]:
@@ -414,8 +419,8 @@ class InventarioService(BaseService):
 
             return categorias
 
-        except Exception as e:
-            logger.error(f"Error obteniendo categorías: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error obteniendo categorías: %s", e)
             return ["General", "Bebidas", "Comida", "Limpieza", "Papelería"]
 
     def get_estadisticas_inventario(self) -> Dict[str, Any]:
@@ -481,8 +486,8 @@ class InventarioService(BaseService):
                 "valor_promedio_producto": valor_promedio,
             }
 
-        except Exception as e:
-            logger.error(f"Error obteniendo estadísticas: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error obteniendo estadísticas: %s", e)
             return {
                 "total_productos": 0,
                 "productos_stock_bajo": 0,
@@ -857,18 +862,18 @@ class InventarioService(BaseService):
 
             if result:
                 logger.info(
-                    f"Proveedor ID {proveedor_id} actualizado exitosamente "
-                    f"con categoría '{categoria}'"
+                    "Proveedor ID %s actualizado exitosamente con categoría '%s'",  # noqa: E501
+                    proveedor_id, categoria
                 )
                 return True
             else:
                 logger.warning(
-                    f"No se encontró proveedor con ID {proveedor_id}"
+                    "No se encontró proveedor con ID %s", proveedor_id
                 )
                 return False
 
-        except Exception as e:
-            logger.error(f"Error actualizando proveedor: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error actualizando proveedor: %s", e)
             return False
 
     def eliminar_proveedor(self, proveedor_id: int) -> bool:
@@ -888,20 +893,18 @@ class InventarioService(BaseService):
 
             if result:
                 logger.info(
-                    (
-                        f"Proveedor ID {proveedor_id} marcado como inactivo "
-                        f"exitosamente"
-                    )
+                    "Proveedor ID %s marcado como inactivo exitosamente",
+                    proveedor_id
                 )
                 return True
             else:
                 logger.warning(
-                    f"No se encontró proveedor con ID {proveedor_id}"
+                    "No se encontró proveedor con ID %s", proveedor_id
                 )
                 return False
 
-        except Exception as e:
-            logger.error(f"Error eliminando proveedor: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error eliminando proveedor: %s", e)
             return False
 
     def get_categorias_proveedores(self) -> List[str]:
@@ -965,8 +968,8 @@ class InventarioService(BaseService):
 
             return sorted(categorias)
 
-        except Exception as e:
-            logger.error(f"Error obteniendo categorías de proveedores: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Error obteniendo categorías de proveedores: %s", e)
             return [
                 "General",
                 "Bebidas",
@@ -1166,7 +1169,7 @@ class InventarioService(BaseService):
 
             if not existing_categoria:
                 logger.error(
-                    f"No se encontró categoría con ID: {categoria_id}"
+                    "No se encontró categoría con ID: %s", categoria_id
                 )
                 return False
 
@@ -1237,7 +1240,7 @@ class InventarioService(BaseService):
                 return False
 
         except Exception as e:
-            logger.error(f"Error actualizando categoría: {e}")
+            logger.error("Error actualizando categoría: %s", e)
             return False
 
     def eliminar_categoria_por_id(self, categoria_id: int) -> bool:
