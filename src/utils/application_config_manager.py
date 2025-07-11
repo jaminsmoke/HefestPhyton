@@ -14,7 +14,8 @@ from typing import Dict, Any, Optional, List, Tuple, Union, cast
 
 # EXCEPCIÓN FUNCIONAL: No configurar logging global aquí para evitar duplicidad de handlers.
 # El logging global se configura únicamente en el entrypoint principal (hefest_application.py).
-## TODO(v0.0.14): Si se requiere logging específico, usar solo loggers de módulo sin basicConfig ni handlers globales.
+# TODO(v0.0.14): Si se requiere logging específico, usar solo loggers de módulo
+# sin basicConfig ni handlers globales.
 logger = logging.getLogger(__name__)
 
 
@@ -55,9 +56,9 @@ class ConfigManager:
         if os.path.exists(self.config_file):
             try:
                 self.config = self._load_config()
-                logger.info(f"Configuración cargada desde {self.config_file}")
-            except Exception as e:
-                logger.error(f"Error al cargar configuración: {e}")
+                logger.info("Configuración cargada desde %s", self.config_file)
+            except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
+                logger.error("Error al cargar configuración: %s", e)
                 self.config = self.DEFAULT_CONFIG
                 self._save_config()
         else:
@@ -78,13 +79,17 @@ class ConfigManager:
     def _load_config(self) -> Dict[str, Dict[str, Any]]:
         """Carga la configuración desde el archivo"""
         with open(self.config_file, "r", encoding="utf-8") as f:
-            return json.load(f)
+            config_data = json.load(f)
+            # Asegurar que el tipo sea correcto
+            if isinstance(config_data, dict):
+                return cast(Dict[str, Dict[str, Any]], config_data)
+            return {}
 
     def _save_config(self) -> None:
         """Guarda la configuración en el archivo"""
         with open(self.config_file, "w", encoding="utf-8") as f:
             json.dump(self.config, f, indent=4)
-        logger.info(f"Configuración guardada en {self.config_file}")
+        logger.info("Configuración guardada en %s", self.config_file)
 
     def get(
         self, section: str, key: Optional[str] = None
@@ -228,9 +233,9 @@ class ConfigManager:
         try:
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(self.config, f, indent=4, ensure_ascii=False)
-            logger.info(f"Configuración exportada a: {file_path}")
+            logger.info("Configuración exportada a: %s", file_path)
         except Exception as e:
-            logger.error(f"Error al exportar configuración: {e}")
+            logger.error("Error al exportar configuración: %s", e)
             raise
 
     def import_config(self, file_path: str) -> None:
@@ -247,9 +252,9 @@ class ConfigManager:
             # Validar y aplicar configuración importada
             self.config.update(imported_config)
             self._save_config()
-            logger.info(f"Configuración importada desde: {file_path}")
+            logger.info("Configuración importada desde: %s", file_path)
         except Exception as e:
-            logger.error(f"Error al importar configuración: {e}")
+            logger.error("Error al importar configuración: %s", e)
             raise
 
     # === CARACTERÍSTICAS AVANZADAS ===
@@ -268,10 +273,10 @@ class ConfigManager:
         try:
             with open(backup_path, "w", encoding="utf-8") as f:
                 json.dump(self.config, f, indent=4, ensure_ascii=False)
-            logger.info(f"Backup creado: {backup_path}")
+            logger.info("Backup creado: %s", backup_path)
             return backup_path
         except Exception as e:
-            logger.error(f"Error creando backup: {e}")
+            logger.error("Error creando backup: %s", e)
             raise
 
     def restore_backup(self, backup_path: str) -> bool:
@@ -285,10 +290,10 @@ class ConfigManager:
 
             self.config = backup_config
             self._save_config()
-            logger.info(f"Configuración restaurada desde: {backup_path}")
+            logger.info("Configuración restaurada desde: %s", backup_path)
             return True
-        except Exception as e:
-            logger.error(f"Error restaurando backup: {e}")
+        except (FileNotFoundError, json.JSONDecodeError, OSError) as e:
+            logger.error("Error restaurando backup: %s", e)
             return False
 
     def get_config_hash(self) -> str:
@@ -324,10 +329,10 @@ class ConfigManager:
         if section:
             if section in self.DEFAULT_CONFIG:
                 self.config[section] = self.DEFAULT_CONFIG[section].copy()
-                logger.info(f"Sección '{section}' restaurada a valores por defecto")
+                logger.info("Sección '%s' restaurada a valores por defecto", section)
             else:
                 logger.warning(
-                    f"Sección '{section}' no existe en configuración por defecto"
+                    "Sección '%s' no existe en configuración por defecto", section
                 )
         else:
             self.config = self.DEFAULT_CONFIG.copy()
@@ -378,8 +383,8 @@ class ConfigManager:
                     stat.st_mtime
                 ).isoformat()
                 config_info["file_size"] = stat.st_size
-        except Exception as e:
-            logger.warning(f"No se pudo obtener información del archivo: {e}")
+        except OSError as e:
+            logger.warning("No se pudo obtener información del archivo: %s", e)
 
         return config_info
 

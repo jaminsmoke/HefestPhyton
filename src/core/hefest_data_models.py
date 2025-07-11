@@ -52,11 +52,11 @@ class User:
         return self.password
 
     @pin.setter
-    def pin(self, value: str):
+    def pin(self, value: str) -> None:
         """Setter para pin que actualiza password"""
         self.password = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"User(username='{self.username}', name='{self.name}', role={self.role})"
 
     def __eq__(self, other: object) -> bool:
@@ -126,7 +126,7 @@ class Producto:
         return self.stock_actual
 
     @stock.setter
-    def stock(self, value: int):
+    def stock(self, value: int) -> None:
         """
         Setter para stock que actualiza stock_actual.
 
@@ -137,7 +137,7 @@ class Producto:
         """
         self.stock_actual = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (
             f"Producto(id={self.id}, nombre='{self.nombre}', stock={self.stock_actual})"
         )
@@ -166,7 +166,7 @@ class Mesa:
     cliente_nombre: Optional[str] = None
     tiempo_ocupacion: Optional[datetime] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Sincronizar ubicacion y zona para compatibilidad"""
         if self.ubicacion and not self.zona:
             self.zona = self.ubicacion
@@ -177,7 +177,7 @@ class Mesa:
         """Indica si la mesa está disponible"""
         return self.estado == "libre"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Mesa(numero={self.numero}, capacidad={self.capacidad}, estado='{self.estado}')"
 
 
@@ -213,7 +213,7 @@ class Reserva:
     observaciones: Optional[str] = None
     fecha_creacion: Optional[datetime] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Sincronizar campos para compatibilidad"""
         if self.notas and not self.observaciones:
             self.observaciones = self.notas
@@ -228,7 +228,7 @@ class Reserva:
         """Indica si la reserva está cancelada"""
         return self.estado == "cancelada"
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.mesa_id:
             fecha_hora = f"{self.fecha_reserva}"
             if self.hora_reserva:

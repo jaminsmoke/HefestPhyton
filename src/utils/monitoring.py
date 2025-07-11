@@ -11,22 +11,22 @@ Recolecta y reporta métricas del sistema:
 - Alertas automáticas
 """
 
-try:
-    import psutil
-
-    HAS_PSUTIL = True
-except ImportError:
-    HAS_PSUTIL = False
-
 import time
 import json
 import logging
+import sqlite3
+import threading
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
-import threading
 from dataclasses import dataclass
-import sqlite3
+
+try:
+    import psutil  # type: ignore
+except ImportError:
+    psutil = None  # type: ignore
+
+HAS_PSUTIL = psutil is not None
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +41,7 @@ class Metric:
     tags: Optional[Dict[str, str]] = None
 
     def to_dict(self) -> Dict[str, Any]:
+        """Convierte la métrica a diccionario."""
         return {
             "name": self.name,
             "value": self.value,
@@ -55,15 +56,15 @@ class MetricsCollector:
     def __init__(self, db_path: str = "data/metrics.db"):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(exist_ok=True)
-        self.metrics_buffer = []
+        self.metrics_buffer: List[Metric] = []
         self.collection_interval = 30  # segundos
         self.is_running = False
-        self.collection_thread = None
+        self.collection_thread: Optional[threading.Thread] = None
 
         # Inicializar base de datos
         self._init_database()
 
-    def _init_database(self):
+    def _init_database(self) -> None:
         """Inicializa la base de datos de métricas."""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -86,7 +87,7 @@ class MetricsCollector:
             """
             )
 
-    def start_collection(self):
+    def start_collection(self) -> None:
         """Inicia la recolección automática de métricas."""
         if self.is_running:
             return
@@ -98,14 +99,14 @@ class MetricsCollector:
         self.collection_thread.start()
         logger.info("Recolección de métricas iniciada")
 
-    def stop_collection(self):
+    def stop_collection(self) -> None:
         """Detiene la recolección de métricas."""
         self.is_running = False
         if self.collection_thread:
             self.collection_thread.join()
         logger.info("Recolección de métricas detenida")
 
-    def _collection_loop(self):
+    def _collection_loop(self) -> None:
         """Loop principal de recolección."""
         while self.is_running:
             try:
@@ -113,20 +114,24 @@ class MetricsCollector:
                 self._collect_application_metrics()
                 self._flush_metrics()
                 time.sleep(self.collection_interval)
+            except (OSError, RuntimeError) as e:
+                logger.error("Error en recolección de métricas: %s", e)
+                time.sleep(5)
             except Exception as e:
-                logger.error(f"Error en recolección de métricas: {e}")
+                logger.error("Error inesperado en recolección de métricas: %s", e)
                 time.sleep(5)
 
-    def _collect_system_metrics(self):
+    def _collect_system_metrics(self) -> None:
         """Recolecta métricas del sistema."""
         now = datetime.now()
 
         # CPU
-        cpu_percent = psutil.cpu_percent(interval=1)
-        self.add_metric("system.cpu.usage", cpu_percent, now)
+        if HAS_PSUTIL and psutil is not None:
+            cpu_percent = psutil.cpu_percent(interval=1)
+            self.add_metric("system.cpu.usage", cpu_percent, now)
 
         # Memoria
-        if HAS_PSUTIL:
+        if HAS_PSUTIL and psutil is not None:
             memory = psutil.virtual_memory()
             self.add_metric("system.memory.usage_percent", memory.percent, now)
             self.add_metric(
@@ -134,18 +139,18 @@ class MetricsCollector:
             )
 
         # Disco
-        if HAS_PSUTIL:
+        if HAS_PSUTIL and psutil is not None:
             disk = psutil.disk_usage("/")
             self.add_metric("system.disk.usage_percent", disk.percent, now)
             self.add_metric("system.disk.free_gb", disk.free / 1024**3, now)
 
         # Red
-        if HAS_PSUTIL:
+        if HAS_PSUTIL and psutil is not None:
             net_io = psutil.net_io_counters()
             self.add_metric("system.network.bytes_sent", net_io.bytes_sent, now)
             self.add_metric("system.network.bytes_recv", net_io.bytes_recv, now)
 
-    def _collect_application_metrics(self):
+    def _collect_application_metrics(self) -> None:
         """Recolecta métricas específicas de la aplicación."""
         now = datetime.now()
 
@@ -166,8 +171,8 @@ class MetricsCollector:
                 total_log_size = sum(f.stat().st_size for f in log_files)
                 self.add_metric("app.logs.total_size_mb", total_log_size / 1024**2, now)
 
-        except Exception as e:
-            logger.warning(f"Error recolectando métricas de aplicación: {e}")
+        except (OSError, sqlite3.Error) as e:
+            logger.warning("Error recolectando métricas de aplicación: %s", e)
 
     def add_metric(
         self,
@@ -175,7 +180,7 @@ class MetricsCollector:
         value: float,
         timestamp: Optional[datetime] = None,
         tags: Optional[Dict[str, str]] = None,
-    ):
+    ) -> None:
         """Añade una métrica al buffer."""
         if timestamp is None:
             timestamp = datetime.now()
@@ -183,7 +188,7 @@ class MetricsCollector:
         metric = Metric(name, value, timestamp, tags)
         self.metrics_buffer.append(metric)
 
-    def _flush_metrics(self):
+    def _flush_metrics(self) -> None:
         """Guarda métricas del buffer a la base de datos."""
         if not self.metrics_buffer:
             return
@@ -204,11 +209,11 @@ class MetricsCollector:
                         ),
                     )
 
-            logger.debug(f"Guardadas {len(self.metrics_buffer)} métricas")
+            logger.debug("Guardadas %s métricas", len(self.metrics_buffer))
             self.metrics_buffer.clear()
 
-        except Exception as e:
-            logger.error(f"Error guardando métricas: {e}")
+        except sqlite3.Error as e:
+            logger.error("Error guardando métricas: %s", e)
 
     def get_metrics(
         self, name: Optional[str] = None, hours: int = 24
@@ -272,8 +277,8 @@ class AlertManager:
 
     def __init__(self, metrics_collector: MetricsCollector):
         self.metrics_collector = metrics_collector
-        self.alert_rules = []
-        self.active_alerts = {}
+        self.alert_rules: List[Dict[str, Any]] = []
+        self.active_alerts: Dict[str, Dict[str, Any]] = {}
 
     def add_alert_rule(
         self,
@@ -282,9 +287,9 @@ class AlertManager:
         condition: str,
         threshold: float,
         duration_minutes: int = 5,
-    ):
+    ) -> None:
         """Añade una regla de alerta."""
-        rule = {
+        rule: Dict[str, Any] = {
             "name": name,
             "metric_name": metric_name,
             "condition": condition,  # "greater_than", "less_than", "equals"
@@ -294,12 +299,12 @@ class AlertManager:
         }
         self.alert_rules.append(rule)
 
-    def check_alerts(self):
+    def check_alerts(self) -> None:
         """Verifica todas las reglas de alerta."""
         for rule in self.alert_rules:
             self._check_single_alert(rule)
 
-    def _check_single_alert(self, rule: Dict[str, Any]):
+    def _check_single_alert(self, rule: Dict[str, Any]) -> None:
         """Verifica una regla de alerta específica."""
         # Obtener métricas recientes
         recent_metrics = self.metrics_collector.get_metrics(
@@ -326,13 +331,13 @@ class AlertManager:
         """Evalúa una condición de alerta."""
         if condition == "greater_than":
             return value > threshold
-        elif condition == "less_than":
+        if condition == "less_than":
             return value < threshold
-        elif condition == "equals":
+        if condition == "equals":
             return abs(value - threshold) < 0.01
         return False
 
-    def _trigger_alert(self, rule: Dict[str, Any], current_value: float):
+    def _trigger_alert(self, rule: Dict[str, Any], current_value: float) -> None:
         """Dispara una alerta."""
         alert_key = rule["name"]
         now = datetime.now()
@@ -346,19 +351,20 @@ class AlertManager:
 
             # Log de alerta
             logger.warning(
-                f"ALERTA: {rule['name']} - Valor: {current_value}, Umbral: {rule['threshold']}"
+                "ALERTA: %s - Valor: %s, Umbral: %s",
+                rule['name'], current_value, rule['threshold']
             )
 
             # Aquí se podría enviar notificación por email, webhook, etc.
             self._send_alert_notification(rule, current_value)
 
-    def _clear_alert(self, alert_name: str):
+    def _clear_alert(self, alert_name: str) -> None:
         """Limpia una alerta activa."""
         if alert_name in self.active_alerts:
             del self.active_alerts[alert_name]
-            logger.info(f"Alerta resuelta: {alert_name}")
+            logger.info("Alerta resuelta: %s", alert_name)
 
-    def _send_alert_notification(self, rule: Dict[str, Any], current_value: float):
+    def _send_alert_notification(self, rule: Dict[str, Any], current_value: float) -> None:
         """Envía notificación de alerta."""
         # Implementar envío de notificaciones (email, webhook, etc.)
 
@@ -366,12 +372,13 @@ class AlertManager:
 class PerformanceMonitor:
     """Monitor de rendimiento de la aplicación."""
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """Inicializa el sistema de monitoreo."""
         self.metrics_collector = MetricsCollector()
         self.alert_manager = AlertManager(self.metrics_collector)
         self._setup_default_alerts()
 
-    def _setup_default_alerts(self):
+    def _setup_default_alerts(self) -> None:
         """Configura alertas por defecto."""
         # CPU alto
         self.alert_manager.add_alert_rule(
@@ -400,12 +407,12 @@ class PerformanceMonitor:
             duration_minutes=1,
         )
 
-    def start(self):
+    def start(self) -> None:
         """Inicia el monitoreo."""
         self.metrics_collector.start_collection()
         logger.info("Monitor de rendimiento iniciado")
 
-    def stop(self):
+    def stop(self) -> None:
         """Detiene el monitoreo."""
         self.metrics_collector.stop_collection()
         logger.info("Monitor de rendimiento detenido")
@@ -431,7 +438,7 @@ class PerformanceMonitor:
 performance_monitor = PerformanceMonitor()
 
 
-def main():
+def main() -> None:
     """Función principal para ejecutar como script independiente."""
     import argparse
 

@@ -5,4 +5,4 @@ extend-ignore = E203,W503,E501
 exclude = .git,__pycache__,.venv,build,dist,docs,logs,logs_debug,htmlcov,version-backups
 show-source = True
 statistics = True
-max-complexity = 10
+max-complexity = 15

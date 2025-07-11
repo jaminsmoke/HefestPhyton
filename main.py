@@ -19,6 +19,7 @@ import sys
 import os
 import logging
 import importlib.util
+from typing import Any
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -68,57 +69,113 @@ def setup_environment() -> str:
     return src_dir
 
 
+def validate_environment(src_dir: str) -> int | None:
+    """Valida que el entorno esté correctamente configurado.
+
+    Returns:
+        int: Código de error si hay problemas, None si todo está bien
+    """
+    if not os.path.exists(src_dir):
+        print(f"Error: No se encontró el directorio src en {src_dir}")
+        return 1
+
+    main_file = os.path.join(src_dir, 'hefest_application.py')
+    if not os.path.exists(main_file):
+        print(f"Error: No se encontró el archivo principal en {main_file}")
+        return 1
+
+    return None
+
+
+def load_main_module(src_dir: str) -> tuple[Any | None, int | None]:
+    """Carga el módulo principal de la aplicación.
+
+    Returns:
+        tuple: (module, error_code) donde error_code es None si no hay errores
+    """
+    main_file = os.path.join(src_dir, "hefest_application.py")
+
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "hefest_application", main_file
+        )
+
+        if spec is None:
+            print(f"Error: No se pudo crear spec para {main_file}")
+            return None, 1
+
+        if spec.loader is None:
+            print(f"Error: No se pudo obtener loader para {main_file}")
+            return None, 1
+
+        main_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(main_module)
+        return main_module, None
+
+    except ModuleNotFoundError as exc:
+        print(f"Módulo no encontrado: {exc}")
+        print(f"Directorio src: {src_dir}")
+        print(f"Python path: {sys.path}")
+        return None, 1
+    except ImportError as exc:
+        print(f"Error al importar el módulo principal: {exc}")
+        print(f"Directorio src: {src_dir}")
+        print(f"Python path: {sys.path}")
+        return None, 1
+    except AttributeError as exc:
+        print(f"Error de atributo al cargar el módulo: {exc}")
+        return None, 1
+
+
+def execute_application(main_module: Any) -> int:
+    """Ejecuta la aplicación principal.
+
+    Returns:
+        int: Código de retorno de la aplicación
+    """
+    try:
+        print("🚀 Iniciando Hefest...")
+        result = main_module.main()
+        return result if isinstance(result, int) else 0
+    except AttributeError as exc:
+        print(f"Error: El módulo no tiene función main(): {exc}")
+        return 1
+    except Exception as exc:  # pylint: disable=broad-except
+        # EXCEPCIÓN FUNCIONAL: Captura errores de ejecución de la aplicación
+        # que no se pueden predecir específicamente
+        print(f"Error durante la ejecución de la aplicación: {exc}")
+        return 1
+
+
 def main() -> int:
     """Función principal del launcher"""
     try:
         # Configurar entorno
         src_dir = setup_environment()
 
-        # Verificar que el directorio src existe
-        if not os.path.exists(src_dir):
-            print(f"Error: No se encontró el directorio src en {src_dir}")
-            return 1
-        
-        # Verificar que el archivo principal existe
-        main_file = os.path.join(src_dir, 'hefest_application.py')
-        if not os.path.exists(main_file):
-            print(f"Error: No se encontró el archivo principal en {main_file}")
-            return 1
-        
-        # Importar y ejecutar el main desde src
-        try:
-            spec = importlib.util.spec_from_file_location(
-                "hefest_application",
-                os.path.join(src_dir, "hefest_application.py")
-            )
+        # Validar entorno
+        error_code = validate_environment(src_dir)
+        if error_code is not None:
+            return error_code
 
-            # Verificar que spec y loader no sean None
-            if spec is None:
-                print(f"Error: No se pudo crear spec para {main_file}")
-                return 1
+        # Cargar módulo principal
+        main_module, error_code = load_main_module(src_dir)
+        if error_code is not None:
+            return error_code
 
-            if spec.loader is None:
-                print(f"Error: No se pudo obtener loader para {main_file}")
-                return 1
+        # Ejecutar aplicación
+        return execute_application(main_module)
 
-            main_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(main_module)
-            print("🚀 Iniciando Hefest...")
-            result = main_module.main()
-            return result if isinstance(result, int) else 0
-        except ImportError as e:
-            print(f"Error al importar el módulo principal: {e}")
-            print(f"Directorio src: {src_dir}")
-            print(f"Python path: {sys.path}")
-            return 1
-        except Exception as exc:  # pylint: disable=broad-except
-            # TODO: Capturar excepciones más específicas
-            print(f"Error al ejecutar la aplicación: {exc}")
-            return 1
-
+    except FileNotFoundError as exc:
+        print(f"Archivo crítico no encontrado: {exc}")
+        return 1
+    except PermissionError as exc:
+        print(f"Error de permisos en el launcher: {exc}")
+        return 1
     except Exception as exc:  # pylint: disable=broad-except
-        # TODO: Capturar excepciones más específicas
-        print(f"Error crítico en el launcher: {exc}")
+        # EXCEPCIÓN FUNCIONAL: Captura errores inesperados del sistema
+        # o del entorno que no se pueden predecir específicamente
+        print(f"Error crítico inesperado en el launcher: {exc}")
         return 1
 
 

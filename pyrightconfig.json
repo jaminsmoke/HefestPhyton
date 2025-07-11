@@ -15,6 +15,13 @@
   ],
   "reportMissingImports": true,
   "reportMissingTypeStubs": false,
+  "stubPath": ".venv/Lib/site-packages",
+  "executionEnvironments": [
+    {
+      "root": "src",
+      "pythonPath": ".venv/Scripts/python.exe"
+    }
+  ],
   "typeCheckingMode": "basic",
   "reportUnknownMemberType": "warning",
   "reportUnknownArgumentType": "warning",

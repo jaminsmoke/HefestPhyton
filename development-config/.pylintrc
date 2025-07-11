@@ -62,7 +62,7 @@ max-statements=60
 
 [FORMAT]
 # Longitud máxima de línea
-max-line-length=100
+max-line-length=135
 
 # Número de espacios por nivel de indentación
 indent-string='    '

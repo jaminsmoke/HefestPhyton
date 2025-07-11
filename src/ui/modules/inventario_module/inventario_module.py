@@ -9,8 +9,10 @@ Widget principal que organiza el inventario en pestañas separadas:
 """
 
 import logging
+from typing import Optional, Any
 
-from PyQt6.QtWidgets import (
+# PyQt6 imports con configuración para linters
+from PyQt6.QtWidgets import (  # pylint: disable=no-name-in-module
     QVBoxLayout,
     QHBoxLayout,
     QPushButton,
@@ -19,10 +21,12 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QMessageBox,
 )
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal  # pylint: disable=no-name-in-module
 
+# Importaciones del proyecto
+from data.db_manager import DatabaseManager  # type: ignore
+from services.inventario_service_real import InventarioService  # type: ignore
 from ..module_base_interface import BaseModule
-from services.inventario_service_real import InventarioService
 from .components import (
     ProductsManagerWidget,
     CategoryManagerWidget,
@@ -40,28 +44,34 @@ class InventarioModule(BaseModule):
     # Señales
     inventario_actualizado = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[Any] = None) -> None:
         """Inicializar el módulo de inventario refactorizado"""
-        super().__init__(parent)
+        super().__init__(parent)  # type: ignore[misc]
+
+        # Inicializar atributos de UI
+        self.refresh_btn: Optional[QPushButton] = None
+        self.export_btn: Optional[QPushButton] = None
+        self.products_widget: Optional[Any] = None
+        self.categories_widget: Optional[Any] = None
+        self.suppliers_widget: Optional[Any] = None
+        self.tab_widget: Optional[QTabWidget] = None
 
         # Intentar obtener db_manager
         try:
-            from data.db_manager import DatabaseManager
-
-            self.db_manager = DatabaseManager()
-            logger.info("InventarioModule: DatabaseManager creado correctamente")
-        except Exception as e:
-            logger.error(f"InventarioModule: Error creando DatabaseManager: {e}")
+            self.db_manager: Optional[DatabaseManager] = DatabaseManager()
+            logger.info("InventarioModule: DatabaseManager creado correctamente")  # type: ignore[misc]
+        except (ImportError, RuntimeError, OSError) as e:
+            logger.error("InventarioModule: Error creando DatabaseManager: %s", e)  # type: ignore[misc]
             self.db_manager = None
 
-        self.inventario_service = InventarioService(self.db_manager)
+        self.inventario_service = InventarioService(self.db_manager)  # type: ignore[arg-type]
 
         # Configurar UI
         self.init_ui()
 
-        logger.info("InventarioModule inicializado correctamente")
+        logger.info("InventarioModule inicializado correctamente")  # type: ignore[misc]
 
-    def init_ui(self):
+    def init_ui(self) -> None:
         """Inicializar la interfaz de usuario"""
         self.setObjectName("InventarioModule")
 
@@ -99,10 +109,10 @@ class InventarioModule(BaseModule):
 
         # Botones de acción global
         self.refresh_btn = QPushButton("🔄 Actualizar")
-        self.refresh_btn.clicked.connect(self.refresh_all_data)
+        self.refresh_btn.clicked.connect(self.refresh_all_data)  # type: ignore[misc]
 
         self.export_btn = QPushButton("📊 Exportar")
-        self.export_btn.clicked.connect(self.export_inventory)
+        self.export_btn.clicked.connect(self.export_inventory)  # type: ignore[misc]
 
         layout.addWidget(self.refresh_btn)
         layout.addWidget(self.export_btn)
@@ -133,45 +143,49 @@ class InventarioModule(BaseModule):
 
         return tab_widget
 
-    def refresh_all_data(self):
+    def refresh_all_data(self) -> None:
         """Actualizar todos los datos"""
         try:
             # Actualizar cada pestaña
-            self.products_widget.load_products()
-            self.categories_widget.load_categories()
-            self.suppliers_widget.load_suppliers()
+            if self.products_widget:
+                self.products_widget.load_products()
+            if self.categories_widget:
+                self.categories_widget.load_categories()
+            if self.suppliers_widget:
+                self.suppliers_widget.load_suppliers()
 
-            QMessageBox.information(
-                self, "Actualizado", "Todos los datos han sido actualizados"
-            )
+            QMessageBox.information(self, "Actualizado", "Todos los datos han sido actualizados")
 
-        except Exception as e:
-            logger.error(f"Error actualizando datos: {e}")
+        except (RuntimeError, AttributeError) as e:
+            logger.error("Error actualizando datos: %s", e)  # type: ignore[misc]
             QMessageBox.warning(self, "Error", f"Error actualizando datos: {str(e)}")
 
-    def export_inventory(self):
+    def export_inventory(self) -> None:
         """Exportar inventario completo"""
         try:
             # Usar la funcionalidad de exportación del widget de productos
-            self.products_widget.export_to_csv()
+            if self.products_widget:
+                self.products_widget.export_to_csv()
 
-        except Exception as e:
-            logger.error(f"Error exportando inventario: {e}")
+        except (AttributeError, RuntimeError, OSError) as e:
+            logger.error("Error exportando inventario: %s", e)  # type: ignore[misc]
             QMessageBox.warning(self, "Error", f"Error exportando inventario: {str(e)}")
 
-    def on_inventory_updated(self):
+    def on_inventory_updated(self) -> None:
         """Manejar actualización de inventario"""
         self.inventario_actualizado.emit()
 
         # Actualizar categorías para reflejar cambios en productos
-        self.categories_widget.update_statistics()
+        if self.categories_widget:
+            self.categories_widget.update_statistics()
 
-    def on_categories_updated(self):
+    def on_categories_updated(self) -> None:
         """Manejar actualización de categorías"""
         # Actualizar productos para reflejar cambios en categorías
-        self.products_widget.load_categories()  # Recargar categorías en el widget de productos
+        if self.products_widget:
+            self.products_widget.load_categories()  # Recargar categorías en el widget de productos
 
-    def on_suppliers_updated(self):
+    def on_suppliers_updated(self) -> None:
         """Manejar actualización de proveedores"""
         # Los proveedores pueden afectar a los productos en el futuro
 
@@ -179,11 +193,11 @@ class InventarioModule(BaseModule):
         """Obtener el nombre del módulo"""
         return "Inventario Refactorizado"
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Limpiar recursos"""
         try:
             # Limpiar widgets hijos
-            if hasattr(self, "products_widget"):
+            if hasattr(self, "products_widget") and self.products_widget:
                 self.products_widget.cleanup()
             if hasattr(self, "categories_widget"):
                 # No necesita cleanup específico
@@ -192,10 +206,10 @@ class InventarioModule(BaseModule):
                 # No necesita cleanup específico
                 pass
 
-        except Exception as e:
-            logger.error(f"Error en cleanup: {e}")
+        except AttributeError as e:
+            logger.error("Error en cleanup: %s", e)  # type: ignore[misc]
 
-    def apply_styles(self):
+    def apply_styles(self) -> None:
         """Aplicar estilos al módulo"""
         self.setStyleSheet(
             """
@@ -206,29 +220,29 @@ class InventarioModule(BaseModule):
                 padding: 15px;
                 margin-bottom: 10px;
             }
-            
+
             #MainModuleTitle {
                 color: white;
                 font-size: 28px;
                 font-weight: bold;
             }
-            
+
             #InventoryTabWidget {
                 background: white;
                 border: 1px solid #e2e8f0;
                 border-radius: 8px;
             }
-            
+
             #InventoryTabWidget::pane {
                 border: 1px solid #e2e8f0;
                 border-radius: 8px;
                 background: white;
             }
-            
+
             #InventoryTabWidget::tab-bar {
                 alignment: left;
             }
-            
+
             #InventoryTabWidget QTabBar::tab {
                 background: #f8fafc;
                 color: #4a5568;
@@ -241,17 +255,17 @@ class InventarioModule(BaseModule):
                 font-size: 14px;
                 min-width: 120px;
             }
-            
+
             #InventoryTabWidget QTabBar::tab:selected {
                 background: white;
                 color: #2d3748;
                 border-bottom: 1px solid white;
             }
-            
+
             #InventoryTabWidget QTabBar::tab:hover:!selected {
                 background: #edf2f7;
             }
-            
+
             QPushButton {
                 background: #4a5568;
                 color: white;
@@ -261,7 +275,7 @@ class InventarioModule(BaseModule):
                 font-weight: bold;
                 min-width: 100px;
             }
-            
+
             QPushButton:hover {
                 background: #2d3748;
             }

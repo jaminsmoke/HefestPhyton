@@ -3,12 +3,14 @@ Servicio de gestión de habitaciones y reservas.
 """
 
 import logging
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, TYPE_CHECKING
 from dataclasses import dataclass
 from datetime import date
 
 from .base_service import BaseService
-from data.db_manager import DatabaseManager
+
+if TYPE_CHECKING:
+    from data.db_manager import DatabaseManager
 
 logger = logging.getLogger(__name__)
 

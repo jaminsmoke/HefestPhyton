@@ -1,0 +1,26 @@
+# Configuración de stubs para PyQt6
+# Este archivo ayuda al type checker a reconocer los tipos de PyQt6
+
+[tool.pyright]
+include = ["src"]
+exclude = [".venv", "build-tools", "htmlcov", "logs", "backups", "version-backups", "tests", "scripts", "docs", "development-config", "assets"]
+stubPath = ".venv/Lib/site-packages"
+executionEnvironments = [
+    {root = "src", pythonPath = ".venv/Scripts/python.exe"}
+]
+
+[tool.pylint.TYPECHECK]
+# Para PyQt6
+generated-members = [
+    "PyQt6.*",
+    "clicked",
+    "connect",
+    "disconnect",
+    "emit",
+    "sender"
+]
+
+[tool.mypy]
+# Configuración específica para PyQt6
+ignore_missing_imports = true
+follow_imports = "skip"
