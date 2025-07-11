@@ -19,6 +19,9 @@
 				"group": "Admin"
 			}
 		],
-		"workbench.colorCustomizations": {}
+		"workbench.colorCustomizations": {},
+		"cSpell.words": [
+			"Phyton"
+		]
 	}
 }

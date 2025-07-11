@@ -7,10 +7,10 @@ la comunicación entre módulos y el dashboard.
 """
 
 import logging
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -92,14 +92,15 @@ class AlertasService:
         self.contadores_departamento = {}
         self.logger = logging.getLogger(__name__)
 
-    from services.inventario_service_real import Producto
     from typing import Any
+
+    from services.inventario_service_real import Producto
 
     def registrar_alertas_inventario(
         self, alertas_inventario: list["Producto"]
     ) -> list[AlertaCentralizada]:
         """Convierte alertas de inventario a alertas centralizadas"""
-        alertas_centralizadas = []
+        alertas_centralizadas: list[AlertaCentralizada] = []
 
         try:
             for alerta in alertas_inventario:

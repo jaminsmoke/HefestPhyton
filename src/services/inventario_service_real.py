@@ -7,10 +7,11 @@ Cambios: Restauración completa + soporte de categorías para proveedores
 """
 
 import logging
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional, Union
+
+from core.hefest_data_models import Producto
 
 from .base_service import BaseService
-from core.hefest_data_models import Producto
 
 logger = logging.getLogger(__name__)
 
@@ -371,9 +372,9 @@ class InventarioService(BaseService):
                 )
                 return ["General", "Bebidas", "Comida", "Limpieza", "Papelería"]
 
-            categorias = []
+            categorias: List[str] = []
             for row in rows:
-                nombre = row["nombre"]
+                nombre: str = row["nombre"]
                 if nombre and nombre.strip():
                     categorias.append(nombre.strip())
 
@@ -492,7 +493,7 @@ class InventarioService(BaseService):
                 logger.info("No se encontraron proveedores en la base de datos")
                 return []
 
-            proveedores = []
+            proveedores: List[Dict[str, Any]] = []
             for row in rows:
                 try:
                     proveedor_dict = dict(row)
@@ -737,27 +738,23 @@ class InventarioService(BaseService):
                 WHERE id = ?
             """
 
-            # Usar conexión directa para verificar rowcount
-            with self.db_manager._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(
-                    update_query,
-                    (
-                        nombre.strip(),
-                        contacto.strip(),
-                        telefono.strip(),
-                        email.strip(),
-                        direccion.strip(),
-                        categoria.strip(),
-                        proveedor_id,
-                    ),
-                )
-                rows_affected = cursor.rowcount
-                conn.commit()
+            # Usar execute directamente del db_manager
+            result = self.db_manager.execute(
+                update_query,
+                (
+                    nombre.strip(),
+                    contacto.strip(),
+                    telefono.strip(),
+                    email.strip(),
+                    direccion.strip(),
+                    categoria.strip(),
+                    proveedor_id,
+                ),
+            )
 
-            if rows_affected > 0:
+            if result:
                 logger.info(
-                    f"Proveedor ID {proveedor_id} actualizado exitosamente con categoría '{categoria}' ({rows_affected} filas afectadas)"
+                    f"Proveedor ID {proveedor_id} actualizado exitosamente con categoría '{categoria}'"
                 )
                 return True
             else:
@@ -778,13 +775,9 @@ class InventarioService(BaseService):
             # Marcar como inactivo en lugar de eliminar físicamente
             update_query = "UPDATE proveedores SET activo = 0 WHERE id = ?"
 
-            with self.db_manager._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(update_query, (proveedor_id,))
-                rows_affected = cursor.rowcount
-                conn.commit()
+            result = self.db_manager.execute(update_query, (proveedor_id,))
 
-            if rows_affected > 0:
+            if result:
                 logger.info(
                     f"Proveedor ID {proveedor_id} marcado como inactivo exitosamente"
                 )
@@ -829,9 +822,9 @@ class InventarioService(BaseService):
                     "Servicios",
                 ]
 
-            categorias = []
+            categorias: List[str] = []
             for row in rows:
-                categoria = row["categoria"]
+                categoria: str = row["categoria"]
                 if categoria and categoria.strip():
                     categorias.append(categoria.strip())
 
@@ -882,11 +875,11 @@ class InventarioService(BaseService):
                 logger.info("No se encontraron categorías activas")
                 return []
 
-            categorias = []
+            categorias: List[Dict[str, Any]] = []
             for row in rows:
                 try:
                     # Row es un diccionario
-                    categoria = {
+                    categoria: Dict[str, Any] = {
                         "id": row["id"],
                         "nombre": row["nombre"],
                         "descripcion": row["descripcion"] or "",
@@ -896,8 +889,9 @@ class InventarioService(BaseService):
                     }
 
                     # Solo agregar si tiene nombre válido
-                    if categoria["nombre"] and categoria["nombre"].strip():
-                        categoria["nombre"] = categoria["nombre"].strip()
+                    nombre_categoria: str = categoria["nombre"]
+                    if nombre_categoria and nombre_categoria.strip():
+                        categoria["nombre"] = nombre_categoria.strip()
                         categorias.append(categoria)
 
                 except Exception as e:
@@ -1044,13 +1038,11 @@ class InventarioService(BaseService):
                 WHERE id = ?
             """
 
-            with self.db_manager._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(update_query, (nuevo_nombre, descripcion, categoria_id))
-                rows_affected = cursor.rowcount
-                conn.commit()
+            result = self.db_manager.execute(
+                update_query, (nuevo_nombre, descripcion, categoria_id)
+            )
 
-            if rows_affected > 0:
+            if result:
                 logger.info(
                     f"Categoría actualizada de '{nombre_anterior}' a '{nuevo_nombre}' (ID: {categoria_id})"
                 )
@@ -1185,13 +1177,13 @@ class InventarioService(BaseService):
         nombre: str,
         contacto: str = "",
         telefono: str = "",
-        **kwargs,
+        **kwargs: Any,
     ) -> bool:
         """Alias para actualizar_proveedor - compatibilidad con versiones anteriores"""
         return self.actualizar_proveedor(
             proveedor_id, nombre, contacto, telefono, **kwargs
         )
 
-    def agregar_producto(self, *args, **kwargs):
+    def agregar_producto(self, *args: Any, **kwargs: Any) -> Optional[Producto]:
         """Alias para crear_producto - compatibilidad con versiones anteriores"""
         return self.crear_producto(*args, **kwargs)

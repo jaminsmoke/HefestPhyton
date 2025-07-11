@@ -22,6 +22,13 @@ Configuraciones específicas para entorno de desarrollo, herramientas de calidad
 |---------|-----------|-------------|
 | `pyproject.dev.toml` | Build desarrollo | Configuración específica para desarrollo |
 | `.pre-commit-config.yaml` | Quality hooks | Hooks de calidad y formateo |
+| `.codacy.yml` | Codacy Quality | Configuración de análisis de calidad Codacy |
+| `.cspell.json` | Spell Check | Configuración del corrector ortográfico |
+| `.markdownlint.json` | Markdown Lint | Configuración del linter de Markdown |
+| `.prospector.yml` | Code Analysis | Configuración de análisis de código Prospector |
+| `.pylintrc` | PyLint | Configuración del linter PyLint |
+| `bandit.yml` | Security Analysis | Configuración de análisis de seguridad Bandit |
+| `.editorconfig` | Editor Config | Configuración universal del editor |
 
 ### 📊 Características de Desarrollo
 

@@ -15,12 +15,13 @@ Caracteristicas:
 """
 
 import logging
-import time
 import sqlite3
-from typing import Optional, List, Dict, Any
+import time
 from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
 
-from core.hefest_data_models import User, Role
+from core.hefest_data_models import Role, User
+
 from .base_service import BaseService
 
 logger = logging.getLogger(__name__)
@@ -30,10 +31,8 @@ class AuthenticationError(Exception):
     """Excepcion para errores de autenticacion"""
 
 
-
 class PermissionError(Exception):
     """Excepcion para errores de permisos"""
-
 
 
 @dataclass
@@ -67,10 +66,9 @@ class AuthService(BaseService):
     - Usuarios por defecto del sistema
     """
 
-    from typing import Any, Optional
-
     # Import para type hints
-    from typing import TYPE_CHECKING
+    from typing import TYPE_CHECKING, Any, Optional
+
     if TYPE_CHECKING:
         from data.db_manager import DatabaseManager
 
@@ -176,7 +174,7 @@ class AuthService(BaseService):
             """
             )
 
-            db_users = cursor.fetchall()  # type: ignore
+            db_users: List[Any] = cursor.fetchall()  # type: ignore
             users: List[User] = []
 
             for db_user in db_users:

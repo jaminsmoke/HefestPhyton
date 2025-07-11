@@ -1,0 +1,32 @@
+# Configuración Bandit para Hefest - Análisis de Seguridad Python
+# bandit.yml
+
+# Tests a omitir (por contexto específico del proyecto)
+skips:
+  - B101  # Skip test assertions
+  - B311  # random para datos demo/UI (no criptográficos)
+  - B603  # subprocess_without_shell_equals_true (controlado en el proyecto)
+
+# Directorios a excluir
+exclude_dirs:
+  - 'tests/'
+  - 'version-backups/'
+  - 'Hefest_Backups/'
+  - 'docs/'
+  - 'logs/'
+  - 'logs_debug/'
+  - 'htmlcov/'
+
+# Archivos específicos a excluir
+exclude:
+  - "*/test_*.py"
+  - "*_test.py"
+
+# Configuración de severidad
+confidence: medium
+
+# Formato de salida
+format: json
+
+# Nivel de verbosidad
+verbose: true

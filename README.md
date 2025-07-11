@@ -2,7 +2,8 @@
 
 ## Políticas de Organización y Estandarización
 
-- No se permite la existencia de archivos sueltos en la raíz del proyecto, salvo los esenciales (README.md, main.py, requirements.txt, pyproject.toml, LICENSE, MANIFEST.in, Makefile.ps1, .gitignore, .editorconfig, .env).
+- No se permite la existencia de archivos sueltos en la raíz del proyecto, salvo los esenciales (README.md, main.py, requirements.txt, pyproject.toml, LICENSE, MANIFEST.in, .gitignore, .env, pyrightconfig.json).
+- Las configuraciones de herramientas de desarrollo (.codacy.yml, .pylintrc, bandit.yml, etc.) están organizadas en `development-config/`.
 - Toda carpeta debe tener un README propio que explique su propósito, las políticas contextuales y la información relevante sobre su contenido.
 - La documentación de implementaciones, progreso, decisiones técnicas o migraciones debe estar en la carpeta `docs/` y sus subcarpetas, nunca en los README de la raíz ni de las carpetas técnicas.
 - La estructura de carpetas debe reflejarse y mantenerse actualizada en este README. Cualquier cambio en la estructura real debe reflejarse aquí.
@@ -14,29 +15,30 @@
 
 ```
 Hefest/
-├── assets/           # Recursos visuales y multimedia
-├── build-tools/      # Herramientas de build y automatización
-├── config/           # Configuración por entorno
-├── data/             # Base de datos y backups
-├── docs/             # Documentación y logs
+├── assets/              # Recursos visuales y multimedia
+├── build-tools/         # Herramientas de build y automatización
+├── config/              # Configuración por entorno
+├── data/                # Base de datos y backups
+├── development-config/  # Configuraciones de herramientas de desarrollo
+├── docs/                # Documentación y logs
 │   ├── analysis/
 │   ├── archive/
 │   ├── changelog/
 │   ├── development/
 │   ├── logs/
 │   └── ...
-├── logs/             # Logs y reportes de pruebas
-├── logs_debug/       # Logs temporales de depuración puntual (no producción)
-├── scripts/          # Scripts de utilidad, análisis, testing, migración
+├── logs/                # Logs y reportes de pruebas
+├── logs_debug/          # Logs temporales de depuración puntual (no producción)
+├── scripts/             # Scripts de utilidad, análisis, testing, migración
 │   ├── analysis/
 │   ├── maintenance/
 │   ├── migration/
 │   ├── testing/
 │   └── ...
-├── src/              # Código fuente principal
-├── tests/            # Tests automatizados (unit, integration, ui, utilities)
-├── version-backups/  # Backups versionados
-├── main.py           # Punto de entrada principal
+├── src/                 # Código fuente principal
+├── tests/               # Tests automatizados (unit, integration, ui, utilities)
+├── version-backups/     # Backups versionados
+├── main.py              # Punto de entrada principal
 ├── README.md         # Este archivo
 ├── requirements.txt  # Dependencias Python
 ├── pyproject.toml    # Configuración del proyecto

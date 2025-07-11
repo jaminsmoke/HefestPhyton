@@ -1,0 +1,52 @@
+# Configuración Prospector para Hefest
+# .prospector.yml
+
+strictness: medium
+doc-warnings: false
+test-warnings: false
+member-warnings: false
+
+ignore-paths:
+  - docs/
+  - logs/
+  - logs_debug/
+  - htmlcov/
+  - version-backups/
+  - data/*.db
+  - "**/__pycache__"
+
+ignore-patterns:
+  - (^|/)migrations(/|$)
+  - test_.*\.py$
+
+output-format: text
+
+pylint:
+  disable:
+    - missing-docstring
+    - too-few-public-methods
+    - import-outside-toplevel
+    - broad-except
+  options:
+    max-line-length: 88
+    output-format: colorized
+
+pep8:
+  disable:
+    - E501 # line too long (handled by line-length in pylint)
+  options:
+    max-line-length: 88
+    show-source: true
+    statistics: true
+
+pyflakes:
+  disable:
+    - F401 # imported but unused (may be used in __init__.py)
+
+mccabe:
+  options:
+    max-complexity: 10
+
+vulture:
+  disable:
+    - unused-import

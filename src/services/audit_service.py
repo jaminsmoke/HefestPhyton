@@ -3,11 +3,11 @@ Servicio de auditoría para el sistema Hefest.
 Registra y permite consultar acciones realizadas por los usuarios.
 """
 
-from datetime import datetime
-from typing import Optional, Dict, Any, List
-from core.hefest_data_models import User
 import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
+from core.hefest_data_models import User
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class AuditService:
         details: Optional[Dict[str, Any]] = None,
     ):
         """Registra una acción en el sistema de auditoría"""
-        entry = {
+        entry: Dict[str, Any] = {
             "timestamp": datetime.now(),
             "action": action,
             "user": user.name if user else "Sistema",

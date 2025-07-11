@@ -4,31 +4,32 @@ Versión: v0.0.14
 """
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
+    QApplication,
+    QFrame,
     QHBoxLayout,
     QLabel,
-    QTabWidget,
-    QFrame,
-    QSizePolicy,
     QMessageBox,
-    QApplication,
+    QSizePolicy,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt6.QtCore import Qt
 
-from ui.modules.module_base_interface import BaseModule
-from services.tpv_service import TPVService, Mesa, Producto, Comanda
-from .components.reservas_agenda.reserva_service import ReservaService
+from services.tpv_service import Comanda, Mesa, Producto, TPVService
 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+from ui.modules.module_base_interface import BaseModule
 
 # Importar componentes refactorizados
 # TPVDashboard eliminado para evitar métricas duplicadas
 # from .components.tpv_dashboard import TPVDashboard
 from .components.mesas_area import MesasArea
-from .controllers.mesa_controller import MesaController
+from .components.reservas_agenda.reserva_service import ReservaService
 from .components.reservas_agenda.reservas_agenda_tab import ReservasAgendaTab
+from .controllers.mesa_controller import MesaController
 
 logger = logging.getLogger(__name__)
 
@@ -203,7 +204,7 @@ class TPVModule(BaseModule):
 
     def create_mesas_tab_refactored(self):
         """Crea la pestaña de mesas con layout contextualizado y grid principal (usa referencias globales, el layout interno es de MesasArea)"""
-        from PyQt6.QtWidgets import QSizePolicy, QWidget, QVBoxLayout
+        from PyQt6.QtWidgets import QSizePolicy, QVBoxLayout, QWidget
 
         # Widget principal de la pestaña de mesas
         self.mesas_widget = QWidget()
@@ -232,6 +233,14 @@ class TPVModule(BaseModule):
 
         # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
         self.mesas_area = MesasArea()
+
+        # FIX v0.0.14: Inicializar servicios en MesasArea para que funcione correctamente
+        self.mesas_area.init_with_services(
+            tpv_service=self.tpv_service,
+            db_manager=self.db_manager,
+            parent=self.mesas_widget,
+        )
+
         self.mesas_area.eliminar_mesa_requested.connect(self.eliminar_mesa)  # type: ignore[misc]
         self.mesas_area.eliminar_mesas_requested.connect(self.eliminar_mesas)  # type: ignore[misc]
         self.mesas_area.nueva_mesa_con_zona_requested.connect(self.nueva_mesa_con_zona)  # type: ignore[misc]
@@ -494,11 +503,11 @@ class TPVModule(BaseModule):
         """Callback cuando se hace clic en una mesa"""
         try:
             # logger.debug(f"Mesa {mesa.numero} seleccionada")
-            from .dialogs.mesa_dialog import MesaDialog
             from .components.reservas_agenda.reserva_service import ReservaService
             from .components.reservas_agenda.reservas_agenda_tab import (
                 ReservasAgendaTab,
             )
+            from .dialogs.mesa_dialog import MesaDialog
 
             reserva_service = ReservaService(
                 getattr(self.db_manager, "db_path", "data/hefest.db")
@@ -646,9 +655,14 @@ class TPVModule(BaseModule):
             # logger.debug("Cargando datos del TPV...")
             self.mesa_controller.cargar_mesas()
 
+            # FIX v0.0.14: Obtener las mesas del controlador y pasarlas al TPVModule
+            self.mesas = self.mesa_controller.mesas
+
             if self.tpv_service:
                 self.productos = self.tpv_service.get_productos()
                 # logger.debug("Datos del TPV cargados correctamente")
+
+                # FIX v0.0.14: Asegurar que mesas_area reciba las mesas cargadas
                 if hasattr(self, "mesas_area") and self.mesas:
                     self.mesas_area.set_mesas(self.mesas)
                 # Las estadísticas compactas se actualizan automáticamente en MesasArea
@@ -666,8 +680,9 @@ class TPVModule(BaseModule):
                 # logger.debug(f"Iniciando TPV para mesa {mesa.numero}")
 
                 # Importar y crear el TPV avanzado
-                from .components.tpv_avanzado import TPVAvanzado
                 from PyQt6.QtWidgets import QDialog, QVBoxLayout
+
+                from .components.tpv_avanzado import TPVAvanzado
 
                 # Crear diálogo para el TPV
                 dialog = QDialog(self)
@@ -820,9 +835,9 @@ class TPVModule(BaseModule):
 
     def create_compact_stat(self, icon: str, label: str, value: str) -> QWidget:
         """Crea una estadística compacta mejorada y más visible"""
-        from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel
         from PyQt6.QtCore import Qt
         from PyQt6.QtGui import QFont
+        from PyQt6.QtWidgets import QFrame, QLabel, QVBoxLayout
 
         # Frame principal con estilos más sólidos
         stat_widget = QFrame()
@@ -889,6 +904,7 @@ class TPVModule(BaseModule):
 
 if __name__ == "__main__":
     import sys
+
     from PyQt6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
