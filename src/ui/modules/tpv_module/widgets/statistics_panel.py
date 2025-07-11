@@ -51,7 +51,10 @@ class StatisticsPanel(QFrame):
                 old_layout.deleteLater()
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).warning(f"Error eliminando layout anterior: {e}")
+
+                logging.getLogger(__name__).warning(
+                    f"Error eliminando layout anterior: {e}"
+                )
 
         # Crear layout sin padre y asignar con setLayout
         stats_layout = QHBoxLayout()

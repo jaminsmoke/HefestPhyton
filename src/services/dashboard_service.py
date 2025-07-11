@@ -70,7 +70,7 @@ class DashboardDataService(BaseService):
         self,
         query: str,
         params: Tuple[Any, ...] = (),
-        default: Union[int, float, str, List[Any], Dict[str, Any]] = 0
+        default: Union[int, float, str, List[Any], Dict[str, Any]] = 0,
     ) -> Union[int, float, str, List[Dict[str, Any]], Dict[str, Any]]:
         """Helper para ejecutar consultas con fallback"""
         if not self.db_manager or not hasattr(self.db_manager, "query"):
@@ -87,7 +87,7 @@ class DashboardDataService(BaseService):
         self,
         result: Union[List[Dict[str, Any]], Dict[str, Any], int, float, None],
         key: Optional[str] = None,
-        default: Union[int, float] = 0
+        default: Union[int, float] = 0,
     ) -> float:
         """Helper para extraer valores de resultados"""
         try:

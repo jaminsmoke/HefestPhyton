@@ -41,7 +41,9 @@ class SupplierManagerWidget(QWidget):
     proveedor_actualizado = pyqtSignal()
     proveedor_seleccionado = pyqtSignal(dict)
 
-    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self, inventario_service: Any, parent: Optional[QWidget] = None
+    ) -> None:
         """Inicializar el widget gestor de proveedores"""
         super().__init__(parent)
 
@@ -134,7 +136,7 @@ class SupplierManagerWidget(QWidget):
     def create_suppliers_table(self) -> QTableWidget:
         """Crear la tabla de proveedores"""
         table = QTableWidget()
-        table.setObjectName("SuppliersTable")        # Configurar columnas
+        table.setObjectName("SuppliersTable")  # Configurar columnas
         headers = [
             "ID",
             "Nombre",
@@ -502,7 +504,12 @@ class SupplierManagerWidget(QWidget):
 class SupplierDialog(QDialog):
     """Diálogo mejorado para crear/editar proveedores con validaciones avanzadas"""
 
-    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None, proveedor: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(
+        self,
+        inventario_service: Any,
+        parent: Optional[QWidget] = None,
+        proveedor: Optional[Dict[str, Any]] = None,
+    ) -> None:
         super().__init__(parent)
 
         self.inventario_service = inventario_service

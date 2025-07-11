@@ -3,4 +3,4 @@
 
 from .mesas_area_main import MesasArea
 
-__all__ = ['MesasArea']
+__all__ = ["MesasArea"]

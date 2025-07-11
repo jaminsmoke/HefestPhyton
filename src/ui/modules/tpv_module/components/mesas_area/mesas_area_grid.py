@@ -111,24 +111,35 @@ def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
 
             import logging
-            logging.getLogger(__name__).debug(f"[mesas_area_grid] _on_reservar_mesa: Abriendo ReservaDialog para mesa_id={getattr(mesa, 'id', None)}")
+
+            logging.getLogger(__name__).debug(
+                f"[mesas_area_grid] _on_reservar_mesa: Abriendo ReservaDialog para mesa_id={getattr(mesa, 'id', None)}"
+            )
             # Mantener referencia al dialog para evitar recolección de basura
             if not hasattr(instance, "_active_dialogs"):
                 instance._active_dialogs = []  # type: ignore[attr-defined]
-            logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Creando ReservaDialog")
+            logging.getLogger(__name__).debug(
+                f"[mesas_area_grid][DEBUG] Creando ReservaDialog"
+            )
             dialog = ReservaDialog(
                 instance,
                 mesa,
                 reserva_service=getattr(instance, "reserva_service", None),
             )
-            logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] ReservaDialog creado")
+            logging.getLogger(__name__).debug(
+                f"[mesas_area_grid][DEBUG] ReservaDialog creado"
+            )
             instance._active_dialogs.append(dialog)  # type: ignore[attr-defined]
 
             def on_reserva_creada(reserva: Any) -> None:
-                logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Callback on_reserva_creada ejecutado. reserva={reserva}")
+                logging.getLogger(__name__).debug(
+                    f"[mesas_area_grid][DEBUG] Callback on_reserva_creada ejecutado. reserva={reserva}"
+                )
                 reserva_service = getattr(instance, "reserva_service", None)
                 if reserva_service is None:
-                    logging.getLogger(__name__).error("[mesas_area_grid][ERROR] No se encontró reserva_service en la instancia. No se puede guardar la reserva.")
+                    logging.getLogger(__name__).error(
+                        "[mesas_area_grid][ERROR] No se encontró reserva_service en la instancia. No se puede guardar la reserva."
+                    )
                     return
                 from datetime import datetime
 
@@ -140,24 +151,32 @@ def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
                     reserva, "hora_reserva", None
                 )
                 if fecha is None or hora is None:
-                    logging.getLogger(__name__).error("[mesas_area_grid][ERROR] No se pudo obtener fecha u hora de la reserva. No se creará la reserva.")
+                    logging.getLogger(__name__).error(
+                        "[mesas_area_grid][ERROR] No se pudo obtener fecha u hora de la reserva. No se creará la reserva."
+                    )
                     return
                 if isinstance(hora, str):
                     try:
                         hora_obj = datetime.strptime(hora, "%H:%M").time()
                     except Exception:
-                        logging.getLogger(__name__).error(f"[mesas_area_grid][ERROR] Formato de hora inválido: {hora}")
+                        logging.getLogger(__name__).error(
+                            f"[mesas_area_grid][ERROR] Formato de hora inválido: {hora}"
+                        )
                         return
                 else:
                     hora_obj = hora
                 try:
                     fecha_hora = datetime.combine(fecha, hora_obj)
                 except Exception as e:
-                    logging.getLogger(__name__).error(f"[mesas_area_grid][ERROR] Error combinando fecha y hora: {e}")
+                    logging.getLogger(__name__).error(
+                        f"[mesas_area_grid][ERROR] Error combinando fecha y hora: {e}"
+                    )
                     return
                 # Refuerzo: Usar SIEMPRE mesa.numero como identificador único de negocio
                 # TODO: Eliminar referencias a mesa.id cuando se elimine compatibilidad legacy
-                logging.getLogger(__name__).debug(f"[mesas_area_grid] Llamando a crear_reserva forzando mesa_numero={getattr(mesa, 'numero', None)} (ignorando reserva.mesa_id={getattr(reserva, 'mesa_id', None)})")
+                logging.getLogger(__name__).debug(
+                    f"[mesas_area_grid] Llamando a crear_reserva forzando mesa_numero={getattr(mesa, 'numero', None)} (ignorando reserva.mesa_id={getattr(reserva, 'mesa_id', None)})"
+                )
                 reserva_db = reserva_service.crear_reserva(
                     mesa_id=str(getattr(mesa, "numero", "")),
                     cliente=getattr(reserva, "cliente", None)
@@ -170,7 +189,9 @@ def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
                     or getattr(reserva, "numero_personas", None),
                     notas=getattr(reserva, "notas", None),
                 )
-                logging.getLogger(__name__).info(f"[mesas_area_grid] Reserva creada en BD: {reserva_db}")
+                logging.getLogger(__name__).info(
+                    f"[mesas_area_grid] Reserva creada en BD: {reserva_db}"
+                )
                 # Emitir eventos globales para refrescar UI
                 if hasattr(mesa, "estado"):
                     mesa.estado = "reservada"
@@ -185,7 +206,9 @@ def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
                         if hasattr(widget, "apply_styles"):
                             widget.apply_styles()
                         widget.repaint()
-                logging.getLogger(__name__).debug(f"[mesas_area_grid] Emitiendo reserva_creada y actualizando UI para mesa_id={getattr(mesa, 'id', None)}")
+                logging.getLogger(__name__).debug(
+                    f"[mesas_area_grid] Emitiendo reserva_creada y actualizando UI para mesa_id={getattr(mesa, 'id', None)}"
+                )
                 reserva_event_bus.reserva_creada.emit(reserva_db)
                 if hasattr(instance, "sincronizar_reservas_en_mesas"):
                     instance.sincronizar_reservas_en_mesas()
@@ -198,11 +221,17 @@ def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
                     except Exception:
                         pass
 
-            logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Conectando señal reserva_creada de dialog a on_reserva_creada")
+            logging.getLogger(__name__).debug(
+                f"[mesas_area_grid][DEBUG] Conectando señal reserva_creada de dialog a on_reserva_creada"
+            )
             dialog.reserva_creada.connect(on_reserva_creada)  # type: ignore
-            logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] Ejecutando dialog.exec() para dialog")
+            logging.getLogger(__name__).debug(
+                f"[mesas_area_grid][DEBUG] Ejecutando dialog.exec() para dialog"
+            )
             dialog.exec()
-            logging.getLogger(__name__).debug(f"[mesas_area_grid][DEBUG] dialog.exec() finalizado para dialog")
+            logging.getLogger(__name__).debug(
+                f"[mesas_area_grid][DEBUG] dialog.exec() finalizado para dialog"
+            )
             # Si el usuario cierra el diálogo sin crear reserva, limpiar referencia
             if hasattr(instance, "_active_dialogs"):
                 try:
@@ -283,6 +312,7 @@ def clear_mesa_widgets(instance):
 
     try:
         import logging
+
         logger = logging.getLogger("mesas_area_grid")
         if not hasattr(instance, "mesas_layout") or instance.mesas_layout is None:
             return
@@ -296,7 +326,7 @@ def clear_mesa_widgets(instance):
                 widget.setParent(None)
                 widget.deleteLater()
         # Extra: limpiar widgets huérfanos del contenedor (mesas_container)
-        parent_widget = layout.parentWidget() if hasattr(layout, 'parentWidget') else None  # type: ignore[attr-defined]
+        parent_widget = layout.parentWidget() if hasattr(layout, "parentWidget") else None  # type: ignore[attr-defined]
         if parent_widget:
             for w in parent_widget.findChildren(QWidget):  # type: ignore[attr-defined]
                 if w.parent() == parent_widget and w not in instance.mesa_widgets:  # type: ignore[attr-defined]
@@ -308,6 +338,7 @@ def clear_mesa_widgets(instance):
         layout.update()  # type: ignore[attr-defined]
     except Exception as e:
         import logging
+
         logging.getLogger(__name__).error(f"Error limpiando widgets de mesa: {e}")
 
 

@@ -291,7 +291,10 @@ def _update_stat_widget(widget: Any, new_value: str) -> None:
                 value_label.update()  # type: ignore[reportUnknownMemberType]
     except Exception as e:
         import logging
-        logging.getLogger(__name__).warning(f"Error actualizando valor de stats ultra premium: {e}")
+
+        logging.getLogger(__name__).warning(
+            f"Error actualizando valor de stats ultra premium: {e}"
+        )
 
 
 def update_stats_from_mesas(instance: Any) -> None:

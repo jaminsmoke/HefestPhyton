@@ -77,9 +77,12 @@ class MesaDialog(TabbedDialog):
                     self.reserva_service.actualizar_estado_mesa(self.mesa.numero)
                 except Exception as e:
                     import logging
+
                     logger = logging.getLogger(__name__)
                     if logging.getLogger().isEnabledFor(logging.DEBUG):
-                        logger.debug(f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}")
+                        logger.debug(
+                            f"[MesaDialog][WARN] No se pudo refrescar estado de mesa desde servicio: {e}"
+                        )
             self.update_ui()
 
     """Diálogo de mesa con pestañas horizontales modernas"""
@@ -91,7 +94,12 @@ class MesaDialog(TabbedDialog):
     reserva_cancelada = pyqtSignal()
     reserva_creada = pyqtSignal()
 
-    def __init__(self, mesa: Mesa, parent: Optional[Any] = None, reserva_service: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        mesa: Mesa,
+        parent: Optional[Any] = None,
+        reserva_service: Optional[Any] = None,
+    ) -> None:
         self.mesa = mesa
         self.reserva_service = reserva_service
         # Inicializar diálogo base
@@ -122,9 +130,12 @@ class MesaDialog(TabbedDialog):
                             setattr(self.mesa, attr, getattr(mesa_actualizada, attr))
             except Exception as e:
                 import logging
+
                 logger = logging.getLogger(__name__)
                 if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    logger.debug(f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}")
+                    logger.debug(
+                        f"[MesaDialog][WARN] No se pudo refrescar mesa desde BD al abrir: {e}"
+                    )
         # Refrescar reservas activas de la mesa desde el servicio si existe
         if self.reserva_service and hasattr(
             self.reserva_service, "obtener_reservas_activas_por_mesa"
@@ -138,9 +149,12 @@ class MesaDialog(TabbedDialog):
                 )
             except Exception as e:
                 import logging
+
                 logger = logging.getLogger(__name__)
                 if logging.getLogger().isEnabledFor(logging.DEBUG):
-                    logger.debug(f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}")
+                    logger.debug(
+                        f"[MesaDialog][WARN] No se pudo refrescar reservas activas desde BD al abrir: {e}"
+                    )
         # Configurar header específico
         self.set_header_title(
             f"Mesa {self.mesa.numero} - {self.mesa.zona}",
@@ -156,17 +170,24 @@ class MesaDialog(TabbedDialog):
             mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)  # type: ignore
         except Exception as e:
             import logging
+
             logger = logging.getLogger(__name__)
-            logger.error(f"[MesaDialog][ERROR] No se pudo conectar a mesa_event_bus: {e}")
+            logger.error(
+                f"[MesaDialog][ERROR] No se pudo conectar a mesa_event_bus: {e}"
+            )
 
         # Suscribirse al event bus de reservas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+
             reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)  # type: ignore
         except Exception as e:
             import logging
+
             logger = logging.getLogger(__name__)
-            logger.error(f"[MesaDialog][ERROR] No se pudo conectar a reserva_event_bus: {e}")
+            logger.error(
+                f"[MesaDialog][ERROR] No se pudo conectar a reserva_event_bus: {e}"
+            )
 
     def setup_tabs(self):
         """Configura las pestañas del diálogo"""
@@ -499,10 +520,13 @@ class MesaDialog(TabbedDialog):
         # Refuerzo: emitir señal global para refresco visual de mesas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+
             reserva_event_bus.reserva_cancelada.emit(reserva)
         except Exception as e:
             logger = logging.getLogger(__name__)
-            logger.error(f"[MesaDialog][ERROR] No se pudo emitir reserva_cancelada global: {e}")
+            logger.error(
+                f"[MesaDialog][ERROR] No se pudo emitir reserva_cancelada global: {e}"
+            )
 
     def procesar_reserva(self, reserva: Any) -> None:
         print(f"[MesaDialog] procesar_reserva llamado con reserva: {reserva}")

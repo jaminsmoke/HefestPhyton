@@ -112,9 +112,10 @@ class MesasArea(QFrame):
         self.refresh_mesas()
 
     def init_with_services(
-        self, tpv_service: Optional[TPVService] = None,
+        self,
+        tpv_service: Optional[TPVService] = None,
         db_manager: Optional[DatabaseManager] = None,
-        parent: Optional[QWidget] = None
+        parent: Optional[QWidget] = None,
     ) -> None:
         """Inicializa los servicios después de la construcción del widget"""
         if db_manager is None:
@@ -151,6 +152,7 @@ class MesasArea(QFrame):
         # Suscribirse siempre al evento de comanda_actualizada para refresco en tiempo real
         try:
             from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+
             mesa_event_bus.comanda_actualizada.connect(self._on_comanda_actualizada)
         except ImportError as e:
             logger.error(f"Error importando mesa_event_bus: {e}")
@@ -159,6 +161,7 @@ class MesasArea(QFrame):
         # Suscribirse al event bus de reservas para refresco tras cancelación/creación
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+
             reserva_event_bus.reserva_cancelada.connect(self._on_reserva_cancelada)
         except ImportError as e:
             logger.error(f"Error importando reserva_event_bus: {e}")
@@ -176,7 +179,9 @@ class MesasArea(QFrame):
         if hasattr(self, "mesa_widgets") and self.mesa_widgets:
             for widget in self.mesa_widgets:
                 mesa_num = str(getattr(widget.mesa, "numero", None))
-                mesa_obj = next((m for m in self.mesas if str(m.numero) == mesa_num), None)
+                mesa_obj = next(
+                    (m for m in self.mesas if str(m.numero) == mesa_num), None
+                )
                 if mesa_obj and hasattr(widget, "update_mesa"):
                     widget.update_mesa(mesa_obj)
                     widget.mesa = mesa_obj
@@ -206,6 +211,7 @@ class MesasArea(QFrame):
             reservas_por_mesa = self.reserva_service.obtener_reservas_activas_por_mesa()
         from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
         from datetime import datetime, time
+
         ahora = datetime.now()
         for mesa in self.mesas:
             estado_anterior = getattr(mesa, "estado", None)
@@ -253,7 +259,9 @@ class MesasArea(QFrame):
         if hasattr(self, "mesa_widgets") and self.mesa_widgets:
             for widget in self.mesa_widgets:
                 mesa_num = str(getattr(widget.mesa, "numero", None))
-                mesa_obj = next((m for m in self.mesas if str(m.numero) == mesa_num), None)
+                mesa_obj = next(
+                    (m for m in self.mesas if str(m.numero) == mesa_num), None
+                )
                 if mesa_obj and hasattr(widget, "update_mesa"):
                     # logger.debug(f"[LOG][MESAS_AREA] Llamando update_mesa en widget para mesa={mesa_num} estado={mesa_obj.estado}")
                     widget.update_mesa(mesa_obj)
@@ -261,6 +269,7 @@ class MesasArea(QFrame):
         # Refrescar grid visual si ya está renderizado (opcional, solo si hay cambios estructurales)
         if hasattr(self, "mesas_layout") and self.mesas_layout is not None:
             from .mesas_area_grid import refresh_all_mesa_widgets_styles
+
             refresh_all_mesa_widgets_styles(self)
 
     def setup_ui(self) -> None:
@@ -310,8 +319,11 @@ class MesasArea(QFrame):
     def set_service(self, tpv_service: TPVService):
         self.tpv_service = tpv_service
 
-    def set_mesas(self, mesas: List[Mesa], datos_temporales: Optional[Dict[str, Any]] = None) -> None:
+    def set_mesas(
+        self, mesas: List[Mesa], datos_temporales: Optional[Dict[str, Any]] = None
+    ) -> None:
         import logging
+
         logger = logging.getLogger("mesas_area_main")
         # logger.debug(f"[LOG][MESAS_AREA] set_mesas llamada. Mesas recibidas: {[f'{m.numero}:{getattr(m, 'estado', None)}' for m in mesas]}")
         guardar_dato_temporal(self, None)  # Guarda temporales actuales
@@ -472,6 +484,7 @@ class MesasArea(QFrame):
 
     def update_filtered_mesas(self) -> None:
         import logging
+
         logger = logging.getLogger("mesas_area_main")
         # logger.debug(f"[LOG][MESAS_AREA] update_filtered_mesas llamada. Estado actual de mesas: {[f'{m.numero}:{getattr(m, 'estado', None)}' for m in self.mesas]}")
         if not self.mesas:
@@ -678,6 +691,7 @@ class MesasArea(QFrame):
                     )
         except Exception as e:
             from PyQt6.QtWidgets import QMessageBox
+
             logger.error(f"Error al procesar la creación de mesa: {e}")
             QMessageBox.critical(
                 self, "Error", f"Error al procesar la creación de mesa: {str(e)}"
@@ -751,6 +765,7 @@ class MesasArea(QFrame):
                         self.eliminar_mesas_requested.emit(numeros)
         except Exception as e:
             from PyQt6.QtWidgets import QMessageBox
+
             logger.error(f"Error al procesar la eliminación de mesa: {e}")
             QMessageBox.critical(
                 self, "Error", f"Error al procesar la eliminación de mesa: {str(e)}"

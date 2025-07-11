@@ -236,7 +236,7 @@ class AdministrativeLogicManager:
                         "action": "Reabastecer producto",
                         "details": {
                             "producto": producto["nombre"],
-                        "stock": producto["stock"],
+                            "stock": producto["stock"],
                             "categoria": producto["categoria"],
                         },
                     }
@@ -633,7 +633,9 @@ class AdministrativeLogicManager:
             result_reservas = self.db_manager.query(query_reservas, (today, today))
             result_total = self.db_manager.query(query_total_clientes)
 
-            clientes_reservas = result_reservas[0]["clientes_reservas"] if result_reservas else 0
+            clientes_reservas = (
+                result_reservas[0]["clientes_reservas"] if result_reservas else 0
+            )
             total_clientes = result_total[0]["total_clientes"] if result_total else 0
 
             # Para un sistema nuevo, mostrar clientes registrados como base
@@ -694,7 +696,9 @@ class AdministrativeLogicManager:
                     "SELECT COUNT(*) as total_productos FROM productos"
                 )
                 total_productos = (
-                    int(total_productos_query[0]["total_productos"]) if total_productos_query else 0
+                    int(total_productos_query[0]["total_productos"])
+                    if total_productos_query
+                    else 0
                 )
 
                 return {
@@ -799,7 +803,10 @@ class AdministrativeLogicManager:
         }
 
     def _calculate_administrative_trend(
-        self, admin_key: str, current_value: float, real_data: Optional[Dict[str, Any]] = None
+        self,
+        admin_key: str,
+        current_value: float,
+        real_data: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Calcular tendencia administrativa real comparando con períodos anteriores"""
         try:
@@ -828,7 +835,9 @@ class AdministrativeLogicManager:
                 "comparison": "Error en cálculo",
             }
 
-    def _calculate_administrative_progress(self, admin_key: str, current_value: float) -> Dict[str, Any]:
+    def _calculate_administrative_progress(
+        self, admin_key: str, current_value: float
+    ) -> Dict[str, Any]:
         """Calcular progreso real hacia objetivos administrativos"""
         try:
             target_config = self.admin_targets.get(admin_key, {})

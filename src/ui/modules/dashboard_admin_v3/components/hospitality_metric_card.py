@@ -220,7 +220,9 @@ class HospitalityMetricCard(UltraModernMetricCard):
         except Exception as e:
             logger.error(f"Error en auto-refresh de {self.metric_type}: {e}")
 
-    def on_metric_data_updated(self, metric_name: str, metric_data: dict[str, Any]) -> None:
+    def on_metric_data_updated(
+        self, metric_name: str, metric_data: dict[str, Any]
+    ) -> None:
         """Callback cuando el RealDataManager actualiza datos de métricas"""
         if metric_name == self.metric_type:
             self.update_from_real_data(metric_data)
@@ -305,7 +307,12 @@ class HospitalityMetricCard(UltraModernMetricCard):
             }}        """
         self.setStyleSheet(hospitality_style)
 
-    def update_metric_data(self, value: Any, trend: Optional[Any] = None, additional_data: Optional[dict[str, Any]] = None) -> None:
+    def update_metric_data(
+        self,
+        value: Any,
+        trend: Optional[Any] = None,
+        additional_data: Optional[dict[str, Any]] = None,
+    ) -> None:
         """Actualizar datos de la métrica con información específica de hostelería"""
         try:
             # Usar el método de la clase base que ya maneja la lógica básica

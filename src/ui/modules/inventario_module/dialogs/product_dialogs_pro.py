@@ -66,7 +66,12 @@ logger = logging.getLogger(__name__)
 class ProductDialog(QDialog):
     """Diálogo base profesional para productos con diseño moderno"""
 
-    def __init__(self, parent: Optional[QWidget] = None, title: str = "Producto", inventario_service: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        title: str = "Producto",
+        inventario_service: Optional[Any] = None,
+    ) -> None:
         super().__init__(parent)
         self.setObjectName("ProductDialog")
         self.inventario_service = inventario_service
@@ -881,7 +886,12 @@ class ProductDialog(QDialog):
 class NewProductDialog(ProductDialog):
     """Diálogo para crear un nuevo producto"""
 
-    def __init__(self, parent: Optional[QWidget] = None, categories: Optional[Any] = None, inventario_service: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        categories: Optional[Any] = None,
+        inventario_service: Optional[Any] = None,
+    ) -> None:
         super().__init__(parent, "Nuevo Producto", inventario_service)
 
         if categories:
@@ -1073,7 +1083,9 @@ class EditProductDialog(ProductDialog):
 class StockAdjustmentDialog(QDialog):
     """Diálogo para ajustar el stock de un producto"""
 
-    def __init__(self, parent: Optional[QWidget] = None, producto: Optional[Producto] = None) -> None:
+    def __init__(
+        self, parent: Optional[QWidget] = None, producto: Optional[Producto] = None
+    ) -> None:
         super().__init__(parent)
         self.producto = producto
         self.setWindowTitle("Ajustar Stock")
@@ -1352,7 +1364,9 @@ class StockAdjustmentDialog(QDialog):
 class DeleteConfirmationDialog(QDialog):
     """Diálogo de confirmación para eliminar producto"""
 
-    def __init__(self, parent: Optional[QWidget] = None, producto: Optional[Producto] = None) -> None:
+    def __init__(
+        self, parent: Optional[QWidget] = None, producto: Optional[Producto] = None
+    ) -> None:
         super().__init__(parent)
         self.producto = producto
         self.setWindowTitle("Confirmar Eliminación")

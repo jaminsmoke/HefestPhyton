@@ -8,7 +8,15 @@ Versión: v0.0.14 - FIXED RESPONSIVE ALIAS
 from typing import Optional, Any
 from PyQt6.QtWidgets import QVBoxLayout, QLabel, QFrame, QLineEdit, QWidget, QDialog
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QEvent, QObject, QPropertyAnimation
-from PyQt6.QtGui import QFont, QPaintEvent, QShowEvent, QHideEvent, QResizeEvent, QMouseEvent, QKeyEvent
+from PyQt6.QtGui import (
+    QFont,
+    QPaintEvent,
+    QShowEvent,
+    QHideEvent,
+    QResizeEvent,
+    QMouseEvent,
+    QKeyEvent,
+)
 
 from services.tpv_service import Mesa
 from src.core.hefest_data_models import Reserva
@@ -93,18 +101,28 @@ class MesaWidget(QFrame):
     personas_changed = pyqtSignal(Mesa, int)  # Señal para cambio de personas
     restaurar_original = pyqtSignal(int)  # Señal para restaurar valores originales
 
-    def __init__(self, mesa: Mesa, parent: Optional[Any] = None, proxima_reserva: Optional[Reserva] = None, tpv_service: Optional[Any] = None) -> None:
+    def __init__(
+        self,
+        mesa: Mesa,
+        parent: Optional[Any] = None,
+        proxima_reserva: Optional[Reserva] = None,
+        tpv_service: Optional[Any] = None,
+    ) -> None:
         super().__init__(parent)
         self.mesa: Mesa = mesa
         self.proxima_reserva: Optional[Reserva] = proxima_reserva
-        self._ultima_reserva_activa: Optional[Reserva] = proxima_reserva  # Guarda la última reserva activa
+        self._ultima_reserva_activa: Optional[Reserva] = (
+            proxima_reserva  # Guarda la última reserva activa
+        )
         self.setFixedSize(220, 160)  # Tamaño más compacto ajustado al contenido
         self.setObjectName("mesa_widget")
 
         # Variables para edición de nombre
         self.editing_mode: bool = False
         self.alias_line_edit: Optional[QLineEdit] = None  # Para el modo edición
-        self.click_timer: QTimer = QTimer()  # Para distinguir click simple vs doble click
+        self.click_timer: QTimer = (
+            QTimer()
+        )  # Para distinguir click simple vs doble click
         self.click_timer.setSingleShot(True)
         self.click_timer.timeout.connect(self._handle_single_click)
         self.pending_click: bool = False
@@ -121,7 +139,10 @@ class MesaWidget(QFrame):
                     self.mesa = mesa_real
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).warning(f"Error actualizando referencia de mesa real: {e}")
+
+                logging.getLogger(__name__).warning(
+                    f"Error actualizando referencia de mesa real: {e}"
+                )
         # Refrescar reservas activas de la mesa desde el servicio si existe
         self._reservas_activas_inicial = []
         reserva_activada = False
@@ -145,7 +166,10 @@ class MesaWidget(QFrame):
                         reserva_activada = True
                 except Exception as e:
                     import logging
-                    logging.getLogger(__name__).warning(f"Error obteniendo reservas activas por mesa: {e}")
+
+                    logging.getLogger(__name__).warning(
+                        f"Error obteniendo reservas activas por mesa: {e}"
+                    )
 
         self.setup_ui()
         self.apply_styles()
@@ -158,22 +182,30 @@ class MesaWidget(QFrame):
         # Suscribirse al event bus de reservas
         try:
             from src.ui.modules.tpv_module.event_bus import reserva_event_bus
+
             reserva_event_bus.reserva_creada.connect(self._on_reserva_event_bus_creada)
         except Exception as e:
             import logging
-            logging.getLogger(__name__).warning(f"Error suscribiéndose a reserva_event_bus: {e}")
+
+            logging.getLogger(__name__).warning(
+                f"Error suscribiéndose a reserva_event_bus: {e}"
+            )
 
         # Suscribirse al event bus de mesas para sincronización global
         try:
             mesa_event_bus.mesa_actualizada.connect(self._on_mesa_event_bus_actualizada)
         except Exception as e:
             import logging
-            logging.getLogger(__name__).warning(f"Error suscribiéndose a mesa_event_bus: {e}")
+
+            logging.getLogger(__name__).warning(
+                f"Error suscribiéndose a mesa_event_bus: {e}"
+            )
 
     def _on_mesa_event_bus_actualizada(self, mesa_actualizada: Mesa) -> None:
-        if (
-            str(getattr(mesa_actualizada, "numero", None)) == str(getattr(self.mesa, "numero", None))
-            or str(getattr(mesa_actualizada, "id", None)) == str(getattr(self.mesa, "id", None))
+        if str(getattr(mesa_actualizada, "numero", None)) == str(
+            getattr(self.mesa, "numero", None)
+        ) or str(getattr(mesa_actualizada, "id", None)) == str(
+            getattr(self.mesa, "id", None)
         ):
             self.update_mesa(mesa_actualizada)
 
@@ -193,7 +225,10 @@ class MesaWidget(QFrame):
                 old_layout.deleteLater()
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).warning(f"Error eliminando layout anterior: {e}")
+
+                logging.getLogger(__name__).warning(
+                    f"Error eliminando layout anterior: {e}"
+                )
         self.layout_principal = QVBoxLayout(self)
         layout = self.layout_principal
         layout.setContentsMargins(8, 6, 8, 6)
@@ -417,8 +452,12 @@ class MesaWidget(QFrame):
         """
         )
         # Forzar refresco de estilos Qt (posible bug de caché)
-        style_obj = self.style() if hasattr(self, 'style') else None
-        if style_obj and hasattr(style_obj, 'unpolish') and hasattr(style_obj, 'polish'):
+        style_obj = self.style() if hasattr(self, "style") else None
+        if (
+            style_obj
+            and hasattr(style_obj, "unpolish")
+            and hasattr(style_obj, "polish")
+        ):
             style_obj.unpolish(self)
             style_obj.polish(self)
         self.update()
@@ -426,8 +465,14 @@ class MesaWidget(QFrame):
 
         # Alias de mesa - Solo color y peso, sin tamaño de fuente ni altura/margen (cumpliendo política)
         self.alias_label.setStyleSheet(ModernStyles.get_alias_label_style())
-        alias_style = self.alias_label.style() if hasattr(self.alias_label, 'style') else None
-        if alias_style and hasattr(alias_style, 'unpolish') and hasattr(alias_style, 'polish'):
+        alias_style = (
+            self.alias_label.style() if hasattr(self.alias_label, "style") else None
+        )
+        if (
+            alias_style
+            and hasattr(alias_style, "unpolish")
+            and hasattr(alias_style, "polish")
+        ):
             alias_style.unpolish(self.alias_label)
             alias_style.polish(self.alias_label)
         self.alias_label.update()
@@ -449,8 +494,14 @@ class MesaWidget(QFrame):
             }}
         """
         )
-        estado_style = self.estado_label.style() if hasattr(self.estado_label, 'style') else None
-        if estado_style and hasattr(estado_style, 'unpolish') and hasattr(estado_style, 'polish'):
+        estado_style = (
+            self.estado_label.style() if hasattr(self.estado_label, "style") else None
+        )
+        if (
+            estado_style
+            and hasattr(estado_style, "unpolish")
+            and hasattr(estado_style, "polish")
+        ):
             estado_style.unpolish(self.estado_label)
             estado_style.polish(self.estado_label)
         self.estado_label.update()
@@ -458,8 +509,16 @@ class MesaWidget(QFrame):
 
         # Capacidad - Información ajustada
         self.capacidad_label.setStyleSheet(ModernStyles.get_capacidad_label_style())
-        capacidad_style = self.capacidad_label.style() if hasattr(self.capacidad_label, 'style') else None
-        if capacidad_style and hasattr(capacidad_style, 'unpolish') and hasattr(capacidad_style, 'polish'):
+        capacidad_style = (
+            self.capacidad_label.style()
+            if hasattr(self.capacidad_label, "style")
+            else None
+        )
+        if (
+            capacidad_style
+            and hasattr(capacidad_style, "unpolish")
+            and hasattr(capacidad_style, "polish")
+        ):
             capacidad_style.unpolish(self.capacidad_label)
             capacidad_style.polish(self.capacidad_label)
         self.capacidad_label.update()
@@ -467,8 +526,14 @@ class MesaWidget(QFrame):
 
         # Zona + Identificador - Información contextual compacta
         self.zona_label.setStyleSheet(ModernStyles.get_zona_label_style())
-        zona_style = self.zona_label.style() if hasattr(self.zona_label, 'style') else None
-        if zona_style and hasattr(zona_style, 'unpolish') and hasattr(zona_style, 'polish'):
+        zona_style = (
+            self.zona_label.style() if hasattr(self.zona_label, "style") else None
+        )
+        if (
+            zona_style
+            and hasattr(zona_style, "unpolish")
+            and hasattr(zona_style, "polish")
+        ):
             zona_style.unpolish(self.zona_label)
             zona_style.polish(self.zona_label)
         self.zona_label.update()
@@ -476,8 +541,16 @@ class MesaWidget(QFrame):
 
         # Contador de próxima reserva - Estilo compacto y mejor integrado
         self.contador_label.setStyleSheet(ModernStyles.get_contador_label_style())
-        contador_style = self.contador_label.style() if hasattr(self.contador_label, 'style') else None
-        if contador_style and hasattr(contador_style, 'unpolish') and hasattr(contador_style, 'polish'):
+        contador_style = (
+            self.contador_label.style()
+            if hasattr(self.contador_label, "style")
+            else None
+        )
+        if (
+            contador_style
+            and hasattr(contador_style, "unpolish")
+            and hasattr(contador_style, "polish")
+        ):
             contador_style.unpolish(self.contador_label)
             contador_style.polish(self.contador_label)
         self.contador_label.update()
@@ -568,12 +641,21 @@ class MesaWidget(QFrame):
     def update_mesa(self, mesa: Mesa) -> None:
         """Actualiza los datos de la mesa y conserva la última reserva activa si es necesario. Usa la instancia real de la mesa por 'numero'."""
         mesa_real = None
-        if hasattr(self, "tpv_service") and self.tpv_service and hasattr(self.tpv_service, "get_mesa_by_id"):
+        if (
+            hasattr(self, "tpv_service")
+            and self.tpv_service
+            and hasattr(self.tpv_service, "get_mesa_by_id")
+        ):
             try:
-                mesa_real = self.tpv_service.get_mesa_by_id(getattr(mesa, "numero", None))
+                mesa_real = self.tpv_service.get_mesa_by_id(
+                    getattr(mesa, "numero", None)
+                )
             except Exception as e:
                 import logging
-                logging.getLogger(__name__).warning(f"Error obteniendo mesa por id: {e}")
+
+                logging.getLogger(__name__).warning(
+                    f"Error obteniendo mesa por id: {e}"
+                )
                 mesa_real = None
         if mesa_real:
             self.mesa = mesa_real
@@ -615,14 +697,14 @@ class MesaWidget(QFrame):
         if parent:
             parent.update()
             parent.repaint()
-            layout = parent.layout() if hasattr(parent, 'layout') else None
+            layout = parent.layout() if hasattr(parent, "layout") else None
             if layout is not None:
-                if hasattr(layout, 'update'):
+                if hasattr(layout, "update"):
                     layout.update()
-                if hasattr(layout, 'activate'):
+                if hasattr(layout, "activate"):
                     layout.activate()
         # Forzar update/repaint del layout principal
-        if hasattr(self, 'layout_principal') and self.layout_principal:
+        if hasattr(self, "layout_principal") and self.layout_principal:
             self.layout_principal.update()
             self.layout_principal.activate()
         # Feedback visual si el estado cambia a "ocupada"
@@ -631,7 +713,11 @@ class MesaWidget(QFrame):
         self._estado_anterior = self.mesa.estado
         self.alias_label.setText(self.mesa.nombre_display)
         self.capacidad_label.setText(f"👥 {self.mesa.personas_display} personas")
-        zona_texto = self.mesa.zona if hasattr(self.mesa, "zona") and self.mesa.zona else "Principal"
+        zona_texto = (
+            self.mesa.zona
+            if hasattr(self.mesa, "zona") and self.mesa.zona
+            else "Principal"
+        )
         identificador = self.mesa.numero
         self.zona_label.setText(f"🏢 {zona_texto} • {identificador}")
         self.restore_btn.setVisible(self._tiene_datos_temporales())
@@ -667,7 +753,10 @@ class MesaWidget(QFrame):
                     hora_obj = datetime.strptime(hora, "%H:%M").time()
                 except (ValueError, TypeError) as e:
                     import logging
-                    logging.getLogger(__name__).warning(f"Error interpretando hora de reserva: {e}")
+
+                    logging.getLogger(__name__).warning(
+                        f"Error interpretando hora de reserva: {e}"
+                    )
                     hora_obj = time(0, 0)
             else:
                 hora_obj = hora
@@ -855,7 +944,11 @@ class MesaWidget(QFrame):
 
         class PersonasDialog(QDialog):
             def __init__(
-                self, nombre_display: str, valor_actual: int, valor_original: int, parent: Optional[QWidget] = None
+                self,
+                nombre_display: str,
+                valor_actual: int,
+                valor_original: int,
+                parent: Optional[QWidget] = None,
             ):
                 super().__init__(parent)
                 self.setWindowTitle("Editar número de personas")

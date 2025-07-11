@@ -34,7 +34,7 @@ class AnimationHelper:
         widget: QWidget,
         duration: int = 300,
         start_opacity: float = 0.0,
-        end_opacity: float = 1.0
+        end_opacity: float = 1.0,
     ) -> Optional[QPropertyAnimation]:
         """Animación de fade in"""
         try:
@@ -67,7 +67,7 @@ class AnimationHelper:
     def fade_out(
         widget: QWidget,
         duration: int = 300,
-        callback: Optional[Callable[[], None]] = None
+        callback: Optional[Callable[[], None]] = None,
     ) -> Optional[QPropertyAnimation]:
         """Animación de fade out"""
         try:
@@ -101,7 +101,7 @@ class AnimationHelper:
         widget: QWidget,
         direction: str = "left",
         duration: int = 400,
-        distance: int = 200
+        distance: int = 200,
     ) -> Optional[QPropertyAnimation]:
         """Animación de deslizamiento hacia adentro"""
         try:
@@ -126,7 +126,7 @@ class AnimationHelper:
             animation.start()
 
             # Mantener referencia usando setattr para evitar warning de tipo
-            setattr(widget, '_slide_animation', animation)
+            setattr(widget, "_slide_animation", animation)
             return animation
         except Exception as e:
             logger.error(f"Error en slide_in: {e}")
@@ -138,7 +138,7 @@ class AnimationHelper:
         direction: str = "left",
         duration: int = 400,
         distance: int = 200,
-        callback: Optional[Callable[[], None]] = None
+        callback: Optional[Callable[[], None]] = None,
     ) -> Optional[QPropertyAnimation]:
         """Animación de deslizamiento hacia afuera"""
         try:
@@ -164,7 +164,7 @@ class AnimationHelper:
 
             animation.start()
             # Mantener referencia usando setattr para evitar warning de tipo
-            setattr(widget, '_slide_animation', animation)
+            setattr(widget, "_slide_animation", animation)
             return animation
         except Exception as e:
             logger.error(f"Error en slide_out: {e}")
@@ -175,7 +175,7 @@ class AnimationHelper:
         widget: QWidget,
         start_scale: float = 1.0,
         end_scale: float = 1.05,
-        duration: int = 200
+        duration: int = 200,
     ) -> Optional[QPropertyAnimation]:
         """Animación de escala para efectos hover"""
         try:
@@ -199,7 +199,7 @@ class AnimationHelper:
             animation.start()
 
             # Mantener referencia usando setattr para evitar warning de tipo
-            setattr(widget, '_scale_animation', animation)
+            setattr(widget, "_scale_animation", animation)
             return animation
         except Exception as e:
             logger.error(f"Error en scale_animation: {e}")
@@ -207,9 +207,7 @@ class AnimationHelper:
 
     @staticmethod
     def bounce_animation(
-        widget: QWidget,
-        intensity: int = 10,
-        duration: int = 600
+        widget: QWidget, intensity: int = 10, duration: int = 600
     ) -> Optional[QSequentialAnimationGroup]:
         """Animación de rebote"""
         try:
@@ -253,7 +251,7 @@ class AnimationHelper:
             group.start()
 
             # Mantener referencia usando setattr para evitar warning de tipo
-            setattr(widget, '_bounce_animation', group)
+            setattr(widget, "_bounce_animation", group)
             return group
         except Exception as e:
             logger.error(f"Error en bounce_animation: {e}")
@@ -265,9 +263,7 @@ class EffectsHelper:
 
     @staticmethod
     def apply_opacity_effect(
-        widget: QWidget,
-        opacity: float = 0.5,
-        duration: Optional[int] = None
+        widget: QWidget, opacity: float = 0.5, duration: Optional[int] = None
     ) -> Optional[QGraphicsOpacityEffect]:
         """Aplica un efecto de opacidad, opcionalmente animado"""
         try:
@@ -297,7 +293,7 @@ class EffectsHelper:
         blur_radius: int = 15,
         x_offset: int = 5,
         y_offset: int = 5,
-        color: QColor = QColor(0, 0, 0, 80)
+        color: QColor = QColor(0, 0, 0, 80),
     ) -> Optional[QGraphicsDropShadowEffect]:
         """Aplica un efecto de sombra"""
         try:
@@ -324,9 +320,7 @@ class EffectsHelper:
 
     @staticmethod
     def apply_blur_effect(
-        widget: QWidget,
-        blur_radius: int = 5,
-        duration: Optional[int] = None
+        widget: QWidget, blur_radius: int = 5, duration: Optional[int] = None
     ) -> Optional[QGraphicsBlurEffect]:
         """Aplica un efecto de desenfoque, opcionalmente animado"""
         try:
@@ -352,9 +346,7 @@ class EffectsHelper:
 
     @staticmethod
     def apply_acrylic_effect(
-        widget: QWidget,
-        opacity: float = 0.85,
-        blur_radius: int = 15
+        widget: QWidget, opacity: float = 0.85, blur_radius: int = 15
     ) -> Optional[QGraphicsOpacityEffect]:
         """Aplica efecto acrílico (glassmorphism)"""
         try:
@@ -384,9 +376,7 @@ class TransitionHelper:
 
     @staticmethod
     def cross_fade_transition(
-        old_widget: QWidget,
-        new_widget: QWidget,
-        duration: int = 500
+        old_widget: QWidget, new_widget: QWidget, duration: int = 500
     ) -> None:
         """Transición cruzada entre dos widgets"""
         try:
@@ -411,7 +401,7 @@ class TransitionHelper:
         old_widget: QWidget,
         new_widget: QWidget,
         direction: str = "left",
-        duration: int = 400
+        duration: int = 400,
     ) -> None:
         """Transición deslizante entre dos widgets"""
         try:

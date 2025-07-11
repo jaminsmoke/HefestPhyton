@@ -30,7 +30,9 @@ class ModernSidebar(QFrame):
     module_selected = pyqtSignal(str)
     logout_requested = pyqtSignal()
 
-    def __init__(self, parent: Optional[QWidget] = None, auth_service: Optional[Any] = None) -> None:
+    def __init__(
+        self, parent: Optional[QWidget] = None, auth_service: Optional[Any] = None
+    ) -> None:
         super().__init__(parent)
         logger.info("Inicializando ModernSidebar")
         # logger.debug("Constructor de ModernSidebar inicializado correctamente.")
@@ -177,7 +179,9 @@ class ModernSidebar(QFrame):
 
         layout.addWidget(nav_container)  # type: ignore
 
-    def create_nav_button(self, module_id: str, icon: str, title: str, description: str) -> QPushButton:
+    def create_nav_button(
+        self, module_id: str, icon: str, title: str, description: str
+    ) -> QPushButton:
         """Crea un botón de navegación moderno"""
         btn = QPushButton()
         btn.setObjectName(f"nav_btn_{module_id}")

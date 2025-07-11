@@ -130,7 +130,9 @@ def create_categoria_tab(parent: Any, categoria: str) -> QWidget:
     return tab
 
 
-def create_producto_button(parent: Any, nombre: str, precio: float, stock: Optional[Any] = None) -> QPushButton:
+def create_producto_button(
+    parent: Any, nombre: str, precio: float, stock: Optional[Any] = None
+) -> QPushButton:
     """Crea un botón para un producto, mostrando stock y bloqueando si no hay stock"""
     btn = QPushButton()
     btn.setFixedSize(120, 80)

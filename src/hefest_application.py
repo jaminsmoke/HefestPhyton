@@ -44,11 +44,12 @@ logger = logging.getLogger(__name__)
 # Asegurar propagación y nivel DEBUG para todos los loggers
 logging.captureWarnings(True)
 
+
 # === Manejo global de excepciones no capturadas ===
 def global_exception_hook(
     exc_type: Type[BaseException],
     exc_value: BaseException,
-    exc_traceback: Optional[Any]
+    exc_traceback: Optional[Any],
 ) -> None:
     if issubclass(exc_type, KeyboardInterrupt):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)  # type: ignore
@@ -57,11 +58,18 @@ def global_exception_hook(
     # Opcional: mostrar mensaje de error al usuario
     try:
         from PyQt6.QtWidgets import QMessageBox
-        QMessageBox.critical(None, "Error crítico", f"Se ha producido un error inesperado. Revisa el log para más detalles.\n\n{exc_value}")
+
+        QMessageBox.critical(
+            None,
+            "Error crítico",
+            f"Se ha producido un error inesperado. Revisa el log para más detalles.\n\n{exc_value}",
+        )
     except Exception:
         pass
     # Salida explícita para evitar procesos colgados
     sys.exit(1)
+
+
 sys.excepthook = global_exception_hook
 
 # Importar componentes necesarios
@@ -110,11 +118,13 @@ class Hefest:
             def writelines(self, lines: List[str]) -> None:  # type: ignore
                 for line in lines:  # type: ignore
                     self.write(line)  # type: ignore
+
         _sys.stderr = CSSWarningFilter(_sys.__stderr__)
         _sys.stdout = CSSWarningFilter(_sys.__stdout__)
         # Intentar filtrar también mensajes de Qt (si es posible)
         try:
             from PyQt6.QtCore import QLoggingCategory
+
             QLoggingCategory.setFilterRules("*.debug=false;qt.qpa.*=false")
         except Exception:
             pass

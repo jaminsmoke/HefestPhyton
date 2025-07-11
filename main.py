@@ -4,19 +4,22 @@
 Hefest - Sistema Integral de Hostelería y Hospedería
 Punto de entrada principal de la aplicación (Launcher)
 
-Este archivo sirve como launcher y delega la ejecución al módulo principal en src/
-Optimizado para funcionar correctamente con VS Code debugging.
+Este archivo sirve como launcher y delega la ejecución al módulo principal
+en src/. Optimizado para funcionar correctamente con VS Code debugging.
 
 ---
 Filtro de avisos Qt:
-Se instala un filtro de mensajes de Qt para ignorar avisos de estilos CSS no soportados (como 'box-shadow' y 'transform')
-que aparecen en la consola pero no afectan la funcionalidad ni la experiencia de usuario.
+Se instala un filtro de mensajes de Qt para ignorar avisos de estilos CSS
+no soportados (como 'box-shadow' y 'transform') que aparecen en la consola
+pero no afectan la funcionalidad ni la experiencia de usuario.
 Esto mantiene el log de ejecución más limpio y enfocado en errores relevantes.
 """
 
 import sys
 import os
 import logging
+import importlib.util
+from typing import Any
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -26,7 +29,8 @@ logging.basicConfig(
 # === FILTRO DE AVISOS QT (IGNORAR box-shadow/transform) ===
 try:
     from PyQt6.QtCore import qInstallMessageHandler
-    def qt_message_handler(mode, context, message):
+
+    def qt_message_handler(_: Any, __: Any, message: str) -> None:
         # Filtrar todos los avisos irrelevantes de estilos no soportados
         if (
             "box-shadow" in message
@@ -36,12 +40,13 @@ try:
         ):
             return  # Ignora estos avisos de estilos
         print(message)
+
     qInstallMessageHandler(qt_message_handler)
 except ImportError:
     pass  # Si no está PyQt6, no se instala el filtro
 
 
-def setup_environment():
+def setup_environment() -> str:
     """Configura el entorno de Python para la aplicación"""
     # Obtener el directorio del proyecto
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -56,7 +61,8 @@ def setup_environment():
 
     return src_dir
 
-def main():
+
+def main() -> int:
     """Función principal del launcher"""
     try:
         # Configurar entorno
@@ -66,15 +72,19 @@ def main():
         if not os.path.exists(src_dir):
             print(f"Error: No se encontró el directorio src en {src_dir}")
             return 1
-          # Verificar que el archivo principal existe
+        
+        # Verificar que el archivo principal existe
         main_file = os.path.join(src_dir, 'hefest_application.py')
         if not os.path.exists(main_file):
             print(f"Error: No se encontró el archivo principal en {main_file}")
             return 1
-          # Importar y ejecutar el main desde src
+        
+        # Importar y ejecutar el main desde src
         try:
-            import importlib.util
-            spec = importlib.util.spec_from_file_location("hefest_application", os.path.join(src_dir, "hefest_application.py"))
+            spec = importlib.util.spec_from_file_location(
+                "hefest_application",
+                os.path.join(src_dir, "hefest_application.py")
+            )
 
             # Verificar que spec y loader no sean None
             if spec is None:
@@ -102,6 +112,7 @@ def main():
         print(f"Error crítico en el launcher: {e}")
         return 1
 
+
 if __name__ == "__main__":
     debug_mode = False
     try:
@@ -110,9 +121,8 @@ if __name__ == "__main__":
             exit_code = 0
 
         # Detectar si estamos en modo debug (VS Code, PyCharm, etc.)
-        import sys
         debug_mode = (
-            hasattr(sys, 'gettrace') and sys.gettrace() is not None or  # Python debugger
+            hasattr(sys, 'gettrace') and sys.gettrace() is not None or
             'debugpy' in sys.modules or  # VS Code debugger
             'pydevd' in sys.modules or   # PyCharm debugger
             '--debug' in sys.argv        # Argumento explícito
@@ -120,9 +130,14 @@ if __name__ == "__main__":
 
         if debug_mode:
             # En modo debug, evitar sys.exit para mejor compatibilidad
-            print(f"🔧 [DEBUG MODE] Aplicación terminada con código: {exit_code}")
+            print(
+                f"🔧 [DEBUG MODE] Aplicación terminada con código: {exit_code}"
+            )
             if exit_code != 0:
-                print(f"⚠️ [DEBUG MODE] Código de salida indica error: {exit_code}")
+                print(
+                    f"⚠️ [DEBUG MODE] Código de salida indica error: "
+                    f"{exit_code}"
+                )
         else:
             # Ejecución normal, usar sys.exit
             sys.exit(exit_code)

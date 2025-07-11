@@ -84,7 +84,9 @@ class ProductsManagerWidget(QWidget):
     producto_seleccionado = pyqtSignal(dict)
     producto_actualizado = pyqtSignal()
 
-    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self, inventario_service: Any, parent: Optional[QWidget] = None
+    ) -> None:
         """Inicializar el widget gestor de productos"""
         super().__init__(parent)
 

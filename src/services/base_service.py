@@ -82,7 +82,9 @@ class BaseService(ABC):
         self.logger.error(f"Error en {operation}: {error}")
         return default_return
 
-    def log_operation(self, operation: str, details: Optional[Dict[str, Any]] = None) -> None:
+    def log_operation(
+        self, operation: str, details: Optional[Dict[str, Any]] = None
+    ) -> None:
         """
         Log estandarizado de operaciones del servicio.
 

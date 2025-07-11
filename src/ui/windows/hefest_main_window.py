@@ -66,7 +66,9 @@ class MainWindow(QMainWindow):
         # Variables de estado
         self.current_module = None
         self.module_widgets: Dict[str, QWidget] = {}
-        self._module_scroll_positions: Dict[str, int] = {}  # Guardar posición de scroll por módulo
+        self._module_scroll_positions: Dict[str, int] = (
+            {}
+        )  # Guardar posición de scroll por módulo
         # Mapping de módulos a roles requeridos
         self.module_permissions = {
             "dashboard": Role.EMPLOYEE,
@@ -465,7 +467,8 @@ class MainWindow(QMainWindow):
 
         # Ctrl+Q para salir
         if (
-            a0 is not None and a0.key() == Qt.Key.Key_Q
+            a0 is not None
+            and a0.key() == Qt.Key.Key_Q
             and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
         ):
             self.close()
@@ -478,7 +481,8 @@ class MainWindow(QMainWindow):
 
         # Ctrl+Shift+R para recargar el módulo currente
         if (
-            a0 is not None and a0.key() == Qt.Key.Key_R
+            a0 is not None
+            and a0.key() == Qt.Key.Key_R
             and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
             and a0.modifiers() & Qt.KeyboardModifier.ShiftModifier
         ):
@@ -488,7 +492,8 @@ class MainWindow(QMainWindow):
 
         # Ctrl+Shift+L para ver el registro de auditoría
         if (
-            a0 is not None and a0.key() == Qt.Key.Key_L
+            a0 is not None
+            and a0.key() == Qt.Key.Key_L
             and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
             and a0.modifiers() & Qt.KeyboardModifier.ShiftModifier
         ):
@@ -496,7 +501,8 @@ class MainWindow(QMainWindow):
 
         # Ctrl+Shift+U para gestionar usuarios y roles
         if (
-            a0 is not None and a0.key() == Qt.Key.Key_U
+            a0 is not None
+            and a0.key() == Qt.Key.Key_U
             and a0.modifiers() & Qt.KeyboardModifier.ControlModifier
             and a0.modifiers() & Qt.KeyboardModifier.ShiftModifier
         ):

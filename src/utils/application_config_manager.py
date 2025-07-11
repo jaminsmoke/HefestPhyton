@@ -86,7 +86,9 @@ class ConfigManager:
             json.dump(self.config, f, indent=4)
         logger.info(f"Configuración guardada en {self.config_file}")
 
-    def get(self, section: str, key: Optional[str] = None) -> Optional[Union[Dict[str, Any], Any]]:
+    def get(
+        self, section: str, key: Optional[str] = None
+    ) -> Optional[Union[Dict[str, Any], Any]]:
         """
         Obtiene una sección completa o un valor específico de la configuración
 
@@ -158,12 +160,17 @@ class ConfigManager:
         Returns:
             dict: Configuración completa en formato plano
         """
-        def flatten_dict(d: Dict[str, Any], parent_key: str = "", sep: str = "_") -> Dict[str, Any]:
+
+        def flatten_dict(
+            d: Dict[str, Any], parent_key: str = "", sep: str = "_"
+        ) -> Dict[str, Any]:
             items: List[Tuple[str, Any]] = []
             for k, v in d.items():
                 new_key = f"{parent_key}{sep}{k}" if parent_key else k
                 if isinstance(v, dict):
-                    items.extend(flatten_dict(cast(Dict[str, Any], v), new_key, sep=sep).items())
+                    items.extend(
+                        flatten_dict(cast(Dict[str, Any], v), new_key, sep=sep).items()
+                    )
                 else:
                     items.append((new_key, v))
             return dict(items)
@@ -332,14 +339,20 @@ class ConfigManager:
         """Obtiene solo las configuraciones modificadas por el usuario"""
         user_settings: Dict[str, Any] = {}
 
-        def compare_configs(default: Dict[str, Any], current: Dict[str, Any], path: str = "") -> None:
+        def compare_configs(
+            default: Dict[str, Any], current: Dict[str, Any], path: str = ""
+        ) -> None:
             for key, value in current.items():
                 current_path: str = f"{path}.{key}" if path else key
 
                 if key not in default:
                     user_settings[current_path] = value
                 elif isinstance(value, dict) and isinstance(default[key], dict):
-                    compare_configs(cast(Dict[str, Any], default[key]), cast(Dict[str, Any], value), current_path)
+                    compare_configs(
+                        cast(Dict[str, Any], default[key]),
+                        cast(Dict[str, Any], value),
+                        current_path,
+                    )
                 elif value != default[key]:
                     user_settings[current_path] = value
 

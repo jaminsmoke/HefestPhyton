@@ -20,9 +20,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from services.tpv_service import Comanda, Mesa, Producto, TPVService
+from src.services.tpv_service import Comanda, Mesa, Producto, TPVService
 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
-from ui.modules.module_base_interface import BaseModule
+from src.ui.modules.module_base_interface import BaseModule
 
 # Importar componentes refactorizados
 # TPVDashboard eliminado para evitar métricas duplicadas
@@ -37,9 +37,7 @@ logger = logging.getLogger(__name__)
 
 def clear_layout(widget: QWidget) -> None:
     """Elimina el layout existente para evitar warnings de duplicados."""
-    old_layout = (
-        widget.layout() if hasattr(widget, "layout") else None
-    )  # type: ignore
+    old_layout = widget.layout() if hasattr(widget, "layout") else None  # type: ignore
     if old_layout is not None:
         while old_layout.count():  # type: ignore
             item = old_layout.takeAt(0)  # type: ignore
@@ -75,33 +73,21 @@ class TPVModule(BaseModule):
     def _connect_event_bus(self) -> None:
         """Conecta las señales del event bus de mesas"""
         # Conectar eventos de mesas
-        mesa_event_bus.mesa_actualizada.connect(
-            self._on_mesa_updated
-        )  # type: ignore
+        mesa_event_bus.mesa_actualizada.connect(self._on_mesa_updated)  # type: ignore
         mesa_event_bus.mesas_actualizadas.connect(
             self._on_mesas_updated
         )  # type: ignore
-        mesa_event_bus.mesa_clicked.connect(
-            self._on_mesa_clicked
-        )  # type: ignore
-        mesa_event_bus.mesa_creada.connect(
-            self._on_mesa_creada
-        )  # type: ignore
-        mesa_event_bus.mesa_eliminada.connect(
-            self._on_mesa_eliminada
-        )  # type: ignore
-        mesa_event_bus.alias_cambiado.connect(
-            self._on_alias_cambiado
-        )  # type: ignore
-        
+        mesa_event_bus.mesa_clicked.connect(self._on_mesa_clicked)  # type: ignore
+        mesa_event_bus.mesa_creada.connect(self._on_mesa_creada)  # type: ignore
+        mesa_event_bus.mesa_eliminada.connect(self._on_mesa_eliminada)  # type: ignore
+        mesa_event_bus.alias_cambiado.connect(self._on_alias_cambiado)  # type: ignore
+
         # Forzar emisión inicial para UI
         try:
             pass
 
             if hasattr(self, "tpv_service") and self.tpv_service:
-                mesa_event_bus.mesas_actualizadas.emit(
-                    self.tpv_service.get_mesas()
-                )
+                mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
         except Exception:
             pass
 
@@ -112,10 +98,10 @@ class TPVModule(BaseModule):
 
             if db_manager is not None:
                 self.db_manager = db_manager
-                # logger.debug("TPVModule: DatabaseManager recibido por inyección")
+                # DatabaseManager recibido por inyección
             else:
                 self.db_manager = DatabaseManager()
-                # logger.debug("TPVModule: DatabaseManager creado internamente")
+                # DatabaseManager creado internamente
         except Exception as e:
             logger.error(f"TPVModule: Error creando DatabaseManager: {e}")
             self.db_manager = None
@@ -154,7 +140,7 @@ class TPVModule(BaseModule):
         layout.setSpacing(8)
         # Área principal con pestañas refactorizada
         self.create_main_tabs(layout)
-        
+
         # Configuración inicial de estado de mesas
         try:
             if hasattr(self, "mesas_area") and hasattr(
@@ -162,12 +148,13 @@ class TPVModule(BaseModule):
             ):
                 self.mesas_area.comprobar_estado_mesas_inicial()
                 # EXCEPCIÓN FUNCIONAL: Acceso protegido para sincronización
-                self.mesas_area._marcar_mesas_ocupadas_por_comanda()  # type: ignore[misc]
+                # pylint: disable=protected-access
+                self.mesas_area._marcar_mesas_ocupadas_por_comanda()  # type: ignore
                 self.mesas_area.update_filtered_mesas()
                 from .components.mesas_area.mesas_area_grid import (
                     populate_grid,
                 )
-                
+
                 populate_grid(self.mesas_area)
         except Exception as e:
             import logging
@@ -175,7 +162,7 @@ class TPVModule(BaseModule):
             logging.getLogger(__name__).error(
                 "Error comprobando estado inicial de mesas: %s", e
             )
-            
+
         # Sincronizar reservas con mesas
         if hasattr(self, "mesas_area") and self.db_manager is not None:
             try:
@@ -246,7 +233,8 @@ class TPVModule(BaseModule):
         self.mesas_widget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
         )
-        # Refuerzo defensivo: limpiar layout anterior antes de crear uno nuevo y asignar layout con setLayout
+        # Refuerzo defensivo: limpiar layout anterior antes de crear
+        # nuevo y asignar layout con setLayout
 
         clear_layout(self.mesas_widget)
         old_layout = self.mesas_widget.layout()
@@ -266,7 +254,7 @@ class TPVModule(BaseModule):
         self.mesas_layout.setSpacing(12)
         self.mesas_widget.setLayout(self.mesas_layout)
 
-        # Área de mesas como elemento principal (incluye filtros integrados y estadísticas)
+        # Área de mesas como elemento principal (filtros y estadísticas)
         self.mesas_area = MesasArea()
 
         # FIX v0.0.14: Inicializar servicios para funcionalidad
@@ -313,13 +301,9 @@ class TPVModule(BaseModule):
         if exitos:
             self.mesas = [m for m in self.mesas if m.numero not in exitos]
             if hasattr(self, "tpv_service") and self.tpv_service:
-                from src.ui.modules.tpv_module.mesa_event_bus import (
-                    mesa_event_bus,
-                )
-                
-                mesa_event_bus.mesas_actualizadas.emit(
-                    self.tpv_service.get_mesas()
-                )
+                from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+
+                mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
             from PyQt6.QtWidgets import QMessageBox
 
             QMessageBox.information(
@@ -346,12 +330,12 @@ class TPVModule(BaseModule):
         if hasattr(self, "mesas_area"):
             try:
                 reserva_service = reservas_agenda_tab.agenda_view.reserva_service
-                reservas_agenda_tab.agenda_view.reserva_creada.connect(  # type: ignore[misc]
+                reservas_agenda_tab.agenda_view.reserva_creada.connect(
                     lambda: self.mesas_area.sync_reservas(reserva_service)
-                )
-                reservas_agenda_tab.agenda_view.reserva_cancelada.connect(  # type: ignore[misc]
+                )  # type: ignore[misc]
+                reservas_agenda_tab.agenda_view.reserva_cancelada.connect(
                     lambda: self.mesas_area.sync_reservas(reserva_service)
-                )
+                )  # type: ignore[misc]
             except Exception as e:
                 import logging
 
@@ -406,7 +390,7 @@ class TPVModule(BaseModule):
         self.tab_widget.addTab(reportes_widget, "📈 Reportes")
 
     def create_title_section(self) -> QWidget:
-        """Crea una sección de título/información con fondo y efecto visual cohesivo con el header gris de HEFEST"""
+        """Crea sección título/información con fondo gris cohesivo"""
         title_container = QFrame()
         title_container.setObjectName("TitleContainer")
 
@@ -563,9 +547,15 @@ class TPVModule(BaseModule):
                 getattr(self.db_manager, "db_path", "data/hefest.db")
             )
             dialog = MesaDialog(mesa, self, reserva_service=reserva_service)
-            dialog.iniciar_tpv_requested.connect(self._on_iniciar_tpv)  # type: ignore[misc]
-            dialog.crear_reserva_requested.connect(self._on_crear_reserva)  # type: ignore[misc]
-            dialog.cambiar_estado_requested.connect(self._on_cambiar_estado_mesa)  # type: ignore[misc]
+            dialog.iniciar_tpv_requested.connect(
+                self._on_iniciar_tpv
+            )  # type: ignore[misc]
+            dialog.crear_reserva_requested.connect(
+                self._on_crear_reserva
+            )  # type: ignore[misc]
+            dialog.cambiar_estado_requested.connect(
+                self._on_cambiar_estado_mesa
+            )  # type: ignore[misc]
             # Eliminar cualquier línea como:
             # dialog.mesa_updated.connect(self._on_mesa_updated)
             dialog.reserva_cancelada.connect(  # type: ignore[misc]
@@ -600,7 +590,7 @@ class TPVModule(BaseModule):
             if hasattr(self, "mesas_area"):
                 self.mesas_area.set_mesas(self.mesas)
 
-            # Las estadísticas compactas se actualizan automáticamente en MesasArea
+            # Estadísticas compactas se actualizan automáticamente
 
         except Exception as e:
             logger.error(f"Error refrescando componentes: {e}")
@@ -637,24 +627,25 @@ class TPVModule(BaseModule):
                     else self.tpv_service.crear_mesa(capacidad, zona)
                 )
             if resultado:
-                # logger.debug(f"Mesa creada en zona '{zona}' con número {numero} y capacidad {capacidad}")
+                # Mesa creada correctamente
                 # Emitir evento global para refrescar UI
                 mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
                 from PyQt6.QtWidgets import QMessageBox
+
                 QMessageBox.information(
                     self,
                     "Éxito",
-                    f"Mesa creada correctamente en zona '{zona}' con número {numero}",
+                    f"Mesa creada en zona '{zona}' con número {numero}",
                 )
             else:
-                logger.warning(
-                    f"No se pudo crear la mesa en zona '{zona}' con número {numero}"
-                )
+                logger.warning(f"Error al crear mesa en zona '{zona}' número {numero}")
                 from PyQt6.QtWidgets import QMessageBox
+
                 QMessageBox.warning(
                     self,
                     "No se pudo crear",
-                    f"No se pudo crear la mesa en zona '{zona}' con número {numero}. Puede que ya exista o haya un error interno.",
+                    f"Mesa {numero} en zona '{zona}' puede que ya exista "
+                    f"o haya un error interno.",
                 )
         except Exception as e:
             logger.error(f"Error creando nueva mesa con zona: {e}")
@@ -663,17 +654,19 @@ class TPVModule(BaseModule):
             QMessageBox.critical(self, "Error", f"Error al crear mesa: {str(e)}")
 
     def eliminar_mesa(self, mesa_id: int):
-        """Elimina una mesa de forma robusta y global, asegurando consistencia en UI y datos."""
+        """Elimina una mesa de forma robusta asegurando consistencia."""
         try:
             resultado = False
             if hasattr(self, "mesa_controller") and self.mesa_controller:
-                resultado = self.mesa_controller.eliminar_mesa(str(mesa_id))  # TODO: Refactor global, mesa_id ahora debe ser numero (str)
+                resultado = self.mesa_controller.eliminar_mesa(
+                    str(mesa_id)
+                )  # TODO: Refactor global, mesa_id ahora debe ser numero (str)
             elif hasattr(self, "tpv_service") and self.tpv_service:
                 # Usar el método correcto que acepta 'numero' (str)
                 if hasattr(self.tpv_service, "eliminar_mesa_por_numero"):
                     resultado = self.tpv_service.eliminar_mesa_por_numero(str(mesa_id))
                 else:
-                    # EXCEPCIÓN FUNCIONAL: fallback legacy, puede fallar si solo acepta int
+                    # EXCEPCIÓN FUNCIONAL: fallback legacy
                     resultado = self.tpv_service.eliminar_mesa(mesa_id)
             if resultado:
                 # logger.debug(f"Mesa {mesa_id} eliminada correctamente")
@@ -690,7 +683,8 @@ class TPVModule(BaseModule):
                 QMessageBox.warning(
                     self,
                     "No se pudo eliminar",
-                    f"No se pudo eliminar la mesa {mesa_id}. Puede que esté ocupada o haya un error interno.",
+                    f"Error al eliminar mesa {mesa_id}. "
+                    f"Puede que esté ocupada o haya un error interno.",
                 )
         except Exception as e:
             logger.error(f"Error eliminando mesa: {e}")
@@ -778,7 +772,7 @@ class TPVModule(BaseModule):
         except Exception as e:
             logger.error(f"Error procesando pedido completado: {e}")
 
-    def _on_crear_reserva(self, mesa_id: int):
+    def _on_crear_reserva(self, mesa_id: int) -> None:
         """Crea una reserva para una mesa específica"""
         try:
             mesa = next((m for m in self.mesas if m.id == mesa_id), None)
@@ -793,10 +787,12 @@ class TPVModule(BaseModule):
         except Exception as e:
             logger.error(f"Error creando reserva: {e}")
 
-    def _on_cambiar_estado_mesa(self, mesa_id: int, nuevo_estado: str):
+    def _on_cambiar_estado_mesa(self, mesa_id: int, nuevo_estado: str) -> None:
         """Cambia el estado de una mesa"""
         try:
-            if self.mesa_controller.cambiar_estado_mesa(str(mesa_id), nuevo_estado):  # TODO: Refactor global, mesa_id ahora debe ser numero (str)
+            if self.mesa_controller.cambiar_estado_mesa(
+                str(mesa_id), nuevo_estado
+            ):  # TODO: Refactor global, mesa_id ahora debe ser numero (str)
                 # logger.debug(f"Estado de mesa {mesa_id} cambiado a {nuevo_estado}")
                 # Recargar mesas para reflejar el cambio
                 self.mesa_controller.cargar_mesas()
@@ -814,11 +810,11 @@ class TPVModule(BaseModule):
     #     if hasattr(self, 'mesas_area'):
     #         self.mesas_area.apply_search(text)
 
-    def venta_rapida(self):
+    def venta_rapida(self) -> None:
         """TODO: Implementar venta rápida"""
         QMessageBox.information(self, "Venta Rápida", "Funcionalidad en desarrollo")
 
-    def cerrar_caja(self):
+    def cerrar_caja(self) -> None:
         """TODO: Implementar cierre de caja"""
         QMessageBox.information(self, "Cerrar Caja", "Funcionalidad en desarrollo")
 

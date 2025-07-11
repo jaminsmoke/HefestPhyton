@@ -44,7 +44,7 @@ class Reserva:
 class HospederiaService(BaseService):
     """Servicio para la gestión de hospedería"""
 
-    def __init__(self, db_manager: Optional['DatabaseManager'] = None):
+    def __init__(self, db_manager: Optional["DatabaseManager"] = None):
         super().__init__(db_manager)
         self._habitaciones_cache = []
         self._load_habitaciones()

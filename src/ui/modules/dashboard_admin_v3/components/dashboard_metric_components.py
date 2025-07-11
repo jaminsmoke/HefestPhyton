@@ -54,7 +54,9 @@ class AnimatedProgressBar(QFrame):
 
     valueChanged = pyqtSignal(float)
 
-    def __init__(self, color: str = "#3B82F6", height: int = 6, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self, color: str = "#3B82F6", height: int = 6, parent: Optional[QWidget] = None
+    ) -> None:
         super().__init__(parent)
         self.color = QColor(color)
         self.setFixedHeight(height)
@@ -317,7 +319,9 @@ class UltraModernBaseWidget(QFrame):
             shadow.setColor(cast(QColor, shadow_config["color"]))
             self.setGraphicsEffect(shadow)
 
-    def create_font(self, size_key: str = "text_base", weight_key: str = "font_normal") -> QFont:
+    def create_font(
+        self, size_key: str = "text_base", weight_key: str = "font_normal"
+    ) -> QFont:
         """Crear fuente con el tema"""
         font = QFont(cast(str, self.theme.TYPOGRAPHY["font_family"]))
         font.setPointSize(cast(int, self.theme.TYPOGRAPHY[size_key]))
@@ -330,7 +334,9 @@ class UltraModernCard(UltraModernBaseWidget):
 
     clicked = pyqtSignal()
 
-    def __init__(self, padding: int = 16, elevation: str = "md", parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self, padding: int = 16, elevation: str = "md", parent: Optional[QWidget] = None
+    ) -> None:
         super().__init__(parent)
         self.padding = padding
         self.elevation = elevation
@@ -568,7 +574,11 @@ class UltraModernMetricCard(UltraModernCard):
         # La clase base no debe simular datos, solo mostrar datos reales
 
     def update_metric_data(
-        self, value: Optional[str] = None, trend: Optional[str] = None, target: Optional[str] = None, progress_percentage: Optional[float] = None
+        self,
+        value: Optional[str] = None,
+        trend: Optional[str] = None,
+        target: Optional[str] = None,
+        progress_percentage: Optional[float] = None,
     ) -> None:
         """Actualizar los datos de la métrica con valores reales administrativos"""
         try:
@@ -677,7 +687,7 @@ class UltraModernMetricCard(UltraModernCard):
 
     def mousePressEvent(self, event: QMouseEvent) -> None:  # type: ignore
         """Manejar clics en la tarjeta"""
-        if hasattr(event, 'button') and event.button() == Qt.MouseButton.LeftButton:  # type: ignore
+        if hasattr(event, "button") and event.button() == Qt.MouseButton.LeftButton:  # type: ignore
             # Emitir señal con datos de la métrica
             metric_data: dict[str, str] = {
                 "title": self.title,

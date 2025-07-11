@@ -179,7 +179,9 @@ class ReservasAgendaView(QWidget):
         if reply == QMessageBox.StandardButton.Yes:
             try:
                 # Pasar tpv_service para emitir evento mesa_actualizada
-                exito = self.reserva_service.cancelar_reserva(reserva_id, tpv_service=self.tpv_service)
+                exito = self.reserva_service.cancelar_reserva(
+                    reserva_id, tpv_service=self.tpv_service
+                )
                 if exito:
                     QMessageBox.information(
                         self, "Reserva cancelada", "La reserva ha sido cancelada."

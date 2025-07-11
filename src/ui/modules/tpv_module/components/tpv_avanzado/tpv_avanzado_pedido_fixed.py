@@ -247,8 +247,11 @@ def create_pedido_panel(parent: QWidget, splitter: QSplitter) -> QWidget:
     layout.addWidget(descuento_global_btn)
 
     # Inicializar método para agregar productos
-    setattr(parent, "agregar_producto_pedido",
-            lambda nombre, precio: agregar_producto_a_pedido(parent, nombre, precio))  # type: ignore
+    setattr(
+        parent,
+        "agregar_producto_pedido",
+        lambda nombre, precio: agregar_producto_a_pedido(parent, nombre, precio),
+    )  # type: ignore
 
     # --- NUEVO: Inicializar tabla con productos de la comanda activa (si existen) ---
     if hasattr(parent, "current_order") and getattr(parent, "current_order") is not None:  # type: ignore
@@ -381,8 +384,11 @@ def create_actions_panel(parent: Any) -> QFrame:
     """
     )
     setattr(parent, "NOTA_BTN_STYLE_NORMAL", nota_btn.styleSheet())  # type: ignore
-    setattr(parent, "NOTA_BTN_STYLE_CON_NOTA",
-            nota_btn.styleSheet().replace("#6366f1", "#dc2626"))  # type: ignore
+    setattr(
+        parent,
+        "NOTA_BTN_STYLE_CON_NOTA",
+        nota_btn.styleSheet().replace("#6366f1", "#dc2626"),
+    )  # type: ignore
     setattr(parent, "nota_btn", nota_btn)  # type: ignore
     nota_btn.clicked.connect(lambda: editar_nota_pedido(parent))
     layout.addWidget(nota_btn)
@@ -498,7 +504,9 @@ def eliminar_producto_de_pedido(parent: Any, producto_nombre: str) -> None:
                 )
 
 
-def cambiar_cantidad_producto_pedido(parent: Any, producto_nombre: str, nueva_cantidad: int) -> None:
+def cambiar_cantidad_producto_pedido(
+    parent: Any, producto_nombre: str, nueva_cantidad: int
+) -> None:
     """Cambia la cantidad de un producto y lo persiste en backend"""
     table = getattr(parent, "pedido_table", None)  # type: ignore
     if not table:

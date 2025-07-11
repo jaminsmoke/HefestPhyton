@@ -186,7 +186,9 @@ class TPVController(QObject):
                 self.status_changed.emit("Comanda guardada correctamente")
                 return True
             else:
-                self.error_occurred.emit("Error al persistir la comanda en la base de datos")
+                self.error_occurred.emit(
+                    "Error al persistir la comanda en la base de datos"
+                )
                 return False
         except Exception as e:
             logger.error(f"Error al guardar comanda de mesa {mesa_id}: {e}")

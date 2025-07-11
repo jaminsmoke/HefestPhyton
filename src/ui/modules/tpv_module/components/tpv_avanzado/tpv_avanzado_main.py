@@ -50,14 +50,18 @@ class TPVAvanzado(QWidget):
         self.header_mesa_label: Optional[QLabel] = (
             None  # Añadido para evitar error de Pyright
         )
-        self.estado_pedido_label: Optional[Any] = None  # Referencia al QLabel de estado del pedido (se asigna en create_pedido_panel)
+        self.estado_pedido_label: Optional[Any] = (
+            None  # Referencia al QLabel de estado del pedido (se asigna en create_pedido_panel)
+        )
         # --- NUEVO: Recuperar comanda activa al abrir el TPV ---
         if self.mesa and self.tpv_service:
             comanda = None
             if hasattr(self.tpv_service, "get_comanda_activa"):
                 comanda = self.tpv_service.get_comanda_activa(self.mesa.numero)
             if comanda:
-                logger.info(f"[TPVAvanzado] Comanda activa recuperada para mesa {self.mesa.numero}: {comanda}")
+                logger.info(
+                    f"[TPVAvanzado] Comanda activa recuperada para mesa {self.mesa.numero}: {comanda}"
+                )
                 self.current_order = comanda
             else:
                 # Forzar creación y persistencia de comanda si no existe
@@ -69,17 +73,28 @@ class TPVAvanzado(QWidget):
                     # Intentar obtener usuario autenticado desde AuthService
                     try:
                         from services.auth_service import get_auth_service
+
                         auth_service = get_auth_service()
-                        if hasattr(auth_service, "current_user") and auth_service.current_user and hasattr(auth_service.current_user, "id"):
+                        if (
+                            hasattr(auth_service, "current_user")
+                            and auth_service.current_user
+                            and hasattr(auth_service.current_user, "id")
+                        ):
                             usuario_id = auth_service.current_user.id
                     except Exception:
                         pass
                 # Asegurar que usuario_id sea siempre int
                 if usuario_id is None:
                     usuario_id = -1
-                logger.info(f"[TPVAvanzado] No existe comanda activa para mesa {self.mesa.numero}, creando nueva con usuario_id={usuario_id}...")
-                nueva_comanda = self.tpv_service.crear_comanda(self.mesa.numero, usuario_id=usuario_id)
-                logger.info(f"[TPVAvanzado] Comanda creada y persistida para mesa {self.mesa.numero}: {nueva_comanda}")
+                logger.info(
+                    f"[TPVAvanzado] No existe comanda activa para mesa {self.mesa.numero}, creando nueva con usuario_id={usuario_id}..."
+                )
+                nueva_comanda = self.tpv_service.crear_comanda(
+                    self.mesa.numero, usuario_id=usuario_id
+                )
+                logger.info(
+                    f"[TPVAvanzado] Comanda creada y persistida para mesa {self.mesa.numero}: {nueva_comanda}"
+                )
                 self.current_order = nueva_comanda
         self.setup_ui()
         # --- Sincronización en tiempo real: escuchar cambios de comanda ---
@@ -148,11 +163,14 @@ class TPVAvanzado(QWidget):
             # Si la comanda está cancelada, cerrar la ventana de TPVAvanzado
             estado = getattr(comanda, "estado", None)  # type: ignore[misc]
             if estado == "cancelada":
-                logger.info(f"[TPVAvanzado] Comanda cancelada detectada para mesa {self.mesa.numero}. Cerrando ventana TPVAvanzado.")
+                logger.info(
+                    f"[TPVAvanzado] Comanda cancelada detectada para mesa {self.mesa.numero}. Cerrando ventana TPVAvanzado."
+                )
                 parent = self.parent()
                 # Si el parent es un QDialog, ciérralo; si no, cierra el widget
                 try:
                     from PyQt6.QtWidgets import QDialog
+
                     if parent and isinstance(parent, QDialog):
                         parent.close()  # type: ignore[misc]
                     else:

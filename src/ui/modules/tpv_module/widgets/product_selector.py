@@ -88,10 +88,7 @@ class ProductCard(QFrame):
         layout.addWidget(self.price_label)
 
         # Stock disponible
-        if (
-            hasattr(self.producto, "stock")
-            and self.producto.stock is not None
-        ):
+        if hasattr(self.producto, "stock") and self.producto.stock is not None:
             stock_text = f"Stock: {self.producto.stock}"
             stock_color = "#d32f2f" if self.producto.stock < 5 else "#1976d2"
         else:

@@ -321,7 +321,9 @@ class ReportesModule(BaseModule):
 
         self.tabs.addTab(tab, "💵 Financiero")
 
-    def create_kpi_card(self, titulo: str, valor: str, cambio: str, color: str) -> QFrame:
+    def create_kpi_card(
+        self, titulo: str, valor: str, cambio: str, color: str
+    ) -> QFrame:
         """Crea una tarjeta de KPI"""
         card = QFrame()
         card.setFrameStyle(QFrame.Shape.StyledPanel)

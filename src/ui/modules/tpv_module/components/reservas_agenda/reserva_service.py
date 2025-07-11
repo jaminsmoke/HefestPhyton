@@ -112,11 +112,14 @@ class ReservaService:
                         ("reservada", mesa_id_str),
                     )
                 except Exception as e:
-                    print(f"[ReservaService][EXCEPCIÓN FUNCIONAL] No se pudo actualizar estado de mesa {mesa_id_str} a 'reservada': {e}")
+                    print(
+                        f"[ReservaService][EXCEPCIÓN FUNCIONAL] No se pudo actualizar estado de mesa {mesa_id_str} a 'reservada': {e}"
+                    )
                 conn.commit()
             print(f"[ReservaService] Reserva creada con id={reserva_id}")
         except Exception as e:
             import traceback
+
             print(
                 f"[ReservaService][ERROR] Error al crear reserva: {e}\n{traceback.format_exc()}"
             )
@@ -136,6 +139,7 @@ class ReservaService:
     def cancelar_reserva(self, reserva_id: int, tpv_service=None) -> bool:
         """Cancela la reserva cambiando su estado a 'cancelada' y libera la mesa en la tabla mesas. Además, emite el evento mesa_actualizada para refresco UI inmediato."""
         from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
+
         # logger = logging.getLogger("reserva_service")
         mesa_obj = None
         with sqlite3.connect(self.db_path) as conn:
@@ -152,7 +156,9 @@ class ReservaService:
             # logger.debug(f"[CANCELAR_RESERVA] UPDATE reservas: filas afectadas={c.rowcount}")
             # Liberar la mesa si se encontró
             if mesa_id is not None:
-                c.execute("UPDATE mesas SET estado = 'libre' WHERE numero = ?", (mesa_id,))
+                c.execute(
+                    "UPDATE mesas SET estado = 'libre' WHERE numero = ?", (mesa_id,)
+                )
                 # logger.debug(f"[CANCELAR_RESERVA] UPDATE mesas: filas afectadas={c.rowcount}")
             # Commit antes de emitir señales/eventos
             conn.commit()
@@ -241,6 +247,7 @@ class ReservaService:
     def obtener_reservas_activas_por_mesa(self) -> dict:
         """Devuelve un diccionario {mesa_id: [Reserva, ...]} de reservas activas por mesa."""
         import logging
+
         logger = logging.getLogger("reserva_service")
         with sqlite3.connect(self.db_path) as conn:
             c = conn.cursor()

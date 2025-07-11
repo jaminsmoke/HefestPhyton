@@ -40,7 +40,9 @@ class CategoryManagerWidget(QWidget):
     categoria_actualizada = pyqtSignal()
     categoria_seleccionada = pyqtSignal(dict)
 
-    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self, inventario_service: Any, parent: Optional[QWidget] = None
+    ) -> None:
         """Inicializar el widget gestor de categorías"""
         super().__init__(parent)
 
@@ -554,7 +556,12 @@ class CategoryManagerWidget(QWidget):
 class CategoryDialog(QDialog):
     """Diálogo mejorado para crear/editar categorías con validaciones avanzadas"""
 
-    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None, categoria: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(
+        self,
+        inventario_service: Any,
+        parent: Optional[QWidget] = None,
+        categoria: Optional[Dict[str, Any]] = None,
+    ) -> None:
         super().__init__(parent)
 
         self.inventario_service = inventario_service

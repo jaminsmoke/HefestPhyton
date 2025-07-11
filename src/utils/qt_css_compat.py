@@ -97,7 +97,9 @@ class StylesheetFilter(QObject):
     def __init__(self, parent: Optional[QObject] = None) -> None:
         """Inicializa el filtro de eventos"""
         super().__init__(parent)
-        self._filtered_stylesheets: Dict[str, str] = {}  # Cache para no procesar repetidamente
+        self._filtered_stylesheets: Dict[str, str] = (
+            {}
+        )  # Cache para no procesar repetidamente
 
     def eventFilter(self, obj: Any, event: QEvent) -> bool:
         """Filtra eventos de cambio de estilo"""
