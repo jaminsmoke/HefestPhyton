@@ -28,7 +28,7 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QFont, QMouseEvent
 
 from utils.administrative_logic_manager import AdministrativeLogicManager
-from utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 logger = logging.getLogger(__name__)
 

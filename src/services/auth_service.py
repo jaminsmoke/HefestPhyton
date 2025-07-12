@@ -14,7 +14,9 @@ Caracteristicas:
 - Validacion de permisos
 """
 
+import json
 import logging
+import os
 import sqlite3
 import time
 from dataclasses import dataclass, field
@@ -92,13 +94,15 @@ class AuthService(BaseService):
 
     def _initialize_default_users(self) -> None:
         """Inicializa los usuarios por defecto del sistema"""
+        default_pin = self._get_default_pin()
+        
         self.default_users = [
             User(
                 id=1,
                 username="admin",
                 name="Administrador",
                 role=Role.ADMIN,
-                password="1234",  # PIN por defecto
+                password=default_pin,  # PIN desde configuración
                 email="admin@hefest.com",
                 phone="",
                 is_active=True,
@@ -108,7 +112,7 @@ class AuthService(BaseService):
                 username="manager",
                 name="Manager",
                 role=Role.MANAGER,
-                password="1234",  # PIN por defecto
+                password=default_pin,  # PIN desde configuración
                 email="manager@hefest.com",
                 phone="",
                 is_active=True,
@@ -118,7 +122,7 @@ class AuthService(BaseService):
                 username="empleado",
                 name="Empleado",
                 role=Role.EMPLOYEE,
-                password="1234",  # PIN por defecto
+                password=default_pin,  # PIN desde configuración
                 email="empleado@hefest.com",
                 phone="",
                 is_active=True,
@@ -514,6 +518,24 @@ class AuthService(BaseService):
             "last_activity": self.current_session.last_activity,
             "session_token": self.current_session.session_token,
         }
+
+    def _load_auth_config(self) -> Dict[str, Any]:
+        """Carga la configuración de autenticación desde config/default.json"""
+        try:
+            config_path = os.path.join("config", "default.json")
+            if os.path.exists(config_path):
+                with open(config_path, "r", encoding="utf-8") as f:
+                    config = json.load(f)
+                    return config.get("authentication", {})
+            return {}
+        except Exception as e:
+            logger.warning(f"Error cargando configuración de auth: {e}")
+            return {}
+
+    def _get_default_pin(self) -> str:
+        """Obtiene el PIN por defecto desde configuración"""
+        auth_config = self._load_auth_config()
+        return auth_config.get("default_pin", "9999")  # Fallback seguro
 
     # Métodos de conveniencia para verificar accesos específicos
     def can_access_dashboard(self) -> bool:

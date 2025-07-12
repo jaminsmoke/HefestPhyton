@@ -40,19 +40,27 @@ class InventarioModule(BaseModule):
     # Señales
     inventario_actualizado = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, auth_service=None, db_manager=None):
         """Inicializar el módulo de inventario refactorizado"""
         super().__init__(parent)
 
-        # Intentar obtener db_manager
-        try:
-            from data.db_manager import DatabaseManager
+        # Usar db_manager pasado como parámetro o crear uno nuevo
+        if db_manager is not None:
+            self.db_manager = db_manager
+            logger.info("InventarioModule: Usando DatabaseManager proporcionado")
+        else:
+            # Intentar obtener db_manager
+            try:
+                from data.db_manager import DatabaseManager
 
-            self.db_manager = DatabaseManager()
-            logger.info("InventarioModule: DatabaseManager creado correctamente")
-        except Exception as e:
-            logger.error(f"InventarioModule: Error creando DatabaseManager: {e}")
-            self.db_manager = None
+                self.db_manager = DatabaseManager()
+                logger.info("InventarioModule: DatabaseManager creado correctamente")
+            except Exception as e:
+                logger.error(f"InventarioModule: Error creando DatabaseManager: {e}")
+                self.db_manager = None
+
+        # Guardar auth_service para uso futuro
+        self.auth_service = auth_service
 
         self.inventario_service = InventarioService(self.db_manager)
 
@@ -74,11 +82,7 @@ class InventarioModule(BaseModule):
         layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(10)
 
-        # Header del módulo
-        header = self.create_header()
-        layout.addWidget(header)
-
-        # Widget de pestañas
+        # Solo Widget de pestañas (sin header ni botones superiores)
         self.tab_widget = self.create_tab_widget()
         layout.addWidget(self.tab_widget)
 
@@ -127,9 +131,12 @@ class InventarioModule(BaseModule):
         tab_widget.addTab(self.suppliers_widget, "🏢 Proveedores")
 
         # Conectar señales
-        self.products_widget.producto_actualizado.connect(self.on_inventory_updated)
-        self.categories_widget.categoria_actualizada.connect(self.on_categories_updated)
-        self.suppliers_widget.proveedor_actualizado.connect(self.on_suppliers_updated)
+        if hasattr(self.products_widget, 'producto_actualizado'):
+            self.products_widget.producto_actualizado.connect(self.on_inventory_updated)
+        if hasattr(self.categories_widget, 'categoria_actualizada'):
+            self.categories_widget.categoria_actualizada.connect(self.on_categories_updated)
+        if hasattr(self.suppliers_widget, 'proveedor_actualizado'):
+            self.suppliers_widget.proveedor_actualizado.connect(self.on_suppliers_updated)
 
         return tab_widget
 
@@ -139,7 +146,7 @@ class InventarioModule(BaseModule):
             # Actualizar cada pestaña
             self.products_widget.load_products()
             self.categories_widget.load_categories()
-            self.suppliers_widget.load_suppliers()
+            self.suppliers_widget.refresh_data()
 
             QMessageBox.information(
                 self, "Actualizado", "Todos los datos han sido actualizados"

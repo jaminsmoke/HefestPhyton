@@ -5,7 +5,7 @@ Widget visual personalizado para mostrar una reserva en la agenda.
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
-from src.utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 
 class ReservaListItemWidget(QWidget):

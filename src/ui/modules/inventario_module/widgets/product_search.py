@@ -56,7 +56,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal, QStringListModel, QTimer
 from PyQt6.QtGui import QColor
 
-from src.utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 logger = logging.getLogger(__name__)
 
@@ -490,43 +490,56 @@ class ProductSearchWidget(QWidget):
         self.search_history.clear()
         self.history_list.clear()
 
-    def update_search_results(self, products: List[Dict[str, Any]]):
+    def update_search_results(self, products: List[Dict[str, Any]]) -> None:
         """
         Actualiza los resultados de búsqueda.
 
         Args:
             products: Lista de productos encontrados
         """
-        self.results_list.clear()
-
+        self._clear_results()
         if not products:
             self.no_results_label.show()
-            self.results_title.setText("No se encontraron productos")
+            self.results_title.setText("Sin resultados")
             return
-
         self.no_results_label.hide()
-        self.results_title.setText(f"Encontrados {len(products)} producto(s)")
+        self.results_title.setText(f"Resultados: {len(products)}")
 
+        # Obtener cache de categorías para mostrar nombre
+        categorias_cache = getattr(self, "categorias_cache", None)
+        categorias_por_id = {}
+        if categorias_cache:
+            categorias_por_id = {
+                str(cat.get("id")): cat.get("nombre", "")
+                for cat in categorias_cache
+            }
         for product in products:
-            item = self._create_result_item(product)
+            item = self._create_result_item(product, categorias_por_id)
             self.results_list.addItem(item)
 
-    def _create_result_item(self, product: Dict[str, Any]) -> QListWidgetItem:
-        """Crea un item de resultado"""
+    def _create_result_item(
+        self,
+        product: Dict[str, Any],
+        categorias_por_id: Dict[str, str]
+    ) -> QListWidgetItem:
+        """Crea un item de resultado mostrando nombre de categoría por id"""
         nombre = product.get("nombre", "Sin nombre")
         codigo = product.get("codigo", "")
-        categoria = product.get("categoria", "")
+        categoria_id = str(product.get("categoria_id", ""))
+        categoria_nombre = (
+            categorias_por_id.get(categoria_id, "Sin categoría")
+            if categoria_id else "Sin categoría"
+        )
         stock = product.get("stock", 0)
-        # Formato del texto
         text = f"{nombre}"
         if codigo:
             text += f" ({codigo})"
-        if categoria:
-            text += f" - {categoria}"
+        if categoria_nombre:
+            text += f" - {categoria_nombre}"
         text += f" | Stock: {stock}"
 
         item = QListWidgetItem(text)
-        item.setData(Qt.ItemDataRole.UserRole, product)  # Guardar datos del producto
+        item.setData(Qt.ItemDataRole.UserRole, product)
 
         # Colorear según stock
         if stock <= 0:

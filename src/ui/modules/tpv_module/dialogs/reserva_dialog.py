@@ -854,8 +854,9 @@ class ReservaDialog(QDialog):
             try:
                 hora_dt = datetime.strptime(reserva.hora_reserva, "%H:%M")
                 self.hora_input.setTime(QTime(hora_dt.hour, hora_dt.minute))
-            except Exception:
-                pass
+            except (ValueError, TypeError) as e:
+                # Print específico para error de formateo de hora
+                print(f"Error formateando hora de reserva: {e}")
         self.cliente_input.setText(reserva.cliente_nombre or "")
         self.telefono_input.setText(reserva.cliente_telefono or "")
         self.personas_input.setValue(reserva.numero_personas or 1)

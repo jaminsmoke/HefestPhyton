@@ -18,7 +18,6 @@ Esto mantiene el log de ejecución más limpio y enfocado en errores relevantes.
 import sys
 import os
 import logging
-import importlib.util
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -87,24 +86,9 @@ def main() -> int:
         
         # Importar y ejecutar el main desde src
         try:
-            spec = importlib.util.spec_from_file_location(
-                "hefest_application",
-                os.path.join(src_dir, "hefest_application.py")
-            )
-
-            # Verificar que spec y loader no sean None
-            if spec is None:
-                print(f"Error: No se pudo crear spec para {main_file}")
-                return 1
-
-            if spec.loader is None:
-                print(f"Error: No se pudo obtener loader para {main_file}")
-                return 1
-
-            main_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(main_module)
+            from hefest_application import main as app_main
             print("🚀 Iniciando Hefest...")
-            result = main_module.main()
+            result = app_main()
             return result if isinstance(result, int) else 0
         except ImportError as e:
             print(f"Error al importar el módulo principal: {e}")

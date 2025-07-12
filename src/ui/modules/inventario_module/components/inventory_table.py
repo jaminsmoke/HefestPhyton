@@ -25,7 +25,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal, QPoint
 from PyQt6.QtGui import QColor, QAction
 
-from src.utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 # Usar Any para tipado genérico y evitar conflictos
 ProductoType = Any

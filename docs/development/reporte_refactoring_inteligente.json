@@ -1,0 +1,155 @@
+{
+  "summary": {
+    "total_files": 104,
+    "affected_files": 91,
+    "duplicates_groups": 10768,
+    "refactoring_opportunities": 10768,
+    "estimated_line_reduction": 100863,
+    "affected_percentage": 87.5
+  },
+  "top_opportunities": [
+    {
+      "category": "general_logic",
+      "files_count": 31,
+      "duplicates_count": 151,
+      "impact_score": 453.0,
+      "estimated_reduction": 450,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui/utils.py",
+      "sample_content": "}\n            \"\"\"\n        )"
+    },
+    {
+      "category": "general_logic",
+      "files_count": 2,
+      "duplicates_count": 4,
+      "impact_score": 240.0,
+      "estimated_reduction": 45,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\tpv_module\\components\\tpv_avanzado/utils.py",
+      "sample_content": "def eliminar_producto_de_pedido(parent: Any, producto_nombre: str) -> None:\n    \"\"\"Elimina un producto individual del pedido y lo persiste en backend\"\"\"\n    table = getattr(parent, \"pedido_table\", Non..."
+    },
+    {
+      "category": "general_logic",
+      "files_count": 2,
+      "duplicates_count": 4,
+      "impact_score": 240.0,
+      "estimated_reduction": 45,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\tpv_module\\components\\tpv_avanzado/utils.py",
+      "sample_content": "if subtotal_label:\n        subtotal_label.setText(f\"Subtotal: €{subtotal:.2f}\")  # type: ignore\n    if iva_label:\n        iva_label.setText(f\"IVA (21%): €{iva:.2f}\")  # type: ignore\n    if total_label..."
+    },
+    {
+      "category": "general_logic",
+      "files_count": 1,
+      "duplicates_count": 3,
+      "impact_score": 225.0,
+      "estimated_reduction": 30,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\tpv_module\\tpv_module.py/utils.py",
+      "sample_content": "#         self.mesas_area.apply_search(text)\n\n    def venta_rapida(self) -> None:\n        \"\"\"TODO: Implementar venta rápida\"\"\"\n        QMessageBox.information(self, \"Venta Rápida\", \"Funcionalidad en d..."
+    },
+    {
+      "category": "general_logic",
+      "files_count": 1,
+      "duplicates_count": 2,
+      "impact_score": 210.0,
+      "estimated_reduction": 15,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\tpv_module\\controllers\\mesa_controller.py/utils.py",
+      "sample_content": "def get_mesa_by_numero(self, numero: str) -> Optional[Mesa]:\n        \"\"\"Obtiene una mesa por su número (string)\"\"\"\n        for mesa in self.mesas:\n            if mesa.numero == numero:\n               ..."
+    },
+    {
+      "category": "general_logic",
+      "files_count": 5,
+      "duplicates_count": 6,
+      "impact_score": 210.0,
+      "estimated_reduction": 50,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\tpv_module/utils.py",
+      "sample_content": "# Refuerzo: limpiar layout anterior y crear layout sin padre\n        old_layout = self.layout()\n        if old_layout is not None:\n            while old_layout.count():\n                item = old_layo..."
+    },
+    {
+      "category": "general_logic",
+      "files_count": 2,
+      "duplicates_count": 4,
+      "impact_score": 210.0,
+      "estimated_reduction": 45,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\tpv_module\\components\\tpv_avanzado/utils.py",
+      "sample_content": "def cambiar_cantidad_producto_pedido(\n    parent: Any, producto_nombre: str, nueva_cantidad: int\n) -> None:\n    \"\"\"Cambia la cantidad de un producto y lo persiste en backend\"\"\"\n    table = getattr(par..."
+    },
+    {
+      "category": "import_statements",
+      "files_count": 2,
+      "duplicates_count": 4,
+      "impact_score": 210.0,
+      "estimated_reduction": 45,
+      "refactor_type": "common_imports",
+      "suggested_name": "common_imports",
+      "suggested_location": "src/utils/common_imports.py",
+      "sample_content": "def aplicar_descuento_global(parent: Any) -> None:\n    \"\"\"Solicita y aplica un descuento global a todas las líneas\"\"\"\n    from PyQt6.QtWidgets import QInputDialog\n\n    descuento, ok = QInputDialog.get..."
+    },
+    {
+      "category": "general_logic",
+      "files_count": 1,
+      "duplicates_count": 3,
+      "impact_score": 202.5,
+      "estimated_reduction": 30,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\inventario_module\\widgets\\inventory_summary.py/utils.py",
+      "sample_content": "class ClickableFrame(QFrame):\n    \"\"\"Frame que emite señal al hacer clic\"\"\"\n\n    clicked = pyqtSignal(dict)\n\n    def __init__(self, alert_data: dict, parent=None):\n        super().__init__(parent)\n   ..."
+    },
+    {
+      "category": "general_logic",
+      "files_count": 1,
+      "duplicates_count": 3,
+      "impact_score": 202.5,
+      "estimated_reduction": 30,
+      "refactor_type": "utility_function",
+      "suggested_name": "common_operation",
+      "suggested_location": "src\\ui\\modules\\inventario_module\\widgets\\inventory_summary.py/utils.py",
+      "sample_content": "class ClickableLabel(QLabel):\n    \"\"\"Label que emite señal al hacer clic\"\"\"\n\n    clicked = pyqtSignal(str)\n\n    def __init__(self, text: str, category: str, parent=None):\n        super().__init__(text..."
+    }
+  ],
+  "category_breakdown": {
+    "general_logic": {
+      "count": 8632,
+      "reduction": 77602,
+      "impact": 223486.0
+    },
+    "import_statements": {
+      "count": 510,
+      "reduction": 5472,
+      "impact": 18205.5
+    },
+    "ui_setup": {
+      "count": 487,
+      "reduction": 5490,
+      "impact": 19593.0
+    },
+    "logging_setup": {
+      "count": 613,
+      "reduction": 6791,
+      "impact": 27503.5
+    },
+    "error_handling": {
+      "count": 473,
+      "reduction": 5004,
+      "impact": 20294.5
+    },
+    "database_operations": {
+      "count": 53,
+      "reduction": 504,
+      "impact": 1536.5
+    }
+  },
+  "analysis_timestamp": "2025-07-11T16:50:46.935034"
+}

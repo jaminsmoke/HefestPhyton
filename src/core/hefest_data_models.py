@@ -78,6 +78,7 @@ class Producto:
     proveedor_id: Optional[int] = None
     proveedor_nombre: Optional[str] = None
     fecha_ultima_entrada: Optional[datetime] = None
+    categoria_id: Optional[int] = None  # Nuevo campo para soporte por id
 
     def necesita_reposicion(self) -> bool:
         """

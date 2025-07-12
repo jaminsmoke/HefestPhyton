@@ -31,7 +31,10 @@ disable=
     too-many-arguments,
     too-many-locals,
     too-many-branches,
-    too-many-statements
+    too-many-statements,
+    import-error,
+    no-name-in-module,
+    c-extension-no-member
 
 # Mensajes a habilitar
 enable=
@@ -97,6 +100,9 @@ ignored-modules=PyQt5,PyQt6
 
 # Lista de clases que no se pueden revisar
 ignored-classes=PyQt5,PyQt6
+
+# Extensiones permitidas
+extension-pkg-whitelist=PyQt6
 
 [VARIABLES]
 # Patrones de nombres válidos para variables

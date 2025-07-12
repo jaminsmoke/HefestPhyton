@@ -446,5 +446,6 @@ class HospitalityMetricCard(UltraModernMetricCard):
         """Destructor para asegurar limpieza de recursos"""
         try:
             self.cleanup()
-        except:
-            pass  # Evitar errores en destructor
+        except Exception as e:
+            # Log silencioso en destructor para evitar errores en shutdown
+            logger.debug("Error en cleanup de destructor: %s", e)

@@ -81,8 +81,9 @@ class TPVAvanzado(QWidget):
                             and hasattr(auth_service.current_user, "id")
                         ):
                             usuario_id = auth_service.current_user.id
-                    except Exception:
-                        pass
+                    except AttributeError as e:
+                        # Log específico para error de autenticación
+                        logger.debug("Error obteniendo usuario_id de auth: %s", e)
                 # Asegurar que usuario_id sea siempre int
                 if usuario_id is None:
                     usuario_id = -1
@@ -102,8 +103,9 @@ class TPVAvanzado(QWidget):
             from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
             mesa_event_bus.comanda_actualizada.connect(self._on_comanda_actualizada)  # type: ignore[misc]
-        except Exception:
-            pass
+        except ImportError as e:
+            # Log específico para error de importación de event bus
+            logger.debug("Error conectando mesa_event_bus: %s", e)
 
     def set_pedido_actual(self, order: Optional[Any]) -> None:
         """Asigna el pedido actual y refresca la UI de estado"""

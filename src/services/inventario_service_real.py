@@ -46,16 +46,30 @@ class InventarioService(BaseService):
             else:
                 row_dict = row
 
+            # Obtener nombre de la categoría por id
+            categoria_id = row_dict.get("categoria_id")
+            categoria_nombre = None
+            if categoria_id:
+                # Buscar nombre de la categoría en la tabla
+                try:
+                    cat_row = self.db_manager.query("SELECT nombre FROM categorias WHERE id = ?", (categoria_id,))
+                    if cat_row and cat_row[0].get("nombre"):
+                        categoria_nombre = cat_row[0]["nombre"]
+                except Exception:
+                    categoria_nombre = None
+            if not categoria_nombre:
+                categoria_nombre = row_dict.get("categoria", "General")
             return Producto(
                 id=row_dict.get("id"),
                 nombre=row_dict.get("nombre", ""),
-                categoria=row_dict.get("categoria", "General"),
+                categoria=categoria_nombre,
                 precio=float(row_dict.get("precio", 0.0)),
                 stock_actual=int(row_dict.get("stock", 0)),
                 stock_minimo=int(row_dict.get("stock_minimo", 5)),
                 proveedor_id=row_dict.get("proveedor_id"),
                 proveedor_nombre=row_dict.get("proveedor_nombre"),
                 fecha_ultima_entrada=None,
+                categoria_id=row_dict.get("categoria_id"),
             )
         except Exception as e:
             logger.error("Error convirtiendo fila a producto: %s", e)
@@ -72,7 +86,7 @@ class InventarioService(BaseService):
     def get_productos(
         self, texto_busqueda: str = "", categoria: str = ""
     ) -> List[Producto]:
-        """Retorna productos filtrados por texto y/o categoría"""
+        """Retorna productos filtrados por texto y/o categoría (por id o nombre)"""
         if not self.db_manager:
             logger.warning(
                 "Sin conexión a base de datos, retornando lista vacía"
@@ -84,20 +98,30 @@ class InventarioService(BaseService):
             logger.warning("Texto de búsqueda demasiado largo, truncando")
             texto_busqueda = texto_busqueda[:100]
 
-        if categoria and len(categoria) > 50:
-            logger.warning("Nombre de categoría demasiado largo, truncando")
-            categoria = categoria[:50]
+        if categoria and len(str(categoria)) > 50:
+            logger.warning("Filtro de categoría demasiado largo, truncando")
+            categoria = str(categoria)[:50]
 
-        # Construir consulta SQL
-        query = "SELECT * FROM productos WHERE 1=1"
+        # Nueva consulta: filtrar por categoria_id (int) o nombre (str) y mostrar solo productos de categorías activas
+        query = (
+            "SELECT p.*, c.nombre as categoria_nombre FROM productos p "
+            "JOIN categorias c ON p.categoria_id = c.id "
+            "WHERE c.activa = 1"
+        )
         params = []
         if texto_busqueda:
-            query += " AND nombre LIKE ?"
+            query += " AND p.nombre LIKE ?"
             params.append(f"%{texto_busqueda}%")
         if categoria:
-            query += " AND categoria = ?"
-            params.append(categoria)
-        query += " ORDER BY nombre"
+            # Si es un número, filtrar por id; si no, por nombre
+            try:
+                categoria_id = int(categoria)
+                query += " AND c.id = ?"
+                params.append(categoria_id)
+            except (ValueError, TypeError):
+                query += " AND c.nombre = ?"
+                params.append(str(categoria))
+        query += " ORDER BY p.nombre"
 
         # Ejecutar consulta
         rows = self.db_manager.query(query, tuple(params))
@@ -107,11 +131,14 @@ class InventarioService(BaseService):
             logger.warning("Query retornó None, usando lista vacía")
             rows = []
 
+        logger.info(f"Filas recuperadas de productos: {rows}")
+
         # Convertir filas a objetos Producto
         productos: List[Producto] = []
         for row in rows:
             try:
                 producto = self._convert_db_row_to_producto(row)
+                logger.info(f"Producto convertido: {producto}")
                 # Solo agregar productos válidos
                 if producto.id is not None:
                     productos.append(producto)
@@ -119,99 +146,88 @@ class InventarioService(BaseService):
                 logger.error("Error procesando producto: %s", e)
                 continue
 
+        logger.info(f"Lista final de productos: {productos}")
         return productos
 
     def crear_producto(
-        self,
-        nombre: str,
-        precio: float,
-        categoria: str = "General",
-        stock_inicial: int = 0,
-        stock_minimo: int = 5,
-        **_kwargs: Any,  # Argumentos adicionales no utilizados
+        self, *args, **kwargs
     ) -> Optional[Producto]:
-        """Crear un nuevo producto en el inventario"""
+        """
+        Crear un nuevo producto en el inventario.
+        Soporta tanto argumentos posicionales (legacy) como diccionario de datos (nuevo flujo UI).
+        """
         if not self.require_database("crear producto"):
             return None
 
         assert self.db_manager is not None  # Type checker assertion
 
+        # Compatibilidad: si se llama con argumentos posicionales legacy
+        if args and len(args) >= 2:
+            nombre = args[0]
+            precio = args[1]
+            categoria = args[2] if len(args) > 2 else "General"
+            stock_inicial = args[3] if len(args) > 3 else 0
+            stock_minimo = args[4] if len(args) > 4 else 5
+            categoria_id = None
+        else:
+            # Nuevo flujo: kwargs desde la UI
+            nombre = kwargs.get("nombre", "").strip()
+            precio = float(kwargs.get("precio", 0.0))
+            categoria = kwargs.get("categoria", "General")
+            stock_inicial = int(kwargs.get("stock_actual", 0))
+            stock_minimo = int(kwargs.get("stock_minimo", 5))
+            categoria_id = kwargs.get("categoria_id")
+            if categoria_id == "":
+                categoria_id = None
+
         try:
-            # Validaciones mejoradas
-            if not nombre or not nombre.strip():
+            # Validaciones
+            if not nombre:
                 logger.error("El nombre del producto es requerido")
                 return None
-
-            # Validar longitud del nombre
-            if len(nombre.strip()) > 200:
-                logger.error(
-                    "El nombre del producto es demasiado largo "
-                    "(máximo 200 caracteres)"
-                )
+            if len(nombre) > 200:
+                logger.error("El nombre del producto es demasiado largo (máximo 200 caracteres)")
                 return None
-
-            # Validar categoría
-            if not categoria or not categoria.strip():
-                categoria = "General"
-
-            # Validar precio
             if precio < 0:
                 logger.error("El precio no puede ser negativo")
                 return None
-
-            # Validar stock
             if stock_inicial < 0:
                 logger.error("El stock inicial no puede ser negativo")
                 return None
-
             if stock_minimo < 0:
                 logger.error("El stock mínimo no puede ser negativo")
                 return None
 
             # Verificar si el producto ya existe
-            productos_existentes = self.get_productos(
-                texto_busqueda=nombre.strip()
-            )
-            if any(
-                p.nombre.lower() == nombre.strip().lower()
-                for p in productos_existentes
-            ):
-                logger.warning(
-                    "Ya existe un producto con nombre '%s'",
-                    nombre.strip()
-                )
+            productos_existentes = self.get_productos(texto_busqueda=nombre)
+            if any(p.nombre.lower() == nombre.lower() for p in productos_existentes):
+                logger.warning("Ya existe un producto con nombre '%s'", nombre)
                 return None
 
             # Insertar nuevo producto
-            query = """
-                INSERT INTO productos
-                (nombre, categoria, precio, stock, stock_minimo)
-                VALUES (?, ?, ?, ?, ?)
-            """
+            if categoria_id:
+                query = """
+                    INSERT INTO productos
+                    (nombre, precio, stock, stock_minimo, categoria_id)
+                    VALUES (?, ?, ?, ?, ?)
+                """
+                params = (nombre, precio, stock_inicial, stock_minimo, categoria_id)
+            else:
+                query = """
+                    INSERT INTO productos
+                    (nombre, categoria, precio, stock, stock_minimo)
+                    VALUES (?, ?, ?, ?, ?)
+                """
+                params = (nombre, categoria, precio, stock_inicial, stock_minimo)
 
-            result = self.db_manager.execute(
-                query,
-                (
-                    nombre.strip(),
-                    categoria.strip(),
-                    precio,
-                    stock_inicial,
-                    stock_minimo,
-                ),
-            )
+            result = self.db_manager.execute(query, params)
 
             if result:
                 logger.info("Producto '%s' creado exitosamente", nombre)
-                # Retornar el producto creado
-                productos_creados = self.get_productos(
-                    texto_busqueda=nombre.strip()
-                )
+                productos_creados = self.get_productos(texto_busqueda=nombre)
                 return productos_creados[0] if productos_creados else None
             else:
-                logger.error(
-                    "Error insertando producto '%s' en la base de datos",
-                    nombre
-                )
+                logger.error("Error insertando producto '%s' en la base de datos", nombre)
                 return None
 
         except Exception as e:
@@ -273,19 +289,49 @@ class InventarioService(BaseService):
                 logger.warning("No hay campos válidos para actualizar")
                 return False
 
-            # Construir query de actualización
-            set_clauses: List[str] = []
-            valores: List[Any] = []
+            # Lista blanca de campos permitidos para prevenir inyección SQL
+            campos_permitidos = {
+                "nombre", "categoria", "precio", "stock", "stock_minimo"
+            }
+            
+            # Construir query con consultas preparadas estáticas por campo
+            updates = []
+            valores_finales = []
+            
             for campo, valor in campos_validos.items():  # type: ignore
-                set_clauses.append(f"{campo} = ?")
-                valores.append(valor)
+                # Validación adicional de seguridad: solo campos en whitelist
+                if campo not in campos_permitidos:
+                    logger.warning("Campo no permitido ignorado: %s", campo)
+                    continue
+                    
+                # Usar consultas preparadas estáticas por campo específico
+                if campo == "nombre":
+                    updates.append("nombre = ?")
+                    valores_finales.append(valor)
+                elif campo == "categoria":
+                    updates.append("categoria = ?")
+                    valores_finales.append(valor)
+                elif campo == "precio":
+                    updates.append("precio = ?")
+                    valores_finales.append(valor)
+                elif campo == "stock":
+                    updates.append("stock = ?")
+                    valores_finales.append(valor)
+                elif campo == "stock_minimo":
+                    updates.append("stock_minimo = ?")
+                    valores_finales.append(valor)
 
-            query = (
-                f"UPDATE productos SET {', '.join(set_clauses)} WHERE id = ?"
-            )
-            valores.append(producto_id)
+            if not updates:
+                logger.warning(
+                    "No hay campos válidos permitidos para actualizar"
+                )
+                return False
 
-            self.db_manager.execute(query, tuple(valores))
+            # Construir query final con campos estáticos
+            query = f"UPDATE productos SET {', '.join(updates)} WHERE id = ?"
+            valores_finales.append(producto_id)
+
+            self.db_manager.execute(query, tuple(valores_finales))
 
             # Verificar que la actualización fue exitosa consultando
             # el producto

@@ -48,54 +48,51 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
 
 from PyQt6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
-    QLabel,
-    QFrame,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QLineEdit,
-    QComboBox,
-    QMessageBox,
-    QDialog,
-    QFileDialog,
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame,
+    QTableWidget, QTableWidgetItem, QHeaderView, QLineEdit, QComboBox,
+    QMessageBox, QDialog, QFileDialog, QTextEdit, QFormLayout
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QColor
 
-# Importar diálogos profesionales
-from ..dialogs.product_dialogs_pro import (
-    NewProductDialog,
-    EditProductDialog,
+# Importar utilidades comunes
+from .inventory_common_utils import (
+    InventoryManagerBase, InventoryDialogBase, InventoryValidationUtils,
+    CommonInventoryStyles
 )
 
 logger = logging.getLogger(__name__)
 
 
-class ProductsManagerWidget(QWidget):
-    """
-    Widget especializado para la gestión de productos
-    """
+class ProductsManagerWidget(InventoryManagerBase):
+    """Widget especializado para la gestión de productos"""
 
     # Señales
     producto_seleccionado = pyqtSignal(dict)
     producto_actualizado = pyqtSignal()
 
-    def __init__(
-        self, inventario_service: Any, parent: Optional[QWidget] = None
-    ) -> None:
+    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
         """Inicializar el widget gestor de productos"""
-        super().__init__(parent)
-
+        # PRIMERO: Almacenar el servicio de inventario
         self.inventario_service = inventario_service
-        self.productos_cache: List[Any] = []
+        self.productos_cache: List[Dict[str, Any]] = []
         self.categorias_cache: List[Dict[str, Any]] = []
+        
+        # SEGUNDO: Flag para evitar carga inicial prematura
+        self._skip_initial_load = True
+        
+        # TERCERO: Pasar db_manager desde el inventario_service si está disponible
+        db_manager = getattr(inventario_service, 'db_manager', None) or inventario_service
+        super().__init__(db_manager=db_manager, parent=parent)
+        
+        # CUARTO: Configuraciones adicionales
+        self.title_label.setText("📦 Gestión de Productos")
+        
+        # Configurar tabla específica para productos
+        self._setup_products_table()
+        self._setup_connections()
 
         self.init_ui()
-        self.load_products()
         self.load_categories()
 
         # Timer para actualización automática
@@ -103,56 +100,25 @@ class ProductsManagerWidget(QWidget):
         self.refresh_timer.timeout.connect(self.refresh_data)  # type: ignore
         self.refresh_timer.start(60000)  # Actualizar cada minuto
 
+        # AHORA cargar datos después de que todo esté inicializado
+        self._skip_initial_load = False
+        self.load_products()
+
         logger.info("ProductsManagerWidget inicializado correctamente")
 
     def init_ui(self) -> None:
-        """Inicializar la interfaz de usuario"""
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-        layout.setSpacing(15)
-
-        # Header
-        header = self.create_header()
-        layout.addWidget(header)
-
-        # Panel de búsqueda y filtros
+        """Inicializar elementos adicionales después de la tabla"""
+        # Panel de búsqueda y filtros (insertar después del header base)
         search_panel = self.create_search_panel()
-        layout.addWidget(search_panel)
+        self.main_layout.insertWidget(1, search_panel)
 
-        # Tabla de productos
-        self.products_table = self.create_products_table()
-        layout.addWidget(self.products_table)
-
-        # Panel de estadísticas y alertas
+        # Panel de estadísticas y alertas moderno (al final)
         bottom_panel = self.create_bottom_panel()
-        layout.addWidget(bottom_panel)
+        self.main_layout.addWidget(bottom_panel)
 
         self.apply_styles()
 
-    def create_header(self) -> QFrame:
-        """Crear el header del módulo"""
-        header = QFrame()
-        header.setObjectName("HeaderFrame")
-        layout = QHBoxLayout(header)
 
-        # Título
-        title = QLabel("📦 Gestión de Productos")
-        title.setObjectName("ModuleTitle")
-        layout.addWidget(title)
-
-        layout.addStretch()
-
-        # Botones de acción rápida
-        self.add_product_btn = QPushButton("➕ Nuevo Producto")
-        self.add_product_btn.clicked.connect(self.add_product)  # type: ignore
-
-        self.export_btn = QPushButton("📊 Exportar")
-        self.export_btn.clicked.connect(self.export_to_csv)  # type: ignore
-
-        layout.addWidget(self.add_product_btn)
-        layout.addWidget(self.export_btn)
-
-        return header
 
     def create_search_panel(self) -> QFrame:
         """Crear panel de búsqueda y filtros"""
@@ -178,70 +144,16 @@ class ProductsManagerWidget(QWidget):
         layout.addWidget(self.category_combo)
         layout.addStretch()
 
-        # Botones de acción
-        self.edit_btn = QPushButton("✏️ Editar")
-        self.edit_btn.clicked.connect(self.edit_selected_product)
-        self.edit_btn.setEnabled(False)
-
+        # Botón adicional específico de productos
         self.stock_btn = QPushButton("📦 Ajustar Stock")
         self.stock_btn.clicked.connect(self.adjust_stock)
         self.stock_btn.setEnabled(False)
 
-        self.delete_btn = QPushButton("🗑️ Eliminar")
-        self.delete_btn.clicked.connect(self.delete_selected_product)
-        self.delete_btn.setEnabled(False)
-
-        layout.addWidget(self.edit_btn)
         layout.addWidget(self.stock_btn)
-        layout.addWidget(self.delete_btn)
 
         return panel
 
-    def create_products_table(self) -> QTableWidget:
-        """Crear la tabla de productos"""
-        table = QTableWidget()
-        table.setObjectName("ProductsTable")
 
-        # Configurar columnas
-        headers = [
-            "ID",
-            "Nombre",
-            "Categoría",
-            "Precio",
-            "Stock",
-            "Stock Mín.",
-            "Estado",
-        ]
-        table.setColumnCount(len(headers))
-        table.setHorizontalHeaderLabels(headers)
-
-        # Configurar tabla
-        table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        table.setAlternatingRowColors(True)
-        table.setSortingEnabled(True)
-
-        # Ajustar columnas
-        header = table.horizontalHeader()
-        if header:
-            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # ID
-            header.resizeSection(0, 60)
-            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Nombre
-            header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)  # Categoría
-            header.resizeSection(2, 120)
-            header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)  # Precio
-            header.resizeSection(3, 100)
-            header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)  # Stock
-            header.resizeSection(4, 80)
-            header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)  # Stock Mín.
-            header.resizeSection(5, 90)
-            header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)  # Estado
-            header.resizeSection(6, 100)
-
-        # Conectar señales
-        table.itemSelectionChanged.connect(self.on_product_selected)
-        table.itemDoubleClicked.connect(self.edit_selected_product)
-
-        return table
 
     def create_bottom_panel(self) -> QFrame:
         """Crear panel inferior con estadísticas y alertas"""
@@ -302,13 +214,14 @@ class ProductsManagerWidget(QWidget):
     def load_products(self, search_text: str = "", category: str = "") -> None:
         """Cargar productos desde el servicio"""
         try:
+            logger.info(f"[UI] Llamando a get_productos con search_text='{search_text}', category='{category}'")
             self.productos_cache = self.inventario_service.get_productos(  # type: ignore
                 search_text, category
             )
+            logger.info(f"[UI] Productos recibidos: {self.productos_cache}")
             self.update_products_table()
             self.update_statistics()
             self.update_alerts()
-
         except Exception as e:
             logger.error(f"Error cargando productos: {e}")
             QMessageBox.warning(
@@ -316,82 +229,99 @@ class ProductsManagerWidget(QWidget):
             )
 
     def load_categories(self) -> None:
-        """Cargar categorías desde el servicio"""
+        """Cargar categorías disponibles como diccionarios (id, nombre)"""
         try:
-            categorias = self.inventario_service.get_categorias()  # type: ignore
-
-            # Limpiar combo
+            categorias = self.inventario_service.get_categorias_completas()  # type: ignore
             self.category_combo.clear()
             self.category_combo.addItem("Todas las categorías", "")
-
-            # Agregar categorías
             for categoria in categorias:
-                self.category_combo.addItem(categoria, categoria)
-
+                nombre = categoria.get('nombre', 'Sin nombre')
+                categoria_id = categoria.get('id', '')
+                self.category_combo.addItem(nombre, categoria_id)
             self.categorias_cache = categorias
-
         except Exception as e:
             logger.error(f"Error cargando categorías: {e}")
 
     def update_products_table(self) -> None:
         """Actualizar la tabla de productos"""
         try:
-            self.products_table.setRowCount(len(self.productos_cache))
-
+            logger.info(f"[UI] Actualizando tabla con {len(self.productos_cache)} productos")
+            self.items_cache = self.productos_cache
+            self.table.setSortingEnabled(False)
+            self.table.setRowCount(len(self.productos_cache))
+            
+            # Crear cache de categorías por id y por nombre
+            categorias_por_id = {
+                str(cat.get('id')): cat.get('nombre', '')
+                for cat in self.categorias_cache
+            }
+            categorias_por_nombre = {
+                cat.get('nombre', ''): cat.get('nombre', '')
+                for cat in self.categorias_cache
+            }
+            
             for row, producto in enumerate(self.productos_cache):
+                logger.info(f"[UI] Insertando producto en fila {row}: {producto}")
+                
                 # ID
-                self.products_table.setItem(row, 0, QTableWidgetItem(str(producto.id)))  # type: ignore
-
+                self.table.setItem(row, 0, QTableWidgetItem(str(producto.id)))
+                
                 # Nombre
-                self.products_table.setItem(row, 1, QTableWidgetItem(producto.nombre))  # type: ignore
-
-                # Categoría
-                self.products_table.setItem(
-                    row, 2, QTableWidgetItem(producto.categoria)  # type: ignore
-                )
-
+                self.table.setItem(row, 1, QTableWidgetItem(producto.nombre))
+                
+                # Categoría - Soporte para productos legacy (solo nombre) y nuevos (id)
+                categoria_id = getattr(producto, 'categoria_id', None)
+                categoria_nombre = None
+                if categoria_id:
+                    categoria_nombre = categorias_por_id.get(str(categoria_id))
+                if not categoria_nombre:
+                    # Intentar por nombre legacy
+                    categoria_nombre = categorias_por_nombre.get(getattr(producto, 'categoria', ''), 'Sin categoría')
+                logger.info(f"[UI] Fila {row}: categoria_id={categoria_id}, categoria_nombre={categoria_nombre}")
+                self.table.setItem(row, 2, QTableWidgetItem(categoria_nombre))
+                
                 # Precio
-                precio_item = QTableWidgetItem(f"${producto.precio:.2f}")  # type: ignore
-                precio_item.setTextAlignment(
-                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-                )
-                self.products_table.setItem(row, 3, precio_item)
-
+                precio_item = QTableWidgetItem(f"${producto.precio:.2f}")
+                precio_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                self.table.setItem(row, 3, precio_item)
+                
                 # Stock actual
-                stock_item = QTableWidgetItem(str(producto.stock_actual))  # type: ignore
+                stock_item = QTableWidgetItem(str(producto.stock_actual))
                 stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-
-                # Colorear según nivel de stock
                 if producto.stock_actual == 0:
-                    stock_item.setBackground(QColor("#fee2e2"))  # Rojo claro
-                elif producto.necesita_reposicion():
-                    stock_item.setBackground(QColor("#fef3c7"))  # Amarillo claro
-                else:
-                    stock_item.setBackground(QColor("#dcfce7"))  # Verde claro
-
-                self.products_table.setItem(row, 4, stock_item)
-
+                    stock_item.setBackground(QColor('#dc3545'))
+                    stock_item.setForeground(QColor('white'))
+                elif hasattr(producto, 'stock_minimo') and producto.stock_actual <= producto.stock_minimo:
+                    stock_item.setBackground(QColor('#ffc107'))
+                self.table.setItem(row, 4, stock_item)
+                
                 # Stock mínimo
-                min_stock_item = QTableWidgetItem(str(producto.stock_minimo))
-                min_stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.products_table.setItem(row, 5, min_stock_item)
-
+                stock_min_item = QTableWidgetItem(str(getattr(producto, 'stock_minimo', 0)))
+                stock_min_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.table.setItem(row, 5, stock_min_item)
+                
                 # Estado
-                if producto.stock == 0:
-                    estado = "Sin Stock"
-                    color = QColor("#fca5a5")
-                elif producto.necesita_reposicion():
-                    estado = "Stock Bajo"
-                    color = QColor("#fbbf24")
+                if producto.stock_actual == 0:
+                    estado = "Sin stock"
+                    color = QColor('#dc3545')
+                elif hasattr(producto, 'stock_minimo') and producto.stock_actual <= producto.stock_minimo:
+                    estado = "Stock bajo"
+                    color = QColor('#ffc107')
                 else:
                     estado = "Disponible"
-                    color = QColor("#86efac")
-
+                    color = QColor('#28a745')
+                    
                 estado_item = QTableWidgetItem(estado)
-                estado_item.setBackground(color)
                 estado_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.products_table.setItem(row, 6, estado_item)
-
+                estado_item.setForeground(color)
+                self.table.setItem(row, 6, estado_item)
+                
+            self.table.viewport().update()
+            self.table.setSortingEnabled(True)
+            
+            if self.table.rowCount() == 0:
+                logger.warning("[UI] La tabla de productos quedó vacía tras el llenado.")
+                
         except Exception as e:
             logger.error(f"Error actualizando tabla de productos: {e}")
 
@@ -411,9 +341,71 @@ class ProductsManagerWidget(QWidget):
             self.total_value_label.setText(f"Valor total: ${total_value:.2f}")
             self.low_stock_label.setText(f"Stock bajo: {low_stock}")
             self.out_of_stock_label.setText(f"Sin stock: {out_of_stock}")
-
         except Exception as e:
             logger.error(f"Error actualizando estadísticas: {e}")
+
+    def _setup_products_table(self):
+        """Configura la tabla específica para productos"""
+        headers = ["ID", "Nombre", "Categoría", "Precio", "Stock", "Stock Mín.", "Estado"]
+        self.table.setColumnCount(len(headers))
+        self.table.setHorizontalHeaderLabels(headers)
+        self.table.setObjectName("ProductsTable")
+        
+        # Configurar columnas
+        header = self.table.horizontalHeader()
+        if header:
+            header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)  # ID
+            header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Nombre
+            header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)  # Categoría
+            header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)  # Precio
+            header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)  # Stock
+            header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)  # Stock Mín.
+            header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)  # Estado
+            
+            # Anchos específicos
+            self.table.setColumnWidth(0, 60)
+            self.table.setColumnWidth(2, 120)
+            self.table.setColumnWidth(3, 80)
+            self.table.setColumnWidth(4, 80)
+            self.table.setColumnWidth(5, 80)
+            self.table.setColumnWidth(6, 100)
+        
+        # Configurar comportamiento de la tabla
+        self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setAlternatingRowColors(True)
+        self.table.setSortingEnabled(True)
+        
+        # Conectar señales específicas
+        self.table.itemSelectionChanged.connect(self.on_product_selected)
+        self.table.itemDoubleClicked.connect(self.edit_selected_product)
+        
+    def _setup_connections(self):
+        """Configurar conexiones específicas de productos"""
+        super()._setup_connections()
+        # Sobrescribir las conexiones de la clase base con las específicas de productos
+        self.add_btn.clicked.disconnect()  # Desconectar la conexión base
+        self.edit_btn.clicked.disconnect()
+        self.delete_btn.clicked.disconnect()
+        self.refresh_btn.clicked.disconnect()
+        
+        # Conectar con los métodos específicos de productos
+        self.add_btn.clicked.connect(self.add_product)
+        self.edit_btn.clicked.connect(self.edit_selected_product)
+        self.delete_btn.clicked.connect(self.delete_selected_product)
+        self.refresh_btn.clicked.connect(self.load_products)
+        
+    def _load_data(self):
+        """Cargar datos específicos de productos"""
+        # Control de carga inicial prematura
+        if hasattr(self, '_skip_initial_load') and self._skip_initial_load:
+            logger.debug("Saltando carga inicial de productos")
+            return
+            
+        # Solo cargar si la UI está completamente inicializada
+        if hasattr(self, 'table') and hasattr(self, 'inventario_service'):
+            self.load_products()
+        else:
+            logger.debug("UI no inicializada aún, posponiendo carga de productos")
 
     def update_alerts(self):
         """Actualizar alertas"""
@@ -455,12 +447,14 @@ class ProductsManagerWidget(QWidget):
 
     def on_product_selected(self):
         """Manejar selección de producto"""
-        selected_rows = set(item.row() for item in self.products_table.selectedItems())
+        selected_rows = set(item.row() for item in self.table.selectedItems())
         has_selection = bool(selected_rows)
 
+        # Habilitar/deshabilitar botones según selección
         self.edit_btn.setEnabled(has_selection)
-        self.stock_btn.setEnabled(has_selection)
         self.delete_btn.setEnabled(has_selection)
+        if hasattr(self, 'stock_btn'):
+            self.stock_btn.setEnabled(has_selection)
 
         if has_selection:
             row = next(iter(selected_rows))
@@ -470,10 +464,10 @@ class ProductsManagerWidget(QWidget):
                     {
                         "id": producto.id,
                         "nombre": producto.nombre,
-                        "categoria": producto.categoria,
+                        "categoria": getattr(producto, 'categoria', ''),
                         "precio": producto.precio,
-                        "stock": producto.stock,
-                        "stock_minimo": producto.stock_minimo,
+                        "stock": producto.stock_actual,
+                        "stock_minimo": getattr(producto, 'stock_minimo', 0),
                     }
                 )
 
@@ -481,10 +475,10 @@ class ProductsManagerWidget(QWidget):
         """Agregar nuevo producto usando diálogo profesional"""
         try:
             # Crear diálogo con categorías disponibles y servicio de inventario
-            dialog = NewProductDialog(
+            dialog = ProductDialog(
                 parent=self,
-                categories=self.categorias_cache,
                 inventario_service=self.inventario_service,
+                producto=None  # Nuevo producto
             )
 
             if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -499,45 +493,29 @@ class ProductsManagerWidget(QWidget):
                 self, "Error", f"No se pudo crear el producto: {str(e)}"
             )
 
+
+
     def edit_selected_product(self):
-        """Editar producto seleccionado usando diálogo profesional"""
+        """Editar producto seleccionado"""
         try:
-            selected_rows = set(
-                item.row() for item in self.products_table.selectedItems()
-            )
-            if not selected_rows:
-                return
-
-            row = next(iter(selected_rows))
-            if row < len(self.productos_cache):
-                producto = self.productos_cache[row]
-                # Usar el diálogo profesional de edición
-                dialog = EditProductDialog(
-                    parent=self,
-                    producto=producto,
-                    categories=self.categorias_cache,
-                    inventario_service=self.inventario_service,
-                )
-
+            current_row = self.table.currentRow()
+            if current_row >= 0 and current_row < len(self.productos_cache):
+                producto = self.productos_cache[current_row]
+                dialog = ProductDialog(self.inventario_service, self, producto)
                 if dialog.exec() == QDialog.DialogCode.Accepted:
-                    # El diálogo ya maneja la actualización del producto internamente
-                    logger.info(
-                        f"Producto '{producto.nombre}' actualizado exitosamente desde diálogo"
-                    )
-                    self.load_products()  # Recargar la tabla
+                    self.load_products()
                     self.producto_actualizado.emit()
-
+            else:
+                QMessageBox.information(self, "Información", "Seleccione un producto para editar")
         except Exception as e:
             logger.error(f"Error editando producto: {e}")
-            QMessageBox.warning(
-                self, "Error", f"No se pudo editar el producto: {str(e)}"
-            )
+            QMessageBox.warning(self, "Error", f"Error al editar producto: {str(e)}")
 
     def adjust_stock(self):
         """Ajustar stock del producto seleccionado"""
         try:
             selected_rows = set(
-                item.row() for item in self.products_table.selectedItems()
+                item.row() for item in self.table.selectedItems()
             )
             if not selected_rows:
                 return
@@ -577,40 +555,30 @@ class ProductsManagerWidget(QWidget):
     def delete_selected_product(self):
         """Eliminar producto seleccionado"""
         try:
-            selected_rows = set(
-                item.row() for item in self.products_table.selectedItems()
-            )
-            if not selected_rows:
-                return
-
-            row = next(iter(selected_rows))
-            if row < len(self.productos_cache):
-                producto = self.productos_cache[row]
-
+            current_row = self.table.currentRow()
+            if current_row >= 0 and current_row < len(self.productos_cache):
+                producto = self.productos_cache[current_row]
+                
                 reply = QMessageBox.question(
                     self,
-                    "Confirmar eliminación",
-                    f"¿Eliminar el producto '{producto.nombre}'?\nEsta acción no se puede deshacer.",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    "Confirmar eliminación", 
+                    f"¿Eliminar el producto '{producto.get('nombre', 'N/A')}'?\nEsta acción no se puede deshacer.",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
                 )
-
+                
                 if reply == QMessageBox.StandardButton.Yes:
-                    if self.inventario_service.eliminar_producto(producto.id):
+                    success = self.inventario_service.eliminar_producto(producto.get('id'))
+                    if success:
                         self.load_products()
                         self.producto_actualizado.emit()
-                        QMessageBox.information(
-                            self, "Éxito", "Producto eliminado correctamente"
-                        )
+                        QMessageBox.information(self, "Éxito", "Producto eliminado correctamente")
                     else:
-                        QMessageBox.warning(
-                            self, "Error", "No se pudo eliminar el producto"
-                        )
-
+                        QMessageBox.warning(self, "Error", "No se pudo eliminar el producto")
+            else:
+                QMessageBox.information(self, "Información", "Seleccione un producto para eliminar")
         except Exception as e:
             logger.error(f"Error eliminando producto: {e}")
-            QMessageBox.warning(
-                self, "Error", f"No se pudo eliminar el producto: {str(e)}"
-            )
+            QMessageBox.warning(self, "Error", f"Error al eliminar producto: {str(e)}")
 
     def export_to_csv(self):
         """Exportar productos a CSV"""
@@ -677,18 +645,8 @@ class ProductsManagerWidget(QWidget):
         """Aplicar estilos al widget"""
         self.setStyleSheet(
             """
-            #HeaderFrame {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #1e3c72, stop:1 #2a5298);
-                border-radius: 8px;
-                padding: 15px;
-                margin-bottom: 10px;
-            }
-
-            #ModuleTitle {
-                color: white;
-                font-size: 24px;
-                font-weight: bold;
+            QWidget {
+                background-color: #ffffff;
             }
 
             #SearchPanel {
@@ -697,7 +655,7 @@ class ProductsManagerWidget(QWidget):
                 border-radius: 6px;
                 padding: 10px;
             }
-              #ProductsTable {
+            QTableWidget {
                 background: white;
                 border: 1px solid #e2e8f0;
                 border-radius: 6px;
@@ -705,26 +663,27 @@ class ProductsManagerWidget(QWidget):
                 selection-background-color: #3b82f6;
                 selection-color: white;
                 outline: none;
+                alternate-background-color: #f8fafc;
             }
 
-            #ProductsTable::item {
+            QTableWidget::item {
                 padding: 8px;
                 border-bottom: 1px solid #f1f5f9;
                 border: none;
             }
 
-            #ProductsTable::item:selected {
+            QTableWidget::item:selected {
                 background: #3b82f6;
                 color: white;
                 border: none;
                 outline: none;
             }
 
-            #ProductsTable::item:hover {
+            QTableWidget::item:hover {
                 background: #e6f3ff;
             }
 
-            #ProductsTable QHeaderView::section {
+            QTableWidget QHeaderView::section {
                 background: #f8fafc;
                 border: 1px solid #e2e8f0;
                 padding: 8px;
@@ -732,7 +691,7 @@ class ProductsManagerWidget(QWidget):
                 color: #374151;
             }
 
-            #ProductsTable QHeaderView::section:horizontal {
+            QTableWidget QHeaderView::section:horizontal {
                 border-left: none;
                 border-right: none;
                 border-top: none;
@@ -785,3 +744,157 @@ class ProductsManagerWidget(QWidget):
             }
         """
         )
+        
+        # Aplicar estilo específico al título heredado
+        if hasattr(self, 'title_label'):
+            self.title_label.setStyleSheet("""
+                font-size: 24px;
+                font-weight: bold;
+                color: #1e3c72;
+                padding: 10px 0;
+            """)
+
+
+class ProductDialog(InventoryDialogBase):
+    """Diálogo para agregar/editar productos"""
+    
+    def __init__(self, inventario_service, parent=None, producto=None):
+        self.inventario_service = inventario_service
+        self.producto_data = producto
+        self.is_edit = producto is not None
+        
+        title = "Editar Producto" if self.is_edit else "Nuevo Producto"
+        super().__init__(parent, title, (600, 500))
+        
+        if self.is_edit:
+            self._load_product_data()
+    
+    def _setup_ui(self):
+        """Configuración específica de UI para productos"""
+        super()._setup_ui()
+        
+        # Información básica
+        basic_form = QFormLayout()
+        
+        # Campo nombre
+        self.name_edit = QLineEdit()
+        basic_form.addRow("Nombre*:", self.name_edit)
+        
+        # Campo categoría
+        self.category_combo = QComboBox()
+        self._load_categories()
+        basic_form.addRow("Categoría*:", self.category_combo)
+        
+        # Campo precio
+        self.price_edit = QLineEdit()
+        basic_form.addRow("Precio*:", self.price_edit)
+        
+        # Campo stock actual
+        self.stock_edit = QLineEdit()
+        basic_form.addRow("Stock Actual:", self.stock_edit)
+        
+        # Campo stock mínimo
+        self.min_stock_edit = QLineEdit()
+        basic_form.addRow("Stock Mínimo:", self.min_stock_edit)
+        
+        self.add_form_section("Información Básica", basic_form)
+        
+        # Descripción
+        desc_form = QFormLayout()
+        self.description_edit = QTextEdit()
+        self.description_edit.setMaximumHeight(100)
+        desc_form.addRow("Descripción:", self.description_edit)
+        
+        self.add_form_section("Descripción", desc_form)
+        
+    def _load_categories(self):
+        """Cargar categorías disponibles"""
+        try:
+            categorias = self.inventario_service.get_categorias_completas()
+            self.category_combo.clear()
+            self.category_combo.addItem("Seleccionar categoría", "")
+            for categoria in categorias:
+                nombre = categoria.get('nombre', 'Sin nombre')
+                categoria_id = categoria.get('id', '')
+                self.category_combo.addItem(nombre, categoria_id)
+        except Exception as e:
+            logger.error(f"Error cargando categorías: {e}")
+    
+    def _load_product_data(self):
+        """Cargar datos de producto para edición"""
+        if self.producto_data:
+            self.name_edit.setText(str(self.producto_data.get('nombre', '')))
+            self.price_edit.setText(str(self.producto_data.get('precio', '')))
+            self.stock_edit.setText(str(self.producto_data.get('stock_actual', '')))
+            self.min_stock_edit.setText(str(self.producto_data.get('stock_minimo', '')))
+            self.description_edit.setPlainText(str(self.producto_data.get('descripcion', '')))
+            
+            # Seleccionar categoría
+            categoria = self.producto_data.get('categoria', '')
+            index = self.category_combo.findText(categoria)
+            if index >= 0:
+                self.category_combo.setCurrentIndex(index)
+    
+    def accept(self):
+        """Validar y guardar producto"""
+        if not self._validate_form():
+            return
+            
+        try:
+            producto_data = {
+                'nombre': self.name_edit.text().strip(),
+                'categoria_id': self.category_combo.currentData(),
+                'precio': float(self.price_edit.text().strip()),
+                'stock_actual': int(self.stock_edit.text().strip() or '0'),
+                'stock_minimo': int(self.min_stock_edit.text().strip() or '0'),
+                'descripcion': self.description_edit.toPlainText().strip()
+            }
+            
+            if self.is_edit:
+                producto_data['id'] = self.producto_data['id']
+                success = self.inventario_service.actualizar_producto(producto_data)
+                message = "Producto actualizado correctamente"
+            else:
+                success = self.inventario_service.crear_producto(producto_data)
+                message = "Producto creado correctamente"
+            
+            if success:
+                self.show_success(message)
+                super().accept()
+            else:
+                self.show_error("Error al guardar el producto")
+                
+        except ValueError as e:
+            self.show_error("Error en los datos numéricos")
+        except Exception as e:
+            logger.error(f"Error guardando producto: {e}")
+            self.show_error(f"Error inesperado: {str(e)}")
+    
+    def _validate_form(self) -> bool:
+        """Validar formulario de producto"""
+        # Validar nombre
+        if not InventoryValidationUtils.validate_required_field(
+            self.name_edit.text(), "Nombre"):
+            self.show_error("El nombre es obligatorio")
+            self.name_edit.setFocus()
+            return False
+            
+        # Validar categoría
+        if self.category_combo.currentData() == "":
+            self.show_error("Debe seleccionar una categoría")
+            self.category_combo.setFocus()
+            return False
+            
+        # Validar precio
+        try:
+            precio = float(self.price_edit.text().strip())
+            if precio <= 0:
+                self.show_error("El precio debe ser mayor a 0")
+                self.price_edit.setFocus()
+                return False
+        except ValueError:
+            self.show_error("El precio debe ser un número válido")
+            self.price_edit.setFocus()
+            return False
+            
+        return True

@@ -920,8 +920,11 @@ class TPVService(BaseService):
                 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
                 mesa_event_bus.comanda_actualizada.emit(comanda)
-            except Exception:
-                pass
+            except Exception as e:
+                # Log error de emisión de evento sin interrumpir el flujo
+                self.logger.warning(
+                    "Error emitiendo evento comanda_actualizada: %s", e
+                )
             return True
         except Exception as e:
             self.logger.error(
@@ -1235,16 +1238,22 @@ class TPVService(BaseService):
                 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
                 mesa_event_bus.mesa_actualizada.emit(mesa)
-            except Exception:
-                pass
+            except Exception as e:
+                # Log error de emisión de evento sin interrumpir el flujo
+                self.logger.warning(
+                    "Error emitiendo evento mesa_actualizada: %s", e
+                )
 
         # Emitir señal global de comanda actualizada
         try:
             from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
 
             mesa_event_bus.comanda_actualizada.emit(comanda)
-        except Exception:
-            pass
+        except Exception as e:
+            # Log error de emisión de evento sin interrumpir el flujo
+            self.logger.warning(
+                "Error emitiendo evento comanda_actualizada: %s", e
+            )
 
         # Log eliminado por redundante
         return True

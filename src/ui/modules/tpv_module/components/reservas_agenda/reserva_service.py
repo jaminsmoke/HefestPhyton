@@ -18,28 +18,58 @@ class ReservaService:
             row = c.fetchone()
             if not row or row[0] not in ("activa", "confirmada"):
                 return False
-            # Actualizar campos editables
-            campos = []
-            valores = []
-            for campo, valor in [
+            
+            # Lista blanca de campos permitidos para prevenir inyección SQL
+            campos_permitidos = {
+                "cliente", "fecha_hora", "duracion_min", 
+                "telefono", "personas", "notas"
+            }
+            
+            # Actualizar campos con consultas preparadas estáticas
+            updates = []
+            valores_finales = []
+            
+            datos_entrada = [
                 ("cliente", datos.get("cliente")),
                 ("fecha_hora", datos.get("fecha_hora")),
                 ("duracion_min", datos.get("duracion_min")),
                 ("telefono", datos.get("telefono")),
                 ("personas", datos.get("personas")),
                 ("notas", datos.get("notas")),
-            ]:
-                if valor is not None:
-                    campos.append(f"{campo} = ?")
-                    if campo == "fecha_hora" and hasattr(valor, "isoformat"):
-                        valores.append(valor.isoformat())
-                    else:
-                        valores.append(valor)
-            if not campos:
+            ]
+            
+            for campo, valor in datos_entrada:
+                if valor is not None and campo in campos_permitidos:
+                    # Usar consultas preparadas estáticas por campo específico
+                    if campo == "cliente":
+                        updates.append("cliente = ?")
+                        valores_finales.append(valor)
+                    elif campo == "fecha_hora":
+                        updates.append("fecha_hora = ?")
+                        if hasattr(valor, "isoformat"):
+                            valores_finales.append(valor.isoformat())
+                        else:
+                            valores_finales.append(valor)
+                    elif campo == "duracion_min":
+                        updates.append("duracion_min = ?")
+                        valores_finales.append(valor)
+                    elif campo == "telefono":
+                        updates.append("telefono = ?")
+                        valores_finales.append(valor)
+                    elif campo == "personas":
+                        updates.append("personas = ?")
+                        valores_finales.append(valor)
+                    elif campo == "notas":
+                        updates.append("notas = ?")
+                        valores_finales.append(valor)
+                        
+            if not updates:
                 return False
-            valores.append(reserva_id)
-            sql = f"UPDATE reservas SET {', '.join(campos)} WHERE id = ?"
-            c.execute(sql, valores)
+                
+            # Construir query final con campos estáticos
+            valores_finales.append(reserva_id)
+            sql = f"UPDATE reservas SET {', '.join(updates)} WHERE id = ?"
+            c.execute(sql, valores_finales)
             conn.commit()
         return True
 

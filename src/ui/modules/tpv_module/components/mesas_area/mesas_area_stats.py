@@ -26,7 +26,7 @@ Versión política: v0.0.12
 """
 
 from typing import Any
-from src.utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 # TODO: Si PyQt6 o las herramientas de tipado mejoran, intentar tipar correctamente los miembros dinámicos.
 # type: ignore[reportUnknownMemberType,reportUnknownArgumentType,reportUnknownVariableType,reportMissingParameterType,reportUnknownParameterType]

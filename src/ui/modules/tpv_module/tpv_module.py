@@ -88,8 +88,9 @@ class TPVModule(BaseModule):
 
             if hasattr(self, "tpv_service") and self.tpv_service:
                 mesa_event_bus.mesas_actualizadas.emit(self.tpv_service.get_mesas())
-        except Exception:
-            pass
+        except AttributeError as e:
+            # Log específico para error de emisión de eventos inicial
+            logger.debug("Error en emisión inicial de mesas: %s", e)
 
     def _init_services(self, db_manager: Optional[Any] = None) -> None:
         """Inicializa los servicios necesarios"""
@@ -247,8 +248,9 @@ class TPVModule(BaseModule):
                         widget.setParent(None)
             try:
                 old_layout.deleteLater()
-            except Exception:
-                pass
+            except RuntimeError as e:
+                # Log específico para error de limpieza de layout
+                logger.debug("Error eliminando layout anterior: %s", e)
         self.mesas_layout = QVBoxLayout()
         self.mesas_layout.setContentsMargins(16, 16, 16, 16)
         self.mesas_layout.setSpacing(12)

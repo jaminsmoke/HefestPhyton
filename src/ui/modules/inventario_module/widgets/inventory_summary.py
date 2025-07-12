@@ -53,7 +53,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QMouseEvent
 
-from src.utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 logger = logging.getLogger(__name__)
 

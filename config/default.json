@@ -65,5 +65,12 @@
     "cache_size": 100,
     "lazy_loading": true,
     "animation_performance": "high"
+  },
+  "authentication": {
+    "default_pin": "1234",
+    "force_pin_change_on_first_login": true,
+    "session_timeout_minutes": 30,
+    "max_login_attempts": 3,
+    "pin_min_length": 4
   }
 }

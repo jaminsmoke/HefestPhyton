@@ -21,7 +21,7 @@ from PyQt6.QtGui import (
 from services.tpv_service import Mesa
 from src.core.hefest_data_models import Reserva
 from src.ui.modules.tpv_module.mesa_event_bus import mesa_event_bus
-from src.utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 
 class MesaWidget(QFrame):
@@ -1011,8 +1011,9 @@ class MesaWidget(QFrame):
                     # Eliminar el layout anterior si es posible
                     try:
                         old_layout.deleteLater()
-                    except Exception:
-                        pass
+                    except RuntimeError as e:
+                        # Log específico para error de limpieza de widget layout
+                        print(f"Error eliminando layout de mesa widget: {e}")
                 layout = QVBoxLayout()
                 layout.setContentsMargins(18, 18, 18, 12)
                 layout.setSpacing(8)

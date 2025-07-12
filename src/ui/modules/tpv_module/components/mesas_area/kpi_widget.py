@@ -15,7 +15,7 @@ from typing import Optional, Callable, Dict, Any, Union
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QHBoxLayout, QLabel, QWidget
 from PyQt6.QtCore import Qt
 from .kpi_components import TooltipAvanzado, BadgeKPI
-from src.utils.modern_styles import ModernStyles
+from src.utils.styles import ModernStyles
 
 
 class KPIWidget(QFrame):

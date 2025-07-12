@@ -16,7 +16,7 @@ def create_scroll_area(instance: Any, layout: QLayout) -> QScrollArea:
     scroll_area.setWidgetResizable(True)
     scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
     scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-    from src.utils.modern_styles import ModernStyles
+    from src.utils.styles import ModernStyles
 
     scroll_area.setStyleSheet(ModernStyles.get_scroll_area_style())
     mesas_container = QWidget()
@@ -218,8 +218,11 @@ def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
                 if hasattr(instance, "_active_dialogs"):
                     try:
                         instance._active_dialogs.remove(dialog)
-                    except Exception:
-                        pass
+                    except (ValueError, AttributeError) as e:
+                        # Log específico para error de limpieza de dialogs
+                        logging.getLogger(__name__).debug(
+                            "Error removiendo dialog de active_dialogs: %s", e
+                        )
 
             logging.getLogger(__name__).debug(
                 f"[mesas_area_grid][DEBUG] Conectando señal reserva_creada de dialog a on_reserva_creada"
@@ -236,8 +239,11 @@ def add_mesa_grid_callbacks_to_instance(instance: Any) -> None:
             if hasattr(instance, "_active_dialogs"):
                 try:
                     instance._active_dialogs.remove(dialog)  # type: ignore[attr-defined]
-                except Exception:
-                    pass
+                except (ValueError, AttributeError) as e:
+                    # Log específico para error de limpieza final de dialogs
+                    logging.getLogger(__name__).debug(
+                        "Error final removiendo dialog: %s", e
+                    )
         except Exception as e:
             import logging
 
@@ -349,7 +355,7 @@ def show_no_mesas_message(instance: Any) -> None:
         if not hasattr(instance, "mesas_layout") or instance.mesas_layout is None:
             return
         message_container = QFrame()
-        from src.utils.modern_styles import ModernStyles
+        from src.utils.styles import ModernStyles
 
         message_container.setStyleSheet(ModernStyles.get_empty_message_frame_style())
         container_layout = QVBoxLayout(message_container)
