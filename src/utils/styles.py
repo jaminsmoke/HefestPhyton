@@ -7,7 +7,7 @@ TODO: Refactorizar para usar estilos base integrados o eliminar referencias.
 
 class BaseStyles:
     """Clase de estilos básica que reemplaza ModernStyles eliminado"""
-    
+
     @staticmethod
     def get_scroll_area_style() -> str:
         """Estilo básico para scroll areas"""
@@ -17,8 +17,8 @@ class BaseStyles:
             background-color: transparent;
         }
         """
-    
-    @staticmethod 
+
+    @staticmethod
     def get_mesas_container_style() -> str:
         """Estilo básico para contenedor de mesas"""
         return """
@@ -27,7 +27,7 @@ class BaseStyles:
             border-radius: 8px;
         }
         """
-    
+
     @staticmethod
     def get_empty_message_frame_style() -> str:
         """Estilo básico para frames de mensaje vacío"""
@@ -39,7 +39,7 @@ class BaseStyles:
             padding: 20px;
         }
         """
-    
+
     @staticmethod
     def get_icon_label_style() -> str:
         """Estilo básico para labels de iconos"""
@@ -49,7 +49,7 @@ class BaseStyles:
             font-size: 48px;
         }
         """
-    
+
     @staticmethod
     def get_title_label_style() -> str:
         """Estilo básico para labels de título"""
@@ -60,7 +60,7 @@ class BaseStyles:
             font-weight: bold;
         }
         """
-    
+
     @staticmethod
     def get_subtitle_label_style() -> str:
         """Estilo básico para labels de subtítulo"""
@@ -70,7 +70,7 @@ class BaseStyles:
             font-size: 14px;
         }
         """
-    
+
     @staticmethod
     def get_batch_checkbox_style() -> str:
         """Estilo básico para checkboxes de lote"""
@@ -79,7 +79,7 @@ class BaseStyles:
             spacing: 5px;
         }
         """
-    
+
     @staticmethod
     def get_alias_label_style() -> str:
         """Estilo básico para labels de alias"""
@@ -89,7 +89,7 @@ class BaseStyles:
             color: #333333;
         }
         """
-    
+
     @staticmethod
     def get_edit_btn_style() -> str:
         """Estilo básico para botones de edición"""
@@ -105,7 +105,7 @@ class BaseStyles:
             background-color: #0056b3;
         }
         """
-    
+
     @staticmethod
     def get_restore_btn_style() -> str:
         """Estilo básico para botones de restaurar"""
@@ -121,7 +121,7 @@ class BaseStyles:
             background-color: #1e7e34;
         }
         """
-    
+
     @staticmethod
     def get_edit_personas_btn_style() -> str:
         """Estilo básico para botones de editar personas"""
@@ -137,7 +137,7 @@ class BaseStyles:
             background-color: #545b62;
         }
         """
-    
+
     @staticmethod
     def get_base_widget_style() -> str:
         """Estilo básico para widgets base"""
@@ -148,7 +148,7 @@ class BaseStyles:
             border: 1px solid #e0e0e0;
         }
         """
-    
+
     @staticmethod
     def get_capacidad_label_style() -> str:
         """Estilo básico para labels de capacidad"""
@@ -158,7 +158,7 @@ class BaseStyles:
             font-size: 12px;
         }
         """
-    
+
     @staticmethod
     def get_zona_label_style() -> str:
         """Estilo básico para labels de zona"""
@@ -168,7 +168,7 @@ class BaseStyles:
             font-size: 12px;
         }
         """
-    
+
     @staticmethod
     def get_contador_label_style() -> str:
         """Estilo básico para labels de contador"""
@@ -178,7 +178,7 @@ class BaseStyles:
             font-size: 12px;
         }
         """
-    
+
     @staticmethod
     def get_alias_line_edit_style() -> str:
         """Estilo básico para line edits de alias"""
@@ -193,7 +193,7 @@ class BaseStyles:
             border-color: #007bff;
         }
         """
-    
+
     @staticmethod
     def get_menu_style() -> str:
         """Estilo básico para menús"""
@@ -210,17 +210,17 @@ class BaseStyles:
             background-color: #f0f0f0;
         }
         """
-    
+
     @staticmethod
     def get_reserva_badge_style(estado: str) -> str:
         """Estilo básico para badges de reserva"""
         colors = {
-            'confirmada': '#28a745',
-            'pendiente': '#ffc107', 
-            'cancelada': '#dc3545',
-            'default': '#6c757d'
+            "confirmada": "#28a745",
+            "pendiente": "#ffc107",
+            "cancelada": "#dc3545",
+            "default": "#6c757d",
         }
-        color = colors.get(estado.lower(), colors['default'])
+        color = colors.get(estado.lower(), colors["default"])
         return f"""
         QLabel {{
             background-color: {color};
@@ -231,7 +231,7 @@ class BaseStyles:
             font-weight: bold;
         }}
         """
-    
+
     @staticmethod
     def get_reserva_list_item_style() -> str:
         """Estilo básico para items de lista de reservas"""
@@ -246,7 +246,7 @@ class BaseStyles:
             background-color: #f8f9fa;
         }
         """
-    
+
     @staticmethod
     def get_stats_section_style() -> str:
         """Estilo básico para secciones de estadísticas"""
@@ -258,7 +258,7 @@ class BaseStyles:
             padding: 16px;
         }
         """
-    
+
     @staticmethod
     def get_stats_title_label_style() -> str:
         """Estilo básico para títulos de estadísticas"""
@@ -269,7 +269,7 @@ class BaseStyles:
             font-weight: bold;
         }
         """
-    
+
     @staticmethod
     def get_stats_refresh_btn_style() -> str:
         """Estilo básico para botón de actualizar estadísticas"""
@@ -285,7 +285,7 @@ class BaseStyles:
             background-color: #138496;
         }
         """
-    
+
     @staticmethod
     def get_stats_config_btn_style() -> str:
         """Estilo básico para botón de configurar estadísticas"""
@@ -301,7 +301,7 @@ class BaseStyles:
             background-color: #545b62;
         }
         """
-    
+
     @staticmethod
     def get_stats_last_refresh_label_style() -> str:
         """Estilo para etiquetas de última actualización de estadísticas"""
@@ -312,7 +312,7 @@ class BaseStyles:
             margin-top: 5px;
         }
         """
-    
+
     @staticmethod
     def get_kpi_widget_style(color: str, bg_color: str) -> str:
         """Estilo para widgets KPI"""

@@ -34,7 +34,9 @@ disable=
     too-many-statements,
     import-error,
     no-name-in-module,
-    c-extension-no-member
+    c-extension-no-member,
+    trailing-whitespace,
+    fixme
 
 # Mensajes a habilitar
 enable=

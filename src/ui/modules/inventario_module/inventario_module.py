@@ -131,12 +131,16 @@ class InventarioModule(BaseModule):
         tab_widget.addTab(self.suppliers_widget, "🏢 Proveedores")
 
         # Conectar señales
-        if hasattr(self.products_widget, 'producto_actualizado'):
+        if hasattr(self.products_widget, "producto_actualizado"):
             self.products_widget.producto_actualizado.connect(self.on_inventory_updated)
-        if hasattr(self.categories_widget, 'categoria_actualizada'):
-            self.categories_widget.categoria_actualizada.connect(self.on_categories_updated)
-        if hasattr(self.suppliers_widget, 'proveedor_actualizado'):
-            self.suppliers_widget.proveedor_actualizado.connect(self.on_suppliers_updated)
+        if hasattr(self.categories_widget, "categoria_actualizada"):
+            self.categories_widget.categoria_actualizada.connect(
+                self.on_categories_updated
+            )
+        if hasattr(self.suppliers_widget, "proveedor_actualizado"):
+            self.suppliers_widget.proveedor_actualizado.connect(
+                self.on_suppliers_updated
+            )
 
         return tab_widget
 

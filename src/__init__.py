@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
 """
-Paquete principal de Hefest - Sistema Integral de Hostelería y Hospedería
+Paquete principal de Hefest.
+
+Este paquete contiene todos los módulos y subpaquetes necesarios
+para la aplicación Hefest - Sistema Integral de Hostelería y Hospedería.
 """

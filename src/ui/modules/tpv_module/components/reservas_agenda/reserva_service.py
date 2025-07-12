@@ -18,17 +18,21 @@ class ReservaService:
             row = c.fetchone()
             if not row or row[0] not in ("activa", "confirmada"):
                 return False
-            
+
             # Lista blanca de campos permitidos para prevenir inyección SQL
             campos_permitidos = {
-                "cliente", "fecha_hora", "duracion_min", 
-                "telefono", "personas", "notas"
+                "cliente",
+                "fecha_hora",
+                "duracion_min",
+                "telefono",
+                "personas",
+                "notas",
             }
-            
+
             # Actualizar campos con consultas preparadas estáticas
             updates = []
             valores_finales = []
-            
+
             datos_entrada = [
                 ("cliente", datos.get("cliente")),
                 ("fecha_hora", datos.get("fecha_hora")),
@@ -37,7 +41,7 @@ class ReservaService:
                 ("personas", datos.get("personas")),
                 ("notas", datos.get("notas")),
             ]
-            
+
             for campo, valor in datos_entrada:
                 if valor is not None and campo in campos_permitidos:
                     # Usar consultas preparadas estáticas por campo específico
@@ -62,10 +66,10 @@ class ReservaService:
                     elif campo == "notas":
                         updates.append("notas = ?")
                         valores_finales.append(valor)
-                        
+
             if not updates:
                 return False
-                
+
             # Construir query final con campos estáticos
             valores_finales.append(reserva_id)
             sql = f"UPDATE reservas SET {', '.join(updates)} WHERE id = ?"

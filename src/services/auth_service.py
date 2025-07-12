@@ -95,7 +95,7 @@ class AuthService(BaseService):
     def _initialize_default_users(self) -> None:
         """Inicializa los usuarios por defecto del sistema"""
         default_pin = self._get_default_pin()
-        
+
         self.default_users = [
             User(
                 id=1,

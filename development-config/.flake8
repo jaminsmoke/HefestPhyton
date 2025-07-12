@@ -1,7 +1,7 @@
 # Configuración Flake8 para Hefest
 [flake8]
-max-line-length = 88
-extend-ignore = E203,W503,E501
+max-line-length = 79
+extend-ignore = E203,W503,W291,W293
 exclude = .git,__pycache__,.venv,build,dist,docs,logs,logs_debug,htmlcov,version-backups
 show-source = True
 statistics = True

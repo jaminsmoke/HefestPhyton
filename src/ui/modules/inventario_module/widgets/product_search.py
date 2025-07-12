@@ -510,17 +510,14 @@ class ProductSearchWidget(QWidget):
         categorias_por_id = {}
         if categorias_cache:
             categorias_por_id = {
-                str(cat.get("id")): cat.get("nombre", "")
-                for cat in categorias_cache
+                str(cat.get("id")): cat.get("nombre", "") for cat in categorias_cache
             }
         for product in products:
             item = self._create_result_item(product, categorias_por_id)
             self.results_list.addItem(item)
 
     def _create_result_item(
-        self,
-        product: Dict[str, Any],
-        categorias_por_id: Dict[str, str]
+        self, product: Dict[str, Any], categorias_por_id: Dict[str, str]
     ) -> QListWidgetItem:
         """Crea un item de resultado mostrando nombre de categoría por id"""
         nombre = product.get("nombre", "Sin nombre")
@@ -528,7 +525,8 @@ class ProductSearchWidget(QWidget):
         categoria_id = str(product.get("categoria_id", ""))
         categoria_nombre = (
             categorias_por_id.get(categoria_id, "Sin categoría")
-            if categoria_id else "Sin categoría"
+            if categoria_id
+            else "Sin categoría"
         )
         stock = product.get("stock", 0)
         text = f"{nombre}"

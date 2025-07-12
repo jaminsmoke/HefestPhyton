@@ -48,17 +48,32 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
 
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame,
-    QTableWidget, QTableWidgetItem, QHeaderView, QLineEdit, QComboBox,
-    QMessageBox, QDialog, QFileDialog, QTextEdit, QFormLayout
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
+    QLabel,
+    QFrame,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QLineEdit,
+    QComboBox,
+    QMessageBox,
+    QDialog,
+    QFileDialog,
+    QTextEdit,
+    QFormLayout,
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer
 from PyQt6.QtGui import QColor
 
 # Importar utilidades comunes
 from .inventory_common_utils import (
-    InventoryManagerBase, InventoryDialogBase, InventoryValidationUtils,
-    CommonInventoryStyles
+    InventoryManagerBase,
+    InventoryDialogBase,
+    InventoryValidationUtils,
+    CommonInventoryStyles,
 )
 
 logger = logging.getLogger(__name__)
@@ -71,23 +86,27 @@ class ProductsManagerWidget(InventoryManagerBase):
     producto_seleccionado = pyqtSignal(dict)
     producto_actualizado = pyqtSignal()
 
-    def __init__(self, inventario_service: Any, parent: Optional[QWidget] = None) -> None:
+    def __init__(
+        self, inventario_service: Any, parent: Optional[QWidget] = None
+    ) -> None:
         """Inicializar el widget gestor de productos"""
         # PRIMERO: Almacenar el servicio de inventario
         self.inventario_service = inventario_service
         self.productos_cache: List[Dict[str, Any]] = []
         self.categorias_cache: List[Dict[str, Any]] = []
-        
+
         # SEGUNDO: Flag para evitar carga inicial prematura
         self._skip_initial_load = True
-        
+
         # TERCERO: Pasar db_manager desde el inventario_service si está disponible
-        db_manager = getattr(inventario_service, 'db_manager', None) or inventario_service
+        db_manager = (
+            getattr(inventario_service, "db_manager", None) or inventario_service
+        )
         super().__init__(db_manager=db_manager, parent=parent)
-        
+
         # CUARTO: Configuraciones adicionales
         self.title_label.setText("📦 Gestión de Productos")
-        
+
         # Configurar tabla específica para productos
         self._setup_products_table()
         self._setup_connections()
@@ -117,8 +136,6 @@ class ProductsManagerWidget(InventoryManagerBase):
         self.main_layout.addWidget(bottom_panel)
 
         self.apply_styles()
-
-
 
     def create_search_panel(self) -> QFrame:
         """Crear panel de búsqueda y filtros"""
@@ -152,8 +169,6 @@ class ProductsManagerWidget(InventoryManagerBase):
         layout.addWidget(self.stock_btn)
 
         return panel
-
-
 
     def create_bottom_panel(self) -> QFrame:
         """Crear panel inferior con estadísticas y alertas"""
@@ -214,7 +229,9 @@ class ProductsManagerWidget(InventoryManagerBase):
     def load_products(self, search_text: str = "", category: str = "") -> None:
         """Cargar productos desde el servicio"""
         try:
-            logger.info(f"[UI] Llamando a get_productos con search_text='{search_text}', category='{category}'")
+            logger.info(
+                f"[UI] Llamando a get_productos con search_text='{search_text}', category='{category}'"
+            )
             self.productos_cache = self.inventario_service.get_productos(  # type: ignore
                 search_text, category
             )
@@ -235,8 +252,8 @@ class ProductsManagerWidget(InventoryManagerBase):
             self.category_combo.clear()
             self.category_combo.addItem("Todas las categorías", "")
             for categoria in categorias:
-                nombre = categoria.get('nombre', 'Sin nombre')
-                categoria_id = categoria.get('id', '')
+                nombre = categoria.get("nombre", "Sin nombre")
+                categoria_id = categoria.get("id", "")
                 self.category_combo.addItem(nombre, categoria_id)
             self.categorias_cache = categorias
         except Exception as e:
@@ -245,83 +262,101 @@ class ProductsManagerWidget(InventoryManagerBase):
     def update_products_table(self) -> None:
         """Actualizar la tabla de productos"""
         try:
-            logger.info(f"[UI] Actualizando tabla con {len(self.productos_cache)} productos")
+            logger.info(
+                f"[UI] Actualizando tabla con {len(self.productos_cache)} productos"
+            )
             self.items_cache = self.productos_cache
             self.table.setSortingEnabled(False)
             self.table.setRowCount(len(self.productos_cache))
-            
+
             # Crear cache de categorías por id y por nombre
             categorias_por_id = {
-                str(cat.get('id')): cat.get('nombre', '')
+                str(cat.get("id")): cat.get("nombre", "")
                 for cat in self.categorias_cache
             }
             categorias_por_nombre = {
-                cat.get('nombre', ''): cat.get('nombre', '')
+                cat.get("nombre", ""): cat.get("nombre", "")
                 for cat in self.categorias_cache
             }
-            
+
             for row, producto in enumerate(self.productos_cache):
                 logger.info(f"[UI] Insertando producto en fila {row}: {producto}")
-                
+
                 # ID
                 self.table.setItem(row, 0, QTableWidgetItem(str(producto.id)))
-                
+
                 # Nombre
                 self.table.setItem(row, 1, QTableWidgetItem(producto.nombre))
-                
+
                 # Categoría - Soporte para productos legacy (solo nombre) y nuevos (id)
-                categoria_id = getattr(producto, 'categoria_id', None)
+                categoria_id = getattr(producto, "categoria_id", None)
                 categoria_nombre = None
                 if categoria_id:
                     categoria_nombre = categorias_por_id.get(str(categoria_id))
                 if not categoria_nombre:
                     # Intentar por nombre legacy
-                    categoria_nombre = categorias_por_nombre.get(getattr(producto, 'categoria', ''), 'Sin categoría')
-                logger.info(f"[UI] Fila {row}: categoria_id={categoria_id}, categoria_nombre={categoria_nombre}")
+                    categoria_nombre = categorias_por_nombre.get(
+                        getattr(producto, "categoria", ""), "Sin categoría"
+                    )
+                logger.info(
+                    f"[UI] Fila {row}: categoria_id={categoria_id}, categoria_nombre={categoria_nombre}"
+                )
                 self.table.setItem(row, 2, QTableWidgetItem(categoria_nombre))
-                
+
                 # Precio
                 precio_item = QTableWidgetItem(f"${producto.precio:.2f}")
-                precio_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                precio_item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+                )
                 self.table.setItem(row, 3, precio_item)
-                
+
                 # Stock actual
                 stock_item = QTableWidgetItem(str(producto.stock_actual))
                 stock_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 if producto.stock_actual == 0:
-                    stock_item.setBackground(QColor('#dc3545'))
-                    stock_item.setForeground(QColor('white'))
-                elif hasattr(producto, 'stock_minimo') and producto.stock_actual <= producto.stock_minimo:
-                    stock_item.setBackground(QColor('#ffc107'))
+                    stock_item.setBackground(QColor("#dc3545"))
+                    stock_item.setForeground(QColor("white"))
+                elif (
+                    hasattr(producto, "stock_minimo")
+                    and producto.stock_actual <= producto.stock_minimo
+                ):
+                    stock_item.setBackground(QColor("#ffc107"))
                 self.table.setItem(row, 4, stock_item)
-                
+
                 # Stock mínimo
-                stock_min_item = QTableWidgetItem(str(getattr(producto, 'stock_minimo', 0)))
+                stock_min_item = QTableWidgetItem(
+                    str(getattr(producto, "stock_minimo", 0))
+                )
                 stock_min_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.table.setItem(row, 5, stock_min_item)
-                
+
                 # Estado
                 if producto.stock_actual == 0:
                     estado = "Sin stock"
-                    color = QColor('#dc3545')
-                elif hasattr(producto, 'stock_minimo') and producto.stock_actual <= producto.stock_minimo:
+                    color = QColor("#dc3545")
+                elif (
+                    hasattr(producto, "stock_minimo")
+                    and producto.stock_actual <= producto.stock_minimo
+                ):
                     estado = "Stock bajo"
-                    color = QColor('#ffc107')
+                    color = QColor("#ffc107")
                 else:
                     estado = "Disponible"
-                    color = QColor('#28a745')
-                    
+                    color = QColor("#28a745")
+
                 estado_item = QTableWidgetItem(estado)
                 estado_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 estado_item.setForeground(color)
                 self.table.setItem(row, 6, estado_item)
-                
+
             self.table.viewport().update()
             self.table.setSortingEnabled(True)
-            
+
             if self.table.rowCount() == 0:
-                logger.warning("[UI] La tabla de productos quedó vacía tras el llenado.")
-                
+                logger.warning(
+                    "[UI] La tabla de productos quedó vacía tras el llenado."
+                )
+
         except Exception as e:
             logger.error(f"Error actualizando tabla de productos: {e}")
 
@@ -346,11 +381,19 @@ class ProductsManagerWidget(InventoryManagerBase):
 
     def _setup_products_table(self):
         """Configura la tabla específica para productos"""
-        headers = ["ID", "Nombre", "Categoría", "Precio", "Stock", "Stock Mín.", "Estado"]
+        headers = [
+            "ID",
+            "Nombre",
+            "Categoría",
+            "Precio",
+            "Stock",
+            "Stock Mín.",
+            "Estado",
+        ]
         self.table.setColumnCount(len(headers))
         self.table.setHorizontalHeaderLabels(headers)
         self.table.setObjectName("ProductsTable")
-        
+
         # Configurar columnas
         header = self.table.horizontalHeader()
         if header:
@@ -361,7 +404,7 @@ class ProductsManagerWidget(InventoryManagerBase):
             header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)  # Stock
             header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)  # Stock Mín.
             header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)  # Estado
-            
+
             # Anchos específicos
             self.table.setColumnWidth(0, 60)
             self.table.setColumnWidth(2, 120)
@@ -369,16 +412,16 @@ class ProductsManagerWidget(InventoryManagerBase):
             self.table.setColumnWidth(4, 80)
             self.table.setColumnWidth(5, 80)
             self.table.setColumnWidth(6, 100)
-        
+
         # Configurar comportamiento de la tabla
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setAlternatingRowColors(True)
         self.table.setSortingEnabled(True)
-        
+
         # Conectar señales específicas
         self.table.itemSelectionChanged.connect(self.on_product_selected)
         self.table.itemDoubleClicked.connect(self.edit_selected_product)
-        
+
     def _setup_connections(self):
         """Configurar conexiones específicas de productos"""
         super()._setup_connections()
@@ -387,22 +430,22 @@ class ProductsManagerWidget(InventoryManagerBase):
         self.edit_btn.clicked.disconnect()
         self.delete_btn.clicked.disconnect()
         self.refresh_btn.clicked.disconnect()
-        
+
         # Conectar con los métodos específicos de productos
         self.add_btn.clicked.connect(self.add_product)
         self.edit_btn.clicked.connect(self.edit_selected_product)
         self.delete_btn.clicked.connect(self.delete_selected_product)
         self.refresh_btn.clicked.connect(self.load_products)
-        
+
     def _load_data(self):
         """Cargar datos específicos de productos"""
         # Control de carga inicial prematura
-        if hasattr(self, '_skip_initial_load') and self._skip_initial_load:
+        if hasattr(self, "_skip_initial_load") and self._skip_initial_load:
             logger.debug("Saltando carga inicial de productos")
             return
-            
+
         # Solo cargar si la UI está completamente inicializada
-        if hasattr(self, 'table') and hasattr(self, 'inventario_service'):
+        if hasattr(self, "table") and hasattr(self, "inventario_service"):
             self.load_products()
         else:
             logger.debug("UI no inicializada aún, posponiendo carga de productos")
@@ -453,7 +496,7 @@ class ProductsManagerWidget(InventoryManagerBase):
         # Habilitar/deshabilitar botones según selección
         self.edit_btn.setEnabled(has_selection)
         self.delete_btn.setEnabled(has_selection)
-        if hasattr(self, 'stock_btn'):
+        if hasattr(self, "stock_btn"):
             self.stock_btn.setEnabled(has_selection)
 
         if has_selection:
@@ -464,10 +507,10 @@ class ProductsManagerWidget(InventoryManagerBase):
                     {
                         "id": producto.id,
                         "nombre": producto.nombre,
-                        "categoria": getattr(producto, 'categoria', ''),
+                        "categoria": getattr(producto, "categoria", ""),
                         "precio": producto.precio,
                         "stock": producto.stock_actual,
-                        "stock_minimo": getattr(producto, 'stock_minimo', 0),
+                        "stock_minimo": getattr(producto, "stock_minimo", 0),
                     }
                 )
 
@@ -478,7 +521,7 @@ class ProductsManagerWidget(InventoryManagerBase):
             dialog = ProductDialog(
                 parent=self,
                 inventario_service=self.inventario_service,
-                producto=None  # Nuevo producto
+                producto=None,  # Nuevo producto
             )
 
             if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -493,8 +536,6 @@ class ProductsManagerWidget(InventoryManagerBase):
                 self, "Error", f"No se pudo crear el producto: {str(e)}"
             )
 
-
-
     def edit_selected_product(self):
         """Editar producto seleccionado"""
         try:
@@ -506,7 +547,9 @@ class ProductsManagerWidget(InventoryManagerBase):
                     self.load_products()
                     self.producto_actualizado.emit()
             else:
-                QMessageBox.information(self, "Información", "Seleccione un producto para editar")
+                QMessageBox.information(
+                    self, "Información", "Seleccione un producto para editar"
+                )
         except Exception as e:
             logger.error(f"Error editando producto: {e}")
             QMessageBox.warning(self, "Error", f"Error al editar producto: {str(e)}")
@@ -514,9 +557,7 @@ class ProductsManagerWidget(InventoryManagerBase):
     def adjust_stock(self):
         """Ajustar stock del producto seleccionado"""
         try:
-            selected_rows = set(
-                item.row() for item in self.table.selectedItems()
-            )
+            selected_rows = set(item.row() for item in self.table.selectedItems())
             if not selected_rows:
                 return
 
@@ -558,24 +599,32 @@ class ProductsManagerWidget(InventoryManagerBase):
             current_row = self.table.currentRow()
             if current_row >= 0 and current_row < len(self.productos_cache):
                 producto = self.productos_cache[current_row]
-                
+
                 reply = QMessageBox.question(
                     self,
-                    "Confirmar eliminación", 
+                    "Confirmar eliminación",
                     f"¿Eliminar el producto '{producto.get('nombre', 'N/A')}'?\nEsta acción no se puede deshacer.",
-                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 )
-                
+
                 if reply == QMessageBox.StandardButton.Yes:
-                    success = self.inventario_service.eliminar_producto(producto.get('id'))
+                    success = self.inventario_service.eliminar_producto(
+                        producto.get("id")
+                    )
                     if success:
                         self.load_products()
                         self.producto_actualizado.emit()
-                        QMessageBox.information(self, "Éxito", "Producto eliminado correctamente")
+                        QMessageBox.information(
+                            self, "Éxito", "Producto eliminado correctamente"
+                        )
                     else:
-                        QMessageBox.warning(self, "Error", "No se pudo eliminar el producto")
+                        QMessageBox.warning(
+                            self, "Error", "No se pudo eliminar el producto"
+                        )
             else:
-                QMessageBox.information(self, "Información", "Seleccione un producto para eliminar")
+                QMessageBox.information(
+                    self, "Información", "Seleccione un producto para eliminar"
+                )
         except Exception as e:
             logger.error(f"Error eliminando producto: {e}")
             QMessageBox.warning(self, "Error", f"Error al eliminar producto: {str(e)}")
@@ -744,69 +793,71 @@ class ProductsManagerWidget(InventoryManagerBase):
             }
         """
         )
-        
+
         # Aplicar estilo específico al título heredado
-        if hasattr(self, 'title_label'):
-            self.title_label.setStyleSheet("""
+        if hasattr(self, "title_label"):
+            self.title_label.setStyleSheet(
+                """
                 font-size: 24px;
                 font-weight: bold;
                 color: #1e3c72;
                 padding: 10px 0;
-            """)
+            """
+            )
 
 
 class ProductDialog(InventoryDialogBase):
     """Diálogo para agregar/editar productos"""
-    
+
     def __init__(self, inventario_service, parent=None, producto=None):
         self.inventario_service = inventario_service
         self.producto_data = producto
         self.is_edit = producto is not None
-        
+
         title = "Editar Producto" if self.is_edit else "Nuevo Producto"
         super().__init__(parent, title, (600, 500))
-        
+
         if self.is_edit:
             self._load_product_data()
-    
+
     def _setup_ui(self):
         """Configuración específica de UI para productos"""
         super()._setup_ui()
-        
+
         # Información básica
         basic_form = QFormLayout()
-        
+
         # Campo nombre
         self.name_edit = QLineEdit()
         basic_form.addRow("Nombre*:", self.name_edit)
-        
+
         # Campo categoría
         self.category_combo = QComboBox()
         self._load_categories()
         basic_form.addRow("Categoría*:", self.category_combo)
-        
+
         # Campo precio
         self.price_edit = QLineEdit()
         basic_form.addRow("Precio*:", self.price_edit)
-        
+
         # Campo stock actual
         self.stock_edit = QLineEdit()
         basic_form.addRow("Stock Actual:", self.stock_edit)
-        
+
         # Campo stock mínimo
         self.min_stock_edit = QLineEdit()
         basic_form.addRow("Stock Mínimo:", self.min_stock_edit)
-        
+
         self.add_form_section("Información Básica", basic_form)
-        
+
         # Descripción
         desc_form = QFormLayout()
         self.description_edit = QTextEdit()
         self.description_edit.setMaximumHeight(100)
         desc_form.addRow("Descripción:", self.description_edit)
-        
+
         self.add_form_section("Descripción", desc_form)
-        
+
     def _load_categories(self):
         """Cargar categorías disponibles"""
         try:
@@ -814,77 +865,80 @@ class ProductDialog(InventoryDialogBase):
             self.category_combo.clear()
             self.category_combo.addItem("Seleccionar categoría", "")
             for categoria in categorias:
-                nombre = categoria.get('nombre', 'Sin nombre')
-                categoria_id = categoria.get('id', '')
+                nombre = categoria.get("nombre", "Sin nombre")
+                categoria_id = categoria.get("id", "")
                 self.category_combo.addItem(nombre, categoria_id)
         except Exception as e:
             logger.error(f"Error cargando categorías: {e}")
-    
+
     def _load_product_data(self):
         """Cargar datos de producto para edición"""
         if self.producto_data:
-            self.name_edit.setText(str(self.producto_data.get('nombre', '')))
-            self.price_edit.setText(str(self.producto_data.get('precio', '')))
-            self.stock_edit.setText(str(self.producto_data.get('stock_actual', '')))
-            self.min_stock_edit.setText(str(self.producto_data.get('stock_minimo', '')))
-            self.description_edit.setPlainText(str(self.producto_data.get('descripcion', '')))
-            
+            self.name_edit.setText(str(self.producto_data.get("nombre", "")))
+            self.price_edit.setText(str(self.producto_data.get("precio", "")))
+            self.stock_edit.setText(str(self.producto_data.get("stock_actual", "")))
+            self.min_stock_edit.setText(str(self.producto_data.get("stock_minimo", "")))
+            self.description_edit.setPlainText(
+                str(self.producto_data.get("descripcion", ""))
+            )
+
             # Seleccionar categoría
-            categoria = self.producto_data.get('categoria', '')
+            categoria = self.producto_data.get("categoria", "")
             index = self.category_combo.findText(categoria)
             if index >= 0:
                 self.category_combo.setCurrentIndex(index)
-    
+
     def accept(self):
         """Validar y guardar producto"""
         if not self._validate_form():
             return
-            
+
         try:
             producto_data = {
-                'nombre': self.name_edit.text().strip(),
-                'categoria_id': self.category_combo.currentData(),
-                'precio': float(self.price_edit.text().strip()),
-                'stock_actual': int(self.stock_edit.text().strip() or '0'),
-                'stock_minimo': int(self.min_stock_edit.text().strip() or '0'),
-                'descripcion': self.description_edit.toPlainText().strip()
+                "nombre": self.name_edit.text().strip(),
+                "categoria_id": self.category_combo.currentData(),
+                "precio": float(self.price_edit.text().strip()),
+                "stock_actual": int(self.stock_edit.text().strip() or "0"),
+                "stock_minimo": int(self.min_stock_edit.text().strip() or "0"),
+                "descripcion": self.description_edit.toPlainText().strip(),
             }
-            
+
             if self.is_edit:
-                producto_data['id'] = self.producto_data['id']
+                producto_data["id"] = self.producto_data["id"]
                 success = self.inventario_service.actualizar_producto(producto_data)
                 message = "Producto actualizado correctamente"
             else:
                 success = self.inventario_service.crear_producto(producto_data)
                 message = "Producto creado correctamente"
-            
+
             if success:
                 self.show_success(message)
                 super().accept()
             else:
                 self.show_error("Error al guardar el producto")
-                
+
         except ValueError as e:
             self.show_error("Error en los datos numéricos")
         except Exception as e:
             logger.error(f"Error guardando producto: {e}")
             self.show_error(f"Error inesperado: {str(e)}")
-    
+
     def _validate_form(self) -> bool:
         """Validar formulario de producto"""
         # Validar nombre
         if not InventoryValidationUtils.validate_required_field(
-            self.name_edit.text(), "Nombre"):
+            self.name_edit.text(), "Nombre"
+        ):
             self.show_error("El nombre es obligatorio")
             self.name_edit.setFocus()
             return False
-            
+
         # Validar categoría
         if self.category_combo.currentData() == "":
             self.show_error("Debe seleccionar una categoría")
             self.category_combo.setFocus()
             return False
-            
+
         # Validar precio
         try:
             precio = float(self.price_edit.text().strip())
@@ -896,5 +950,5 @@ class ProductDialog(InventoryDialogBase):
             self.show_error("El precio debe ser un número válido")
             self.price_edit.setFocus()
             return False
-            
+
         return True

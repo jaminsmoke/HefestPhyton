@@ -3,6 +3,7 @@ TPV Avanzado - Panel de pedido modularizado
 """
 
 from typing import Any
+
 # Refactorización: Import de utilidades TPV comunes
 from utils.tpv_utils import actualizar_labels_totales, eliminar_producto_de_pedido
 from PyQt6.QtWidgets import (

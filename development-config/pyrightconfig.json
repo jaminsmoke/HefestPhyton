@@ -1,3 +1,5 @@
+// NOTA: Este es un archivo de referencia. El archivo activo está en la raíz del proyecto.
+// Cualquier cambio debe hacerse en ambos archivos para mantener la coherencia.
 {
     "include": [
         "src",
